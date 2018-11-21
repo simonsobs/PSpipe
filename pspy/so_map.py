@@ -117,7 +117,7 @@ class so_map:
             if color=='planck':
                 from matplotlib.colors import ListedColormap
                 path=(os.path.dirname(os.path.realpath(__file__)))
-                colombi1_cmap = ListedColormap(np.loadtxt('%s/../data/Planck_Parchment_RGB.txt'%path)/255.)
+                colombi1_cmap = ListedColormap(np.loadtxt('%s/../Planck_Parchment_RGB.txt'%path)/255.)
                 colombi1_cmap.set_bad("white")
                 colombi1_cmap.set_under("white")
                 cmap = colombi1_cmap

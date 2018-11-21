@@ -21,7 +21,10 @@ config = {
         'pspy',
         ],
     'scripts': [],
-    'name': 'pspy'
+    'name': 'pspy',
+    'include_package_data':True,
+    'data_files': [('data/Planck_Parchment_RGB.txt')]
+
 }
 
 setup(**config)

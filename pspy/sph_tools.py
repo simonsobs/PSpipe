@@ -42,6 +42,13 @@ def map2alm(map,niter,lmax=None,theta_range=None):
 
 
 def alm2map(alms,map):
+    """
+    @brief general alm2map transform
+    @param alms: a set of alms, the shape of alms should correspond to map.ncomp
+    @param map: a so map object
+    @return: a so map instance with value given by the alms
+    """
+    
     if map.ncomp==1:
         spin=0
     else:
@@ -57,6 +64,9 @@ def alm2map(alms,map):
 
 
 def read_cls(clfile,lmax=None):
+    """
+    @brief take CAMB lensed power spectrum and return a cl dictionnary
+    """
     fields=['TT','EE','BB','TE']
     cl={}
     lth, cl['TT'], cl['EE'], cl['BB'], cl['TE'] = np.loadtxt(clfile,unpack=True)

@@ -30,7 +30,6 @@ alms= curvedsky.rand_alm(ps)
 template_car= so_map.car_template(ncomp,ra0,ra1,dec0,dec1,res)
 template_healpix= so_map.healpix_template(ncomp,nside=256,coordinate='equ')
 
-
 #We compule the stokes parameters from the alms in both templates
 map_healpix=sph_tools.alm2map(alms,template_healpix)
 map_car=sph_tools.alm2map(alms,template_car)

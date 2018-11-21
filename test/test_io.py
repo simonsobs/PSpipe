@@ -1,10 +1,18 @@
 from pspy import so_map
 from pspy import sph_tools
 from pixell import curvedsky,powspec
+import os
 
 """
 This is an example and how to read/write/plot so map
 """
+
+test_dir='result_test_io'
+try:
+    os.makedirs(test_dir)
+except:
+    pass
+
 
 #We start with the definition of the CAR template, it will go from ra0 to ra1 and from dec0 to dec1 (all in degrees)
 #It will have a resolution of 1 arcminute
@@ -27,26 +35,26 @@ cmb_healpix=template_healpix.synfast(clfile)
 
 #We plot them
 
-cmb_car.plot(file_name='map_car_io_test')
-cmb_healpix.plot(file_name='map_healpix_io_test')
+cmb_car.plot(file_name='%s/map_car_io_test'%test_dir)
+cmb_healpix.plot(file_name='%s/map_healpix_io_test'%test_dir)
 
 #We write them to disk
 
-cmb_car.write_map('map_car.fits')
-cmb_healpix.write_map('map_healpix.fits')
+cmb_car.write_map('%s/map_car.fits'%test_dir)
+cmb_healpix.write_map('%s/map_healpix.fits'%test_dir)
 
 #We read the maps
 
-cmb_car2=so_map.read_map('map_car.fits')
-cmb_healpix2=so_map.read_map('map_healpix.fits')
+cmb_car2=so_map.read_map('%s/map_car.fits'%test_dir)
+cmb_healpix2=so_map.read_map('%s/map_healpix.fits'%test_dir)
 
 #We null them
 
 cmb_car2.data-=cmb_car.data
 cmb_healpix2.data-=cmb_healpix.data
 
-#We plot the nulls: note that while car is  zero, some low amplitude numerical noise is there in healpix
+#We plot the nulls: note that while car is zero, some low amplitude numerical noise is there in healpix
 
-cmb_car2.plot(file_name='map_car_null')
-cmb_healpix2.plot(file_name='map_healpix_null')
+cmb_car2.plot(file_name='%s/map_car_null'%test_dir)
+cmb_healpix2.plot(file_name='%s/map_healpix_null'%test_dir)
 

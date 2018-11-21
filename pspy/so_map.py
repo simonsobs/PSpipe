@@ -93,7 +93,7 @@ class so_map:
         if self.pixel=='HEALPIX':
             l,ps=read_cls(clfile)
             if self.ncomp==1:
-                self.data= hp.sphtfunc.synfast(ps['TT'], self.nside ,new=True)
+                self.data= hp.sphtfunc.synfast(ps['TT'], self.nside ,new=True, verbose=False)
             else :
                 self.data= hp.sphtfunc.synfast((ps['TT'],ps['EE'],ps['BB'],ps['TE']), self.nside ,new=True, verbose=False)
 
@@ -127,7 +127,6 @@ class so_map:
                 cmap.set_under("white")
             
             if self.ncomp==1:
-                print (self.data.shape)
                 
                 min,max=None,None
                 if color_range is not None:
@@ -203,20 +202,6 @@ def read_map(file,coordinate=None,verbose=False):
     hdulist = pyfits.open(file)
     try:
         header = hdulist[1].header
-    except:
-        header = hdulist[0].header
-
-    if header['NAXIS']==3:
-        map.pixel=(header['CTYPE1'][-3:])
-        map.ncomp= header['NAXIS3']
-        map.data= enmap.read_map(file)
-        map.nside=None
-        map.geometry=map.data.geometry[1:]
-        map.coordinate=header['RADESYS']
-        if map.coordinate=='ICRS':
-            map.coordinate='equ'
-
-    elif header['NAXIS']==2:
         map.pixel='HEALPIX'
         map.ncomp= header['TFIELDS']
         map.data= hp.fitsfunc.read_map(file,field=np.arange(map.ncomp),verbose=False)
@@ -226,9 +211,20 @@ def read_map(file,coordinate=None,verbose=False):
             map.coordinate= header['SKYCOORD']
         except:
             map.coordinate=None
-    else:
-        print ('Error: file %s is neither a enmap or a healpix map'%file)
-        sys.exit()
+
+    except:
+        header = hdulist[0].header
+        map.pixel=(header['CTYPE1'][-3:])
+        try:
+            map.ncomp= header['NAXIS3']
+        except:
+            map.ncomp= 1
+        map.data= enmap.read_map(file)
+        map.nside=None
+        map.geometry=map.data.geometry[1:]
+        map.coordinate=header['RADESYS']
+        if map.coordinate=='ICRS':
+            map.coordinate='equ'
 
     if coordinate is not None:
         map.coordinate=coordinate

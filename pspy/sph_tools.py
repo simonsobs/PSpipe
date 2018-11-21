@@ -48,7 +48,6 @@ def alm2map(alms,map):
     @param map: a so map object
     @return: a so map instance with value given by the alms
     """
-    
     if map.ncomp==1:
         spin=0
     else:

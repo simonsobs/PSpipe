@@ -28,7 +28,7 @@ def map2alm(map,niter,lmax=None,theta_range=None):
         return alm
 
     elif map.pixel=='CAR':
-        alm = curvedsky.map2alm(map,lmax= lmax)
+        alm = curvedsky.map2alm(map.data,lmax= lmax)
         if iter !=0:
             map_copy=map.copy()
             for k in range(niter):

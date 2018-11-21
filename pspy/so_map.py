@@ -18,7 +18,7 @@ class so_map:
     
     def copy(self):
         """
-        @brief Creates a copy of the so map object.
+        @brief Create a copy of the so map object.
         """
         return copy.copy(self)
     
@@ -38,7 +38,7 @@ class so_map:
     
     def write_map(self,file_name):
         """
-        @brief write the so map.
+        @brief Write the so map.
         """
         if self.pixel=='HEALPIX':
             hp.fitsfunc.write_map(file_name, self.data,overwrite=True)
@@ -51,7 +51,7 @@ class so_map:
         @param factor need to be a factor of 2
         @return a so_map instance upgraded by factor.
         """
-        assert( factor % 2 == 0), 'factor is not a factor of 2'
+        assert( factor % 2 == 0), 'factor should be a factor of 2'
         
         upgrade=self.copy()
 
@@ -67,11 +67,11 @@ class so_map:
 
     def downgrade(self,factor):
         """
-        @brief upgrade or downgrade the so map
+        @brief downgrade the so map
         @param factor need to be a factor of 2
         @return a so_map instance downgraded by factor.
         """
-        assert( factor % 2 == 0), 'factor is not a factor of 2'
+        assert( factor % 2 == 0), 'factor should be a factor of 2'
         
         downgrade=self.copy()
         
@@ -86,7 +86,9 @@ class so_map:
     
     def synfast(self,clfile):
         """
-        @brief generate a cmb gaussian simulation
+        @brief generate a cmb gaussian simulation in so map
+        @param clfile: a lensed power spectrum file from CAMB
+        @return: the so map with lensed CMB
         """
         if self.pixel=='HEALPIX':
             l,ps=read_cls(clfile)
@@ -104,8 +106,9 @@ class so_map:
     def plot(self,color='planck',color_range=None,file_name=None,ticks_spacing_car=1,title='',cbar=True):
         """
         @brief Plot a so map, color is a maplotlib colormap or the planck colormap.
+        @param color: a colormap
         @param color_range: should be a scalar if you want to plot only a single component, and a len(3) list if you want to plot T,Q,U
-        @param file_name: if tiles=False, file_name is simply the name of the png file that will be created, if None the plot will be displayed
+        @param file_name:  file_name is  the name of the png file that will be created, if None the plot will be displayed
         @param title: the title of the plot
         @param cbar: wether you display the colorbar or not
         @param ticks_spacing_CAR: for CAR plot, choose the spacing of the ticks
@@ -262,6 +265,9 @@ def healpix2car(map,template,lmax=None):
     return project
 
 def car2car(map,template):
+    """
+    @brief project a CAR map into another CAR map, see the pixell enmap.project documentation
+    """
     project=template.copy()
     project.data=enmap.project(map.data,template.data.shape,template.data.wcs)
     return project
@@ -292,9 +298,9 @@ def healpix_template(ncomp,nside,coordinate=None):
 def car_template(ncomp,ra0,ra1,dec0,dec1,res):
     """
     @brief create a so map template with car pixellisation in equ coordinates.
+    @param ncomp: the number of component of the map can be 1 or 3
     @param ra0,dec0,ra1,dec1: in degrees
     @param res: resolution in arcminute
-    @param ncomp: number of component
     @return: a so template with car pixellisation
     """
     if ncomp==3:

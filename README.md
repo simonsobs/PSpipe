@@ -16,6 +16,8 @@ Once installed, you can test the installation by running
 python test/test_projection.py
 ```
 
+which project a HEALPIX CMB map into a CAR CMB map.
+
 ## The SO map class
 
 We should be able to work with both CAR and HEALPIX pixellisation.

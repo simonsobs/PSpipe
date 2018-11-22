@@ -1,3 +1,3 @@
 """
-@brief: python routines for covariance matrix estimation.
+@brief: python routines for filtering so map.
 """

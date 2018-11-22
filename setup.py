@@ -9,9 +9,9 @@ except ImportError:
 
 config = {
     'description': 'PS PY',
-    'author':  "Steve Choi, Thibaut Louis, Dongwon 'DW' HAN",
-    'url': 'https://github.com/simonsobs/ps_py',
-    'download_url': 'https://github.com/simonsobs/ps_py',
+    'author':  "The SO collaboration",
+    'url': 'https://github.com/simonsobs/PSpipe',
+    'download_url': 'https://github.com/simonsobs/PSpipe',
     'version': '0.0.1',
     'install_requires': [
         'numpy',

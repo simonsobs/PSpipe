@@ -18,10 +18,9 @@ python test/test_projection.py
 
 ## The SO map class
 
-Ideally we should be able to handle CAR and HEALPIX map.
-In order to do so we have written a so map class that can be used to:
-read/write/plot/SHT/upgrade/downgrade Healpix and CAR map.
-Simple example for how to use this class can be found in test/
+We should be able to work with both CAR and HEALPIX pixellisation.
+We have written a so map class that can be used to: read/write/plot/SHT/upgrade/downgrade Healpix and CAR maps.
+Simple examples for how to use this class can be found in test/
 
 ```python
 from pspy import so_map

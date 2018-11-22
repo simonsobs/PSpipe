@@ -24,7 +24,7 @@ Simple examples for how to use this class can be found in test/
 
 ```python
 from pspy import so_map
-m=so_map.read_map('map.fits')
+m=so_map.read_map('map.fits') #map.fits can be a HEALPIX or a CAR map
 m.info()
 m.plot()
 ```

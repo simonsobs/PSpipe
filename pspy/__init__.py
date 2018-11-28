@@ -1,3 +1,4 @@
+import so_config
 import so_map
 import so_cov
 import so_mcm

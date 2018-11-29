@@ -26,28 +26,16 @@ mbb_steve_TT, Bbl_steve_TT= so_mcm_steve.mcm_and_bbl_TT_steve(win_spin0,binning_
 
 cb_steve=np.dot(Bbl_steve_TT,cl_TT[:lmax]*2*np.pi/(l_th[:lmax]*(l_th[:lmax]+1)))
 cb_th=np.dot(Bbl,cl_TT[:lmax])
-Bbl=np.load('/Users/thibaut/Desktop/Project/so_ps_codes/test/pspy_test/mosaic/mcm_car/Bbl_T_000_143GHzx143GHz.npy')
-
-cb_th2=np.dot(Bbl,cl_TT[:lmax])
 
 plt.semilogy()
 plt.plot(l_th,cl_TT)
-plt.plot(bin_c,cb_th2,'o')
+plt.plot(bin_c,cb_steve,'o')
 plt.plot(bin_c,cb_th)
 plt.show()
 
-sys.exit()
 
 nbins= mbb.shape[0]
 
-print nbins,Bbl.shape,Bbl_steve_TT.shape
-
-colors = cm.rainbow(np.linspace(0, 1, nbins))
-print colors.shape
-for i,color in zip(np.arange(nbins),colors ):
-    plt.plot(Bbl[i,:],color=color,apha=0.3)
-    plt.plot(Bbl_steve_TT[i,:],'-.',color=color)
-plt.show()
 
 #Spin0 and Spin2 test
 win_spin2=so_map.read_map('window_pol.fits')
@@ -64,7 +52,6 @@ mbb_array= so_mcm.dict_to_array(mbb)
 plt.matshow( np.log(np.abs(mbb_array)))
 plt.colorbar()
 plt.show()
-sys.exit()
 
 mbb_steve_TT, Bbl_steve_TT= so_mcm_steve.mcm_and_bbl_TT_steve(win_spin0,binning_file,lmax,bl1=bl_spin0[:lmax+1],type='Dl')
 mbb_steve_EEBB, Bbl_steve_EEBB= so_mcm_steve.mcm_and_bbl_EEBB_steve(win_spin0,binning_file,lmax,bl1=bl_spin0[:lmax+1],type='Dl')

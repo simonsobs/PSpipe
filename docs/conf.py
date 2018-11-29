@@ -22,6 +22,17 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0,os.path.abspath('../pspy'))
+from mock import Mock as MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+
+MOCK_MODULES = ['pixell']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
+
 import pspy
 
 project = u'pspy'

@@ -1,0 +1,382 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1   Reference &mdash; pspy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="contributing" href="contributing.html" />
+    <link rel="prev" title="SO power spectrum pipeline" href="readme.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pspy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">SO power spectrum pipeline</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1&nbsp;&nbsp;&nbsp;Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#so-config-basic-configuration">1.1&nbsp;&nbsp;&nbsp;so_config - basic configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#so-map-a-module-for-handling-healpix-and-car-maps">1.2&nbsp;&nbsp;&nbsp;so_map - a module for handling healpix and car maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#so-cov-a-module-for-covariance-matrix-estimation">1.3&nbsp;&nbsp;&nbsp;so_cov - a module for covariance matrix estimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#so-mcm-a-module-for-mode-coupling-calculation">1.4&nbsp;&nbsp;&nbsp;so_mcm - a module for mode coupling calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#so-spectra-a-module-for-power-spectra-estimation-and-debiasing">1.5&nbsp;&nbsp;&nbsp;so_spectra - a module for power spectra estimation and debiasing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#so-window-a-module-for-window-function-generation">1.6&nbsp;&nbsp;&nbsp;so_window - a module for window function generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#so-map-processing-a-module-for-map-processing">1.7&nbsp;&nbsp;&nbsp;so_map_processing - a module for map processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sht-tools-a-helper-module-for-spherical-harmonic-transformation">1.8&nbsp;&nbsp;&nbsp;sht_tools - a helper module for spherical harmonic transformation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pspy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>1&nbsp;&nbsp;&nbsp;Reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/reference.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="reference">
+<span id="referencepage"></span><h1>1&nbsp;&nbsp;&nbsp;Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="so-config-basic-configuration">
+<h2>1.1&nbsp;&nbsp;&nbsp;so_config - basic configuration<a class="headerlink" href="#so-config-basic-configuration" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pspy.so_config"></span><p>&#64;brief: a module to handle base configuration</p>
+<dl class="function">
+<dt id="pspy.so_config.get_data_dir">
+<code class="descclassname">pspy.so_config.</code><code class="descname">get_data_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_config.html#get_data_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_config.get_data_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>return default data directory</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pspy.so_config.get_output_dir">
+<code class="descclassname">pspy.so_config.</code><code class="descname">get_output_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_config.html#get_output_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_config.get_output_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>return default output directory</p>
+</dd></dl>
+
+</div>
+<div class="section" id="so-map-a-module-for-handling-healpix-and-car-maps">
+<h2>1.2&nbsp;&nbsp;&nbsp;so_map - a module for handling healpix and car maps<a class="headerlink" href="#so-map-a-module-for-handling-healpix-and-car-maps" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pspy.so_map"></span><p>&#64;brief: so map class for handling healpix and car maps
+&#64;author: this is  a wrapper around healpix and enlib (pixell).</p>
+<dl class="function">
+<dt id="pspy.so_map.car2car">
+<code class="descclassname">pspy.so_map.</code><code class="descname">car2car</code><span class="sig-paren">(</span><em>map</em>, <em>template</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#car2car"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.car2car" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief project a CAR map into another CAR map, see the pixell enmap.project documentation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pspy.so_map.car_template">
+<code class="descclassname">pspy.so_map.</code><code class="descname">car_template</code><span class="sig-paren">(</span><em>ncomp</em>, <em>ra0</em>, <em>ra1</em>, <em>dec0</em>, <em>dec1</em>, <em>res</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#car_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.car_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief create a so map template with car pixellisation in equ coordinates.
+&#64;param ncomp: the number of component of the map can be 1 or 3
+&#64;param ra0,dec0,ra1,dec1: in degrees
+&#64;param res: resolution in arcminute
+&#64;return: a so template with car pixellisation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pspy.so_map.getbox">
+<code class="descclassname">pspy.so_map.</code><code class="descname">getbox</code><span class="sig-paren">(</span><em>ra0</em>, <em>ra1</em>, <em>dec0</em>, <em>dec1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#getbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.getbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief create box in equatorial coordinate
+&#64;param  ra0,dec0,ra1,dec1 in degrees</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pspy.so_map.healpix2car">
+<code class="descclassname">pspy.so_map.</code><code class="descname">healpix2car</code><span class="sig-paren">(</span><em>map</em>, <em>template</em>, <em>lmax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#healpix2car"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.healpix2car" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief Project a HEALPIX so map into a CAR so map
+the projection will be done in harmonic space, you can specify a lmax
+to choose a range of multipoles considered in the projection.
+If the coordinate of the map and the template differ, a rotation will be performed
+&#64;param template: the car template you want to project into
+&#64;param lmax: the maximum multipole in the HEALPIX map to project
+&#64;return the projected map in the template pixellisation and coordinates</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pspy.so_map.healpix_template">
+<code class="descclassname">pspy.so_map.</code><code class="descname">healpix_template</code><span class="sig-paren">(</span><em>ncomp</em>, <em>nside</em>, <em>coordinate=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#healpix_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.healpix_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief create a so map template with healpix pixellisation.
+&#64;param ncomp: the number of component of the map can be 1 or 3
+&#64;param nside
+&#64;param coordinate: the coordinate of the template can be gal or equ</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pspy.so_map.read_map">
+<code class="descclassname">pspy.so_map.</code><code class="descname">read_map</code><span class="sig-paren">(</span><em>file</em>, <em>coordinate=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#read_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.read_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief Reads a FITS file and creates a so map object out of it.
+The FITS file can be either an enmap object or a healpix object.
+&#64;return a so_map instance.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pspy.so_map.so_map">
+<em class="property">class </em><code class="descclassname">pspy.so_map.</code><code class="descname">so_map</code><a class="reference internal" href="_modules/pspy/so_map.html#so_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.so_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class describing a so map object.</p>
+<dl class="method">
+<dt id="pspy.so_map.so_map.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#so_map.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.so_map.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief Create a copy of the so map object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pspy.so_map.so_map.downgrade">
+<code class="descname">downgrade</code><span class="sig-paren">(</span><em>factor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#so_map.downgrade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.so_map.downgrade" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief downgrade the so map
+&#64;param factor need to be a factor of 2
+&#64;return a so_map instance downgraded by factor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pspy.so_map.so_map.info">
+<code class="descname">info</code><span class="sig-paren">(</span><em>showHeader=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#so_map.info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.so_map.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief Print information about the so map object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pspy.so_map.so_map.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>color='planck'</em>, <em>color_range=None</em>, <em>file_name=None</em>, <em>ticks_spacing_car=1</em>, <em>title=''</em>, <em>cbar=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#so_map.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.so_map.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief Plot a so map, color is a maplotlib colormap or the planck colormap.
+&#64;param color: a colormap
+&#64;param color_range: should be a scalar if you want to plot only a single component, and a len(3) list if you want to plot T,Q,U
+&#64;param file_name:  file_name is  the name of the png file that will be created, if None the plot will be displayed
+&#64;param title: the title of the plot
+&#64;param cbar: wether you display the colorbar or not
+&#64;param ticks_spacing_CAR: for CAR plot, choose the spacing of the ticks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pspy.so_map.so_map.synfast">
+<code class="descname">synfast</code><span class="sig-paren">(</span><em>clfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#so_map.synfast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.so_map.synfast" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief generate a cmb gaussian simulation in so map
+&#64;param clfile: a lensed power spectrum file from CAMB
+&#64;return: the so map with lensed CMB</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pspy.so_map.so_map.upgrade">
+<code class="descname">upgrade</code><span class="sig-paren">(</span><em>factor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#so_map.upgrade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.so_map.upgrade" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;bried upgrade the so map
+&#64;param factor need to be a factor of 2
+&#64;return a so_map instance upgraded by factor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pspy.so_map.so_map.write_map">
+<code class="descname">write_map</code><span class="sig-paren">(</span><em>file_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pspy/so_map.html#so_map.write_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pspy.so_map.so_map.write_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#64;brief Write the so map.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="so-cov-a-module-for-covariance-matrix-estimation">
+<h2>1.3&nbsp;&nbsp;&nbsp;so_cov - a module for covariance matrix estimation<a class="headerlink" href="#so-cov-a-module-for-covariance-matrix-estimation" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pspy.so_cov"></span><p>&#64;brief: python routines for covariance matrix estimation.</p>
+</div>
+<div class="section" id="so-mcm-a-module-for-mode-coupling-calculation">
+<h2>1.4&nbsp;&nbsp;&nbsp;so_mcm - a module for mode coupling calculation<a class="headerlink" href="#so-mcm-a-module-for-mode-coupling-calculation" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pspy.so_mcm"></span><p>&#64;brief: python routines for mode coupling calculation.
+Should include an option for pure B mode estimation</p>
+</div>
+<div class="section" id="so-spectra-a-module-for-power-spectra-estimation-and-debiasing">
+<h2>1.5&nbsp;&nbsp;&nbsp;so_spectra - a module for power spectra estimation and debiasing<a class="headerlink" href="#so-spectra-a-module-for-power-spectra-estimation-and-debiasing" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pspy.so_spectra"></span><p>&#64;brief: python routines for power spectra estimation and debiasing.</p>
+</div>
+<div class="section" id="so-window-a-module-for-window-function-generation">
+<h2>1.6&nbsp;&nbsp;&nbsp;so_window - a module for window function generation<a class="headerlink" href="#so-window-a-module-for-window-function-generation" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-pspy.so_window"></span><p>&#64;brief: python routines for window function generation</p>
+</div>
+<div class="section" id="so-map-processing-a-module-for-map-processing">
+<h2>1.7&nbsp;&nbsp;&nbsp;so_map_processing - a module for map processing<a class="headerlink" href="#so-map-processing-a-module-for-map-processing" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="sht-tools-a-helper-module-for-spherical-harmonic-transformation">
+<h2>1.8&nbsp;&nbsp;&nbsp;sht_tools - a helper module for spherical harmonic transformation<a class="headerlink" href="#sht-tools-a-helper-module-for-spherical-harmonic-transformation" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="contributing.html" class="btn btn-neutral float-right" title="contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="readme.html" class="btn btn-neutral" title="SO power spectrum pipeline" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Thibaut Louis, Steve Choi, Dongwon &#39;DW&#39; Han
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

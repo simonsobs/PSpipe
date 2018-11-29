@@ -2,7 +2,6 @@ SO power spectrum pipeline
 ----------------------------
 A framework for creating the power spectrum pipeline for the Simons Observatory. Documentation is still under development, but details about how to contribute can be found  in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-* Documentation: https://pspipe.readthedocs.io
 
 ## Installation
 

@@ -175,7 +175,6 @@ def apply_Bbl(Bbl,ps,fields=None):
     @param ps: a theoretical power spectrum: if fields is not None will be a ps dictionnary, otherwise a (lmax) vector
     @return Dbth: a theoretical binned power spectrum
     """
-
     if fields is not None:
         Bbl_array=dict_to_array(Bbl)
         ps_array=ps[fields[0]]

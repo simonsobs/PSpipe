@@ -3,14 +3,13 @@
 """
 import healpy as hp, pylab as plt, numpy as np
 
-def ps_lensed_theory_to_dict(filename,type,lmax=None,lstart=2,spin0=False):
+def ps_lensed_theory_to_dict(filename,type,lmax=None,lstart=2):
     """
     @brief read a lensed power spectrum from CAMB and return a dictionnary
     @param filename: the name of the CAMB lensed power spectrum
     @param lmax: the maximum multipole
     @param type: 'Cl' or 'Dl'
     @param lstart: choose the 0 entry of the ps spectrum, default is l=2, can be 0
-    @param optional: spin0, if true only return ps['TT']
     @return ps: a dictionnary file with the power spectra
     """
     fields=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
@@ -35,10 +34,7 @@ def ps_lensed_theory_to_dict(filename,type,lmax=None,lstart=2,spin0=False):
     if lstart==0:
         l=np.append( np.array([0,1]),l)
 
-    if spin0==True:
-        return l,ps['TT']
-    else:
-        return l,ps
+    return l,ps
 
 def read_binning_file(file,lmax):
     """

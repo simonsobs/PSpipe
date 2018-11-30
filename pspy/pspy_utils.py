@@ -3,12 +3,12 @@
 """
 import healpy as hp, pylab as plt, numpy as np
 
-def ps_lensed_theory_to_dict(filename,type,lmax=None,lstart=2):
+def ps_lensed_theory_to_dict(filename,output_type,lmax=None,lstart=2):
     """
     @brief read a lensed power spectrum from CAMB and return a dictionnary
     @param filename: the name of the CAMB lensed power spectrum
     @param lmax: the maximum multipole
-    @param type: 'Cl' or 'Dl'
+    @param output_type: 'Cl' or 'Dl'
     @param lstart: choose the 0 entry of the ps spectrum, default is l=2, can be 0
     @return ps: a dictionnary file with the power spectra
     """

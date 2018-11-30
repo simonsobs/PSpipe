@@ -54,8 +54,6 @@ class so_map:
         assert( factor % 2 == 0), 'factor should be a factor of 2'
         
         upgrade=self.copy()
-
-
         if self.pixel=='HEALPIX':
             nside_out=nside*factor
             upgrade.data=hp.pixelfunc.ud_grade(self.data, nside_out=nside_out)
@@ -160,7 +158,6 @@ class so_map:
                             
         if self.pixel=='CAR':
             if self.ncomp==1:
-                
                 if color_range is not None:
                     max='%s'%(color_range)
                 else:

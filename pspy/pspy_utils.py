@@ -18,12 +18,12 @@ def ps_lensed_theory_to_dict(filename,lmax,type,spin0=False):
     ps['ET']=ps['TE']
     ps['TB'],ps['BT'],ps['EB'],ps['BE']=np.zeros((4,len(l)))
     
-    fth=lth*(lth+1)/(2*np.pi)
+    scale=l*(l+1)/(2*np.pi)
 
     for f in fields:
         ps[f]=ps[f][:lmax]
         if type=='Cl':
-            ps[f]/=fth[:lmax]
+            ps[f]/=scale[:lmax]
     if spin0==True:
         return l,ps['TT']
     else:

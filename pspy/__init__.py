@@ -1,9 +1,10 @@
 import so_config
 import so_map
 import so_cov
-#import so_mcm
+import so_mcm
 import so_spectra
 import so_window
 import sph_tools
 import pspy_utils
 import so_map_preprocessing
+import mcm_fortran

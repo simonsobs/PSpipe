@@ -19,6 +19,8 @@ config = {
         ],
     'packages': [
         'pspy',
+        'pspy.wigner3j',
+        'pspy.mcm_fortran'
         ],
     'scripts': [],
     'name': 'pspy',

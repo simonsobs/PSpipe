@@ -1,3 +1,5 @@
+contributing
+----------------------------
 # How to contribute
 
 This file contains guidelines to the expected mode of work for anyone contributing to the power spectrum pipeline. Please read and try to follow them as closely as possible.

@@ -90,7 +90,7 @@ class so_map:
         @return: the so map with lensed CMB
         """
         if self.pixel=='HEALPIX':
-            l,ps=ps_lensed_theory_to_dict(clfile,type='Cl',lstart=0)
+            l,ps=ps_lensed_theory_to_dict(clfile,output_type='Cl',lstart=0)
             if self.ncomp==1:
                 self.data= hp.sphtfunc.synfast(ps['TT'], self.nside ,new=True, verbose=False)
             else :

@@ -189,8 +189,8 @@ def apply_Bbl(Bbl,ps,fields=None):
             ps_th[f]=ps_b[i*n_bins:(i+1)*n_bins]
         return ps_th
     else:
-        Dbth=np.dot(Bbl,ps)
-    return Dbth
+        ps_th=np.dot(Bbl,ps)
+    return ps_th
 
 
 

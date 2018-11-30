@@ -26,7 +26,7 @@ def ps_lensed_theory_to_dict(filename,output_type,lmax=None,lstart=2):
     for f in fields:
         if lmax is not None:
             ps[f]=ps[f][:lmax]
-        if type=='Cl':
+        if output_type=='Cl':
             ps[f]/=scale
         if lstart==0:
             ps[f]=np.append( np.array([0,0]),ps[f])

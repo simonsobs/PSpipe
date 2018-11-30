@@ -40,7 +40,7 @@ def read_binning_file(file,lmax):
     """
     @brief read a binningFile and truncate it to lmax, if bin_low lower than 2, set it to 2.
     @param binningfile with format: bin_low,bin_high,bin_center
-    @return bin_lo,bin_hi,bin_center
+    @return bin_lo,bin_hi,bin_center,bin_size
     """
     bin_lo,bin_hi,bin_c = plt.loadtxt(file,unpack=True)
     id = np.where(bin_hi <lmax)

@@ -40,7 +40,6 @@ def map2alm(map,niter,lmax=None,theta_range=None):
     alm = alm.astype(np.complex128)
     return alm
 
-
 def alm2map(alms,map):
     """
     @brief general alm2map transform
@@ -60,29 +59,6 @@ def alm2map(alms,map):
         print ('Error: file %s is neither a enmap or a healpix map'%file)
         sys.exit()
     return map
-
-
-def read_cls(clfile,lmax=None):
-    """
-    @brief take CAMB lensed power spectrum and return a cl dictionnary
-    """
-    fields=['TT','EE','BB','TE']
-    cl={}
-    lth, cl['TT'], cl['EE'], cl['BB'], cl['TE'] = np.loadtxt(clfile,unpack=True)
-    fth=lth*(lth+1)/(2*np.pi)
-    for l1 in fields:
-        cl[l1]/=fth
-        cl[l1][0]=0
-    if lmax is not None:
-        lth=lth[:lmax]
-        for l1 in fields:
-            cl[l1]=cl[l1][:lmax]
-    cl['ET']=cl['TE']
-    cl['TB']=cl['TT']*0
-    cl['BT']=cl['TT']*0
-    cl['EB']=cl['TT']*0
-    cl['BE']=cl['TT']*0
-    return(lth,cl)
 
 
 

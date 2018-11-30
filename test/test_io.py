@@ -21,7 +21,7 @@ except:
 ra0,ra1,dec0,dec1=-5,5,-5,5
 res=1
 ncomp=3
-clfile='../data/bode_almost_wmap5_lmax_1e4_lensedCls.dat'
+clfile='../data/bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat'
 
 #We generate both a CAR and HEALPIX templates
 

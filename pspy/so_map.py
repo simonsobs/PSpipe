@@ -5,7 +5,8 @@
 
 from __future__ import print_function
 from pixell import enmap,reproject,enplot,curvedsky,powspec
-from sph_tools import map2alm,alm2map,read_cls
+from sph_tools import map2alm,alm2map
+from pspy_utils import ps_lensed_theory_to_dict
 import healpy as hp, pylab as plt, numpy as np, astropy.io.fits as pyfits
 import sys,os,copy
 
@@ -89,7 +90,7 @@ class so_map:
         @return: the so map with lensed CMB
         """
         if self.pixel=='HEALPIX':
-            l,ps=read_cls(clfile)
+            l,ps=ps_lensed_theory_to_dict(clfile,type='Cl',lstart=0)
             if self.ncomp==1:
                 self.data= hp.sphtfunc.synfast(ps['TT'], self.nside ,new=True, verbose=False)
             else :

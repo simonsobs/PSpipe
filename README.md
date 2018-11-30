@@ -7,10 +7,21 @@ A framework for creating the power spectrum pipeline for the Simons Observatory.
 ## Installation
 
 PSpipe will have 3 mains module, pspy, psc, and pslike.
-To install `pspy`, just clone this repository and run
+To install `pspy`, just clone this repository and first compile fortran codes
+
+```
+  cd <path to pspy>/pspy
+  export PSPY_COMP=<Compiler File> ! ex) export PSPY_COMP=nersc_cori
+                                    ! Check pspy/compile_opts for more options
+  make
+```
+
+Once fortran code is compiled. Go to the root of `pspy` and run
+
 ```bash
 python setup.py install
 ```
+
 (add `--user` if you don't have permissions, which is probably the case at e.g. NERSC).
 
 Once installed, you can test the installation by running 

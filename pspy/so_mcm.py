@@ -2,8 +2,7 @@
 @brief: python routines for mode coupling calculation.
 """
 import healpy as hp, pylab as plt, numpy as np
-from pspy import sph_tools
-import mcm_fortran
+from pspy import sph_tools, mcm_fortran
 from copy import deepcopy
 import pspy_utils
 

@@ -3,24 +3,31 @@
 """
 import healpy as hp, pylab as plt, numpy as np
 
-def Dl_lensed_theory_to_dict(filename,lmax,spin0=False):
+def ps_lensed_theory_to_dict(filename,lmax,type,spin0=False):
     """
     @brief read a lensed power spectrum from CAMB and return a dictionnary
-    @param Bbl: a binning matrix, if fields is not None will be a dictionnary, otherwise a (n_bins,lmax) matrix
-    @param ps: a theoretical power spectrum: if fields is not None will be a dictionnary, otherwise a (lmax) vector
-    @return Dbth: a theoretical binned power spectrum
+    @param filename: the name of the CAMB lensed power spectrum
+    @param lmax: the maximum multipole
+    @param type: 'Cl' or 'Dl'
+    @param optional: spin0, if true only return ps['TT']
+    @return ps: a dictionnary file with the power spectra
     """
     fields=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
-    Dl={}
-    l,Dl['TT'],Dl['EE'],Dl['BB'],Dl['TE']=np.loadtxt(filename,unpack=True)
-    Dl['ET']=Dl['TE']
-    Dl['TB'],Dl['BT'],Dl['EB'],Dl['BE']=np.zeros((4,len(l)))
+    ps={}
+    l,ps['TT'],ps['EE'],ps['BB'],ps['TE']=np.loadtxt(filename,unpack=True)
+    ps['ET']=ps['TE']
+    ps['TB'],ps['BT'],ps['EB'],ps['BE']=np.zeros((4,len(l)))
+    
+    fth=lth*(lth+1)/(2*np.pi)
+
     for f in fields:
-        Dl[f]=Dl[f][:lmax]
+        ps[f]=ps[f][:lmax]
+        if type=='Cl':
+            ps[f]/=fth[:lmax]
     if spin0==True:
-        return l,Dl['TT']
+        return l,ps['TT']
     else:
-        return l,Dl
+        return l,ps
 
 def read_binning_file(file,lmax):
     """

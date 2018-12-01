@@ -7,6 +7,7 @@ import mcm_fortran
 from copy import deepcopy
 import pspy_utils
 
+
 def mcm_and_bbl_spin0(win1, binning_file, lmax, type, win2=None,bl1=None,bl2=None,input_alm=False,niter=0,return_mcm=False):
     """
     @brief get the mode coupling matrix and the binning matrix for spin0 fields
@@ -57,7 +58,6 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax, type, win2=None,bl1=None,bl2=Non
         return mcm,mbb,Bbl
     else:
         return mbb, Bbl
-
 
 def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,niter=0,pureB=False,return_mcm=False):
     """
@@ -146,7 +146,6 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None
     else:
         return mbb, Bbl
 
-
 def dict_to_array(dict):
     """
     @brief take a mcm or Bbl dictionnary with entries:
@@ -166,7 +165,6 @@ def dict_to_array(dict):
     array[4*dim1:5*dim1,4*dim2:5*dim2]=dict['spin2xspin0']
     array[5*dim1:9*dim1,5*dim2:9*dim2]=dict['spin2xspin2']
     return array
-
 
 def apply_Bbl(Bbl,ps,fields=None):
     """

@@ -21,7 +21,7 @@ class so_map:
         """
         @brief Create a copy of the so map object.
         """
-        return copy.copy(self)
+        return copy.deepcopy(self)
     
     def info(self,showHeader=False):
         """
@@ -102,7 +102,7 @@ class so_map:
 
         return self
 
-    def plot(self,color='planck',color_range=None,file_name=None,ticks_spacing_car=1,title='',cbar=True):
+    def plot(self,color='planck',color_range=None,file_name=None,ticks_spacing_car=1,title='',cbar=True,hp_gnomv=None):
         """
         @brief Plot a so map, color is a maplotlib colormap or the planck colormap.
         @param color: a colormap
@@ -111,6 +111,7 @@ class so_map:
         @param title: the title of the plot
         @param cbar: wether you display the colorbar or not
         @param ticks_spacing_CAR: for CAR plot, choose the spacing of the ticks
+        @param hp_gnomv:  gnomview projection for HEALPIX plotting, expected (lon_c,lat_c,xsize,reso)
         """
         if self.pixel=='HEALPIX':
             if color=='planck':
@@ -131,8 +132,12 @@ class so_map:
                 if color_range is not None:
                     min=-color_range
                     max=color_range
-                
-                hp.mollview(self.data,min=min,max=max,cmap=cmap, notext=True,title=title,cbar=cbar)
+            
+                if hp_gnomv is not None:
+                    lon,lat,xsize,reso=hp_gnomv
+                    hp.gnomview(self.data,min=min,max=max,cmap=cmap, notext=True,title=title,cbar=cbar,rot=(lon,lat,0),xsize=xsize,reso=reso)
+                else:
+                    hp.mollview(self.data,min=min,max=max,cmap=cmap, notext=True,title=title,cbar=cbar)
                 if file_name is not None:
                     plt.savefig(file_name+'.png', bbox_inches='tight')
                     plt.clf()
@@ -149,7 +154,12 @@ class so_map:
                         min[l1]=-color_range[i]
                         max[l1]=color_range[i]
                 for map,l1 in zip(self.data,fields):
-                    hp.mollview(map,min=min[l1],max=max[l1],cmap=cmap, notext=True,title=l1+''+title,cbar=cbar)
+                    
+                    if hp_gnomv is not None:
+                        lon,lat,xsize,reso=hp_gnomv
+                        hp.gnomview(self.data,min=min,max=max,cmap=cmap, notext=True,title=title,cbar=cbar,rot=(lon,lat,0),xsize=xsize,reso=reso)
+                    else:
+                        hp.mollview(map,min=min[l1],max=max[l1],cmap=cmap, notext=True,title=l1+''+title,cbar=cbar)
                     if file_name is not None:
                         plt.savefig(file_name+'_%s'%l1+'.png', bbox_inches='tight')
                         plt.clf()
@@ -164,7 +174,7 @@ class so_map:
                 else:
                     max='%s'%(np.max(self.data))
                 
-                plots = enplot.get_plots(self.data,mask=0,color=color,range=max,ticks=ticks_spacing_car)
+                plots = enplot.get_plots(self.data,color=color,range=max,colorbar=1,ticks=ticks_spacing_car)
                 
 
                 for plot in plots:
@@ -181,7 +191,7 @@ class so_map:
                 else:
                     max='%s:%s:%s'%(np.max(self.data[0]) ,np.max(self.data[1]),np.max(self.data[2]))
 
-                plots = enplot.get_plots(self.data,mask=0,color=color,range=max,colorbar=1,ticks=ticks_spacing_car)
+                plots = enplot.get_plots(self.data,color=color,range=max,colorbar=1,ticks=ticks_spacing_car)
     
                 for (plot,l1) in zip(plots,fields):
                     if file_name is not None:
@@ -229,7 +239,6 @@ def read_map(file,coordinate=None,verbose=False):
 
     return map
 
-
 def healpix2car(map,template,lmax=None):
     """
     @brief Project a HEALPIX so map into a CAR so map
@@ -266,7 +275,6 @@ def car2car(map,template):
     project.data=enmap.project(map.data,template.data.shape,template.data.wcs)
     return project
 
-
 def healpix_template(ncomp,nside,coordinate=None):
     """
     @brief create a so map template with healpix pixellisation.
@@ -287,7 +295,6 @@ def healpix_template(ncomp,nside,coordinate=None):
     temp.geometry='healpix geometry'
     temp.coordinate=coordinate
     return temp
-
 
 def car_template(ncomp,ra0,ra1,dec0,dec1,res):
     """
@@ -313,7 +320,6 @@ def car_template(ncomp,ra0,ra1,dec0,dec1,res):
     temp.geometry=temp.data.geometry[1:]
     temp.coordinate='equ'
     return temp
-
 
 def getbox(ra0,ra1,dec0,dec1):
     """

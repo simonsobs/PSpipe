@@ -10,15 +10,18 @@ make
 make install
 ```
 
-It was succesful so I compiled healpix 
+It was succesful so I moved to Healpix 
 
 ```bash
 ./configure
 ```
 
 "enter name of your F90 compiler ()":  ifort 
+
 Then I used all the default options until :
+
 "enter location of cfitsio library (/usr/local/lib)":
+
 where I used /global/homes/t/tlouis/local/lib
 
 make

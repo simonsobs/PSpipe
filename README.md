@@ -7,6 +7,13 @@ A framework for creating the power spectrum pipeline for the Simons Observatory.
 ## Installation
 
 PSpipe will have 3 mains module, pspy, psc, and pslike.
+The healpix version of PSpipe has the following dependencies:
+
+-cfitsio
+-HEALPix
+
+A guide to install these libraries at NERSC is provided in [NERSC_INSTALL.md](NERSC_INSTALL.md)
+
 To install `pspy`, just clone this repository and first compile fortran codes
 
 ```
@@ -30,6 +37,8 @@ python test/test_projection.py
 ```
 
 which project a HEALPIX CMB map into a CAR template.
+
+
 
 ## The SO map class
 

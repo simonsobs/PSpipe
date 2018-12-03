@@ -7,10 +7,7 @@ A framework for creating the power spectrum pipeline for the Simons Observatory.
 ## Installation
 
 PSpipe will have 3 mains module, pspy, psc, and pslike.
-The healpix version of PSpipe has the following dependencies:
-
--cfitsio
--HEALPix
+The healpix version of PSpipe has the following dependencies: cfitsio,HEALPix
 
 A guide to install these libraries at NERSC is provided in [NERSC_INSTALL.md](NERSC_INSTALL.md)
 

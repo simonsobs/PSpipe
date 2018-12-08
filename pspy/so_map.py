@@ -9,6 +9,7 @@ from sph_tools import map2alm,alm2map
 from pspy_utils import ps_lensed_theory_to_dict
 import healpy as hp, pylab as plt, numpy as np, astropy.io.fits as pyfits
 import sys,os,copy
+import scipy
 
 class so_map:
     """
@@ -269,7 +270,7 @@ def healpix2car(map,template,lmax=None):
 
 def car2car(map,template):
     """
-    @brief project a CAR map into another CAR map, see the pixell enmap.project documentation
+    @brief project a CAR map into another CAR map with different pixellisation, see the pixell enmap.project documentation
     """
     project=template.copy()
     project.data=enmap.project(map.data,template.data.shape,template.data.wcs)
@@ -309,7 +310,7 @@ def car_template(ncomp,ra0,ra1,dec0,dec1,res):
     else:
         pre=()
     
-    box=getbox(ra0,ra1,dec0,dec1)
+    box=get_box(ra0,ra1,dec0,dec1)
     res=res*np.pi/(180*60)
     temp=so_map()
     shape,wcs= enmap.geometry(box, res=res,pre=pre)
@@ -321,7 +322,7 @@ def car_template(ncomp,ra0,ra1,dec0,dec1,res):
     temp.coordinate='equ'
     return temp
 
-def getbox(ra0,ra1,dec0,dec1):
+def get_box(ra0,ra1,dec0,dec1):
     """
     @brief create box in equatorial coordinate
     @param  ra0,dec0,ra1,dec1 in degrees
@@ -329,8 +330,69 @@ def getbox(ra0,ra1,dec0,dec1):
     box= np.array( [[ dec0, ra1], [dec1, ra0]])*np.pi/180
     return(box)
 
+def white_noise(template,rms_uKarcmin_T,rms_uKarcmin_pol=None):
+    """
+    @brief create a white noise realisation corresponding to the template pixellisation
+    @param template: a so map template
+    @param rms_uKarcmin_T: the white noise temperature rms in uK.arcmin
+    @param rms_uKarcmin_pol: the white noise polarisation rms in uK.arcmin, if None set it to sqrt(2)*rms_uKarcmin_T
+    @return: a white noise realisation
+    """
+    noise=template.copy()
+    rad_to_arcmin=60*180/np.pi
+    if noise.pixel=='HEALPIX':
+        nside=noise.nside
+        pixArea= hp.pixelfunc.nside2pixarea(nside)*rad_to_arcmin**2
+    if noise.pixel=='CAR':
+        pixArea= noise.data.pixsizemap()*rad_to_arcmin**2
+    if noise.ncomp==1:
+        if noise.pixel=='HEALPIX':
+            size=len(noise.data)
+            noise.data=np.random.randn(size)*rms_uKarcmin_T/np.sqrt(pixArea)
+        if noise.pixel=='CAR':
+            size=noise.data.shape
+            noise.data=np.random.randn(size[0],size[1])*rms_uKarcmin_T/np.sqrt(pixArea)
+    if noise.ncomp==3:
+        if rms_uKarcmin_pol is None:
+            rms_uKarcmin_pol=rms_uKarcmin_T*np.sqrt(2)
+        if noise.pixel=='HEALPIX':
+            size=len(noise.data[0])
+            noise.data[0]=np.random.randn(size)*rms_uKarcmin_T/np.sqrt(pixArea)
+            noise.data[1]=np.random.randn(size)*rms_uKarcmin_pol/np.sqrt(pixArea)
+            noise.data[2]=np.random.randn(size)*rms_uKarcmin_pol/np.sqrt(pixArea)
+        if noise.pixel=='CAR':
+            size=noise.data[0].shape
+            noise.data[0]=np.random.randn(size[0],size[1])*rms_uKarcmin_T/np.sqrt(pixArea)
+            noise.data[1]=np.random.randn(size[0],size[1])*rms_uKarcmin_pol/np.sqrt(pixArea)
+            noise.data[2]=np.random.randn(size[0],size[1])*rms_uKarcmin_pol/np.sqrt(pixArea)
 
+    return noise
 
-                     
+def simulate_source_mask(binary, nholes, hole_radius_arcmin):
+    """
+    @brief simulate a point source mask in a binary template
+    @param binary: a so map binary template
+    @param nholes: the number of masked point sources
+    @param hole_radius_arcmin: the radius of the holes
+    @return: a point source mask
+    """
+    mask=binary.copy()
+    if binary.pixel=='HEALPIX':
+        id=np.where(binary.data==1)
+        for i in range(nholes):
+            random_index1 = np.random.choice(id[0])
+            vec=hp.pixelfunc.pix2vec(binary.nside, random_index1)
+            disc=hp.query_disc(binary.nside, vec, hole_radius_arcmin/(60.*180)*np.pi)
+            mask.data[disc]=0
+    
+    if binary.pixel=='CAR':
+        pixSize_arcmin= np.sqrt(binary.data.pixsize()*(60*180/np.pi)**2)
+        random_index1 = np.random.randint(0, binary.data.shape[0],size=nholes)
+        random_index2 = np.random.randint(0, binary.data.shape[1],size=nholes)
+        mask.data[random_index1,random_index2]=0
+        dist= scipy.ndimage.distance_transform_edt(mask.data)
+        mask.data[dist*pixSize_arcmin <hole_radius_arcmin]=0
+
+    return mask
 
 

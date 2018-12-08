@@ -17,7 +17,7 @@ def get_distance(binary):
     @param binary, a so_map with binary data (1 is observed, 0 is masked)
     @return the distance to the closest masked pixels in degree
     """
-
+    
     def write_dict_file(tempdir):
         file = open("%s/distance.dict"%tempdir,'w')
         file.write("mask_file=%s/tempmask \n"%tempdir)
@@ -47,7 +47,7 @@ def get_distance(binary):
     return dist
 
 
-def create_apodization(binary, apo_type, apo_radius):
+def create_apodization(binary, apo_type, apo_radius_degree):
     """
     @brief create a apodized window from a binary mask.
     @param binary: a so map binary mask
@@ -57,15 +57,15 @@ def create_apodization(binary, apo_type, apo_radius):
     """
 
     if apo_type=='C1':
-        window=apod_C1(binary,apo_radius)
+        window=apod_C1(binary,apo_radius_degree)
     if apo_type=='C2':
-        window=apod_C2(binary,apo_radius)
+        window=apod_C2(binary,apo_radius_degree)
     if apo_type=='Rectangle':
         if binary.pixel=='HEALPIX':
             print( 'no rectangle apod for healpix map')
             sys.exit()
         if binary.pixel=='CAR':
-            window= apod_rectange(binary,apo_radius)
+            window= apod_rectange(binary,apo_radius_degree)
 
     return window
 

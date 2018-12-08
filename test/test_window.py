@@ -1,7 +1,3 @@
-from pspy import so_map,so_window
-import healpy as hp, numpy as np
-import os
-
 """
 This is a test of generation of apodised window functions.
 We first specify a CAR template (100 sq degree), we construct a binary mask by setting pixels at the edges to be 0 and the rest of the map to be 1
@@ -10,7 +6,13 @@ We then generate a Healpix template at nside =512, we set all pixels to zero apa
 30 degree, we then create window functions with 'C1' and 'C2'  apodisation
 """
 
+from pspy import so_map,so_window
+import healpy as hp, numpy as np
+import os
+
+#The radius of the window
 apo_radius=1
+#The number of component of the binary mask (should be one)
 ncomp=1
 
 test_dir='result_window_function'
@@ -37,11 +39,11 @@ binary_car.data[1:-1,1:-1]=1
 # Rectangle a apodisation suitable for rectangle patch in CAR (smoother at the corner)
 
 for apo_type in ['C1','C2','Rectangle']:
-    win = so_window.create_apodization(binary_car, apo_type, apo_radius=apo_radius)
+    win = so_window.create_apodization(binary_car, apo_type, apo_radius_degree=apo_radius)
     win.plot(file_name='%s/window_CAR_%s'%(test_dir,apo_type))
 
 # We now do the same for a HEALPIX template, with nside= 512
-# We emulate a binary mask by setting all the pixel to zero but the one
+# We emulate a binary mask by setting all the pixel to zero but the ones
 # in a disc of radius 5degree at longitude lon and lattitude lat
 
 nside=512
@@ -56,7 +58,7 @@ binary_healpix.data[disc]=1
 # And show the result in gnomview projection
 
 for apo_type in ['C1','C2']:
-    win = so_window.create_apodization(binary_healpix, apo_type, apo_radius=apo_radius)
+    win = so_window.create_apodization(binary_healpix, apo_type, apo_radius_degree=apo_radius)
     win.plot(hp_gnomv=(lon,lat,xsize,reso), file_name='%s/window_healpix_%s'%(test_dir,apo_type))
 
 

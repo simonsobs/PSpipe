@@ -1,18 +1,16 @@
-from pspy import so_map
-from pspy import sph_tools
+"""
+This is an example on how to read/write/plot so map
+"""
+
+from pspy import so_map,sph_tools
 from pixell import curvedsky,powspec
 import os
-
-"""
-This is an example and how to read/write/plot so map
-"""
 
 test_dir='result_test_io'
 try:
     os.makedirs(test_dir)
 except:
     pass
-
 
 #We start with the definition of the CAR template, it will go from ra0 to ra1 and from dec0 to dec1 (all in degrees)
 #It will have a resolution of 1 arcminute

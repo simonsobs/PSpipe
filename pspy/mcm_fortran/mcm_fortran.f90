@@ -15,7 +15,9 @@ subroutine calc_mcm_spin0(wcl,wbl, mcm)
         do l2 = 2, nlmax
             call drc3jj(dble(l1),dble(l2),0d0,0d0,l1f(1),l1f(2),thrcof0, size(thrcof0),info)
             lmin=INT(l1f(1))
-            lmax=MIN(nlmax,INT(l1f(2)))
+            !lmax= INT(l1f(2))
+            !write(*,*) nlmax,lmax
+            lmax=MIN(nlmax+1,INT(l1f(2)))
             do l3=lmin,lmax
                 i   = l3-lmin+1
                 mcm(l1-1,l2-1) =mcm(l1-1,l2-1)+ fac*(wcl(l3+1)*thrcof0(i)**2d0)
@@ -43,9 +45,9 @@ subroutine calc_mcm_spin0and2(wcl_00,wcl_02, wcl_20, wcl_22, wbl_00,wbl_02, wbl_
         do l2 = 2, nlmax
             call drc3jj(dble(l1),dble(l2),0d0,0d0,l1f(1),l1f(2),thrcof0, size(thrcof0),info)
             call drc3jj(dble(l1),dble(l2),-2d0,2d0,l1f(1),l1f(2),thrcof1, size(thrcof1),info)
-
             lmin=INT(l1f(1))
-            lmax=MIN(nlmax,INT(l1f(2)))
+            !lmax= INT(l1f(2))
+            lmax=MIN(nlmax+1,INT(l1f(2)))
             do l3=lmin,lmax
                 i   = l3-lmin+1
                 mcm_array(l1-1,l2-1,1) =mcm_array(l1-1,l2-1,1)+ fac_00*(wcl_00(l3+1)*thrcof0(i)**2d0)

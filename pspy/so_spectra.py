@@ -73,7 +73,7 @@ def bin_spectra(l,cl,binning_file,lmax,type,spectra=None,mbb_inv=None):
 
     if spectra is None:
         binnedPower=np.zeros(len(bin_c))
-        for ibin in xrange(n_bins):
+        for ibin in range(n_bins):
             loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))
             binnedPower[ibin] = (cl[loc]*fac[loc]).mean()
         if mbb_inv is None:
@@ -84,7 +84,7 @@ def bin_spectra(l,cl,binning_file,lmax,type,spectra=None,mbb_inv=None):
         vec=[]
         for f in spectra:
             binnedPower=np.zeros(len(bin_c))
-            for ibin in xrange(n_bins):
+            for ibin in range(n_bins):
                 loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))
                 binnedPower[ibin] = (cl[f][loc]*fac[loc]).mean()
             

@@ -106,7 +106,7 @@ w2=nmt.NmtWorkspace()
 w2.compute_coupling_matrix(field_2,field_2,b)
 
 def compute_master(f_a,f_b,wsp) :
-    cl_coupled=nmt.compute_coupled_cell(f_a,f_b,n_iter=0)
+    cl_coupled=nmt.compute_coupled_cell(f_a,f_b)
     cl_decoupled=wsp.decouple_cell(cl_coupled)
     return cl_decoupled
 

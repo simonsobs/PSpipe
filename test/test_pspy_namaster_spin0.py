@@ -83,7 +83,7 @@ lb,Cb_pspy= so_spectra.bin_spectra(l,ps,binning_file,lmax,type=type,mbb_inv=mbb_
 # Compute spin 0 spectra a la namaster
 nlb=50
 field=nmt.NmtField(window.data,[split.data])
-cl_coupled=nmt.compute_coupled_cell(field,field,n_iter=niter)
+cl_coupled=nmt.compute_coupled_cell(field,field)
 b=nmt.NmtBin(nside,nlb=nlb)
 lb=b.get_effective_ells()
 w0=nmt.NmtWorkspace()

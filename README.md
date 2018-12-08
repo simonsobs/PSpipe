@@ -27,12 +27,6 @@ python setup.py install
 
 (add `--user` if you don't have permissions, which is probably the case at e.g. NERSC).
 
-Once installed, you can test the installation by running 
-```bash
-python test/test_projection.py
-```
-
-which project a HEALPIX CMB map into a CAR template.
 
 ## The SO map class
 

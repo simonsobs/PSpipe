@@ -2,7 +2,7 @@
 @brief: a module to handle base configuration
 """
 
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 import os, argparse
 
 PSPIPE_ROOT           = os.path.join(os.path.dirname(os.path.abspath(__file__)),'..')

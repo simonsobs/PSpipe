@@ -1,11 +1,12 @@
 """
 @brief: python routines for mode coupling calculation.
 """
+from __future__ import absolute_import, print_function
 import healpy as hp, pylab as plt, numpy as np
 from pspy import sph_tools
 from pspy.mcm_fortran import mcm_fortran
 from copy import deepcopy
-import pspy_utils
+from pspy import pspy_utils
 
 
 def mcm_and_bbl_spin0(win1, binning_file, lmax, type, win2=None,bl1=None,bl2=None,input_alm=False,niter=0,return_mcm=False):
@@ -126,7 +127,7 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None
         mcm_fortran.calc_mcm_spin0and2(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
     else:
         #mcm_fortran.calc_mcm_spin0and2_pureB(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
-        print 'not implemented yet'
+        print('not implemented yet')
 
     bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
     n_bins=len(bin_hi)

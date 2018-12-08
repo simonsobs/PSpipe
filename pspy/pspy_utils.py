@@ -1,6 +1,7 @@
 """
 @brief: utils for pspy.
 """
+from __future__ import absolute_import, print_function
 import healpy as hp, pylab as plt, numpy as np
 
 def ps_lensed_theory_to_dict(filename,output_type,lmax=None,lstart=2):

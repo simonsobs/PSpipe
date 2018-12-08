@@ -1,7 +1,7 @@
 """
 @brief: python routines for window function generation
 """
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 import healpy as hp, pylab as plt, numpy as np, astropy.io.fits as pyfits
 from pixell import enmap
 import scipy

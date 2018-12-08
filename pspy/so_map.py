@@ -7,6 +7,7 @@ from __future__ import print_function
 from pixell import enmap,reproject,enplot,curvedsky,powspec
 from sph_tools import map2alm,alm2map
 from pspy_utils import ps_lensed_theory_to_dict
+from __future__ import absolute_import, print_function
 import healpy as hp, pylab as plt, numpy as np, astropy.io.fits as pyfits
 import sys,os,copy
 import scipy

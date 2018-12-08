@@ -1,8 +1,9 @@
 """
 @brief: python routines for power spectra estimation and debiasing.
 """
+from __future__ import absolute_import, print_function
 import healpy as hp, numpy as np
-import pspy_utils,so_mcm
+from pspy import pspy_utils,so_mcm
 
 def get_spectra(alm1,alm2=None,spectra=None):
     """

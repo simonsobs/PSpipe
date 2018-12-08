@@ -51,9 +51,9 @@ test_io.py : how to read/write/plot so map
 
 test_projection.py: test of projection healpix to CAR
 
-test_spectra_spin0.py: test of generation of spin0  spectra
+test_spectra_spin0.py: test of generation of spin0  spectra for HEALPIX and CAR pixellisation 
 
-test_spectra_spin0and2.py: test of generation of spin0 and spin2 spectra
+test_spectra_spin0and2.py: test of generation of spin0 and spin2 spectra for HEALPIX and CAR pixellisation
 
 test_pspy_namaster_spin0.py: comparison pspy / namaster for spin 0 fields (require installing namaster)
 

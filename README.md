@@ -10,7 +10,7 @@ The healpix version of PSpipe has the following additional dependencies: cfitsio
 
 A guide to install these libraries at NERSC is provided in [NERSC_INSTALL.md](NERSC_INSTALL.md).
 
-The CAR version of PSpipe require pixell:  https://github.com/simonsobs/pixell .
+The CAR version of PSpipe requires pixell:  https://github.com/simonsobs/pixell .
 
 To install `pspy`, just clone this repository and compile fortran codes
 

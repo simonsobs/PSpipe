@@ -188,7 +188,7 @@ def apply_Bbl(Bbl,ps,spectra=None):
         for f in spectra[1:]:
             ps_vec=np.append(ps_vec, ps[f])
         ps_b=np.dot(Bbl_array,ps_vec)
-        n_bins=Bbl_array.shape[0]/9
+        n_bins=int(Bbl_array.shape[0]/9)
         ps_th={}
         for i,f in enumerate(spectra):
             ps_th[f]=ps_b[i*n_bins:(i+1)*n_bins]

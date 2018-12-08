@@ -43,7 +43,7 @@ m.info()
 m.plot()
 ```
 
-## Testing the code
+## How to learn to use the code/ test the code 
 
 Have a look at the test folder and try to run the scripts.
 

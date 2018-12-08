@@ -1,5 +1,5 @@
 """
-These are tests of spectra generation for spin0 fields.
+These are tests of spectra generation for spin 0 and 2 fields.
 The first part is done on CAR pixellisation and the second in HEALPIX pixellisation
 This illustrate how pspy function are blind to pixellisation
 The CAR survey mask is defined with ra0,ra1,dec0,dec1 with 1 arcminute resolution

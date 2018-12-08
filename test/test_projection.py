@@ -22,11 +22,13 @@ except:
 ra0,ra1,dec0,dec1=-5,5,-5,5
 res=1
 ncomp=3
+lmax=5000
 
 #We read a CAMB lensed power spectrum and generate alms from it
 clfile='../data/bode_almost_wmap5_lmax_1e4_lensedCls.dat'
 ps=powspec.read_spectrum(clfile)[:ncomp,:ncomp]
-alms= curvedsky.rand_alm(ps)
+
+alms= curvedsky.rand_alm(ps, lmax=lmax)
 
 #We generate both a CAR and HEALPIX template
 #We choose nside=256 so that the resolution of HEALPIX is much smaller
@@ -38,7 +40,7 @@ map_healpix=sph_tools.alm2map(alms,template_healpix)
 map_car=sph_tools.alm2map(alms,template_car)
 
 #We project the healpix map into the CAR template
-map_healpix_projected= so_map.healpix2car(map_healpix,map_car,lmax=None)
+map_healpix_projected= so_map.healpix2car(map_healpix,map_car,lmax=lmax)
 
 #We plot both the native CAR maps and the Healpix projected to CAR maps
 #They contain the same CMB but have different resolutions.

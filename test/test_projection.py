@@ -1,7 +1,3 @@
-from pspy import so_map
-from pspy import sph_tools
-from pixell import curvedsky,powspec
-import os
 """
 This is a test of generation of simulations and projection.
 We first specify two templates, one in equ coordnates and CAR pixellisation and one in equ coordinates and HEALPIX pixellisation.
@@ -9,6 +5,10 @@ We generate alms from a CAMB lensed power spectrum file and use them to generate
 We then project the HEALPIX simulation and plot both the native CAR simulation and the projected HEALPIX simulation.
 We chose a low resolution nside to emphasize the effect of resolution
 """
+
+from pspy import so_map,sph_tools
+from pixell import curvedsky,powspec
+import os
 
 test_dir='result_test_projection'
 try:

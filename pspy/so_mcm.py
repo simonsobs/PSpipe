@@ -2,7 +2,8 @@
 @brief: python routines for mode coupling calculation.
 """
 import healpy as hp, pylab as plt, numpy as np
-from pspy import sph_tools, mcm_fortran
+from pspy import sph_tools
+from pspy.mcm_fortran import mcm_fortran
 from copy import deepcopy
 import pspy_utils
 
@@ -51,12 +52,13 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax, type, win2=None,bl1=None,bl2=Non
     mcm_fortran.bin_mcm(mcm.T, bin_lo,bin_hi,bin_size, mbb.T,doDl)
     Bbl=np.zeros((n_bins,lmax))
     mcm_fortran.binning_matrix(mcm.T,bin_lo,bin_hi,bin_size, Bbl.T,doDl)
-    Bbl=np.dot(np.linalg.inv(mbb),Bbl)
+    mbb_inv= np.linalg.inv(mbb)
+    Bbl=np.dot(mbb_inv,Bbl)
 
     if return_mcm:
-        return mcm,mbb,Bbl
+        return mcm,mbb_inv,Bbl
     else:
-        return mbb, Bbl
+        return mbb_inv, Bbl
 
 def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,niter=0,pureB=False,return_mcm=False):
     """
@@ -108,10 +110,14 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None
     wcl={}
     wbl={}
     spin=['0','2']
+
+
     for i,s1 in enumerate(spin):
         for j,s2 in enumerate(spin):
             wcl[s1+s2]=hp.alm2cl(win1[i],win2[i])
-            wcl[s1+s2]=wcl[s1+s2][:lmax]*(2*np.arange(lmax)+1)
+            #wcl[s1+s2]=wcl[s1+s2][:lmax]*(2*np.arange(lmax)+1)
+            wcl[s1+s2]=wcl[s1+s2]*(2*np.arange(len(wcl[s1+s2]))+1)
+
             wbl[s1+s2]=bl1[i]*bl2[j]
 
     mcm=np.zeros((5,lmax,lmax))
@@ -135,17 +141,19 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None
     mcm= get_coupling_dict(mcm,fac=-1.0)
     mbb= get_coupling_dict(mbb_array,fac=-1.0)
     Bbl= get_coupling_dict(Bbl_array,fac=1.0)
+    mbb_inv={}
 
     spin_pair=['spin0xspin0','spin0xspin2','spin2xspin0','spin2xspin2']
     for s in spin_pair:
-        Bbl[s]=np.dot(np.linalg.inv(mbb[s]),Bbl[s])
+        mbb_inv[s]=np.linalg.inv(mbb[s])
+        Bbl[s]=np.dot(mbb_inv[s],Bbl[s])
 
     if return_mcm:
-        return mcm,mbb,Bbl
+        return mcm,mbb_inv,Bbl
     else:
-        return mbb, Bbl
+        return mbb_inv, Bbl
 
-def dict_to_array(dict):
+def coupling_dict_to_array(dict):
     """
     @brief take a mcm or Bbl dictionnary with entries:
     -  (spin0xspin0)
@@ -165,23 +173,23 @@ def dict_to_array(dict):
     array[5*dim1:9*dim1,5*dim2:9*dim2]=dict['spin2xspin2']
     return array
 
-def apply_Bbl(Bbl,ps,fields=None):
+def apply_Bbl(Bbl,ps,spectra=None):
     """
     @brief bin theoretical power spectra
-    @param Bbl: a binning matrix, if fields is not None will be a Bbl dictionnary, otherwise a (n_bins,lmax) matrix
-    @param ps: a theoretical power spectrum: if fields is not None will be a ps dictionnary, otherwise a (lmax) vector
+    @param Bbl: a binning matrix, if spectra is not None will be a Bbl dictionnary for spin0 and 2 fields, otherwise a (n_bins,lmax) matrix
+    @param ps: a theoretical power spectrum: if spectra is not None will be a ps dictionnary, otherwise a (lmax) vector
+    @param (optional) spectra,  needed for spin0 and spin2 cross correlation, the arrangement of the spectra
     @return Dbth: a theoretical binned power spectrum
     """
-    if fields is not None:
-        Bbl_array=dict_to_array(Bbl)
-        ps_array=ps[fields[0]]
-        for f in fields[1:]:
-            print ps_array.shape
-            ps_array=np.append(ps_array, ps[f])
-        ps_b=np.dot(Bbl_array,ps_array)
+    if spectra is not None:
+        Bbl_array=coupling_dict_to_array(Bbl)
+        ps_vec=ps[spectra[0]]
+        for f in spectra[1:]:
+            ps_vec=np.append(ps_vec, ps[f])
+        ps_b=np.dot(Bbl_array,ps_vec)
         n_bins=Bbl_array.shape[0]/9
         ps_th={}
-        for i,f in enumerate(fields):
+        for i,f in enumerate(spectra):
             ps_th[f]=ps_b[i*n_bins:(i+1)*n_bins]
         return ps_th
     else:

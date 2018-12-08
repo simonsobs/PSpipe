@@ -49,7 +49,6 @@ def read_binning_file(file,lmax):
         bin_lo[0]=2
     bin_hi=bin_hi.astype(np.int)
     bin_lo=bin_lo.astype(np.int)
-    bin_c=bin_c.astype(np.int)
     bin_size=bin_hi-bin_lo+1
     return (bin_lo,bin_hi,bin_c,bin_size)
 

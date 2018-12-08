@@ -2,8 +2,6 @@ SO power spectrum pipeline
 ----------------------------
 A framework for creating the power spectrum pipeline for the Simons Observatory. Documentation is still under development, but details about how to contribute can be found  in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-* Documentation: https://pspipe.readthedocs.io
-
 ## Installation
 
 PSpipe will have 3 mains module, pspy, psc, and pslike.
@@ -36,8 +34,6 @@ python test/test_projection.py
 
 which project a HEALPIX CMB map into a CAR template.
 
-
-
 ## The SO map class
 
 We should be able to work with both CAR and HEALPIX pixellisation.
@@ -50,3 +46,23 @@ m=so_map.read_map('map.fits') #map.fits can be a HEALPIX or a CAR map
 m.info()
 m.plot()
 ```
+
+## Testing the code
+
+Have a look at the test folder and try to run the scripts.
+
+test_io.py : how to read/write/plot so map
+
+test_projection.py: test of projection healpix to CAR
+
+test_spectra_spin0.py: test of generation of spin0  spectra
+
+test_spectra_spin0and2.py: test of generation of spin0 and spin2 spectra
+
+test_pspy_namaster_spin0.py: comparison pspy / namaster for spin 0 fields (require installing namaster)
+
+test_pspy_namaster_spin0and2.py: comparison pspy / namaster for spin 0 and 2 fields (require installing namaster)
+
+
+
+

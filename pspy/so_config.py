@@ -7,7 +7,7 @@ import os, argparse
 
 PSPIPE_ROOT           = os.path.join(os.path.dirname(os.path.abspath(__file__)),'..')
 DEFAULT_OUTPUT_DIR   = os.path.join(PSPIPE_ROOT, "output")
-DEFAULT_DATA_DIR = os.path.join(PSPIPE_ROOT, "resource")
+DEFAULT_DATA_DIR = os.path.join(PSPIPE_ROOT, "data")
 
 argparser = argparse.ArgumentParser(
     prog='pspipe',

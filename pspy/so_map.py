@@ -117,8 +117,9 @@ class so_map:
         if self.pixel=='HEALPIX':
             if color=='planck':
                 from matplotlib.colors import ListedColormap
-                path=(os.path.dirname(os.path.realpath(__file__)))
-                colombi1_cmap = ListedColormap(np.loadtxt('%s/../Planck_Parchment_RGB.txt'%path)/255.)
+                from so_config import DEFAULT_DATA_DIR
+                planck_rgb_file = os.path.join(DEFAULT_DATA_DIR, 'Planck_Parchment_RGB.txt')
+                colombi1_cmap = ListedColormap(np.loadtxt(planck_rgb_file)/255.)
                 colombi1_cmap.set_bad("white")
                 colombi1_cmap.set_under("white")
                 cmap = colombi1_cmap

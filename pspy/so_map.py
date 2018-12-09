@@ -3,10 +3,10 @@
 @author: this is  a wrapper around healpix and enlib (pixell).
 """
 
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 from pixell import enmap,reproject,enplot,curvedsky,powspec
-from sph_tools import map2alm,alm2map
-from pspy_utils import ps_lensed_theory_to_dict
+from pspy.sph_tools import map2alm,alm2map
+from pspy.pspy_utils import ps_lensed_theory_to_dict
 import healpy as hp, pylab as plt, numpy as np, astropy.io.fits as pyfits
 import sys,os,copy
 import scipy
@@ -117,7 +117,7 @@ class so_map:
         if self.pixel=='HEALPIX':
             if color=='planck':
                 from matplotlib.colors import ListedColormap
-                from so_config import DEFAULT_DATA_DIR
+                from pspy.so_config import DEFAULT_DATA_DIR
                 planck_rgb_file = os.path.join(DEFAULT_DATA_DIR, 'Planck_Parchment_RGB.txt')
                 colombi1_cmap = ListedColormap(np.loadtxt(planck_rgb_file)/255.)
                 colombi1_cmap.set_bad("white")

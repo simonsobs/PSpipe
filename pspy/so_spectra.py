@@ -1,8 +1,9 @@
 """
 @brief: python routines for power spectra estimation and debiasing.
 """
+from __future__ import absolute_import, print_function
 import healpy as hp, numpy as np
-import pspy_utils,so_mcm
+from pspy import pspy_utils,so_mcm
 
 def get_spectra(alm1,alm2=None,spectra=None):
     """
@@ -72,7 +73,7 @@ def bin_spectra(l,cl,binning_file,lmax,type,spectra=None,mbb_inv=None):
 
     if spectra is None:
         binnedPower=np.zeros(len(bin_c))
-        for ibin in xrange(n_bins):
+        for ibin in range(n_bins):
             loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))
             binnedPower[ibin] = (cl[loc]*fac[loc]).mean()
         if mbb_inv is None:
@@ -83,7 +84,7 @@ def bin_spectra(l,cl,binning_file,lmax,type,spectra=None,mbb_inv=None):
         vec=[]
         for f in spectra:
             binnedPower=np.zeros(len(bin_c))
-            for ibin in xrange(n_bins):
+            for ibin in range(n_bins):
                 loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))
                 binnedPower[ibin] = (cl[f][loc]*fac[loc]).mean()
             

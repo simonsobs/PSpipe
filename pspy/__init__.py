@@ -1,10 +1,11 @@
-import so_config
-import so_map
-import so_cov
-import so_mcm
-import so_spectra
-import so_window
-import sph_tools
-import pspy_utils
-import so_map_preprocessing
-import mcm_fortran
+from __future__ import absolute_import, print_function
+from pspy import so_config,\
+    so_map, \
+    so_cov, \
+    so_mcm, \
+    so_spectra, \
+    so_window, \
+    sph_tools,\
+    pspy_utils,\
+    so_map_preprocessing,\
+    mcm_fortran

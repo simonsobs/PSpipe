@@ -1,8 +1,7 @@
 """
 @brief: python routines for generalized map2alm and alm2map.
 """
-
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 from pixell import curvedsky,powspec
 import healpy as hp, pylab as plt, numpy as np, astropy.io.fits as pyfits
 import sys,os,copy

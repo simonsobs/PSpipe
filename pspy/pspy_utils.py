@@ -3,6 +3,7 @@
 """
 from __future__ import absolute_import, print_function
 import healpy as hp, pylab as plt, numpy as np
+import os
 
 def ps_lensed_theory_to_dict(filename,output_type,lmax=None,lstart=2):
     """
@@ -53,5 +54,12 @@ def read_binning_file(file,lmax):
     bin_size=bin_hi-bin_lo+1
     return (bin_lo,bin_hi,bin_c,bin_size)
 
-
+def create_directory(name):
+    """
+    @brief create a directory
+    """
+    try:
+        os.makedirs(name)
+    except:
+        pass
 

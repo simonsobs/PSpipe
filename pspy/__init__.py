@@ -8,4 +8,6 @@ from pspy import so_config,\
     sph_tools,\
     pspy_utils,\
     so_map_preprocessing,\
-    mcm_fortran
+    mcm_fortran,\
+    so_dict
+

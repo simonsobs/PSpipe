@@ -141,7 +141,6 @@ def read_ps(file_name,spectra=None):
     @param (optional) spectra: needed for spin0 and spin2 cross correlation, the arrangement of the spectra
     @return l,ps
     """
-    
     data=np.loadtxt(file_name)
     if spectra is None:
         return data[:,0],data[:,1]

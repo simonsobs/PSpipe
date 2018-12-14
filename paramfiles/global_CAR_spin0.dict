@@ -1,0 +1,40 @@
+result_dir='run_car_spin0'
+iStart=0
+iStop=10
+
+#type of simulations
+spin='0'
+pixel='CAR'
+rms_uKarcmin_T=1
+nSplits=2
+clfile='../data/bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat'
+
+#Example of CAR template
+ra0=-15
+ra1=15
+dec0=-15
+dec1=15
+res=1
+apo_type_survey='Rectangle'
+apo_radius_survey=1
+
+#Example of HEALPIX template
+#nside=1024
+#lon=30
+#lat=50
+#radius=15
+#apo_type_survey='C1'
+#apo_radius_survey=1
+
+# apodisation and Mask
+apo_type_mask='C1'
+source_mask_nholes=100
+source_mask_radius=10
+apo_radius_mask=0.3
+
+# Spectra  parameterst
+type='Dl'
+binning_file='../data/BIN_ACTPOL_50_4_SC_low_ell_startAt2'
+lmax=4000
+niter=0
+

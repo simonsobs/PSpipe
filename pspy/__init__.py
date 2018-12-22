@@ -9,5 +9,6 @@ from pspy import so_config,\
     pspy_utils,\
     so_map_preprocessing,\
     mcm_fortran,\
-    so_dict
-
+    so_dict,\
+    so_misc,\
+    so_mpi

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils, so_dict
+from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils, so_dict, so_mpi, so_misc
 import healpy as hp, numpy as np, pylab as plt
 import os,sys
 
@@ -31,9 +31,10 @@ elif d['spin']=='0':
         template=so_map.healpix_template(ncomp=ncomp,nside=d['nside'])
     mbb_inv,Bbl=so_mcm.read_coupling(prefix='%s/test'%result_dir)
 
-
-num=np.arange(d['iStart'],d['iStop'])
-for iii in num:
+# trigger mpi
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=d['iStart'], imax=d['iStop'])
+for iii in subtasks:
     print ('sim number %04d'%iii)
     cmb=template.synfast(d['clfile'])
     splitlist=[]

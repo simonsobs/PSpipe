@@ -18,8 +18,6 @@ nside=512
 ncomp=1
 # clfile are the camb lensed power spectra
 clfile='../data/bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat'
-# nSplits stand for the number of splits we want to simulate
-nSplits=2
 # a binningfile with format, lmin,lmax,lmean
 binning_file='../data/binningFile_100_50.dat'
 # the maximum multipole to consider

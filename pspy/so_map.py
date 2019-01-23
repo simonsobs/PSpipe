@@ -57,7 +57,7 @@ class so_map:
         
         upgrade=self.copy()
         if self.pixel=='HEALPIX':
-            nside_out=nside*factor
+            nside_out=self.nside*factor
             upgrade.data=hp.pixelfunc.ud_grade(self.data, nside_out=nside_out)
             upgrade.nside=nside_out
         if self.pixel=='CAR':

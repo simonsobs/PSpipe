@@ -241,6 +241,27 @@ def read_map(file,coordinate=None,verbose=False):
 
     return map
 
+def read_alm(file, ncomp):
+    return np.complex128(hp.fitsfunc.read_alm(file, hdu=tuple(range(1,1+ncomp))))
+
+def from_enmap(emap):
+    map     = so_map()
+    hdulist = emap.wcs.to_fits()
+    header  = hdulist[0].header
+    map.pixel=(header['CTYPE1'][-3:])
+    try:
+        map.ncomp= header['NAXIS3']
+    except:
+        map.ncomp= 1
+    map.data     = emap.copy()
+    map.nside    = None
+    map.geometry =map.data.geometry[1:]
+    map.coordinate=header['RADESYS']
+    if map.coordinate=='ICRS':
+        map.coordinate='equ'
+
+    return map
+
 def healpix2car(map,template,lmax=None):
     """
     @brief Project a HEALPIX so map into a CAR so map

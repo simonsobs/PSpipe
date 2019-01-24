@@ -65,7 +65,7 @@ def create_apodization(binary, apo_type, apo_radius_degree):
             print( 'no rectangle apod for healpix map')
             sys.exit()
         if binary.pixel=='CAR':
-            window= apod_rectange(binary,apo_radius_degree)
+            window= apod_rectangle(binary,apo_radius_degree)
 
     return window
 
@@ -101,7 +101,7 @@ def apod_C1(binary,radius):
     
     return(win)
 
-def apod_rectange(binary,radius):
+def apod_rectangle(binary,radius):
     """
     @brief apodisation suitable for rectangle window (in CAR) (smoother at the corner)
     """

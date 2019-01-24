@@ -98,4 +98,6 @@ plt.subplot(326)
 plt.imshow(m_w21)
 plt.title('spin 2 U')
 plt.axis([360,440,160,240])
-plt.show()
+plt.savefig('so_purebb_window.png')
+plt.clf()
+

@@ -24,7 +24,7 @@ def map2alm(map,niter,lmax,theta_range=None):
         else:
             nside=hp.pixelfunc.get_nside(map.data)
             alm= curvedsky.map2alm_healpix(map.data,lmax=lmax,theta_min=theta_range[0], theta_max=theta_range[1])
-            if iter !=0:
+            if niter !=0:
                 map_copy=map.copy()
                 alm= curvedsky.map2alm_healpix(map.data,lmax=lmax,theta_min=theta_range[0], theta_max=theta_range[1])
                 for k in range(niter):
@@ -33,7 +33,7 @@ def map2alm(map,niter,lmax,theta_range=None):
 
     elif map.pixel=='CAR':
         alm = curvedsky.map2alm(map.data,lmax= lmax)
-        if iter !=0:
+        if niter !=0:
             map_copy=map.copy()
             for k in range(niter):
                 alm += curvedsky.map2alm(map.data-curvedsky.alm2map(alm,map_copy.data),lmax=lmax)

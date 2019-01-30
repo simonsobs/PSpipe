@@ -5,9 +5,11 @@ A framework for creating the power spectrum pipeline for the Simons Observatory.
 ## Installation
 
 The SO power spectrum pipeline will have 3 mains modules:
+'''
 -a python power spectrum code: pspy
 -a C code power spectrum code: namaster
 -a likelihood code: pslike.
+'''
 
 The healpix version of pspy has the following additional dependencies: cfitsio and HEALPix.
 

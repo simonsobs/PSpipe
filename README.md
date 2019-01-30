@@ -10,7 +10,7 @@ The SO power spectrum pipeline will have 3 mains modules:
 
 -a C code power spectrum code: namaster
 
--a likelihood code: pslike.
+-a likelihood code: pslike
 
 
 The healpix version of pspy has the following additional dependencies: cfitsio and HEALPix.

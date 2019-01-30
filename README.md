@@ -4,13 +4,13 @@ A framework for creating the power spectrum pipeline for the Simons Observatory.
 
 ## Installation
 
-PSpipe will have 3 mains module, pspy, psc, and pslike.
+The SO power spectrum pipeline will have 3 mains module, pspy, psc: namaster, and pslike.
 
-The healpix version of PSpipe has the following additional dependencies: cfitsio and HEALPix.
+The healpix version of pspy has the following additional dependencies: cfitsio and HEALPix.
 
 A guide to install these libraries at NERSC is provided in [NERSC_INSTALL.md](NERSC_INSTALL.md).
 
-The CAR version of PSpipe requires pixell:  https://github.com/simonsobs/pixell .
+The CAR version of pspy requires pixell:  https://github.com/simonsobs/pixell .
 
 To install `pspy`, just clone this repository and compile fortran codes
 
@@ -28,6 +28,8 @@ python setup.py install
 ```
 
 (add `--user` if you don't have permissions, which is probably the case at e.g. NERSC).
+
+to install namaster, please follow the instruction in:  https://github.com/LSSTDESC/NaMaster
 
 
 ## The SO map class

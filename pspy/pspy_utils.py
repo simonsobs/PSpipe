@@ -22,9 +22,7 @@ def ps_lensed_theory_to_dict(filename,output_type,lmax=None,lstart=2):
     
     if lmax is not None:
         l=l[:lmax]
-    
     scale=l*(l+1)/(2*np.pi)
-
     for f in fields:
         if lmax is not None:
             ps[f]=ps[f][:lmax]
@@ -32,11 +30,46 @@ def ps_lensed_theory_to_dict(filename,output_type,lmax=None,lstart=2):
             ps[f]/=scale
         if lstart==0:
             ps[f]=np.append( np.array([0,0]),ps[f])
-        
     if lstart==0:
         l=np.append( np.array([0,1]),l)
-
     return l,ps
+
+def get_nlth_dict(rms_uKarcmin_T,type,lmax,spectra=None,rms_uKarcmin_pol=None,beamfile=None):
+    """
+    @brief return the effective noise power spectrum Nl/bl^2 given a beam file and a noise rms
+    @param rms_uKarcmin_T: the temperature noise rms in uK.arcmin
+    @param type: the type of binning, either bin Cl or bin Dl
+    @param lmax: the maximum multipole to consider
+    @param spectra: needed for spin0 and spin2 cross correlation, the arrangement of the spectra
+    @param (optional) rms_uKarcmin_pol: the temperature noise rms in uK.arcmin
+    @param (optional) beamfile: the location of the beam transfer function (assuming it's given as a two column file l,bl)
+    @return nl_th: a dictionnary file with effective noise power spectra
+    """
+    if beamfile is not None:
+        l,bl=np.loadtxt(beamfile,unpack=True)
+    else:
+        bl=np.ones(lmax+2)
+
+    lth=np.arange(2,lmax+2)
+    nl_th={}
+    if spectra is None:
+        nl_th['TT']=np.ones(lmax)*(rms_uKarcmin_T*np.pi/(60*180))**2/bl[2:lmax+2]**2
+        if type=='Dl':
+            nl_th['TT']*=lth*(lth+1)/(2*np.pi)
+        return nl_th
+    else:
+        if rms_uKarcmin_pol is None:
+            rms_uKarcmin_pol=rms_uKarcmin_T*np.sqrt(2)
+        for spec in spectra:
+            nl_th[spec]=np.zeros(lmax)
+        nl_th['TT']=np.ones(lmax)*(rms_uKarcmin_T*np.pi/(60*180))**2/bl[:lmax]**2
+        nl_th['EE']=np.ones(lmax)*(rms_uKarcmin_pol*np.pi/(60*180))**2/bl[:lmax]**2
+        nl_th['BB']=np.ones(lmax)*(rms_uKarcmin_pol*np.pi/(60*180))**2/bl[:lmax]**2
+        if type=='Dl':
+            for spec in spectra:
+                nl_th[spec]*=lth*(lth+1)/(2*np.pi)
+    return(nl_th)
+
 
 def read_binning_file(file,lmax):
     """
@@ -62,4 +95,6 @@ def create_directory(name):
         os.makedirs(name)
     except:
         pass
+
+
 

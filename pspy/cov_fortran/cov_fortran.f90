@@ -3,7 +3,7 @@
 subroutine calc_cov_spin0_single_win(wcl,cov_array)
     implicit none
     real(8), intent(in)    :: wcl(:)
-real(8), intent(inout) :: cov_array(:,:,:)
+    real(8), intent(inout) :: cov_array(:,:,:)
     real(8), parameter     :: pi = 3.14159265358979323846264d0
     integer :: l1, l2, l3, info, nlmax, lmin, lmax, i
     real(8) :: l1f(2), fac

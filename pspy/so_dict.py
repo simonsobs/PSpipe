@@ -4,6 +4,7 @@
 
 import os
 import string
+from __future__ import print_function
 
 def ask_for( key ):
     s = raw_input( "so_dict: enter value for '%s': " % key )
@@ -26,9 +27,9 @@ class so_dict( dict ):
     def __getitem__( self, key ):
         if key not in self:
             if self.ask:
-                print "so_dict: parameter '%s' not found" % key
+                print ("so_dict: parameter '%s' not found" % key)
                 val = ask_for( key )
-                print "so_dict: setting '%s' = %s" % (key,repr(val))
+                print ("so_dict: setting '%s' = %s" % (key,repr(val)))
                 dict.__setitem__( self, key, val )
             else:
                 return None
@@ -57,8 +58,8 @@ class so_dict( dict ):
             exec(line)
             s = line.split('=')
             if len(s) != 2:
-                print "Error parsing line:"
-                print line
+                print ("Error parsing line:")
+                print (line)
                 continue
             key = s[0].strip()
             val = eval(s[1].strip()) # XXX:make safer

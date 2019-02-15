@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import, print_function
 import os, argparse
-import ConfigParser
+import configparser
 
 PSPIPE_ROOT        = os.path.join(os.path.dirname(os.path.abspath(__file__)),'..')
 DEFAULT_OUTPUT_DIR = os.path.join(PSPIPE_ROOT, "output")
@@ -16,7 +16,7 @@ argparser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     conflict_handler='resolve')
 
-configparser = ConfigParser.SafeConfigParser()
+configparser = configparser.SafeConfigParser()
 configparser.optionxform = str
 
 def get_output_dir():

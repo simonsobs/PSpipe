@@ -62,7 +62,7 @@ def init(switch = False):
         barrier = comm.Barrier
         print("MPI: rank %d is initalized" %rank)
 
-    except ImportError, exc:
+    except ImportError as exc:
         sys.stderr.write("IMPORT ERROR: " + __file__ + " (" + str(exc) + "). Could not load mpi4py. MPI will not be used.\n")
 
 def is_initialized():

@@ -2,9 +2,9 @@
 @brief: python routines for reading a dictionnary file
 """
 
+from __future__ import print_function
 import os
 import string
-from __future__ import print_function
 
 def ask_for( key ):
     s = raw_input( "so_dict: enter value for '%s': " % key )

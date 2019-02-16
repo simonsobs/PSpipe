@@ -8,7 +8,7 @@ The SO power spectrum pipeline will have 3 mains modules:
 
 -a python power spectrum code: pspy
 
--a C code power spectrum code: namaster
+-a C power spectrum code: namaster
 
 -a likelihood code: pslike
 

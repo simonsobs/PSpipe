@@ -36,6 +36,10 @@ python setup.py install
 
 (add `--user` if you don't have permissions, which is probably the case at e.g. NERSC).
 
+We are experiencing some problems with the setup.py, so please just add the PATH to the code in your .bashrc
+```bash
+export PYTHONPATH=${PYTHONPATH}:LOCATION_OF_PSPIPE/PSpipe/
+```
 to install namaster, please follow the instruction in:  https://github.com/LSSTDESC/NaMaster
 
 

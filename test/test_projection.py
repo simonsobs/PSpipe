@@ -5,7 +5,8 @@ We generate alms from a CAMB lensed power spectrum file and use them to generate
 We then project the HEALPIX simulation and plot both the native CAR simulation and the projected HEALPIX simulation.
 We chose a low resolution nside to emphasize the effect of resolution
 """
-
+import matplotlib
+matplotlib.use('Agg')
 from pspy import so_map,sph_tools
 from pixell import curvedsky,powspec
 import os

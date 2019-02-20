@@ -3,7 +3,8 @@ These are tests of analytic estimation of a gaussian covariance matrix for spin0
 It is done in CAR pixellisation.
 We also provide an option for monte-carlo verification of the covariance matrix
 """
-from __future__ import print_function
+import matplotlib
+matplotlib.use('Agg')
 from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils, so_cov
 import healpy as hp, numpy as np, pylab as plt
 import os,time

@@ -5,7 +5,8 @@ We then create window function with 'C1', 'C2' and a rectangle apodisation.
 We then generate a Healpix template at nside =512, we set all pixels to zero apart from pixels in a disc at longitude 20 degree and latitude
 30 degree, we then create window functions with 'C1' and 'C2'  apodisation
 """
-
+import matplotlib
+matplotlib.use('Agg')
 from pspy import so_map,so_window
 import healpy as hp, numpy as np
 import os

@@ -2,8 +2,8 @@
 This is a test of spectra generation with pspy and namaster for spin0 and 2 fields.
 It is done in CAR pixellisation
 """
-
-from __future__ import print_function
+import matplotlib
+matplotlib.use('Agg')
 from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils
 import healpy as hp, numpy as np
 import matplotlib.pyplot as plt

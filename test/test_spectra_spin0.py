@@ -9,7 +9,8 @@ We also include a point source mask with 100 holes of size 10 arcminute
 We appodize the survey mask with an apodisation of 1 degree and the point source mask with an apodisation of 0.3 degree
 We compute the spectra between the 2 splits of data up to lmax=1000
 """
-from __future__ import print_function
+import matplotlib
+matplotlib.use('Agg')
 from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils
 import healpy as hp, numpy as np, pylab as plt
 import os

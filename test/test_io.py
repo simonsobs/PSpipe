@@ -1,7 +1,8 @@
 """
 This is an example on how to read/write/plot so map
 """
-
+import matplotlib
+matplotlib.use('Agg')
 from pspy import so_map,sph_tools
 from pixell import curvedsky,powspec
 import os

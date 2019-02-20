@@ -1,6 +1,7 @@
 # pure BB spatial window follwoing Grain+ 2009
 # will check a couple things and add comments soon -Steve 1/24/19
-
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np
 import healpy as hp
 import matplotlib.pyplot as plt
@@ -21,7 +22,7 @@ def get_apodized_mask(nside,theta,fi,r,r_cut):
       if hp.rotator.angdist(center_vec,hp.pix2vec(nside,i)) >= r_cut:
          dist_to_center = hp.rotator.angdist(center_vec,hp.pix2vec(nside,i))
          ret[i] = np.cos(np.pi/(2*(r-r_cut))*(dist_to_center-r_cut))**2
-   print 'fsky = %.6f'%(np.sum(ret)/float(npix))
+   print ('fsky = %.6f'%(np.sum(ret)/float(npix)))
    return ret
 
 # =========== computing s1 and s2 windows for pure bb ============
@@ -49,7 +50,7 @@ def get_s1s2_win(sht_rect, w, lmax):
    wlm2_e = np.zeros([lmax+1,lmax+1], dtype='cfloat')
 
    ell = np.arange(lmax+1)
-   for m in xrange(lmax + 1):
+   for m in range(lmax + 1):
       wlm1_e[:, m] = np.sqrt((ell+1)*ell)*wlm0[:, m]
       wlm2_e[:, m] = np.sqrt((ell+2)*(ell+1)*ell*(ell-1))*(wlm0[:, m])
 

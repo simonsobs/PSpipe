@@ -3,7 +3,8 @@
 #--
 # this test script compares the covariance of lensed CMB to that of Gaussian random field that matching lensed CMB spectra
 #
-
+import matplotlib
+matplotlib.use('Agg')
 from pspy import so_map, so_window, pspy_utils, so_mpi, so_mcm, so_config, so_spectra, sph_tools
 from pixell import curvedsky, utils, enmap
 import numpy as np

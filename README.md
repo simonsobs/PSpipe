@@ -19,16 +19,7 @@ A guide to install these libraries at NERSC is provided in [NERSC_INSTALL.md](NE
 
 The CAR version of pspy requires pixell:  https://github.com/simonsobs/pixell .
 
-To install `pspy`, just clone this repository and compile fortran codes
-
-```
-  cd <path to pspy>/pspy
-  export PSPY_COMP=<Compiler File> ! ex) export PSPY_COMP=nersc_cori
-                                    ! Check pspy/compile_opts for more options
-  make
-```
-
-Once fortran code is compiled. Go to the root of `pspy` and run
+We have simplified the installation of `pspy`, just clone this repository, go to the root of `pspy` and run
 
 ```bash
 python setup.py install
@@ -36,10 +27,6 @@ python setup.py install
 
 (add `--user` if you don't have permissions, which is probably the case at e.g. NERSC).
 
-We are experiencing some problems with the setup.py, so please also add the PATH to the code in your .bashrc
-```bash
-export PYTHONPATH=${PYTHONPATH}:LOCATION_OF_PSPIPE/PSpipe/
-```
 to install namaster, please follow the instruction in:  https://github.com/LSSTDESC/NaMaster
 
 

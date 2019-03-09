@@ -9,6 +9,7 @@ import healpy as hp, numpy as np
 import matplotlib.pyplot as plt
 import os
 import pymaster as nmt
+import time
 
 # IMPORTANT: set niter=0, iteration not supported in CAR
 niter = 0
@@ -84,12 +85,15 @@ window.data*=mask.data
 window=(window,window)
 
 # Compute spin 0 spin 2 spectra a la pspy
+t=time.time()
 mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(window, binning_file, lmax=lmax, type=type,niter=niter)
 alms = sph_tools.get_alms(split,window,niter,lmax)
 l,ps= so_spectra.get_spectra(alms,spectra=spectra)
 lb_py,Cb_pspy= so_spectra.bin_spectra(l,ps,binning_file,lmax,type=type,mbb_inv=mbb_inv,spectra=spectra)
+print  ('pspy time: %0.2f'%(time.time()-t))
 
 # Compute spin 0 spin 2 spectra a la namaster
+t=time.time()
 nlb=50
 
 field_0=nmt.NmtField(window[0].data,[split.data[0]], n_iter=niter, wcs=window[0].data.wcs)
@@ -122,6 +126,9 @@ Cb_namaster['EE']=spin2[0]
 Cb_namaster['EB']=spin2[1]
 Cb_namaster['BE']=spin2[2]
 Cb_namaster['BB']=spin2[3]
+
+print  ('namaster time: %0.2f'%(time.time()-t))
+
 
 
 plt.figure(figsize=(20,15))

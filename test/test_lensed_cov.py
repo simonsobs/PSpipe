@@ -7,7 +7,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 sns.color_palette(palette='colorblind')
 
-noise_uK_arcmin, fwhm_arcmin, lmin, lmax = (0., 0., 2, 2000)
+noise_uK_arcmin, fwhm_arcmin, lmin, lmax = (0., 0., 2, 500)
 
 camb_lensed_theory_file   = '../data/cosmo2017_10K_acc3_lensedCls.dat'
 camb_unlensed_theory_file = '../data/cosmo2017_10K_acc3_lenspotentialCls.dat'

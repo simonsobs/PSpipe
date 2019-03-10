@@ -4,7 +4,7 @@
 from __future__ import absolute_import, print_function
 import healpy as hp, pylab as plt, numpy as np
 from pspy import sph_tools
-from pspy.mcm_fortran import mcm_fortran
+from pspy import mcm_fortran
 from copy import deepcopy
 from pspy import pspy_utils
 

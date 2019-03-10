@@ -5,7 +5,7 @@ from __future__ import print_function
 from copy import deepcopy
 from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils, so_dict
 import healpy as hp, numpy as np, pylab as plt
-from pspy.cov_fortran import cov_fortran
+from pspy import cov_fortran
 import os,sys
 
 def cov_coupling_spin0(win, lmax, niter=0,save_file=None):

@@ -7,6 +7,7 @@ from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils, so_di
 import healpy as hp, numpy as np, pylab as plt
 from pspy.cov_fortran import cov_fortran
 import os,sys
+import pickle 
 
 def cov_coupling_spin0(win, lmax, niter=0,save_file=None):
     """
@@ -263,3 +264,71 @@ def delta(a,b):
         return 1
     else:
         return 0
+
+def calc_cov_lensed(noise_uK_arcmin, fwhm_arcmin, lmin, lmax, camb_lensed_theory_file, camb_unlensed_theory_file, output_dir, overwrite=False):
+    """
+    @brief wrapper around lenscov (https://github.com/JulienPeloton/lenscov). heavily borrowed from covariance.py
+    compute lensing induced non-gaussian part of covariance matrix
+    """
+    try:
+        import lib_covariances, lib_spectra, misc, util
+    except:
+        print("[ERROR] failed to load lenscov modules. Make sure that lenscov is properly installed")
+        print("[ERROR] Note: lenscov is not yet python3 compatible")
+    print("[WARNING] calc_cov_lensed requires MPI to be abled")
+    from pspy import so_mpi
+    from mpi4py import MPI
+    so_mpi.init(True)
+
+    rank, size = so_mpi.rank, so_mpi.size
+    ## The available blocks in the code
+    blocks     = ['TTTT','EEEE','BBBB','EEBB','TTEE','TTBB','TETE','TTTE','EETE','TEBB']
+
+    ## Initialization of spectra
+    cls_unlensed = lib_spectra.get_camb_cls(fname=os.path.abspath(camb_unlensed_theory_file), lmax=lmax)
+    cls_lensed = lib_spectra.get_camb_cls(fname=os.path.abspath(camb_lensed_theory_file), lmax=lmax)
+     
+    file_manager = util.file_manager('covariances_CMBxCMB','pspy',spec='v1',lmax=lmax,
+            force_recomputation=overwrite,folder=output_dir,rank=rank)
+
+    if file_manager.FileExist is True:
+        if rank == 0:
+            print('Already computed in %s/' %output_dir)
+    else:
+        cov_order0_tot, cov_order1_tot, cov_order2_tot, junk = lib_covariances.analytic_covariances_CMBxCMB(
+            cls_unlensed,
+            cls_lensed,
+            lmin=lmin,
+            blocks=blocks,
+            noise_uK_arcmin=noise_uK_arcmin,
+            TTcorr=False,
+            fwhm_arcmin=fwhm_arcmin,
+            MPI=MPI,
+            use_corrfunc=True,
+            exp='pspy',
+            folder_cache=output_dir)
+        array_to_save = [cov_order0_tot, cov_order1_tot, cov_order2_tot, blocks]
+
+        if file_manager.FileExist is False and rank == 0:
+            file_manager.save_data_on_disk(array_to_save)
+
+def load_cov_lensed(cov_lensed_file, include_gaussian_part=False):
+    """
+    @brief wrapper around lenscov (https://github.com/JulienPeloton/lenscov). 
+    @param include_gaussian_part: if False, it returns only lensing induced non-gaussin parts
+    """
+    covs = {}
+
+    input_data = pickle.load(open(cov_lensed_file, 'r'))['data']
+    cov_G      = input_data[0]
+    cov_NG1    = input_data[1]
+    cov_NG2    = input_data[2]
+    combs      = input_data[3]
+
+    for ctr, comb in enumerate(combs):
+        covs[comb] = cov_NG1[ctr].data + cov_NG2[ctr].data
+        if include_gaussian_part:
+            covs[comb] = covs[comb] + cov_G[ctr].data
+
+    return covs
+

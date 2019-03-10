@@ -10,12 +10,9 @@ except ImportError:
 from numpy.distutils.core import setup, Extension
 
 extensions = [
-#    Extension(name='pspy.wigner3j', sources=['pspy/extensions/wigner3j/wigner3j_sub.f']),
     Extension(name='pspy.cov_fortran', sources=['pspy/extensions/cov_fortran/cov_fortran.f90',
                                                 'pspy/extensions/wigner3j/wigner3j_sub.f'],
-              extra_f90_compile_args=['-ffree-line-length-none', '-Wunused-variable'],
-              ),
-              #f2py_options=['--noopt', 'skip:', 'map_border', 'calc_weights']),
+              extra_f90_compile_args=['-ffree-line-length-none', '-Wunused-variable']),
     Extension(name='pspy.mcm_fortran', sources=['pspy/extensions/mcm_fortran/mcm_fortran.f90',
                                                 'pspy/extensions/wigner3j/wigner3j_sub.f']),
 ]
@@ -32,9 +29,6 @@ config = {
         ],
     'packages': [
         'pspy',
-#        'pspy.wigner3j',
-#        'pspy.mcm_fortran',
-#        'pspy.cov_fortran'
         ],
     'scripts': [],
     'name': 'pspy',

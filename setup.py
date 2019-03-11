@@ -9,12 +9,23 @@ except ImportError:
 
 from numpy.distutils.core import setup, Extension
 
+# These are for gfortran.
+fort_ops = ['-fopenmp', '-Ofast',
+            '-ffree-line-length-none'
+            ]
+link_args = ['-lgomp']
+
 extensions = [
-    Extension(name='pspy.cov_fortran', sources=['pspy/extensions/cov_fortran/cov_fortran.f90',
-                                                'pspy/extensions/wigner3j/wigner3j_sub.f'],
-              extra_f90_compile_args=['-ffree-line-length-none', '-Wunused-variable']),
-    Extension(name='pspy.mcm_fortran', sources=['pspy/extensions/mcm_fortran/mcm_fortran.f90',
-                                                'pspy/extensions/wigner3j/wigner3j_sub.f']),
+    Extension(name='pspy.cov_fortran', sources=[
+        'pspy/extensions/cov_fortran/cov_fortran.f90',
+        'pspy/extensions/wigner3j/wigner3j_sub.f'],
+              extra_f90_compile_args=fort_ops,
+              extra_link_args=link_args),
+    Extension(name='pspy.mcm_fortran', sources=[
+        'pspy/extensions/mcm_fortran/mcm_fortran.f90',
+        'pspy/extensions/wigner3j/wigner3j_sub.f'],
+              extra_f90_compile_args=fort_ops,
+              extra_link_args=link_args),
 ]
 
 config = {

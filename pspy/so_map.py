@@ -244,6 +244,35 @@ def read_map(file,coordinate=None,verbose=False):
 def read_alm(file, ncomp):
     return np.complex128(hp.fitsfunc.read_alm(file, hdu=tuple(range(1,1+ncomp))))
 
+def from_components(T,Q,U):
+    ncomp=3
+    T=enmap.read_map(T)
+    Q=enmap.read_map(Q)
+    U=enmap.read_map(U)
+    shape, wcs= T.geometry
+    shape= ((ncomp,)+shape)
+    map     = so_map()
+    map.data= enmap.zeros(shape, wcs=wcs, dtype=None)
+    map.data[0]=T
+    map.data[1]=Q
+    map.data[2]=U
+    map.pixel='CAR'
+    map.nside=None
+    map.ncomp=ncomp
+    map.geometry=T.geometry[1:]
+    map.coordinate='equ'
+    return map
+
+def get_submap_car(map,box):
+     submap=map.copy()
+     submap.data= map.data.submap( box)
+     submap.geometry= map.data.submap( box).geometry[1:]
+     return submap
+
+def bounding_box_from_map(map_car):
+    shape, wcs= map_car.data.geometry
+    return enmap.box(shape, wcs)
+
 def from_enmap(emap):
     map     = so_map()
     hdulist = emap.wcs.to_fits()

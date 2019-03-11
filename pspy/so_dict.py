@@ -46,14 +46,10 @@ class so_dict( dict ):
             line = s[0]
             s = line.split('\\')
             if len(s) > 1:
-                print(old)
                 old = old.join( s[0])
-                print(old)
                 continue
             else:
-                print(old)
                 line = old.join(s[0])
-                print(line)
                 old = ''
             for i in range(len(line)):
                 if line[i]!=' ':

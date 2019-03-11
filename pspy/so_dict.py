@@ -64,7 +64,6 @@ class so_dict( dict ):
             key = s[0].strip()
             val = eval(s[1].strip()) # XXX:make safer
             self[key] = val
-            print (key,val)
         f.close()
 
     readFromFile = read_from_file

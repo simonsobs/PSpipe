@@ -46,16 +46,20 @@ class so_dict( dict ):
             line = s[0]
             s = line.split('\\')
             if len(s) > 1:
-                old = string.join([old, s[0]])
+                print(old)
+                old = old.join( s[0])
+                print(old)
                 continue
             else:
-                line = string.join([old, s[0]])
+                print(old)
+                line = old.join(s[0])
+                print(line)
                 old = ''
-            for i in xrange(len(line)):
+            for i in range(len(line)):
                 if line[i]!=' ':
                     line = line[i:]
                     break
-            exec(line)
+            exec(line, globals())
             s = line.split('=')
             if len(s) != 2:
                 print ("Error parsing line:")
@@ -64,6 +68,7 @@ class so_dict( dict ):
             key = s[0].strip()
             val = eval(s[1].strip()) # XXX:make safer
             self[key] = val
+            print (key,val)
         f.close()
 
     readFromFile = read_from_file

@@ -108,7 +108,7 @@ for ar in arrays:
         
         if len(lb_steve)>len(lb):
             Db_steve= Db_steve[:len(lb)]
-        
+            lb_steve=lb_steve[:len(lb)]
         
         plt.figure(figsize=(12,8))
         plt.subplot(2,1,1)

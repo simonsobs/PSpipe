@@ -33,9 +33,10 @@ apo = so_map.read_map(d['apo_path'])
 box=so_map.bounding_box_from_map(apo)
 
 
-t=time.time()
+
 for ar in arrays:
-    
+    t=time.time()
+
     window=so_map.read_map(d['window_T_%s'%ar])
     window=so_map.get_submap_car(window,box,mode='round')
     

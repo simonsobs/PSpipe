@@ -263,10 +263,10 @@ def from_components(T,Q,U):
     map.coordinate='equ'
     return map
 
-def get_submap_car(map,box):
+def get_submap_car(map,box,mode):
      submap=map.copy()
-     submap.data= map.data.submap( box)
-     submap.geometry= map.data.submap( box).geometry[1:]
+     submap.data= map.data.submap( box , mode=mode)
+     submap.geometry= map.data.submap( box, mode=mode).geometry[1:]
      return submap
 
 def bounding_box_from_map(map_car):

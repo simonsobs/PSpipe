@@ -218,7 +218,7 @@ def extract_TTTEEE_mbb(mbb_inv):
     """
     mbb_inv_array=so_mcm.coupling_dict_to_array(mbb_inv)
     mbb_array=np.linalg.inv(mbb_inv_array)
-    n_bins=mbb_array.shape[0]/9
+    n_bins=int(mbb_array.shape[0]/9)
     mbb_array_select=np.zeros((3*n_bins,3*n_bins))
     mbb_array_select[:n_bins,:n_bins]=mbb_array[:n_bins,:n_bins]
     mbb_array_select[n_bins:2*n_bins,n_bins:2*n_bins]=mbb_array[n_bins:2*n_bins,n_bins:2*n_bins]

@@ -1,5 +1,5 @@
 """
-These are tests of analytic estimation of a gaussian covariance matrix for spin0 field
+These are tests of analytic estimation of a gaussian covariance matrix for spin0 and 2 field
 It is done in CAR pixellisation.
 We also provide an option for monte-carlo verification of the covariance matrix
 """

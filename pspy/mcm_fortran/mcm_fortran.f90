@@ -53,8 +53,8 @@ subroutine calc_mcm_spin0and2(wcl_00,wcl_02, wcl_20, wcl_22, wbl_00,wbl_02, wbl_
                 mcm_array(l1-1,l2-1,1) =mcm_array(l1-1,l2-1,1)+ fac_00*(wcl_00(l3+1)*thrcof0(i)**2d0)
                 mcm_array(l1-1,l2-1,2) =mcm_array(l1-1,l2-1,2)+ fac_02*(wcl_02(l3+1)*thrcof0(i)*thrcof1(i))
                 mcm_array(l1-1,l2-1,3) =mcm_array(l1-1,l2-1,3)+ fac_20*(wcl_20(l3+1)*thrcof0(i)*thrcof1(i))
-                mcm_array(l1-1,l2-1,4) =mcm_array(l1-1,l2-1,4)+ fac_22*(wcl_00(l3+1)*thrcof1(i)**2*(1+(-1)**(l1+l2+l3))/2)
-                mcm_array(l1-1,l2-1,5) =mcm_array(l1-1,l2-1,5)+ fac_22*(wcl_00(l3+1)*thrcof1(i)**2*(1-(-1)**(l1+l2+l3))/2)
+                mcm_array(l1-1,l2-1,4) =mcm_array(l1-1,l2-1,4)+ fac_22*(wcl_22(l3+1)*thrcof1(i)**2*(1+(-1)**(l1+l2+l3))/2)
+                mcm_array(l1-1,l2-1,5) =mcm_array(l1-1,l2-1,5)+ fac_22*(wcl_22(l3+1)*thrcof1(i)**2*(1-(-1)**(l1+l2+l3))/2)
             end do
         end do
     end do

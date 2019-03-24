@@ -27,6 +27,21 @@ python setup.py install
 
 (add `--user` if you don't have permissions, which is probably the case at e.g. NERSC).
 
+It's very difficult to make the installation work on any computer (and we are not software engineer) so if you have an issue, please contact louis@lal.in2p3.fr or dongwon.han@stonybrook.edu and we will try to help.
+
+Few possible problems:
+
+Due to the way pixell works, you don't want to use the code on login node, to test things, go for example on interactive node, and export the number of OMP cores: 
+
+salloc -N 1 -q debug -C haswell -t 00:30:00 -L SCRATCH
+
+export OMP_NUM_THREADS=64
+
+before running any script.
+
+We provide an example on NERSC .bashrc.ext in this folder that can be used if you experienced any issue.
+
+
 to install namaster, please follow the instruction in:  https://github.com/LSSTDESC/NaMaster
 
 

@@ -2,7 +2,7 @@ import matplotlib
 matplotlib.use('Agg')
 import numpy as np
 import pylab as plt
-from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils
+from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
 import os,sys
 from pixell import enmap
 import time,os
@@ -32,8 +32,6 @@ fsky['pa2']='fsky0.01071187'
 apo = so_map.read_map(d['apo_path'])
 box=so_map.bounding_box_from_map(apo)
 
-
-
 for ar in arrays:
     t=time.time()
 
@@ -52,13 +50,25 @@ for ar in arrays:
     almList=[]
     nameList=[]
     
+    if d['use_filtered_maps']==True:
+        map_T=d['map_T_%s_filtered'%ar]
+        map_Q=d['map_Q_%s_filtered'%ar]
+        map_U=d['map_U_%s_filtered'%ar]
+    else:
+        map_T=d['map_T_%s'%ar]
+        map_Q=d['map_Q_%s'%ar]
+        map_U=d['map_U_%s'%ar]
+
     print ("compute harmonic transform ...")
     count=0
-
-    for T,Q,U in zip(d['map_T_%s'%ar],d['map_Q_%s'%ar],d['map_U_%s'%ar]):
+    for T,Q,U in zip(map_T,map_Q,map_U):
         map=so_map.from_components(T,Q,U)
-        submap=so_map.get_submap_car(map,box,mode='floor')
-        almList+=[ sph_tools.get_alms(submap,window_tuple,niter,lmax) ]
+        map=so_map.get_submap_car(map,box,mode='floor')
+
+        if d['use_filtered_maps']==False:
+            map = so_map_preprocessing.get_map_kx_ky_filtered_pyfftw(map,apo,d['filter_dict'])
+        
+        almList+=[ sph_tools.get_alms(map,window_tuple,niter,lmax) ]
         nameList+=['split_%d_%s'%(count,ar)]
         count+=1
 
@@ -101,7 +111,6 @@ for ar in arrays:
 
     for s1 in ['TT','TE','EE']:
         lb_steve,Db_steve,sigmab_steve,Nb_steve=np.loadtxt('%s/deep56_s14_%s_f150_c7v5_car_190220_rect_window0_%s_lmax7925_%s_output.txt'%(d['steve_ps_dir'],ar,s1,fsky[ar]),unpack=True)
-
 
         new_lb=lb.copy()
         if len(lb)>len(lb_steve):

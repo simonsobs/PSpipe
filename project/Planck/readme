@@ -49,4 +49,4 @@ https://pla.esac.esa.int/#maps
 
 Go to PR2 2015, mask, and then likelihood mask you will find P70,P50,P41 and T66,T57,T47 corresponding to the masks used in the likelihood paper.
 
-The beams can be found in the planck_beam folder, I didn't found the corresponding 2015 one so let's use 2018 ones. I take them from files of the form 'BeamWf_HFI_R3.01/Bl_T_R3.01_fullsky_%s.fits' from the PLA.
+The beams can be found in the planck_beam folder, I didn't find the corresponding 2015 one so let's use 2018 ones. I take them from files of the form 'BeamWf_HFI_R3.01/Bl_T_R3.01_fullsky_%s.fits' from the PLA.

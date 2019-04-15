@@ -132,7 +132,7 @@ for run,apo_type,binary,template in zip(run_name,apo_type_list,binary_list,templ
 
     #the windows (for spin0 and spin2) are going to couple mode together, we compute a mode coupling matrix in order to undo this effect
 
-    mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(window, binning_file, lmax=lmax, type='Dl')
+    mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(window, binning_file, lmax=lmax, type='Dl',niter=niter)
     if write_data==True:
         mbb_inv_array=so_mcm.coupling_dict_to_array(mbb_inv)
         np.savetxt('%s/mbb_inv_%s.dat'%(test_dir,run),mbb_inv_array)

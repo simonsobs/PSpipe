@@ -123,7 +123,7 @@ for run,apo_type,binary,template in zip(run_name,apo_type_list,binary_list,templ
     print ('compute mcm ')
 
     #the window is going to couple mode together, we compute a mode coupling matrix in order to undo this effect
-    mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0(window, binning_file, lmax=lmax, type='Dl')
+    mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0(window, binning_file, lmax=lmax, type='Dl',niter=niter)
 
     if write_data==True:
         np.savetxt('%s/mbb_inv.dat'%(test_dir),mbb_inv)

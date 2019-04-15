@@ -74,7 +74,7 @@ window_tuple=(window,window)
 
 
 #the window is going to couple mode together, we compute a mode coupling matrix in order to undo this effect
-mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(window_tuple, binning_file, lmax=lmax, type='Dl')
+mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(window_tuple, binning_file, lmax=lmax, type='Dl',niter=niter)
 
 l_th,ps_theory=pspy_utils.ps_lensed_theory_to_dict(clfile,type,lmax=lmax)
 nl_th=pspy_utils.get_nlth_dict(rms_uKarcmin_T,type,lmax,spectra=spectra)
@@ -96,7 +96,7 @@ for name1,id1 in zip(name_list,id_list):
         spec=id1[0]+id2[0]
         Clth_dict[id1+id2]=ps_theory[spec]+nl_th[spec]*so_cov.delta(name1,name2)
 
-coupling_dict=so_cov.cov_coupling_spin0and2(window, lmax, niter=0)
+coupling_dict=so_cov.cov_coupling_spin0and2(window, lmax, niter=niter)
 analytic_cov=so_cov.cov_spin0and2(Clth_dict,coupling_dict,binning_file,lmax,mbb_inv,mbb_inv)
 
 if DoMonteCarlo==True:

@@ -135,5 +135,41 @@ def apod_rectangle(binary,radius):
         win.data=winX.data*winY.data
         return(win)
 
+def get_spinned_windows(w,lmax,niter):
+    
+    template=np.array([w.data.copy(),w.data.copy()])
+    s1_a,s1_b,s2_a,s2_b=w.copy(),w.copy(),w.copy(),w.copy()
+    
+    if w.pixel=='CAR':
+        template=enmap.samewcs(template,w.data)
+    
+    wlm = sph_tools.map2alm(w,lmax=lmax,niter=niter)
+    ell = np.arange(lmax)
+    filter_1=-np.sqrt((ell+1)*ell)
+    filter_2=-np.sqrt((ell+2)*(ell+1)*ell*(ell-1))
+
+    filter_1[:1]=0
+    filter_2[:2]=0
+    wlm1_e= hp.almxfl(wlm,filter_1)
+    wlm2_e= hp.almxfl(wlm,filter_2)
+    wlm1_b = np.zeros_like(wlm1_e)
+    wlm2_b = np.zeros_like(wlm2_e)
+
+    w1=template.copy()
+    w2=template.copy()
+    
+    if w.pixel=='HEALPIX':
+        curvedsky.alm2map_healpix( np.array([wlm1_e,wlm1_b]), w1, spin=1)
+        curvedsky.alm2map_healpix( np.array([wlm2_e,wlm2_b]), w2, spin=2)
+    if w.pixel=='CAR':
+        curvedsky.alm2map(np.array([wlm1_e,wlm1_b]), w1, spin=1)
+        curvedsky.alm2map(np.array([wlm2_e,wlm2_b]), w2, spin=2)
+    
+    s1_a.data[w.data != 0]=w1[0][w.data != 0]
+    s1_b.data[w.data != 0]=w1[1][w.data != 0]
+    s2_a.data[w.data != 0]=w2[0][w.data != 0]
+    s2_b.data[w.data != 0]=w2[1][w.data != 0]
+    
+    return s1_a,s1_b,s2_a,s2_b
 
 

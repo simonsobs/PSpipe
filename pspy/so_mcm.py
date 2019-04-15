@@ -64,7 +64,7 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax, type, win2=None,bl1=None,bl2=Non
     else:
         return mbb_inv, Bbl
 
-def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,niter=3,pureB=False,return_mcm=False,save_file=None):
+def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,niter=3,pure=False,return_mcm=False,save_file=None):
     """
     @brief get the mode coupling matrix and the binning matrix for spin 0 and 2 fields
     @param win1: a python tuple (win_spin0,win_spin2) with the window functions of survey 1, if input_alm=True, expect (wlm_spin0, wlm_spin2)
@@ -126,14 +126,14 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None
 
     mcm=np.zeros((5,lmax,lmax))
 
-    if pureB==False:
+    if pure==False:
         mcm_fortran.calc_mcm_spin0and2(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
     else:
-        #mcm_fortran.calc_mcm_spin0and2_pureB(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
-        print('not implemented yet')
+        mcm_fortran.calc_mcm_spin0and2_pure(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
 
     bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
     n_bins=len(bin_hi)
+
 
     mbb_array=np.zeros((5,n_bins,n_bins))
     Bbl_array=np.zeros((5,n_bins,lmax))

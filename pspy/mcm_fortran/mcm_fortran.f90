@@ -62,6 +62,63 @@ subroutine calc_mcm_spin0and2(wcl_00,wcl_02, wcl_20, wcl_22, wbl_00,wbl_02, wbl_
 end subroutine
 
 
+subroutine calc_mcm_spin0and2_pure(wcl_00,wcl_02, wcl_20, wcl_22, wbl_00,wbl_02, wbl_20, wbl_22 , mcm_array)
+    implicit none
+    real(8), intent(in)    :: wcl_00(:),wcl_02(:),wcl_20(:),wcl_22(:),wbl_00(:),wbl_02(:), wbl_20(:), wbl_22(:)
+    real(8), intent(inout) :: mcm_array(:,:,:)
+    real(8), parameter     :: pi = 3.14159265358979323846264d0
+    integer :: l1, l2, l3, info, nlmax, lmin1, lmax1, i1, lmin2, lmax2, i2, lmin3, lmax3, i3
+    real(8) :: l1f(2), fac_00,fac_02,fac_20,fac_22,fac_b,fac_c,combin
+    real(8) :: thrcof0(2*size(mcm_array,1)),thrcofa(2*size(mcm_array,1)),thrcofb(2*size(mcm_array,1)), thrcofc(2*size(mcm_array,1))
+    nlmax = size(mcm_array,1)-1
+    !$omp parallel do private(l3,l2,l1,fac_00,fac_02,fac_20,fac_22,info,l1f,thrcof0,thrcofa,thrcofb,thrcofc,lmin1,lmax1,i1,lmin2,lmax2,i2,lmin3,lmax3,i3) schedule(dynamic)
+    do l1 = 2, nlmax
+        fac_00=(2*l1+1)/(4*pi)*wbl_00(l1+1)
+        fac_02=(2*l1+1)/(4*pi)*wbl_02(l1+1)
+        fac_20=(2*l1+1)/(4*pi)*wbl_20(l1+1)
+        fac_22=(2*l1+1)/(4*pi)*wbl_22(l1+1)
+
+        do l2 = 2, nlmax
+            call drc3jj(dble(l1),dble(l2),0d0,0d0,l1f(1),l1f(2),thrcof0, size(thrcof0),info)
+            call drc3jj(dble(l1),dble(l2),-2d0,2d0,l1f(1),l1f(2),thrcofa, size(thrcofa),info)
+            lmin1=INT(l1f(1))
+            lmax1=MIN(nlmax+1,INT(l1f(2)))
+            call drc3jj(dble(l1),dble(l2),-2d0,1d0,l1f(1),l1f(2),thrcofb, size(thrcofb),info)
+            lmin2=INT(l1f(1))
+            lmax2=MIN(nlmax+1,INT(l1f(2)))
+            call drc3jj(dble(l1),dble(l2),-2d0,0d0,l1f(1),l1f(2),thrcofc, size(thrcofc),info)
+            lmin3=INT(l1f(1))
+            lmax3=MIN(nlmax+1,INT(l1f(2)))
+            do l3=lmin1,lmax1
+                i1   = l3-lmin1+1
+                i2   = l3-lmin2+1
+                i3   = l3-lmin3+1
+
+                fac_b=2*dsqrt((l3+1d0)*l3/((l2-1d0)*(l2+2d0)))
+                fac_c=dsqrt((l3+2d0)*(l3+1d0)*l3*(l3-1d0)/((l2+2d0)*(l2+1d0)*l2*(l2-1d0)))
+
+                if (i2 < 0) then
+                    fac_b=0d0
+                end if
+
+                if (i3 < 0) then
+                    fac_c=0d0
+                end if
+
+                combin=thrcofa(i1) + fac_b*thrcofb(i2) + fac_c*thrcofc(i3)
+                mcm_array(l1-1,l2-1,1) =mcm_array(l1-1,l2-1,1)+ fac_00*(wcl_00(l3+1)*thrcof0(i1)**2d0)
+                mcm_array(l1-1,l2-1,2) =mcm_array(l1-1,l2-1,2)+ fac_02*(wcl_02(l3+1)*thrcof0(i1)*combin)
+                mcm_array(l1-1,l2-1,3) =mcm_array(l1-1,l2-1,3)+ fac_20*(wcl_20(l3+1)*thrcof0(i1)*combin)
+                mcm_array(l1-1,l2-1,4) =mcm_array(l1-1,l2-1,4)+ fac_22*(wcl_22(l3+1)*combin**2*(1+(-1)**(l1+l2+l3))/2)
+                mcm_array(l1-1,l2-1,5) =mcm_array(l1-1,l2-1,5)+ fac_22*(wcl_22(l3+1)*combin**2*(1-(-1)**(l1+l2+l3))/2)
+            end do
+        end do
+    end do
+
+end subroutine
+
+
+
 subroutine bin_mcm(mcm, binLo,binHi, binsize, mbb,doDl)
     ! Bin the given mode coupling matrix mcm(0:lmax,0:lmax) into
     ! mbb(nbin,nbin) using bins of the given binsize

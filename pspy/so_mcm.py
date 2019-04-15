@@ -9,7 +9,7 @@ from copy import deepcopy
 from pspy import pspy_utils
 
 
-def mcm_and_bbl_spin0(win1, binning_file, lmax, type, win2=None,bl1=None,bl2=None,input_alm=False,niter=0,return_mcm=False,save_file=None):
+def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,bl2=None,input_alm=False,return_mcm=False,save_file=None):
     """
     @brief get the mode coupling matrix and the binning matrix for spin0 fields
     @param win1: the window function of survey 1, if input_alm=True, expect wlm1
@@ -64,7 +64,7 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax, type, win2=None,bl1=None,bl2=Non
     else:
         return mbb_inv, Bbl
 
-def mcm_and_bbl_spin0and2(win1, binning_file,lmax,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,niter=3,pure=False,return_mcm=False,save_file=None):
+def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,pure=False,return_mcm=False,save_file=None):
     """
     @brief get the mode coupling matrix and the binning matrix for spin 0 and 2 fields
     @param win1: a python tuple (win_spin0,win_spin2) with the window functions of survey 1, if input_alm=True, expect (wlm_spin0, wlm_spin2)

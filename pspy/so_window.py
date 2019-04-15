@@ -3,7 +3,8 @@
 """
 from __future__ import absolute_import, print_function
 import healpy as hp, pylab as plt, numpy as np, astropy.io.fits as pyfits
-from pixell import enmap
+from pixell import enmap,curvedsky
+import sph_tools
 import scipy
 import tempfile
 import os, sys

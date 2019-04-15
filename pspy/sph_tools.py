@@ -3,6 +3,7 @@
 """
 from __future__ import absolute_import, print_function
 from pixell import curvedsky,powspec
+import so_window
 import healpy as hp, pylab as plt, numpy as np, astropy.io.fits as pyfits
 import sys,os,copy
 
@@ -89,7 +90,7 @@ def get_alms(map,window,niter,lmax,theta_range=None):
 
 def get_pure_alms(map,window,niter,lmax):
     
-    s1_a,s1_b,s2_a,s2_b=get_spinned_windows(window[1],lmax,niter=niter)
+    s1_a,s1_b,s2_a,s2_b=so_window.get_spinned_windows(window[1],lmax,niter=niter)
     p2 = np.array([window[1].data*map.data[1], window[1].data*map.data[2]])
     p1 = np.array([(s1_a.data*map.data[1] + s1_b.data*map.data[2]), (s1_a.data*map.data[2] - s1_b.data*map.data[1])])
     p0 = np.array([(s2_a.data*map.data[1] + s2_b.data*map.data[2]), (s2_a.data*map.data[2] - s2_b.data*map.data[1])])

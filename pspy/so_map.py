@@ -217,7 +217,10 @@ def read_map(file,coordinate=None,verbose=False,fields_healpix=None):
             map.ncomp= header['TFIELDS']
             map.data= hp.fitsfunc.read_map(file,field=np.arange(map.ncomp),verbose=False)
         else:
-            map.ncomp=len(fields_healpix)
+            try:
+                map.ncomp=len(fields_healpix)
+            except:
+                map.ncomp=1
             map.data= hp.fitsfunc.read_map(file,verbose=False,field=fields_healpix)
 
         map.nside=hp.pixelfunc.get_nside(map.data)

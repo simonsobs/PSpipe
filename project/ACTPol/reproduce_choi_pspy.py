@@ -45,7 +45,7 @@ for ar in arrays:
     l,bl=beam[:,0],beam[:,1]
     bl_tuple=(bl,bl)
     
-    mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(window_tuple, binning_file, bl1=bl_tuple, lmax=lmax, type=type)
+    mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(window_tuple, binning_file,niter=niter, bl1=bl_tuple, lmax=lmax, type=type)
     
     almList=[]
     nameList=[]

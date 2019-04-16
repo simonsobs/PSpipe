@@ -220,8 +220,6 @@ def read_map(file,coordinate=None,verbose=False,fields_healpix=None):
             map.ncomp=len(fields_healpix)
             map.data= hp.fitsfunc.read_map(file,verbose=False,field=fields_healpix)
 
-        map.ncomp= header['TFIELDS']
-        map.data= hp.fitsfunc.read_map(file,field=np.arange(map.ncomp),verbose=False)
         map.nside=hp.pixelfunc.get_nside(map.data)
         map.geometry='healpix geometry'
         try:

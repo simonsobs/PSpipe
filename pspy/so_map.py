@@ -202,7 +202,7 @@ class so_map:
                         #enplot.show(plot,method="ipython")
                         plot.img.show()
 
-def read_map(file,coordinate=None,verbose=False):
+def read_map(file,coordinate=None,verbose=False,fields_healpix=None):
     """
     @brief Reads a FITS file and creates a so map object out of it.
     The FITS file can be either an enmap object or a healpix object.
@@ -213,6 +213,13 @@ def read_map(file,coordinate=None,verbose=False):
     try:
         header = hdulist[1].header
         map.pixel='HEALPIX'
+        if fields_healpix is None:
+            map.ncomp= header['TFIELDS']
+            map.data= hp.fitsfunc.read_map(file,field=np.arange(map.ncomp),verbose=False)
+        else:
+            map.ncomp=len(fields_healpix)
+            map.data= hp.fitsfunc.read_map(file,field=np.arange(map.ncomp),verbose=False,field=fields_healpix)
+
         map.ncomp= header['TFIELDS']
         map.data= hp.fitsfunc.read_map(file,field=np.arange(map.ncomp),verbose=False)
         map.nside=hp.pixelfunc.get_nside(map.data)

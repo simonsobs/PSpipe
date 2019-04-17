@@ -118,7 +118,7 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
 
     for i,s1 in enumerate(spin):
         for j,s2 in enumerate(spin):
-            wcl[s1+s2]=hp.alm2cl(win1[i],win2[i])
+            wcl[s1+s2]=hp.alm2cl(win1[i],win2[j])
             #wcl[s1+s2]=wcl[s1+s2][:lmax]*(2*np.arange(lmax)+1)
             wcl[s1+s2]=wcl[s1+s2]*(2*np.arange(len(wcl[s1+s2]))+1)
 

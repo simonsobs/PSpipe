@@ -3,7 +3,7 @@
 """
 from __future__ import absolute_import, print_function
 from pixell import curvedsky,powspec
-import so_window
+from pspy import so_window
 import healpy as hp, pylab as plt, numpy as np, astropy.io.fits as pyfits
 import sys,os,copy
 

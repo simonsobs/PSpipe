@@ -96,5 +96,12 @@ def create_directory(name):
     except:
         pass
 
-
+def naive_binning(l,fl,binning_file,lmax):
+    bin_lo,bin_hi,bin_c,bin_size= read_binning_file(binning_file,lmax)
+    n_bins=len(bin_hi)
+    fl_bin=np.zeros(len(bin_c))
+    for ibin in range(n_bins):
+        loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))
+        fl_bin[ibin] = (fl[loc]).mean()
+    return bin_c,fl_bin
 

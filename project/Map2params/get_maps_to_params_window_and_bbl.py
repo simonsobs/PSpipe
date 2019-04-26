@@ -42,7 +42,7 @@ for f in freqs:
     mask= so_window.create_apodization(mask, apo_type=d['apo_type_mask'], apo_radius_degree=d['apo_radius_mask'])
     window.data*=mask.data
     window.write_map('%s/window_%s.fits'%(window_dir,f))
-#window.plot()
+    window.plot()
 
 for c1,f1 in enumerate(freqs):
     l,bl1= np.loadtxt('beam/beam_%s.dat'%f1,unpack=True)
@@ -54,7 +54,8 @@ for c1,f1 in enumerate(freqs):
 
         print (f1,f2)
         if ncomp==3:
-            mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=(window_1,window_1),win2=(window_2,window_2),bl1=bl1,bl2=bl2,binning_file= d['binning_file'],niter=0, lmax=d['lmax'], type=d['type'],save_file='%s/%s_%s'%(mcm_dir,f1,f2))
+            bl1=bl2=bl1*0+1
+            mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=(window_1,window_1),win2=(window_2,window_2),bl1=(bl1,bl1),bl2=(bl2,bl2),binning_file= d['binning_file'],niter=0, lmax=d['lmax'], type=d['type'],save_file='%s/%s_%s'%(mcm_dir,f1,f2))
 
         if ncomp==1:
             mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0(win1=window_1,win2=window_2,bl1=bl1,bl2=bl2,binning_file= d['binning_file'],niter=0, lmax=d['lmax'], type=d['type'],save_file='%s/%s_%s'%(mcm_dir,f1,f2))

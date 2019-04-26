@@ -1,0 +1,45 @@
+iStart=0
+iStop=10
+freqs=['LAT_27','LAT_39','LAT_93','LAT_145','LAT_225','LAT_280', 'Planck_100','Planck_143','Planck_217','Planck_353']
+
+pixWin=False
+#noise properties of LAT
+f_sky_LAT=0.4
+sensitivity_mode=1
+
+#type of simulations
+spin='0-2'
+pixel='CAR'
+rms_uKarcmin_T=1
+nSplits=2
+clfile='theory/cosmo2017_10K_acc3_lensedCls.dat'
+
+#Example of CAR template
+ra0=-15
+ra1=15
+dec0=-15
+dec1=15
+res=2.5
+apo_type_survey='Rectangle'
+apo_radius_survey=2
+
+#Example of HEALPIX template
+#nside=1024
+#lon=30
+#lat=50
+#radius=15
+#apo_type_survey='C1'
+#apo_radius_survey=1
+
+# apodisation and Mask
+apo_type_mask='C1'
+source_mask_nholes=30
+source_mask_radius=10
+apo_radius_mask=0.3
+
+# Spectra  parameter
+type='Dl'
+binning_file='binning/BIN_ACTPOL_50_4_SC_low_ell_startAt2'
+lmax=3000
+niter=0
+

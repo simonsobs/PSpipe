@@ -9,7 +9,7 @@ from copy import deepcopy
 from pspy import pspy_utils
 
 
-def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,bl2=None,input_alm=False,return_mcm=False,save_file=None):
+def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,bl2=None,input_alm=False,unbin=None,save_file=None):
     """
     @brief get the mode coupling matrix and the binning matrix for spin0 fields
     @param win1: the window function of survey 1, if input_alm=True, expect wlm1
@@ -56,15 +56,18 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,b
     mbb_inv= np.linalg.inv(mbb)
     Bbl=np.dot(mbb_inv,Bbl)
 
-    if save_file is not None:
-        save_coupling(save_file,mbb_inv,Bbl)
 
-    if return_mcm:
+
+    if unbin:
+        if save_file is not None:
+            save_coupling(save_file,mbb_inv,Bbl,mcm=mcm)
         return mcm,mbb_inv,Bbl
     else:
+        if save_file is not None:
+            save_coupling(save_file,mbb_inv,Bbl)
         return mbb_inv, Bbl
 
-def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,pure=False,return_mcm=False,save_file=None):
+def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,pure=False,unbin=None,save_file=None):
     """
     @brief get the mode coupling matrix and the binning matrix for spin 0 and 2 fields
     @param win1: a python tuple (win_spin0,win_spin2) with the window functions of survey 1, if input_alm=True, expect (wlm_spin0, wlm_spin2)
@@ -115,7 +118,6 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
     wbl={}
     spin=['0','2']
 
-
     for i,s1 in enumerate(spin):
         for j,s2 in enumerate(spin):
             wcl[s1+s2]=hp.alm2cl(win1[i],win2[j])
@@ -134,7 +136,6 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
     bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
     n_bins=len(bin_hi)
 
-
     mbb_array=np.zeros((5,n_bins,n_bins))
     Bbl_array=np.zeros((5,n_bins,lmax))
 
@@ -145,19 +146,20 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
     mcm= get_coupling_dict(mcm,fac=-1.0)
     mbb= get_coupling_dict(mbb_array,fac=-1.0)
     Bbl= get_coupling_dict(Bbl_array,fac=1.0)
-    mbb_inv={}
 
     spin_pairs=['spin0xspin0','spin0xspin2','spin2xspin0','spin2xspin2']
+    mbb_inv={}
     for s in spin_pairs:
         mbb_inv[s]=np.linalg.inv(mbb[s])
         Bbl[s]=np.dot(mbb_inv[s],Bbl[s])
 
-    if save_file is not None:
-        save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs)
-
-    if return_mcm:
-        return mcm,mbb_inv,Bbl
+    if unbin:
+        if save_file is not None:
+            save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs,mcm=mcm)
+        return mcm,mbb_inv, Bbl
     else:
+        if save_file is not None:
+            save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs)
         return mbb_inv, Bbl
 
 def coupling_dict_to_array(dict):
@@ -203,7 +205,7 @@ def apply_Bbl(Bbl,ps,spectra=None):
         ps_th=np.dot(Bbl,ps)
     return ps_th
 
-def save_coupling(prefix,mbb_inv,Bbl,spin_pairs=None):
+def save_coupling(prefix,mbb_inv,Bbl,spin_pairs=None,mcm=None):
     """
     @brief save the inverse of the mode coupling matrix and the binning matrix in npy format
     @param prefix: the prefix for the name of the file
@@ -226,11 +228,16 @@ def save_coupling(prefix,mbb_inv,Bbl,spin_pairs=None):
         for s in spin_pairs:
             np.save(prefix +'_mbb_inv_%s.npy'%s,mbb_inv[s])
             np.save(prefix +'_Bbl_%s.npy'%s,Bbl[s])
+            if mcm is not None:
+                np.save(prefix +'_mcm_%s.npy'%s,mcm[s])
     else:
         np.save(prefix +'_mbb_inv.npy',mbb_inv)
         np.save(prefix +'_Bbl.npy',Bbl)
+        if mcm is not None:
+            np.save(prefix +'_mcm.npy'%s,mcm)
 
-def read_coupling(prefix,spin_pairs=None):
+
+def read_coupling(prefix,spin_pairs=None,unbin=None):
     """
     @brief read the inverse of the mode coupling matrix and the binning matrix
     @param prefix: the prefix for the name of the file
@@ -240,11 +247,19 @@ def read_coupling(prefix,spin_pairs=None):
     if spin_pairs is not None:
         Bbl={}
         mbb_inv={}
+        mcm={}
         for s in spin_pairs:
+            if unbin:
+                mcm[s]= np.load(prefix+'_mcm_%s.npy'%s)
             mbb_inv[s]= np.load(prefix+'_mbb_inv_%s.npy'%s)
             Bbl[s]= np.load(prefix+'_Bbl_%s.npy'%s)
     else:
+        if unbin:
+            mcm= np.load(prefix+'_mcm.npy')
         mbb_inv=np.load(prefix +'_mbb_inv.npy')
         Bbl=np.load(prefix +'_Bbl.npy')
 
-    return mbb_inv,Bbl
+    if unbin:
+        return mcm,mbb_inv,Bbl
+    else:
+        return mbb_inv,Bbl

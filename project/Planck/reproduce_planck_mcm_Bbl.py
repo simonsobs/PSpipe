@@ -1,5 +1,5 @@
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('Agg')
 import numpy as np,healpy as hp,pylab as plt
 from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
 import os,sys
@@ -48,6 +48,9 @@ for c1,ar1 in enumerate(arrays):
     
         window_T_1.write_map('%s/window_T_%s_%s.fits'%(auxMapDir,hm1,ar1))
         window_pol_1.write_map('%s/window_pol_%s_%s.fits'%(auxMapDir,hm1,ar1))
+        
+        window_T_1.write_map('test_window_planck.fits')
+
 
         window_tuple1=(window_T_1,window_pol_1)
         
@@ -85,8 +88,8 @@ for c1,ar1 in enumerate(arrays):
                     bl2*=hp.pixwin(window_tuple2[0].nside)[:len(bl2)]
         
                 bl_tuple2=(bl2,bl2)
-
-                mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=window_tuple1,win2=window_tuple2, binning_file=binning_file, bl1=bl_tuple1,bl2=bl_tuple2, lmax=lmax,niter=niter, type=type,save_file='%s/%sx%s_%sx%s'%(mcmDir,ar1,ar2,hm1,hm2))
+                
+                mcm_inv,mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=window_tuple1,win2=window_tuple2, binning_file=binning_file, bl1=bl_tuple1,bl2=bl_tuple2, lmax=lmax,niter=niter, type=type, unbin=True,save_file='%s/%sx%s_%sx%s'%(mcmDir,ar1,ar2,hm1,hm2))
 
 
 

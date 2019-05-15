@@ -244,12 +244,12 @@ def save_coupling(prefix,mbb_inv,Bbl,spin_pairs=None,mcm_inv=None):
             np.save(prefix +'_mbb_inv_%s.npy'%s,mbb_inv[s])
             np.save(prefix +'_Bbl_%s.npy'%s,Bbl[s])
             if mcm_inv is not None:
-                np.save(prefix +'_mcm_%s.npy'%s,mcm_inv[s])
+                np.save(prefix +'_mcm_inv_%s.npy'%s,mcm_inv[s])
     else:
         np.save(prefix +'_mbb_inv.npy',mbb_inv)
         np.save(prefix +'_Bbl.npy',Bbl)
         if mcm_inv is not None:
-            np.save(prefix +'_mcm.npy',mcm_inv)
+            np.save(prefix +'_mcm_inv.npy',mcm_inv)
 
 
 def read_coupling(prefix,spin_pairs=None,unbin=None):
@@ -265,12 +265,12 @@ def read_coupling(prefix,spin_pairs=None,unbin=None):
         mcm={}
         for s in spin_pairs:
             if unbin:
-                mcm[s]= np.load(prefix+'_mcm_%s.npy'%s)
+                mcm[s]= np.load(prefix+'_mcm_inv_%s.npy'%s)
             mbb_inv[s]= np.load(prefix+'_mbb_inv_%s.npy'%s)
             Bbl[s]= np.load(prefix+'_Bbl_%s.npy'%s)
     else:
         if unbin:
-            mcm= np.load(prefix+'_mcm.npy')
+            mcm= np.load(prefix+'_mcm_inv.npy')
         mbb_inv=np.load(prefix +'_mbb_inv.npy')
         Bbl=np.load(prefix +'_Bbl.npy')
 

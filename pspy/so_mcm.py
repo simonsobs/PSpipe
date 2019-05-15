@@ -143,6 +143,7 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
     else:
         mcm_fortran.calc_mcm_spin0and2_pure(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
 
+
     mcm=mcm[:,:lmax,:lmax]
 
     bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
@@ -170,7 +171,7 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
 
     if unbin:
         if save_file is not None:
-            save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs,mcm=mcm_inv)
+            save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs,mcm_inv=mcm_inv)
         return mcm_inv,mbb_inv,Bbl
     else:
         if save_file is not None:

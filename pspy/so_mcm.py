@@ -263,7 +263,7 @@ def read_coupling(prefix,spin_pairs=None,unbin=None):
     if spin_pairs is not None:
         Bbl={}
         mbb_inv={}
-        mcm={}
+        mcm_inv={}
         for s in spin_pairs:
             if unbin:
                 mcm_inv[s]= np.load(prefix+'_mcm_inv_%s.npy'%s)

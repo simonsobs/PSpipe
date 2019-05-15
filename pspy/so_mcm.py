@@ -113,9 +113,9 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
         maxl=lmax_pad
 
     if input_alm==False:
-        win1= (sph_tools.map2alm(win1[0],niter=niter,lmax=lmax), sph_tools.map2alm(win1[1],niter=niter,lmax=maxl))
+        win1= (sph_tools.map2alm(win1[0],niter=niter,lmax=maxl), sph_tools.map2alm(win1[1],niter=niter,lmax=maxl))
         if win2 is not None:
-            win2= (sph_tools.map2alm(win2[0],niter=niter,lmax=lmax), sph_tools.map2alm(win2[1],niter=niter,lmax=maxl))
+            win2= (sph_tools.map2alm(win2[0],niter=niter,lmax=maxl), sph_tools.map2alm(win2[1],niter=niter,lmax=maxl))
     if win2 is None:
         win2=deepcopy(win1)
 
@@ -171,11 +171,11 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
     if unbin:
         if save_file is not None:
             save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs,mcm=mcm_inv)
-        return mcm_inv,mbb_inv, Bbl
+        return mcm_inv,mbb_inv,Bbl
     else:
         if save_file is not None:
             save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs)
-        return mbb_inv, Bbl
+        return mbb_inv,Bbl
 
 def coupling_dict_to_array(dict):
     """

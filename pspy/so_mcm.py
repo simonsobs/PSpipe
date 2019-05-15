@@ -67,7 +67,7 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,b
     if unbin:
         if save_file is not None:
             save_coupling(save_file,mbb_inv,Bbl,mcm_inv=mcm_inv)
-        return mcm,mbb_inv,Bbl
+        return mcm_inv,mbb_inv,Bbl
     else:
         if save_file is not None:
             save_coupling(save_file,mbb_inv,Bbl)
@@ -171,7 +171,7 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
     if unbin:
         if save_file is not None:
             save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs,mcm=mcm_inv)
-        return mcm,mbb_inv, Bbl
+        return mcm_inv,mbb_inv, Bbl
     else:
         if save_file is not None:
             save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs)

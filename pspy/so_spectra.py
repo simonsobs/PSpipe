@@ -93,7 +93,7 @@ def bin_spectra(l,cl,binning_file,lmax,type,spectra=None,mbb_inv=None,mcm_inv=No
             unbin_vec=[]
             mcm_inv=so_mcm.coupling_dict_to_array(mcm_inv)
             for f in spectra:
-                unbin_vec=np.append(unbin_vec,cl[f])
+                unbin_vec=np.append(unbin_vec,cl[f][:lmax])
             cl=vec2spec_dict(lmax,np.dot(mcm_inv,unbin_vec),spectra)
 
         vec=[]

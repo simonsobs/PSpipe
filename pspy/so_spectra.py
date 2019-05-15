@@ -48,7 +48,7 @@ def get_spectra(alm1,alm2=None,spectra=None):
 
         return l,cl_dict
 
-def bin_spectra(l,cl,binning_file,lmax,type,spectra=None,mbb_inv=None):
+def bin_spectra(l,cl,binning_file,lmax,type,spectra=None,mbb_inv=None,mcm_inv=None):
     
     """
     @brief bin the power spectra
@@ -63,15 +63,23 @@ def bin_spectra(l,cl,binning_file,lmax,type,spectra=None,mbb_inv=None):
     @return binnedPower: 1d array with the binned power spectra
     """
     
+    
+    if mbb_inv is not None and mcm_inv is not None:
+        print ('Error: you have to choose between binned or unbinned mcm')
+        sys.exit()
+
+    
     bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
     n_bins=len(bin_hi)
     
     if type=='Dl':
         fac=(l*(l+1)/(2*np.pi))
     if type=='Cl':
-        fac=l*0+1
+        fac=l*0+1 
 
     if spectra is None:
+        if mcm_inv is not None:
+            cl=np.dot(mcm_inv,cl)
         binnedPower=np.zeros(len(bin_c))
         for ibin in range(n_bins):
             loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))
@@ -81,6 +89,13 @@ def bin_spectra(l,cl,binning_file,lmax,type,spectra=None,mbb_inv=None):
         else:
             return bin_c,np.dot(mbb_inv,binnedPower)
     else:
+        if mcm_inv is not None:
+            unbin_vec=[]
+            mcm_inv=so_mcm.coupling_dict_to_array(mcm_inv)
+            for f in spectra:
+                unbin_vec=np.append(unbin_vec,cl[f])
+            cl=vec2spec_dict(lmax,np.dot(mcm_inv,unbin_vec),spectra)
+
         vec=[]
         for f in spectra:
             binnedPower=np.zeros(len(bin_c))
@@ -150,4 +165,53 @@ def read_ps(file_name,spectra=None):
         for c,f in enumerate(spectra):
             ps[f]=data[:,c+1]
         return(l,ps)
+
+
+
+def write_ps_hdf5(file,spec_name,l,ps,spectra=None):
+    """
+    @brief write down the power spectra in hdf5
+    @param file: the name of the hdf5 file
+    @param spec_name: the name of the group in the hdf5 file
+    @param l the angular multipole
+    @param ps the power spectrum, if spectra is not None, expect a dictionary with entry spectra
+    @param (optional) spectra: needed for spin0 and spin2 cross correlation, the arrangement of the spectra
+    """
+
+    def array_from_dict(l,ps,spectra=None):
+        array=[]
+        array+=[l]
+        if spectra==None:
+            array+=[ps]
+        else:
+            for spec in spectra:
+                array+=[ps[spec]]
+        return(array)
+    
+    group=file.create_group(spec_name)
+    array=array_from_dict(l,ps,spectra=spectra)
+    group.create_dataset(name='data',data=array,dtype='float')
+
+
+def read_ps_hdf5(file,spec_name,spectra=None):
+    """
+    @brief read the power spectra in a hdf5 file
+    @param file: the name of the hdf5 file
+    @param spec_name: the name of the group in the hdf5 file
+    @param (optional) spectra: needed for spin0 and spin2 cross correlation, the arrangement of the spectra
+    """
+    
+    spec=file[spec_name]
+    data=np.array(spec['data']).T
+    
+    l=data[:,0]
+    if spectra==None:
+        ps=data[:,1]
+    else:
+        ps={}
+        for count,spec in enumerate(spectra):
+            ps[spec]=data[:,count+1]
+
+    return l,ps
+
 

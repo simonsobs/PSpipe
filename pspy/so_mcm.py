@@ -156,20 +156,22 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
         mcm_fortran.bin_mcm((mcm[i,:,:]).T, bin_lo,bin_hi,bin_size, (mbb_array[i,:,:]).T,doDl)
         mcm_fortran.binning_matrix((mcm[i,:,:]).T,bin_lo,bin_hi,bin_size, (Bbl_array[i,:,:]).T,doDl)
 
-    mcm= get_coupling_dict(mcm,fac=-1.0)
     mbb= get_coupling_dict(mbb_array,fac=-1.0)
     Bbl= get_coupling_dict(Bbl_array,fac=1.0)
 
     spin_pairs=['spin0xspin0','spin0xspin2','spin2xspin0','spin2xspin2']
     mbb_inv={}
-    mcm_inv={}
     for s in spin_pairs:
-        if unbin:
-            mcm_inv[s]=np.linalg.inv(mcm[s])
         mbb_inv[s]=np.linalg.inv(mbb[s])
         Bbl[s]=np.dot(mbb_inv[s],Bbl[s])
 
     if unbin:
+        
+        mcm= get_coupling_dict(mcm[:,:lmax-2,:lmax-2],fac=-1.0)
+        mcm_inv={}
+        for s in spin_pairs:
+            mcm_inv[s]=np.linalg.inv(mcm[s])
+
         if save_file is not None:
             save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs,mcm_inv=mcm_inv)
         return mcm_inv,mbb_inv,Bbl

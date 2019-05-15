@@ -265,16 +265,16 @@ def read_coupling(prefix,spin_pairs=None,unbin=None):
         mcm={}
         for s in spin_pairs:
             if unbin:
-                mcm[s]= np.load(prefix+'_mcm_inv_%s.npy'%s)
+                mcm_inv[s]= np.load(prefix+'_mcm_inv_%s.npy'%s)
             mbb_inv[s]= np.load(prefix+'_mbb_inv_%s.npy'%s)
             Bbl[s]= np.load(prefix+'_Bbl_%s.npy'%s)
     else:
         if unbin:
-            mcm= np.load(prefix+'_mcm_inv.npy')
+            mcm_inv= np.load(prefix+'_mcm_inv.npy')
         mbb_inv=np.load(prefix +'_mbb_inv.npy')
         Bbl=np.load(prefix +'_Bbl.npy')
 
     if unbin:
-        return mcm,mbb_inv,Bbl
+        return mcm_inv,mbb_inv,Bbl
     else:
         return mbb_inv,Bbl

@@ -9,7 +9,7 @@ from copy import deepcopy
 from pspy import pspy_utils
 
 
-def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,bl2=None,input_alm=False,unbin=None,save_file=None):
+def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,bl2=None,input_alm=False,unbin=None,save_file=None,lmax_pad=None):
     """
     @brief get the mode coupling matrix and the binning matrix for spin0 fields
     @param win1: the window function of survey 1, if input_alm=True, expect wlm1
@@ -27,10 +27,14 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,b
     if type=='Cl':
         doDl=0
 
+    maxl=lmax
+    if lmax_pad is not None:
+        maxl=lmax_pad
+
     if input_alm==False:
-        win1= sph_tools.map2alm(win1,niter=niter,lmax=lmax)
+        win1= sph_tools.map2alm(win1,niter=niter,lmax=maxl)
         if win2 is not None:
-            win2= sph_tools.map2alm(win2,niter=niter,lmax=lmax)
+            win2= sph_tools.map2alm(win2,niter=niter,lmax=maxl)
 
     if win2 is None:
         wcl= hp.alm2cl(win1)
@@ -45,29 +49,31 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,b
     if bl2 is None:
         bl2= bl1.copy()
 
-    mcm=np.zeros((lmax,lmax))
+    mcm=np.zeros((maxl,maxl))
     mcm_fortran.calc_mcm_spin0(wcl, bl1*bl2,mcm.T)
+    mcm=mcm[:lmax,:lmax]
     bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
     n_bins=len(bin_hi)
     mbb=np.zeros((n_bins,n_bins))
     mcm_fortran.bin_mcm(mcm.T, bin_lo,bin_hi,bin_size, mbb.T,doDl)
+    if unbin:
+        mcm_inv=np.linalg.inv(mcm)
+
     Bbl=np.zeros((n_bins,lmax))
     mcm_fortran.binning_matrix(mcm.T,bin_lo,bin_hi,bin_size, Bbl.T,doDl)
     mbb_inv= np.linalg.inv(mbb)
     Bbl=np.dot(mbb_inv,Bbl)
 
-
-
     if unbin:
         if save_file is not None:
-            save_coupling(save_file,mbb_inv,Bbl,mcm=mcm)
+            save_coupling(save_file,mbb_inv,Bbl,mcm_inv=mcm_inv)
         return mcm,mbb_inv,Bbl
     else:
         if save_file is not None:
             save_coupling(save_file,mbb_inv,Bbl)
         return mbb_inv, Bbl
 
-def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,pure=False,unbin=None,save_file=None):
+def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl1=None,bl2=None,input_alm=False,pure=False,unbin=None,save_file=None,lmax_pad=None):
     """
     @brief get the mode coupling matrix and the binning matrix for spin 0 and 2 fields
     @param win1: a python tuple (win_spin0,win_spin2) with the window functions of survey 1, if input_alm=True, expect (wlm_spin0, wlm_spin2)
@@ -102,15 +108,19 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
     if type=='Cl':
         doDl=0
 
+    maxl=lmax
+    if lmax_pad is not None:
+        maxl=lmax_pad
+
     if input_alm==False:
-        win1= (sph_tools.map2alm(win1[0],niter=niter,lmax=lmax), sph_tools.map2alm(win1[1],niter=niter,lmax=lmax))
+        win1= (sph_tools.map2alm(win1[0],niter=niter,lmax=lmax), sph_tools.map2alm(win1[1],niter=niter,lmax=maxl))
         if win2 is not None:
-            win2= (sph_tools.map2alm(win2[0],niter=niter,lmax=lmax), sph_tools.map2alm(win2[1],niter=niter,lmax=lmax))
+            win2= (sph_tools.map2alm(win2[0],niter=niter,lmax=lmax), sph_tools.map2alm(win2[1],niter=niter,lmax=maxl))
     if win2 is None:
         win2=deepcopy(win1)
 
     if bl1 is None:
-        bl1=(np.ones(lmax),np.ones(lmax))
+        bl1=(np.ones(maxl),np.ones(maxl))
     if bl2 is None:
         bl2=deepcopy(bl1)
 
@@ -126,12 +136,14 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
 
             wbl[s1+s2]=bl1[i]*bl2[j]
 
-    mcm=np.zeros((5,lmax,lmax))
+    mcm=np.zeros((5,maxl,maxl))
 
     if pure==False:
         mcm_fortran.calc_mcm_spin0and2(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
     else:
         mcm_fortran.calc_mcm_spin0and2_pure(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
+
+    mcm=mcm[:,:lmax,:lmax]
 
     bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
     n_bins=len(bin_hi)
@@ -149,13 +161,16 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
 
     spin_pairs=['spin0xspin0','spin0xspin2','spin2xspin0','spin2xspin2']
     mbb_inv={}
+    mcm_inv={}
     for s in spin_pairs:
+        if unbin:
+            mcm_inv[s]=np.linalg.inv(mcm[s])
         mbb_inv[s]=np.linalg.inv(mbb[s])
         Bbl[s]=np.dot(mbb_inv[s],Bbl[s])
 
     if unbin:
         if save_file is not None:
-            save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs,mcm=mcm)
+            save_coupling(save_file,mbb_inv,Bbl,spin_pairs=spin_pairs,mcm=mcm_inv)
         return mcm,mbb_inv, Bbl
     else:
         if save_file is not None:
@@ -205,7 +220,7 @@ def apply_Bbl(Bbl,ps,spectra=None):
         ps_th=np.dot(Bbl,ps)
     return ps_th
 
-def save_coupling(prefix,mbb_inv,Bbl,spin_pairs=None,mcm=None):
+def save_coupling(prefix,mbb_inv,Bbl,spin_pairs=None,mcm_inv=None):
     """
     @brief save the inverse of the mode coupling matrix and the binning matrix in npy format
     @param prefix: the prefix for the name of the file
@@ -228,13 +243,13 @@ def save_coupling(prefix,mbb_inv,Bbl,spin_pairs=None,mcm=None):
         for s in spin_pairs:
             np.save(prefix +'_mbb_inv_%s.npy'%s,mbb_inv[s])
             np.save(prefix +'_Bbl_%s.npy'%s,Bbl[s])
-            if mcm is not None:
-                np.save(prefix +'_mcm_%s.npy'%s,mcm[s])
+            if mcm_inv is not None:
+                np.save(prefix +'_mcm_%s.npy'%s,mcm_inv[s])
     else:
         np.save(prefix +'_mbb_inv.npy',mbb_inv)
         np.save(prefix +'_Bbl.npy',Bbl)
-        if mcm is not None:
-            np.save(prefix +'_mcm.npy'%s,mcm)
+        if mcm_inv is not None:
+            np.save(prefix +'_mcm.npy',mcm_inv)
 
 
 def read_coupling(prefix,spin_pairs=None,unbin=None):

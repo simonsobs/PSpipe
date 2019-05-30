@@ -12,17 +12,17 @@ freqs=d['freqs']
 pspy_utils.create_directory('beam')
 
 beam_FWHM={}
-beam_FWHM['LAT_27']=7.4
-beam_FWHM['LAT_39']=5.1
-beam_FWHM['LAT_93']=2.2
-beam_FWHM['LAT_145']=1.4
-beam_FWHM['LAT_225']=1.0
-beam_FWHM['LAT_280']=0.9
+beam_FWHM['LAT27']=7.4
+beam_FWHM['LAT39']=5.1
+beam_FWHM['LAT93']=2.2
+beam_FWHM['LAT145']=1.4
+beam_FWHM['LAT225']=1.0
+beam_FWHM['LAT280']=0.9
 
-beam_FWHM['Planck_100']=9.68
-beam_FWHM['Planck_143']= 7.30
-beam_FWHM['Planck_217']=5.02
-beam_FWHM['Planck_353']=4.94
+beam_FWHM['Planck100']=9.68
+beam_FWHM['Planck143']= 7.30
+beam_FWHM['Planck217']=5.02
+beam_FWHM['Plancks353']=4.94
 
 for f in freqs:
     beam_FWHM_rad = np.deg2rad(beam_FWHM[f])/60

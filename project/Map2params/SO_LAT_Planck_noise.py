@@ -18,7 +18,7 @@ pspy_utils.create_directory('noise_ps')
 Nell_T={}
 Nell_P={}
 
-freqPairs_SO=['LAT_27xLAT_27','LAT_39xLAT_39','LAT_93xLAT_93','LAT_145xLAT_145','LAT_225xLAT_225','LAT_280xLAT_280','LAT_27xLAT_39','LAT_93xLAT_145','LAT_225xLAT_280']
+freqPairs_SO=['LAT27xLAT27','LAT39xLAT39','LAT93xLAT93','LAT145xLAT145','LAT225xLAT225','LAT280xLAT280','LAT27xLAT39','LAT93xLAT145','LAT225xLAT280']
 ell, N_ell_T_LA, N_ell_P_LA, Map_white_noise_levels=noise_calc.Simons_Observatory_V3_LA_noise(sensitivity_mode,f_sky_LAT,ell_min,ell_max,delta_ell,N_LF=1.,N_MF=4.,N_UHF=2., apply_beam_correction=False, apply_kludge_correction=True)
 
 for c1,f1 in enumerate(freqs):
@@ -34,18 +34,18 @@ for c,freqPair in enumerate(freqPairs_SO):
 
 # Taken from Table 4: https://arxiv.org/pdf/1807.06205.pdf
 sigma={}
-sigma['Planck_100xPlanck_100']=77.4
-sigma['Planck_143xPlanck_143']=33.0
-sigma['Planck_217xPlanck_217']=46.80
-sigma['Planck_353xPlanck_353']=153.6
+sigma['Planck100xPlanck100']=77.4
+sigma['Planck143xPlanck143']=33.0
+sigma['Planck217xPlanck217']=46.80
+sigma['Planck353xPlanck353']=153.6
 
 sigmaP={}
-sigmaP['Planck_100xPlanck_100']=117.6
-sigmaP['Planck_143xPlanck_143']=70.2
-sigmaP['Planck_217xPlanck_217']=105.0
-sigmaP['Planck_353xPlanck_353']=438.6
+sigmaP['Planck100xPlanck100']=117.6
+sigmaP['Planck143xPlanck143']=70.2
+sigmaP['Planck217xPlanck217']=105.0
+sigmaP['Planck353xPlanck353']=438.6
 
-freqPairs_Planck=['Planck_100xPlanck_100','Planck_143xPlanck_143', 'Planck_217xPlanck_217', 'Planck_353xPlanck_353']
+freqPairs_Planck=['Planck100xPlanck100','Planck143xPlanck143', 'Planck217xPlanck217', 'Planck353xPlanck353']
 for freqPair in freqPairs_Planck:
     sigma_rad = np.deg2rad(sigma[freqPair])/60
     Nell_T[freqPair]= ell*0+sigma_rad**2

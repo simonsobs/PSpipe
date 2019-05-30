@@ -54,10 +54,9 @@ for c1,f1 in enumerate(freqs):
 
         print (f1,f2)
         if ncomp==3:
-            bl1=bl2=bl1*0+1
-            mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=(window_1,window_1),win2=(window_2,window_2),bl1=(bl1,bl1),bl2=(bl2,bl2),binning_file= d['binning_file'],niter=0, lmax=d['lmax'], type=d['type'],save_file='%s/%s_%s'%(mcm_dir,f1,f2))
+            mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=(window_1,window_1),win2=(window_2,window_2),bl1=(bl1,bl1),bl2=(bl2,bl2),binning_file= d['binning_file'],niter=0, lmax=d['lmax'], type=d['type'],save_file='%s/%sx%s'%(mcm_dir,f1,f2))
 
         if ncomp==1:
-            mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0(win1=window_1,win2=window_2,bl1=bl1,bl2=bl2,binning_file= d['binning_file'],niter=0, lmax=d['lmax'], type=d['type'],save_file='%s/%s_%s'%(mcm_dir,f1,f2))
+            mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0(win1=window_1,win2=window_2,bl1=bl1,bl2=bl2,binning_file= d['binning_file'],niter=0, lmax=d['lmax'], type=d['type'],save_file='%s/%sx%s'%(mcm_dir,f1,f2))
 
 

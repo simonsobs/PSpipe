@@ -1,5 +1,5 @@
 iStart=0
-iStop=150
+iStop=160
 
 #freqs=['LAT27','LAT39','LAT93','LAT145','LAT225','LAT280', 'Planck100','Planck143','Planck217','Planck353']
 
@@ -49,3 +49,4 @@ niter=0
 lcut=30 # parameter to regularize the noise power spectrum at very low ell
 
 hdf5=False
+writeAll=False

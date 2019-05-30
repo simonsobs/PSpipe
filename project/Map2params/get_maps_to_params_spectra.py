@@ -18,6 +18,7 @@ type=d['type']
 binning_file=d['binning_file']
 lcut=d['lcut']
 hdf5=d['hdf5']
+writeAll=d['writeAll']
 
 window_dir='window'
 mcm_dir='mcm'
@@ -93,10 +94,12 @@ for iii in subtasks:
                     l,ps_master= so_spectra.get_spectra(master_alms[f1,s1],master_alms[f2,s2],spectra=spectra)
                     spec_name='%s_%sx%s_%sx%s_%05d'%(type,f1,f2,s1,s2,iii)
                     lb,Db=so_spectra.bin_spectra(l,ps_master,binning_file,lmax,type=type,mbb_inv=mbb_inv,spectra=spectra)
-                    if hdf5:
-                        so_spectra.write_ps_hdf5(spectra_hdf5,spec_name,lb,Db,spectra=spectra)
-                    else:
-                        so_spectra.write_ps(specDir+'/%s.dat'%spec_name,lb,Db,type,spectra=spectra)
+                    
+                    if writeAll:
+                        if hdf5:
+                            so_spectra.write_ps_hdf5(spectra_hdf5,spec_name,lb,Db,spectra=spectra)
+                        else:
+                            so_spectra.write_ps(specDir+'/%s.dat'%spec_name,lb,Db,type,spectra=spectra)
 
                     for spec in spectra:
                         if (s1==s2):

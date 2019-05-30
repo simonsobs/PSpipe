@@ -115,3 +115,4 @@ for iii in subtasks:
             so_spectra.write_ps_hdf5(spectra_hdf5,spec_name_noise,lb,nb,spectra=spectra)
     print ('sim number %05d done in %.02f s'%(iii,time.time()-t0))
 
+spectra_hdf5.close()

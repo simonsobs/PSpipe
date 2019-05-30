@@ -47,3 +47,5 @@ binning_file='binning/BIN_ACTPOL_50_4_SC_low_ell_startAt2'
 lmax=2500
 niter=0
 lcut=30 # parameter to regularize the noise power spectrum at very low ell
+
+hdf5=False

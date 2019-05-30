@@ -83,7 +83,8 @@ def cov_coupling_spin0and2(win, lmax, niter=0,save_file=None):
     else:
         wcl={}
         for s in win_list:
-            n0,n1,n2,n3=[s[i,i+2] for i in range(4)]
+            n0,n1,n2,n3=[s[i*2:(i+1)*2] for i in range(4)]
+            print (n0,n1,n2,n3)
             
             sq_win_n0n1=win[n0].copy()
             sq_win_n0n1.data*=win[n1].data
@@ -98,7 +99,7 @@ def cov_coupling_spin0and2(win, lmax, niter=0,save_file=None):
             wcl[n0+n1+n2+n3]*=(2*l+1)/(4*np.pi)
     
         coupling=np.zeros((12,lmax,lmax))
-        cov_fortran.calc_cov_spin0and2_single_win(wcl['TaTcTbTd'],wcl['TaTdTbTc'],wcl['PaPcPbPd'],wcl['PaPdPbPc'],wcl['TaTcPbPd'],wcl['TaPdPbTc'],wcl['TaTcTbPd'],
+        cov_fortran.calc_cov_spin0and2(wcl['TaTcTbTd'],wcl['TaTdTbTc'],wcl['PaPcPbPd'],wcl['PaPdPbPc'],wcl['TaTcPbPd'],wcl['TaPdPbTc'],wcl['TaTcTbPd'],
                                                   wcl['TaPdTbTc'],wcl['TaPcTbPd'],wcl['TaPdTbPc'],wcl['PaTcPbPd'],wcl['PaPdPbTc'],coupling.T)
             
         indexlist=np.arange(12)
@@ -197,7 +198,7 @@ def cov_spin0and2(Clth_dict,coupling_dict,binning_file,lmax,mbb_inv_ab,mbb_inv_c
     
     analytic_cov[:n_bins,:n_bins]=bin_mat(TaTc*TbTd*coupling_dict['TaTcTbTd']+ TaTd*TbTc*coupling_dict['TaTdTbTc'],binning_file,lmax) #TTTT
     analytic_cov[n_bins:2*n_bins,n_bins:2*n_bins]=bin_mat(TaTc*EbEd*coupling_dict['TaTcPbPd']+TaEd*EbTc*coupling_dict['TaPdPbTc'],binning_file,lmax) #TETE
-    analytic_cov[2*n_bins:3*n_bins,2*n_bins:3*n_bins ]=bin_mat(EaEc*EbEd*coupling_dict['PaPcPbPd']+ EaEd*EbEc*coupling_dict['PaPdPbPc'],binning_file,lmax) #EEEE
+    analytic_cov[2*n_bins:3*n_bins,2*n_bins:3*n_bins]=bin_mat(EaEc*EbEd*coupling_dict['PaPcPbPd']+ EaEd*EbEc*coupling_dict['PaPdPbPc'],binning_file,lmax) #EEEE
     analytic_cov[n_bins:2*n_bins,:n_bins]=bin_mat(TaTc*TbEd*coupling_dict['TaTcTbPd']+TaEd*TbTc*coupling_dict['TaPdTbTc'],binning_file,lmax)  #TTTE
     analytic_cov[2*n_bins:3*n_bins,:n_bins]=bin_mat(TaEc*TbEd*coupling_dict['TaPcTbPd']+TaEd*TbEc*coupling_dict['TaPdTbPc'],binning_file,lmax) #TTEE
     analytic_cov[2*n_bins:3*n_bins,n_bins:2*n_bins]=bin_mat(EaTc*EbEd*coupling_dict['PaTcPbPd']+EaEd*EbTc*coupling_dict['TaPdTbPc'],binning_file,lmax) #TEEE
@@ -256,7 +257,7 @@ def selectblock(cov, spectra,n_bins,block='TTTT'):
     cov_select=cov[id1:id1+n_bins,id2:id2+n_bins]
     return cov_select
 
-def delta(a,b):
+def delta2(a,b):
     """
     @brief simple delta function
     """
@@ -264,6 +265,72 @@ def delta(a,b):
         return 1
     else:
         return 0
+
+def delta3(a,b,c):
+    """
+    @brief delta function (3 variables)
+    """
+
+    if (a==b) & (b==c):
+        return 1
+    else:
+        return 0
+
+def delta4(a,b,c,d):
+    """
+    @brief delta function (4 variables)
+    """
+    
+    if (a==b) & (b==c) & (c==d):
+        return 1
+    else:
+        return 0
+
+def f(a,b,c,d,ns):
+    """
+    @brief f combination factor in the covariance computation
+    """
+
+    result= 1.*ns[a]*(ns[c]*ns[d]*delta2(a,b)-ns[c]*delta3(a,b,d)-ns[d]*delta3(a,b,c)+delta4(a,b,c,d))
+    result/=(ns[c]*ns[d]*(ns[a]-delta2(a,c))*(ns[b]-delta2(b,d)))
+    return result
+
+def g(a,b,c,d,ns):
+    """
+    @brief g combination factor in the covariance computation
+    """
+    
+    result= 1.*ns[a]*(ns[c]*delta2(a,b)*delta2(c,d)-delta4(a,b,c,d))
+    result/=(ns[a]*ns[b]*(ns[c]-delta2(a,c))*(ns[d]-delta2(b,d)))
+    return result
+
+def chi(alpha,gamma,beta,eta,ns,ls,Dl,DNl,id='TTTT'):
+    """
+    @brief not ready yet
+    """
+    RX=id[0]+id[2]
+    SY=id[1]+id[3]
+    chi=Dl[alpha,gamma,RX]*Dl[beta,eta,SY]
+    chi+= Dl[alpha,gamma,RX]*DNl[beta,eta,SY]*f(beta,eta,alpha,gamma,ns) + Dl[beta,eta,SY]*DNl[alpha,gamma,RX]*f(alpha,gamma,beta,eta,ns)
+    chi+= g(alpha,gamma,beta,eta,ns)*DNl[alpha,gamma,RX]*DNl[beta,eta,SY]
+    chi= symmetrize(chi,mode='arithm')
+    
+    #print (id[0]+id[1]+id[2]+id[3])
+    #print ('RX',RX)
+    #print ('SY',SY)
+    #print ('f(beta,eta,alpha,gamma,ns)', f(beta,eta,alpha,gamma,ns))
+    #print ('f(alpha,gamma,beta,eta,ns)', f(alpha,gamma,beta,eta,ns))
+    #print ('g(alpha,gamma,beta,eta,ns)', g(alpha,gamma,beta,eta,ns))
+
+    plt.semilogy()
+    plt.plot(Dl[alpha,gamma,RX],label='%s %s %s'%(alpha,gamma,RX))
+    plt.plot(Dl[beta,eta,SY],label='%s %s %s'%(beta,eta,SY))
+    plt.plot(DNl[alpha,gamma,RX],label=' Nl %s %s %s'%(alpha,gamma,RX))
+    plt.plot(DNl[beta,eta,SY],label=' Nl %s %s %s'%(beta,eta,SY))
+    plt.legend()
+    plt.show()
+    return chi
+
 
 def calc_cov_lensed(noise_uK_arcmin, fwhm_arcmin, lmin, lmax, camb_lensed_theory_file, camb_unlensed_theory_file, output_dir, overwrite=False):
     """

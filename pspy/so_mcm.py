@@ -56,8 +56,6 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,b
     n_bins=len(bin_hi)
     mbb=np.zeros((n_bins,n_bins))
     mcm_fortran.bin_mcm(mcm.T, bin_lo,bin_hi,bin_size, mbb.T,doDl)
-    if unbin:
-        mcm_inv=np.linalg.inv(mcm)
 
     Bbl=np.zeros((n_bins,lmax))
     mcm_fortran.binning_matrix(mcm.T,bin_lo,bin_hi,bin_size, Bbl.T,doDl)
@@ -65,6 +63,7 @@ def mcm_and_bbl_spin0(win1, binning_file, lmax,niter, type, win2=None,bl1=None,b
     Bbl=np.dot(mbb_inv,Bbl)
 
     if unbin:
+        mcm_inv=np.linalg.inv(mcm)
         if save_file is not None:
             save_coupling(save_file,mbb_inv,Bbl,mcm_inv=mcm_inv)
         return mcm_inv,mbb_inv,Bbl
@@ -133,7 +132,6 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
             wcl[s1+s2]=hp.alm2cl(win1[i],win2[j])
             #wcl[s1+s2]=wcl[s1+s2][:lmax]*(2*np.arange(lmax)+1)
             wcl[s1+s2]=wcl[s1+s2]*(2*np.arange(len(wcl[s1+s2]))+1)
-
             wbl[s1+s2]=bl1[i]*bl2[j]
 
     mcm=np.zeros((5,maxl,maxl))
@@ -142,7 +140,6 @@ def mcm_and_bbl_spin0and2(win1, binning_file,lmax,niter,type='Dl', win2=None, bl
         mcm_fortran.calc_mcm_spin0and2(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
     else:
         mcm_fortran.calc_mcm_spin0and2_pure(wcl['00'],wcl['02'],wcl['20'],wcl['22'], wbl['00'],wbl['02'],wbl['20'], wbl['22'],mcm.T)
-
 
     mcm=mcm[:,:lmax,:lmax]
 

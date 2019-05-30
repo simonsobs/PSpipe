@@ -48,9 +48,9 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d['iStart'], imax=d['iStop'])
 
 
-time=time.time()
 for iii in subtasks:
-    
+    t0=time.time()
+
     
     alms= curvedsky.rand_alm(ps, lmax=lmax_simu)
     nlms=maps_to_params_utils.generate_noise_alms(Nl_array_T,Nl_array_P,lmax_simu,nSplits,ncomp)
@@ -113,5 +113,5 @@ for iii in subtasks:
             so_spectra.write_ps_hdf5(spectra_hdf5,spec_name_auto,lb,Db_dict_auto,spectra=spectra)
             so_spectra.write_ps_hdf5(spectra_hdf5,spec_name_cross,lb,Db_dict_cross,spectra=spectra)
             so_spectra.write_ps_hdf5(spectra_hdf5,spec_name_noise,lb,nb,spectra=spectra)
-    print ('sim number %05d done in .02f s'%(iii,time.time()-t))
+    print ('sim number %05d done in .02f s'%(iii,time.time()-t0))
 

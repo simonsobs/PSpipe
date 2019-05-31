@@ -315,20 +315,6 @@ def chi(alpha,gamma,beta,eta,ns,ls,Dl,DNl,id='TTTT'):
     chi+= g(alpha,gamma,beta,eta,ns)*DNl[alpha,gamma,RX]*DNl[beta,eta,SY]
     chi= symmetrize(chi,mode='arithm')
     
-    #print (id[0]+id[1]+id[2]+id[3])
-    #print ('RX',RX)
-    #print ('SY',SY)
-    #print ('f(beta,eta,alpha,gamma,ns)', f(beta,eta,alpha,gamma,ns))
-    #print ('f(alpha,gamma,beta,eta,ns)', f(alpha,gamma,beta,eta,ns))
-    #print ('g(alpha,gamma,beta,eta,ns)', g(alpha,gamma,beta,eta,ns))
-
-    plt.semilogy()
-    plt.plot(Dl[alpha,gamma,RX],label='%s %s %s'%(alpha,gamma,RX))
-    plt.plot(Dl[beta,eta,SY],label='%s %s %s'%(beta,eta,SY))
-    plt.plot(DNl[alpha,gamma,RX],label=' Nl %s %s %s'%(alpha,gamma,RX))
-    plt.plot(DNl[beta,eta,SY],label=' Nl %s %s %s'%(beta,eta,SY))
-    plt.legend()
-    plt.show()
     return chi
 
 

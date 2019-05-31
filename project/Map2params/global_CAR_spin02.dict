@@ -1,9 +1,9 @@
 iStart=0
-iStop=160
+iStop=150
 
 #freqs=['LAT27','LAT39','LAT93','LAT145','LAT225','LAT280', 'Planck100','Planck143','Planck217','Planck353']
 
-freqs=['LAT145','LAT225','LAT280']
+freqs=['LAT280']
 
 #freqs=['LAT145']
 
@@ -50,3 +50,4 @@ lcut=30 # parameter to regularize the noise power spectrum at very low ell
 
 hdf5=False
 writeAll=False
+multistep_path='/Users/thibaut/Desktop/Project/so_ps_codes/PSpipe/project/Map2params/'

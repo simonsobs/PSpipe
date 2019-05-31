@@ -9,8 +9,12 @@ import h5py
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-freqs=d['freqs']
 window_dir='window'
+mcm_dir='mcm'
+cov_dir='covariance'
+specDir='spectra'
+
+freqs=d['freqs']
 specDir='spectra'
 clfile=d['clfile']
 lmax=d['lmax']
@@ -18,18 +22,16 @@ type=d['type']
 ns=d['nSplits']
 niter=d['niter']
 binning_file=d['binning_file']
-mcm_dir='mcm'
 iStart= d['iStart']
 iStop= d['iStop']
 type=d['type']
 lcut=d['lcut']
-cov_dir='covariance'
-
+hdf5=d['hdf5']
 
 pspy_utils.create_directory(cov_dir)
 
-spectra_hdf5 = h5py.File('%s.hdf5'%(specDir), 'r')
-
+if hdf5:
+    spectra_hdf5 = h5py.File('%s.hdf5'%(specDir), 'r')
 
 ncomp=3
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
@@ -38,9 +40,7 @@ spin_pairs=['spin0xspin0','spin0xspin2','spin2xspin0', 'spin2xspin2']
 bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
 n_bins=len(bin_hi)
 
-
 lth,Dlth=pspy_utils.ps_lensed_theory_to_dict(clfile,output_type=type,lmax=lmax,lstart=2)
-
 
 Dl_all={}
 DNl_all={}
@@ -85,41 +85,15 @@ for sid1, spec1 in enumerate(spec_name):
         if sid1>sid2: continue
         f1,f2=spec1.split('x')
         f3,f4=spec2.split('x')
-
-
+        
+        
         prefix_ab= '%s/%sx%s'%(mcm_dir,f1,f2)
         prefix_cd= '%s/%sx%s'%(mcm_dir,f3,f4)
 
         mbb_inv_ab,Bbl_ab=so_mcm.read_coupling(prefix=prefix_ab,spin_pairs=spin_pairs)
+        mbb_inv_ab=so_cov.extract_TTTEEE_mbb(mbb_inv_ab)
         mbb_inv_cd,Bbl_cd=so_mcm.read_coupling(prefix=prefix_cd,spin_pairs=spin_pairs)
-
-     
-     #nl_th=pspy_utils.get_nlth_dict(10,type,lmax,spectra=spectra)
-     #  survey_id= ['a','b','c','d']
-     #  survey_name=['split_0','split_1','split_0','split_1']
-     #  name_list=[]
-     #  id_list=[]
-     #  for field in ['T','E']:
-     #      for s,id in zip(survey_name,survey_id):
-     #          name_list+=['%s%s'%(field,s)]
-     #          id_list+=['%s%s'%(field,id)]
-     #  Clth_dict={}
-     #  for name1,id1 in zip(name_list,id_list):
-     #      for name2,id2 in zip(name_list,id_list):
-     #          spec=id1[0]+id2[0]
-     #          Clth_dict[id1+id2]=Dl_all[f1,f2,spec]+DNl_all[f1,f2,spec]*so_cov.delta2(name1,name2)
-
-#        prefix= '%s/%sx%s'%(mcm_dir,f1,f2)
-#       mbb_inv,Bbl=so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
-#       window=so_map.read_map('%s/window_%s.fits'%(window_dir,f1))
-#       coupling_dict=so_cov.cov_coupling_spin0and2(window, lmax, niter=niter)
-#       analytic_cov=so_cov.cov_spin0and2(Clth_dict,coupling_dict,binning_file,lmax,mbb_inv_ab,mbb_inv_cd)
-#       analytic_corr=so_cov.cov2corr(analytic_cov)
-#       plt.matshow(analytic_corr)
-#       plt.show()
-
-
-
+        mbb_inv_cd=so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
 
         win={}
         win['Ta']=so_map.read_map('%s/window_%s.fits'%(window_dir,f1))
@@ -131,16 +105,9 @@ for sid1, spec1 in enumerate(spec_name):
         win['Pc']=so_map.read_map('%s/window_%s.fits'%(window_dir,f3))
         win['Pd']=so_map.read_map('%s/window_%s.fits'%(window_dir,f4))
 
-#        print (so_cov.bin_mat(coupling_dict['TaTcTbTd'],binning_file,lmax))
-
 
         coupling_dict=so_cov.cov_coupling_spin0and2(win, lmax, niter=niter)
 
-#window=so_map.read_map('%s/window_%s.fits'%(window_dir,f1))
-#       coupling_dict=so_cov.cov_coupling_spin0and2(window, lmax, niter=niter)
-
-#        print (so_cov.bin_mat(coupling_dict['TaTcTbTd'],binning_file,lmax))
-            
         analytic_cov[f1,f2,f3,f4]=np.zeros((3*n_bins,3*n_bins))
 
         analytic_cov[f1,f2,f3,f4][:n_bins,:n_bins]=so_cov.bin_mat(coupling_dict['TaTcTbTd']*so_cov.chi(f1,f3,f2,f4,ns,l,Dl_all,DNl_all,'TTTT'),binning_file,lmax)
@@ -163,12 +130,7 @@ for sid1, spec1 in enumerate(spec_name):
 
         analytic_cov[f1,f2,f3,f4] = np.tril(analytic_cov[f1,f2,f3,f4]) + np.triu(analytic_cov[f1,f2,f3,f4].T, 1)
 
-
-        mbb_inv_ab=so_cov.extract_TTTEEE_mbb(mbb_inv_ab)
-        mbb_inv_cd=so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
-    
         analytic_cov[f1,f2,f3,f4]=np.dot(np.dot(mbb_inv_ab,analytic_cov[f1,f2,f3,f4]),mbb_inv_cd.T)
-
 
         Db_list1=[]
         Db_list2=[]
@@ -176,8 +138,13 @@ for sid1, spec1 in enumerate(spec_name):
         for iii in range(iStart,iStop):
             spec_name_cross_1='%s_%sx%s_cross_%05d'%(type,f1,f2,iii)
             spec_name_cross_2='%s_%sx%s_cross_%05d'%(type,f3,f4,iii)
-            lb,Db1=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name_cross_1,spectra=spectra)
-            lb,Db2=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name_cross_2,spectra=spectra)
+            if hdf5:
+                lb,Db1=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name_cross_1,spectra=spectra)
+                lb,Db2=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name_cross_2,spectra=spectra)
+            else:
+                lb,Db1=so_spectra.read_ps(specDir+'/%s.dat'%spec_name_cross_1,spectra=spectra)
+                lb,Db2=so_spectra.read_ps(specDir+'/%s.dat'%spec_name_cross_2,spectra=spectra)
+
             vec1=[]
             vec2=[]
             for spec in ['TT','TE','EE']:
@@ -189,7 +156,6 @@ for sid1, spec1 in enumerate(spec_name):
         cov[f1,f2,f3,f4]=0
 
         for iii in range(iStart,iStop):
-            
             cov[f1,f2,f3,f4]+=np.outer(Db_list1[iii],Db_list2[iii])
         cov[f1,f2,f3,f4]= cov[f1,f2,f3,f4]/(iStop-iStart)-np.outer(np.mean(Db_list1,axis=0), np.mean(Db_list2,axis=0))
 
@@ -215,13 +181,9 @@ for sid1, spec1 in enumerate(spec_name):
         plt.title('Analytic correlation matrix',fontsize=22)
         plt.imshow(analytic_corr,vmin=-0.5,vmax=0.5,origin='lower')
         plt.colorbar()
-        
-        #plt.show()
-
         plt.savefig('%s/correlation_matrix_%sx%s_%sx%s.png'%(cov_dir,f1,f2,f3,f4),bbox_inches='tight')
         plt.clf()
         plt.close()
-    
     
         plt.figure(figsize=(15,15))
         count=1
@@ -241,9 +203,6 @@ for sid1, spec1 in enumerate(spec_name):
                 plt.xlabel(r'$\ell$',fontsize=22)
             plt.legend()
             count+=1
-    
-#plt.show()
-    
         plt.savefig('%s/cov_element_comparison_%sx%s_%sx%s.png'%(cov_dir,f1,f2,f3,f4),bbox_inches='tight')
         plt.clf()
         plt.close()

@@ -19,9 +19,12 @@ lmax=d['lmax']
 type=d['type']
 clfile=d['clfile']
 lcut=d['lcut']
+hdf5=d['hdf5']
 
 specDir='spectra'
-spectra_hdf5 = h5py.File('%s.hdf5'%(specDir), 'r')
+
+if hdf5:
+    spectra_hdf5 = h5py.File('%s.hdf5'%(specDir), 'r')
 
 mcm_dir='mcm'
 plot_dir='plot'
@@ -74,7 +77,13 @@ for kind in ['cross','noise','auto']:
                 for fid2,f2 in enumerate(freqs):
                     if fid1>fid2: continue
                     spec_name='%s_%sx%s_%s_%05d'%(type,f1,f2,kind,iii)
-                    lb,Db=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name,spectra=spectra)
+                    
+                    if hdf5:
+                        lb,Db=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name,spectra=spectra)
+                    else:
+                        lb,Db=so_spectra.read_ps(specDir+'/%s.dat'%spec_name,spectra=spectra)
+
+                    
                     n_bins=len(lb)
                     vec=np.append(vec,Db[spec])
         vec_list+=[vec]

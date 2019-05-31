@@ -73,6 +73,9 @@ for fid1,f1 in enumerate(freqs):
                 DNl_all[f1,f2,spec]=Nl_P*l*(l+1)/(2*np.pi)*ns[f1]
             if spec=='TE' or spec=='ET':
                 DNl_all[f1,f2,spec]=Nl_T*0
+    
+            Dl_all[f2,f1,spec]=Dl_all[f1,f2,spec]
+            DNl_all[f2,f1,spec]=DNl_all[f1,f2,spec]
 
         spec_name+=['%sx%s'%(f1,f2)]
 

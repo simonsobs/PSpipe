@@ -1,11 +1,12 @@
 iStart=0
-iStop=150
+iStop=200
 
-#freqs=['LAT27','LAT39','LAT93','LAT145','LAT225','LAT280', 'Planck100','Planck143','Planck217','Planck353']
 
-freqs=['LAT280']
+experiment=['Planck','LAT']
 
-#freqs=['LAT145']
+freq_LAT=['145','225']#,'280']
+freq_Planck=['143','217']#,'353']
+
 
 pixWin=False
 #noise properties of LAT
@@ -14,37 +15,65 @@ sensitivity_mode=1
 
 #type of simulations
 spin='0-2'
-pixel='CAR'
-nSplits=2
 clfile='theory/cosmo2017_10K_acc3_lensedCls.dat'
 
 #Example of CAR template
-ra0=-50
-ra1=50
-dec0=-15
-dec1=15
-res=2.5
-apo_type_survey='Rectangle'
-apo_radius_survey=2
+
+pixel_LAT='CAR'
+nSplits_LAT=2
+ra0_LAT=-50
+ra1_LAT=50
+dec0_LAT=-15
+dec1_LAT=15
+res_LAT=2.5
+apo_type_survey_LAT='Rectangle'
+apo_radius_survey_LAT=2
+apo_type_mask_LAT='C1'
+source_mask_nholes_LAT=100
+source_mask_radius_LAT=10
+apo_radius_mask_LAT=0.3
+
+
+pixel_Planck='CAR'
+nSplits_Planck=2
+ra0_Planck=-50
+ra1_Planck=50
+dec0_Planck=-15
+dec1_Planck=15
+res_Planck=2.5
+apo_type_survey_Planck='Rectangle'
+apo_radius_survey_Planck=2
+apo_type_mask_Planck='C1'
+source_mask_nholes_Planck=100
+source_mask_radius_Planck=10
+apo_radius_mask_Planck=0.3
 
 #Example of HEALPIX template
-#nside=1024
-#lon=30
-#lat=50
-#radius=15
-#apo_type_survey='C1'
-#apo_radius_survey=1
+#pixel_LAT='HEALPIX'
+#nSplits_LAT=2
+#nside_LAT=1024
+#lon_LAT=30
+#lat_LAT=50
+#radius_LAT=15
+#apo_type_survey_LAT='C1'
+#apo_radius_survey_LAT=1
+
+#pixel_Planck='HEALPIX'
+#nSplits_Planck=2
+#nside_Planck=1024
+#lon_Planck=30
+#lat_Planck=50
+#radius_Planck=15
+#apo_type_survey_Planck='C1'
+#apo_radius_survey_Planck=1
+
 
 # apodisation and Mask
-apo_type_mask='C1'
-source_mask_nholes=100
-source_mask_radius=10
-apo_radius_mask=0.3
 
 # Spectra  parameter
 type='Dl'
 binning_file='binning/BIN_ACTPOL_50_4_SC_low_ell_startAt2'
-lmax=2500
+lmax=1000
 niter=0
 lcut=30 # parameter to regularize the noise power spectrum at very low ell
 

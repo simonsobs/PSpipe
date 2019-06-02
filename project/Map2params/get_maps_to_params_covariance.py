@@ -12,9 +12,11 @@ d.read_from_file(sys.argv[1])
 window_dir='window'
 mcm_dir='mcm'
 cov_dir='covariance'
+cov_plot_dir='plot_covariance'
 specDir='spectra'
 
-freqs=d['freqs']
+
+experiment=d['experiment']
 specDir='spectra'
 clfile=d['clfile']
 lmax=d['lmax']
@@ -27,8 +29,10 @@ iStop= d['iStop']
 type=d['type']
 lcut=d['lcut']
 hdf5=d['hdf5']
+multistep_path=d['multistep_path']
 
 pspy_utils.create_directory(cov_dir)
+pspy_utils.create_directory(cov_plot_dir)
 
 if hdf5:
     spectra_hdf5 = h5py.File('%s.hdf5'%(specDir), 'r')
@@ -46,52 +50,65 @@ Dl_all={}
 DNl_all={}
 ns={}
 
-
 spec_name=[]
-for fid1,f1 in enumerate(freqs):
-    ns[f1]=2
 
-    for fid2,f2 in enumerate(freqs):
-        if fid1>fid2: continue
-        l,bl1= np.loadtxt('beam/beam_%s.dat'%f1,unpack=True)
-        l,bl2= np.loadtxt('beam/beam_%s.dat'%f2,unpack=True)
-        bl1,bl2= bl1[:lmax],bl2[:lmax]
 
-        for spec in ['TT','TE','ET','EE']:
-            
-            l,Nl_T=np.loadtxt('noise_ps/noise_T_%sx%s.dat'%(f1,f2),unpack=True)
-            l,Nl_P=np.loadtxt('noise_ps/noise_P_%sx%s.dat'%(f1,f2),unpack=True)
+for exp in experiment:
+    ns[exp]=2
 
-            l,Nl_T,Nl_P=l[:lmax],Nl_T[:lmax],Nl_P[:lmax]
-            Nl_T[:lcut],Nl_P[:lcut]=0,0
+for id_exp1,exp1 in enumerate(experiment):
+    freqs1=d['freq_%s'%exp1]
+    for id_f1,f1 in enumerate(freqs1):
+        for id_exp2,exp2 in enumerate(experiment):
+            freqs2=d['freq_%s'%exp2]
+            for id_f2,f2 in enumerate(freqs2):
+                if  (id_exp1==id_exp2) & (id_f1>id_f2) : continue
+                if  (id_exp1>id_exp2) : continue
+
+
+                l,bl1= np.loadtxt('beam/beam_%s_%s.dat'%(exp1,f1),unpack=True)
+                l,bl2= np.loadtxt('beam/beam_%s_%s.dat'%(exp2,f2),unpack=True)
+                bl1,bl2= bl1[:lmax],bl2[:lmax]
+
+                for spec in ['TT','TE','ET','EE']:
+                    
+                    Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=bl1*bl2*Dlth[spec]
+
+                    if exp1==exp2:
             
-            Dl_all[f1,f2,spec]=bl1*bl2*Dlth[spec]
+                        l,Nl_T=np.loadtxt('noise_ps/noise_T_%s_%sx%s_%s.dat'%(exp1,f1,exp2,f2),unpack=True)
+                        l,Nl_P=np.loadtxt('noise_ps/noise_P_%s_%sx%s_%s.dat'%(exp1,f1,exp2,f2),unpack=True)
+
+                        l,Nl_T,Nl_P=l[:lmax],Nl_T[:lmax],Nl_P[:lmax]
+                        Nl_T[:lcut],Nl_P[:lcut]=0,0
             
-            if spec=='TT':
-                DNl_all[f1,f2,spec]=Nl_T*l*(l+1)/(2*np.pi)*ns[f1]
-            if spec=='EE':
-                DNl_all[f1,f2,spec]=Nl_P*l*(l+1)/(2*np.pi)*ns[f1]
-            if spec=='TE' or spec=='ET':
-                DNl_all[f1,f2,spec]=Nl_T*0
+                        if spec=='TT':
+                            DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=Nl_T*l*(l+1)/(2*np.pi)*ns[exp1]
+                        if spec=='EE':
+                            DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=Nl_P*l*(l+1)/(2*np.pi)*ns[exp1]
+                        if spec=='TE' or spec=='ET':
+                            DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=Nl_T*0
+                    else:
+                        DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=np.zeros(lmax)
     
-            Dl_all[f2,f1,spec]=Dl_all[f1,f2,spec]
-            DNl_all[f2,f1,spec]=DNl_all[f1,f2,spec]
+                    Dl_all['%s_%s'%(exp2,f2),'%s_%s'%(exp1,f1),spec]=Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]
+                    DNl_all['%s_%s'%(exp2,f2),'%s_%s'%(exp1,f1),spec]=DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]
 
-        spec_name+=['%sx%s'%(f1,f2)]
-
-
+                spec_name+=['%s_%sx%s_%s'%(exp1,f1,exp2,f2)]
 
 analytic_cov={}
 cov={}
 for sid1, spec1 in enumerate(spec_name):
     for sid2, spec2 in enumerate(spec_name):
         if sid1>sid2: continue
-        f1,f2=spec1.split('x')
-        f3,f4=spec2.split('x')
+        
+        print (spec1,spec2)
+        n1,n2=spec1.split('x')
+        n3,n4=spec2.split('x')
         
         
-        prefix_ab= '%s/%sx%s'%(mcm_dir,f1,f2)
-        prefix_cd= '%s/%sx%s'%(mcm_dir,f3,f4)
+        prefix_ab= '%s/%sx%s'%(mcm_dir,n1,n2)
+        prefix_cd= '%s/%sx%s'%(mcm_dir,n3,n4)
 
         mbb_inv_ab,Bbl_ab=so_mcm.read_coupling(prefix=prefix_ab,spin_pairs=spin_pairs)
         mbb_inv_ab=so_cov.extract_TTTEEE_mbb(mbb_inv_ab)
@@ -99,48 +116,48 @@ for sid1, spec1 in enumerate(spec_name):
         mbb_inv_cd=so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
 
         win={}
-        win['Ta']=so_map.read_map('%s/window_%s.fits'%(window_dir,f1))
-        win['Tb']=so_map.read_map('%s/window_%s.fits'%(window_dir,f2))
-        win['Tc']=so_map.read_map('%s/window_%s.fits'%(window_dir,f3))
-        win['Td']=so_map.read_map('%s/window_%s.fits'%(window_dir,f4))
-        win['Pa']=so_map.read_map('%s/window_%s.fits'%(window_dir,f1))
-        win['Pb']=so_map.read_map('%s/window_%s.fits'%(window_dir,f2))
-        win['Pc']=so_map.read_map('%s/window_%s.fits'%(window_dir,f3))
-        win['Pd']=so_map.read_map('%s/window_%s.fits'%(window_dir,f4))
+        win['Ta']=so_map.read_map('%s/window_%s.fits'%(window_dir,n1))
+        win['Tb']=so_map.read_map('%s/window_%s.fits'%(window_dir,n2))
+        win['Tc']=so_map.read_map('%s/window_%s.fits'%(window_dir,n3))
+        win['Td']=so_map.read_map('%s/window_%s.fits'%(window_dir,n4))
+        win['Pa']=so_map.read_map('%s/window_%s.fits'%(window_dir,n1))
+        win['Pb']=so_map.read_map('%s/window_%s.fits'%(window_dir,n2))
+        win['Pc']=so_map.read_map('%s/window_%s.fits'%(window_dir,n3))
+        win['Pd']=so_map.read_map('%s/window_%s.fits'%(window_dir,n4))
 
 
         coupling_dict=so_cov.cov_coupling_spin0and2(win, lmax, niter=niter)
 
-        analytic_cov[f1,f2,f3,f4]=np.zeros((3*n_bins,3*n_bins))
+        analytic_cov[n1,n2,n3,n4]=np.zeros((3*n_bins,3*n_bins))
 
-        analytic_cov[f1,f2,f3,f4][:n_bins,:n_bins]=so_cov.bin_mat(coupling_dict['TaTcTbTd']*so_cov.chi(f1,f3,f2,f4,ns,l,Dl_all,DNl_all,'TTTT'),binning_file,lmax)
-        analytic_cov[f1,f2,f3,f4][:n_bins,:n_bins]+=so_cov.bin_mat(coupling_dict['TaTdTbTc']*so_cov.chi(f1,f4,f2,f3,ns,l,Dl_all,DNl_all,'TTTT'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][:n_bins,:n_bins]=so_cov.bin_mat(coupling_dict['TaTcTbTd']*so_cov.chi(n1,n3,n2,n4,ns,l,Dl_all,DNl_all,'TTTT'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][:n_bins,:n_bins]+=so_cov.bin_mat(coupling_dict['TaTdTbTc']*so_cov.chi(n1,n4,n2,n3,ns,l,Dl_all,DNl_all,'TTTT'),binning_file,lmax)
            
-        analytic_cov[f1,f2,f3,f4][n_bins:2*n_bins,n_bins:2*n_bins]=so_cov.bin_mat(coupling_dict['TaTcPbPd']*so_cov.chi(f1,f3,f2,f4,ns,l,Dl_all,DNl_all,'TETE'),binning_file,lmax)
-        analytic_cov[f1,f2,f3,f4][n_bins:2*n_bins,n_bins:2*n_bins]+=so_cov.bin_mat(coupling_dict['TaPdPbTc']*so_cov.chi(f1,f4,f2,f3,ns,l,Dl_all,DNl_all,'TTEE'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][n_bins:2*n_bins,n_bins:2*n_bins]=so_cov.bin_mat(coupling_dict['TaTcPbPd']*so_cov.chi(n1,n3,n2,n4,ns,l,Dl_all,DNl_all,'TETE'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][n_bins:2*n_bins,n_bins:2*n_bins]+=so_cov.bin_mat(coupling_dict['TaPdPbTc']*so_cov.chi(n1,n4,n2,n3,ns,l,Dl_all,DNl_all,'TTEE'),binning_file,lmax)
 
-        analytic_cov[f1,f2,f3,f4][2*n_bins:3*n_bins,2*n_bins:3*n_bins]=so_cov.bin_mat(coupling_dict['PaPcPbPd']*so_cov.chi(f1,f3,f2,f4,ns,l,Dl_all,DNl_all,'EEEE'),binning_file,lmax)
-        analytic_cov[f1,f2,f3,f4][2*n_bins:3*n_bins,2*n_bins:3*n_bins]+=so_cov.bin_mat(coupling_dict['PaPdPbPc']*so_cov.chi(f1,f4,f2,f3,ns,l,Dl_all,DNl_all,'EEEE'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][2*n_bins:3*n_bins,2*n_bins:3*n_bins]=so_cov.bin_mat(coupling_dict['PaPcPbPd']*so_cov.chi(n1,n3,n2,n4,ns,l,Dl_all,DNl_all,'EEEE'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][2*n_bins:3*n_bins,2*n_bins:3*n_bins]+=so_cov.bin_mat(coupling_dict['PaPdPbPc']*so_cov.chi(n1,n4,n2,n3,ns,l,Dl_all,DNl_all,'EEEE'),binning_file,lmax)
 
-        analytic_cov[f1,f2,f3,f4][n_bins:2*n_bins,:n_bins]=so_cov.bin_mat(coupling_dict['TaTcTbPd']*so_cov.chi(f1,f3,f2,f4,ns,l,Dl_all,DNl_all,'TTTE'),binning_file,lmax)
-        analytic_cov[f1,f2,f3,f4][n_bins:2*n_bins,:n_bins]+=so_cov.bin_mat(coupling_dict['TaPdTbTc']*so_cov.chi(f1,f4,f2,f3,ns,l,Dl_all,DNl_all,'TTET'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][n_bins:2*n_bins,:n_bins]=so_cov.bin_mat(coupling_dict['TaTcTbPd']*so_cov.chi(n1,n3,n2,n4,ns,l,Dl_all,DNl_all,'TTTE'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][n_bins:2*n_bins,:n_bins]+=so_cov.bin_mat(coupling_dict['TaPdTbTc']*so_cov.chi(n1,n4,n2,n3,ns,l,Dl_all,DNl_all,'TTET'),binning_file,lmax)
 
-        analytic_cov[f1,f2,f3,f4][2*n_bins:3*n_bins,:n_bins]=so_cov.bin_mat(coupling_dict['TaPcTbPd']*so_cov.chi(f1,f3,f2,f4,ns,l,Dl_all,DNl_all,'TTEE'),binning_file,lmax)
-        analytic_cov[f1,f2,f3,f4][2*n_bins:3*n_bins,:n_bins]+=so_cov.bin_mat(coupling_dict['TaPdTbPc']*so_cov.chi(f1,f4,f2,f3,ns,l,Dl_all,DNl_all,'TTEE'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][2*n_bins:3*n_bins,:n_bins]=so_cov.bin_mat(coupling_dict['TaPcTbPd']*so_cov.chi(n1,n3,n2,n4,ns,l,Dl_all,DNl_all,'TTEE'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][2*n_bins:3*n_bins,:n_bins]+=so_cov.bin_mat(coupling_dict['TaPdTbPc']*so_cov.chi(n1,n4,n2,n3,ns,l,Dl_all,DNl_all,'TTEE'),binning_file,lmax)
 
-        analytic_cov[f1,f2,f3,f4][2*n_bins:3*n_bins,n_bins:2*n_bins]=so_cov.bin_mat(coupling_dict['PaTcPbPd']*so_cov.chi(f1,f3,f2,f4,ns,l,Dl_all,DNl_all,'EETE'),binning_file,lmax)
-        analytic_cov[f1,f2,f3,f4][2*n_bins:3*n_bins,n_bins:2*n_bins]+=so_cov.bin_mat(coupling_dict['TaPdTbPc']*so_cov.chi(f1,f4,f2,f3,ns,l,Dl_all,DNl_all,'EEET'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][2*n_bins:3*n_bins,n_bins:2*n_bins]=so_cov.bin_mat(coupling_dict['PaTcPbPd']*so_cov.chi(n1,n3,n2,n4,ns,l,Dl_all,DNl_all,'EETE'),binning_file,lmax)
+        analytic_cov[n1,n2,n3,n4][2*n_bins:3*n_bins,n_bins:2*n_bins]+=so_cov.bin_mat(coupling_dict['TaPdTbPc']*so_cov.chi(n1,n4,n2,n3,ns,l,Dl_all,DNl_all,'EEET'),binning_file,lmax)
 
-        analytic_cov[f1,f2,f3,f4] = np.tril(analytic_cov[f1,f2,f3,f4]) + np.triu(analytic_cov[f1,f2,f3,f4].T, 1)
+        analytic_cov[n1,n2,n3,n4] = np.tril(analytic_cov[n1,n2,n3,n4]) + np.triu(analytic_cov[n1,n2,n3,n4].T, 1)
 
-        analytic_cov[f1,f2,f3,f4]=np.dot(np.dot(mbb_inv_ab,analytic_cov[f1,f2,f3,f4]),mbb_inv_cd.T)
+        analytic_cov[n1,n2,n3,n4]=np.dot(np.dot(mbb_inv_ab,analytic_cov[n1,n2,n3,n4]),mbb_inv_cd.T)
 
         Db_list1=[]
         Db_list2=[]
 
         for iii in range(iStart,iStop):
-            spec_name_cross_1='%s_%sx%s_cross_%05d'%(type,f1,f2,iii)
-            spec_name_cross_2='%s_%sx%s_cross_%05d'%(type,f3,f4,iii)
+            spec_name_cross_1='%s_%sx%s_cross_%05d'%(type,n1,n2,iii)
+            spec_name_cross_2='%s_%sx%s_cross_%05d'%(type,n3,n4,iii)
             if hdf5:
                 lb,Db1=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name_cross_1,spectra=spectra)
                 lb,Db2=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name_cross_2,spectra=spectra)
@@ -153,47 +170,26 @@ for sid1, spec1 in enumerate(spec_name):
             for spec in ['TT','TE','EE']:
                 vec1=np.append(vec1,Db1[spec])
                 vec2=np.append(vec2,Db2[spec])
+            
             Db_list1+=[vec1]
             Db_list2+=[vec2]
 
-        cov[f1,f2,f3,f4]=0
+        cov[n1,n2,n3,n4]=0
 
         for iii in range(iStart,iStop):
-            cov[f1,f2,f3,f4]+=np.outer(Db_list1[iii],Db_list2[iii])
-        cov[f1,f2,f3,f4]= cov[f1,f2,f3,f4]/(iStop-iStart)-np.outer(np.mean(Db_list1,axis=0), np.mean(Db_list2,axis=0))
+            cov[n1,n2,n3,n4]+=np.outer(Db_list1[iii],Db_list2[iii])
+        cov[n1,n2,n3,n4]= cov[n1,n2,n3,n4]/(iStop-iStart)-np.outer(np.mean(Db_list1,axis=0), np.mean(Db_list2,axis=0))
 
-        corr=so_cov.cov2corr(cov[f1,f2,f3,f4])
-        analytic_corr=so_cov.cov2corr(analytic_cov[f1,f2,f3,f4])
+        np.save('%s/analytic_cov_%sx%s_%sx%s.npy'%(cov_dir,n1,n2,n3,n4), analytic_cov[n1,n2,n3,n4] )
+        np.save('%s/mc_cov_%sx%s_%sx%s.npy'%(cov_dir,n1,n2,n3,n4), analytic_cov[n1,n2,n3,n4] )
 
-        plt.figure(figsize=(15,8))
-        plt.subplot(1,2,1)
-        plt.title('Monte-Carlo correlation matrix',fontsize=22)
-        plt.imshow(corr,vmin=-0.5,vmax=0.5,origin='lower')
-        ticks=np.arange(4,3*n_bins,15)
-        labels=(lb[ticks%n_bins]).astype(int)
-        plt.xticks(ticks,labels)
-        plt.yticks(ticks,labels)
-        plt.ylabel(r'$\ell_{TT}  \hspace{3}   \ell_{TE} \hspace{3}   \ell_{EE}$',fontsize=22)
-        plt.xlabel(r'$\ell_{TT}  \hspace{3}   \ell_{TE} \hspace{3}   \ell_{EE}$',fontsize=22)
-        plt.colorbar()
-        plt.subplot(1,2,2)
-        plt.ylabel(r'$\ell_{TT}  \hspace{3}   \ell_{TE} \hspace{3}   \ell_{EE}$',fontsize=22)
-        plt.xlabel(r'$\ell_{TT}  \hspace{3}   \ell_{TE} \hspace{3}   \ell_{EE}$',fontsize=22)
-        plt.xticks(ticks,labels)
-        plt.yticks(ticks,labels)
-        plt.title('Analytic correlation matrix',fontsize=22)
-        plt.imshow(analytic_corr,vmin=-0.5,vmax=0.5,origin='lower')
-        plt.colorbar()
-        plt.savefig('%s/correlation_matrix_%sx%s_%sx%s.png'%(cov_dir,f1,f2,f3,f4),bbox_inches='tight')
-        plt.clf()
-        plt.close()
-    
         plt.figure(figsize=(15,15))
+        plt.suptitle('%sx%s %sx%s'%(n1,n2,n3,n4),fontsize=30)
         count=1
         for bl in ['TTTT','EEEE','TETE','TTEE','TEEE','TETT']:
             plt.subplot(2,3,count)
-            cov_select=so_cov.selectblock(cov[f1,f2,f3,f4], ['TT','TE','EE'],n_bins,block=bl)
-            analytic_cov_select=so_cov.selectblock(analytic_cov[f1,f2,f3,f4],  ['TT','TE','EE'],n_bins,block=bl)
+            cov_select=so_cov.selectblock(cov[n1,n2,n3,n4], ['TT','TE','EE'],n_bins,block=bl)
+            analytic_cov_select=so_cov.selectblock(analytic_cov[n1,n2,n3,n4],  ['TT','TE','EE'],n_bins,block=bl)
             var = cov_select.diagonal()
             analytic_var = analytic_cov_select.diagonal()
             if count==1:
@@ -206,10 +202,39 @@ for sid1, spec1 in enumerate(spec_name):
                 plt.xlabel(r'$\ell$',fontsize=22)
             plt.legend()
             count+=1
-        plt.savefig('%s/cov_element_comparison_%sx%s_%sx%s.png'%(cov_dir,f1,f2,f3,f4),bbox_inches='tight')
+        plt.savefig('%s/cov_element_comparison_%sx%s_%sx%s.png'%(cov_plot_dir,n1,n2,n3,n4),bbox_inches='tight')
         plt.clf()
         plt.close()
 
+
+
+os.system('cp %s/multistep2.js %s/multistep2.js'%(multistep_path,cov_plot_dir))
+fileName='%s/SO_covariance.html'%cov_plot_dir
+g = open(fileName,mode="w")
+g.write('<html>\n')
+g.write('<head>\n')
+g.write('<title> SO covariance </title>\n')
+g.write('<script src="multistep2.js"></script>\n')
+g.write('<script> add_step("sub",  ["c","v"]) </script> \n')
+g.write('</head> \n')
+g.write('<body> \n')
+g.write('<div class=sub> \n')
+
+for sid1, spec1 in enumerate(spec_name):
+    for sid2, spec2 in enumerate(spec_name):
+        if sid1>sid2: continue
+        
+        n1,n2=spec1.split('x')
+        n3,n4=spec2.split('x')
+                
+        str='cov_element_comparison_%sx%s_%sx%s.png'%(n1,n2,n3,n4)
+        g.write('<div class=sub>\n')
+        g.write('<img src="'+str+'" width="50%" /> \n')
+        g.write('</div>\n')
+
+g.write('</body> \n')
+g.write('</html> \n')
+g.close()
 
 
 

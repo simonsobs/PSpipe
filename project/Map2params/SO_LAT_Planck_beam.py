@@ -7,7 +7,8 @@ import os,sys
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-freqs=d['freqs']
+
+experiment=d['experiment']
 
 pspy_utils.create_directory('beam')
 
@@ -24,10 +25,12 @@ beam_FWHM['Planck143']= 7.30
 beam_FWHM['Planck217']=5.02
 beam_FWHM['Plancks353']=4.94
 
-for f in freqs:
-    beam_FWHM_rad = np.deg2rad(beam_FWHM[f])/60
-    beam = beam_FWHM_rad/np.sqrt(8*np.log(2))
-    l=np.arange(2,10000)
-    bl=np.exp(-l*(l+1)*beam**2/2.)
-    np.savetxt('beam/beam_%s.dat'%f, np.transpose([l,bl]))
+for exp in experiment:
+    freqs=d['freq_%s'%exp]
+    for f in freqs:
+        beam_FWHM_rad = np.deg2rad(beam_FWHM[exp+f])/60
+        beam = beam_FWHM_rad/np.sqrt(8*np.log(2))
+        l=np.arange(2,10000)
+        bl=np.exp(-l*(l+1)*beam**2/2.)
+        np.savetxt('beam/beam_%s_%s.dat'%(exp,f), np.transpose([l,bl]))
 

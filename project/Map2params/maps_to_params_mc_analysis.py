@@ -11,10 +11,9 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 type=d['type']
-freqs=d['freqs']
+experiment=d['experiment']
 iStart=d['iStart']
 iStop=d['iStop']
-nSplits=d['nSplits']
 lmax=d['lmax']
 type=d['type']
 clfile=d['clfile']
@@ -39,33 +38,51 @@ lth,Dlth=pspy_utils.ps_lensed_theory_to_dict(clfile,output_type=type,lmax=lmax,l
 
 theory={}
 bin_theory={}
-for fid1,f1 in enumerate(freqs):
-    for fid2,f2 in enumerate(freqs):
-        if fid1>fid2: continue
-            
-        Nl_file_T='noise_ps/noise_T_%sx%s.dat'%(f1,f2)
-        Nl_file_P='noise_ps/noise_P_%sx%s.dat'%(f1,f2)
-        l,bl1=np.loadtxt('beam/beam_%s.dat'%f1,unpack=True)
-        l,bl2=np.loadtxt('beam/beam_%s.dat'%f2,unpack=True)
 
-        nlth=maps_to_params_utils.get_effective_noise(lmax,bl1,bl2,Nl_file_T,Nl_file_P,spectra,lcut=lcut)
+ns={}
+for exp in experiment:
+    ns[exp]=2
 
-        prefix= '%s/%sx%s'%(mcm_dir,f1,f2)
-        mbb_inv,Bbl=so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
-
-        for kind in ['cross','noise','auto']:
-
-            ps_th={}
-            for spec in spectra:
-                if kind=='cross':
-                    ps_th[spec]=Dlth[spec]
-                elif kind=='noise':
-                    ps_th[spec]=nlth[spec]*lth**2/(2*np.pi)
-                elif kind=='auto':
-                    ps_th[spec]=Dlth[spec]+nlth[spec]*lth**2/(2*np.pi)*nSplits
+for id_exp1,exp1 in enumerate(experiment):
+    freqs1=d['freq_%s'%exp1]
+    for id_f1,f1 in enumerate(freqs1):
+        for id_exp2,exp2 in enumerate(experiment):
+            freqs2=d['freq_%s'%exp2]
+            for id_f2,f2 in enumerate(freqs2):
+                if  (id_exp1==id_exp2) & (id_f1>id_f2) : continue
+                if  (id_exp1>id_exp2) : continue
     
-            theory[f1,f2,kind]=ps_th
-            bin_theory[f1,f2,kind]=so_mcm.apply_Bbl(Bbl,ps_th,spectra=spectra)
+                l,bl1=np.loadtxt('beam/beam_%s_%s.dat'%(exp1,f1),unpack=True)
+                l,bl2=np.loadtxt('beam/beam_%s_%s.dat'%(exp2,f2),unpack=True)
+
+                if exp1==exp2:
+                    Nl_file_T='noise_ps/noise_T_%s_%sx%s_%s.dat'%(exp1,f1,exp2,f2)
+                    Nl_file_P='noise_ps/noise_P_%s_%sx%s_%s.dat'%(exp1,f1,exp2,f2)
+                    nlth=maps_to_params_utils.get_effective_noise(lmax,bl1,bl2,Nl_file_T,Nl_file_P,spectra,lcut=lcut)
+                else:
+                    nlth={}
+                    for spec in spectra:
+                        nlth[spec]=np.zeros(lmax)
+
+
+                prefix= '%s/%s_%sx%s_%s'%(mcm_dir,exp1,f1,exp2,f2)
+                mbb_inv,Bbl=so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
+
+                for kind in ['cross','noise','auto']:
+
+                    ps_th={}
+                    for spec in spectra:
+                        if kind=='cross':
+                            ps_th[spec]=Dlth[spec]
+                        elif kind=='noise':
+                            ps_th[spec]=nlth[spec]*lth**2/(2*np.pi)
+                        elif kind=='auto':
+                            ps_th[spec]=Dlth[spec]+nlth[spec]*lth**2/(2*np.pi)*ns[exp1]
+    
+                    theory[exp1,f1,exp2,f2,kind]=ps_th
+                    bin_theory[exp1,f1,exp2,f2,kind]=so_mcm.apply_Bbl(Bbl,ps_th,spectra=spectra)
+
+
 
 spec_name={}
 for kind in ['cross','noise','auto']:
@@ -74,19 +91,27 @@ for kind in ['cross','noise','auto']:
         vec=[]
         count=0
         for spec in spectra:
-            for fid1,f1 in enumerate(freqs):
-                for fid2,f2 in enumerate(freqs):
-                    if fid1>fid2: continue
-                    spec_name='%s_%sx%s_%s_%05d'%(type,f1,f2,kind,iii)
-                    
-                    if hdf5:
-                        lb,Db=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name,spectra=spectra)
-                    else:
-                        lb,Db=so_spectra.read_ps(specDir+'/%s.dat'%spec_name,spectra=spectra)
+            for id_exp1,exp1 in enumerate(experiment):
+                freqs1=d['freq_%s'%exp1]
+                for id_f1,f1 in enumerate(freqs1):
+                    for id_exp2,exp2 in enumerate(experiment):
+                        freqs2=d['freq_%s'%exp2]
+                        for id_f2,f2 in enumerate(freqs2):
+                            if  (id_exp1==id_exp2) & (id_f1>id_f2) : continue
+                            if  (id_exp1>id_exp2) : continue
+                            if (exp1!=exp2) & (kind=='noise'): continue
+                            if (exp1!=exp2) & (kind=='auto'): continue
 
+
+                            spec_name='%s_%s_%sx%s_%s_%s_%05d'%(type,exp1,f1,exp2,f2,kind,iii)
                     
-                    n_bins=len(lb)
-                    vec=np.append(vec,Db[spec])
+                            if hdf5:
+                                lb,Db=so_spectra.read_ps_hdf5(spectra_hdf5,spec_name,spectra=spectra)
+                            else:
+                                lb,Db=so_spectra.read_ps(specDir+'/%s.dat'%spec_name,spectra=spectra)
+
+                            n_bins=len(lb)
+                            vec=np.append(vec,Db[spec])
         vec_list+=[vec]
    
     mean_vec=np.mean(vec_list,axis=0)
@@ -97,45 +122,53 @@ for kind in ['cross','noise','auto']:
 
     id_spec=0
     for spec in spectra:
-        for fid1,f1 in enumerate(freqs):
-            for fid2,f2 in enumerate(freqs):
-                if fid1>fid2: continue
-                
-                mean=mean_vec[id_spec*n_bins:(id_spec+1)*n_bins]
-                std=np.sqrt(cov[id_spec*n_bins:(id_spec+1)*n_bins,id_spec*n_bins:(id_spec+1)*n_bins].diagonal())
-                
-                plt.figure(figsize=(8,7))
-                
-                if spec=='TT':
-                    plt.semilogy()
-                
-                plt.plot(lth,theory[f1,f2,kind][spec],color='grey',alpha=0.4)
-                plt.plot(lb,bin_theory[f1,f2,kind][spec])
-                plt.errorbar(lb,mean,std,fmt='.',color='red')
-                plt.title(r'$D^{%s,%sx%s}_{%s,\ell}$'%(spec,f1,f2,kind),fontsize=20)
-                plt.xlabel(r'$\ell$',fontsize=20)
-                plt.savefig('plot/spectra_%s_%sx%s_%s.png'%(spec,f1,f2,kind),bbox_inches='tight')
-                plt.clf()
-                plt.close()
-                
-                plt.errorbar(lb,mean-bin_theory[f1,f2,kind][spec],std,fmt='.',color='red')
-                plt.title(r'$D^{%s,%sx%s}_{%s,\ell}-D^{%s,%sx%s,th}_{%s,\ell}$'%(spec,f1,f2,kind,spec,f1,f2,kind),fontsize=20)
-                plt.xlabel(r'$\ell$',fontsize=20)
-                plt.savefig('plot/diff_spectra_%s_%sx%s_%s.png'%(spec,f1,f2,kind),bbox_inches='tight')
-                plt.clf()
-                plt.close()
-                
-                std/=np.sqrt(iStop-iStart)
+        for id_exp1,exp1 in enumerate(experiment):
+            freqs1=d['freq_%s'%exp1]
+            for id_f1,f1 in enumerate(freqs1):
+                for id_exp2,exp2 in enumerate(experiment):
+                    freqs2=d['freq_%s'%exp2]
+                    for id_f2,f2 in enumerate(freqs2):
+                        if  (id_exp1==id_exp2) & (id_f1>id_f2) : continue
+                        if  (id_exp1>id_exp2) : continue
+                        if (exp1!=exp2) & (kind=='noise'): continue
+                        if (exp1!=exp2) & (kind=='auto'): continue
 
-                plt.errorbar(lb,(mean-bin_theory[f1,f2,kind][spec])/std,color='red')
-                plt.title(r'$(D^{%s,%sx%s}_{%s,\ell}-D^{%s,%sx%s,th}_{%s,\ell})/\sigma$'%(spec,f1,f2,kind,spec,f1,f2,kind),fontsize=20)
-                plt.xlabel(r'$\ell$',fontsize=20)
-                plt.savefig('plot/frac_spectra_%s_%sx%s_%s.png'%(spec,f1,f2,kind),bbox_inches='tight')
-                plt.clf()
-                plt.close()
+                
+                        mean=mean_vec[id_spec*n_bins:(id_spec+1)*n_bins]
+                        std=np.sqrt(cov[id_spec*n_bins:(id_spec+1)*n_bins,id_spec*n_bins:(id_spec+1)*n_bins].diagonal())
+                
+                        plt.figure(figsize=(8,7))
+                
+                        if spec=='TT':
+                            plt.semilogy()
+                
+                        plt.plot(lth,theory[exp1,f1,exp2,f2,kind][spec],color='grey',alpha=0.4)
+                        plt.plot(lb,bin_theory[exp1,f1,exp2,f2,kind][spec])
+                        plt.errorbar(lb,mean,std,fmt='.',color='red')
+                        plt.title(r'$D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}$'%(spec,exp1,f1,exp2,f2,kind),fontsize=20)
+                        plt.xlabel(r'$\ell$',fontsize=20)
+                        plt.savefig('plot/spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
+                        plt.clf()
+                        plt.close()
+                
+                        plt.errorbar(lb,mean-bin_theory[exp1,f1,exp2,f2,kind][spec],std,fmt='.',color='red')
+                        plt.title(r'$D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}-D^{%s,%s_{%s}x%s_{%s},th}_{%s,\ell}$'%(spec,exp1,f1,exp2,f2,kind,spec,exp1,f1,exp2,f2,kind),fontsize=20)
+                        plt.xlabel(r'$\ell$',fontsize=20)
+                        plt.savefig('plot/diff_spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
+                        plt.clf()
+                        plt.close()
+                
+                        std/=np.sqrt(iStop-iStart)
+
+                        plt.errorbar(lb,(mean-bin_theory[exp1,f1,exp2,f2,kind][spec])/std,color='red')
+                        plt.title(r'$(D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}-D^{%s,%s_{%s}x%s_{%s},th}_{%s,\ell})/\sigma$'%(spec,exp1,f1,exp2,f2,kind,spec,exp1,f1,exp2,f2,kind),fontsize=20)
+                        plt.xlabel(r'$\ell$',fontsize=20)
+                        plt.savefig('plot/frac_spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
+                        plt.clf()
+                        plt.close()
 
 
-                id_spec+=1
+                        id_spec+=1
 
 
 os.system('cp %s/multistep2.js %s/multistep2.js'%(multistep_path,plot_dir))
@@ -155,19 +188,26 @@ g.write('<div class=sub> \n')
 for kind in ['cross','noise','auto']:
     g.write('<div class=all>\n')
     for spec in spectra:
-        for fid1,f1 in enumerate(freqs):
-            for fid2,f2 in enumerate(freqs):
-                if fid1>fid2: continue
-                
-                str='spectra_%s_%sx%s_%s.png'%(spec,f1,f2,kind)
-                g.write('<div class=type>\n')
-                g.write('<img src="'+str+'" width="50%" /> \n')
-                g.write('<img src="'+'diff_'+str+'" width="50%" /> \n')
-                g.write('<img src="'+'frac_'+str+'" width="50%" /> \n')
-                g.write('</div>\n')
+        for id_exp1,exp1 in enumerate(experiment):
+            freqs1=d['freq_%s'%exp1]
+            for id_f1,f1 in enumerate(freqs1):
+                for id_exp2,exp2 in enumerate(experiment):
+                    freqs2=d['freq_%s'%exp2]
+                    for id_f2,f2 in enumerate(freqs2):
+                        if  (id_exp1==id_exp2) & (id_f1>id_f2) : continue
+                        if  (id_exp1>id_exp2) : continue
+                        if (exp1!=exp2) & (kind=='noise'): continue
+                        if (exp1!=exp2) & (kind=='auto'): continue
 
-g.write('</div>\n')
 
+                        str='spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind)
+                        g.write('<div class=type>\n')
+                        g.write('<img src="'+str+'" width="50%" /> \n')
+                        g.write('<img src="'+'diff_'+str+'" width="50%" /> \n')
+                        g.write('<img src="'+'frac_'+str+'" width="50%" /> \n')
+                        g.write('</div>\n')
+
+    g.write('</div>\n')
 g.write('</div> \n')
 g.write('</body> \n')
 g.write('</html> \n')

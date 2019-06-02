@@ -4,27 +4,9 @@ import  numpy as np, healpy as hp
 import os,sys
 from pixell import curvedsky
 
-def get_noise_matrix_spin0(noise_dir,freqs,lmax,nSplits,lcut=0):
-    
-    def symmetrize(a):
-        return a + a.T - np.diag(a.diagonal())
-    
-    Nfreq=len(freqs)
-    Nl_array_T=np.zeros((Nfreq,Nfreq,lmax))
-    nSpecs=0
-    for c1,f1 in enumerate(freqs):
-        for c2,f2 in enumerate(freqs):
-            if c1>c2 : continue
-            l,Nl_T=np.loadtxt('%s/noise_T_%sx%s.dat'%(noise_dir,f1,f2),unpack=True)
-            for i in range(lcut,lmax):
-                Nl_array_T[c1,c2,i]=Nl_T[i]/nSplits
-            nSpecs+=1
-    for i in range(2,lmax):
-        Nl_array_T[:,:,i]=symmetrize(Nl_array_T[:,:,i])
-    return(l,Nl_array_T)
 
 
-def get_noise_matrix_spin0and2(noise_dir,freqs,lmax,nSplits,lcut=0):
+def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0):
     
     def symmetrize(a):
         return a + a.T - np.diag(a.diagonal())
@@ -37,8 +19,8 @@ def get_noise_matrix_spin0and2(noise_dir,freqs,lmax,nSplits,lcut=0):
     for c1,f1 in enumerate(freqs):
         for c2,f2 in enumerate(freqs):
             if c1>c2 : continue
-            l,Nl_T=np.loadtxt('%s/noise_T_%sx%s.dat'%(noise_dir,f1,f2),unpack=True)
-            l,Nl_P=np.loadtxt('%s/noise_P_%sx%s.dat'%(noise_dir,f1,f2),unpack=True)
+            l,Nl_T=np.loadtxt('%s/noise_T_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+            l,Nl_P=np.loadtxt('%s/noise_P_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
             for i in range(lcut,lmax):
                 Nl_array_T[c1,c2,i]=Nl_T[i]*nSplits
                 Nl_array_P[c1,c2,i]=Nl_P[i]*nSplits

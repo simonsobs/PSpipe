@@ -84,7 +84,6 @@ def cov_coupling_spin0and2(win, lmax, niter=0,save_file=None):
         wcl={}
         for s in win_list:
             n0,n1,n2,n3=[s[i*2:(i+1)*2] for i in range(4)]
-            print (n0,n1,n2,n3)
             
             sq_win_n0n1=win[n0].copy()
             sq_win_n0n1.data*=win[n1].data
@@ -308,11 +307,42 @@ def chi(alpha,gamma,beta,eta,ns,ls,Dl,DNl,id='TTTT'):
     """
     @brief not ready yet
     """
+    exp_alpha,f_alpha=alpha.split('_')
+    exp_beta,f_beta=beta.split('_')
+    exp_gamma,f_gamma=gamma.split('_')
+    exp_eta,f_eta=eta.split('_')
+
+#print (exp_alpha,exp_beta,exp_gamma,exp_eta)
+    
     RX=id[0]+id[2]
     SY=id[1]+id[3]
     chi=Dl[alpha,gamma,RX]*Dl[beta,eta,SY]
-    chi+= Dl[alpha,gamma,RX]*DNl[beta,eta,SY]*f(beta,eta,alpha,gamma,ns) + Dl[beta,eta,SY]*DNl[alpha,gamma,RX]*f(alpha,gamma,beta,eta,ns)
-    chi+= g(alpha,gamma,beta,eta,ns)*DNl[alpha,gamma,RX]*DNl[beta,eta,SY]
+    chi+= Dl[alpha,gamma,RX]*DNl[beta,eta,SY]*f(exp_beta,exp_eta,exp_alpha,exp_gamma,ns) + Dl[beta,eta,SY]*DNl[alpha,gamma,RX]*f(exp_alpha,exp_gamma,exp_beta,exp_eta,ns)
+    chi+= g(exp_alpha,exp_gamma,exp_beta,exp_eta,ns)*DNl[alpha,gamma,RX]*DNl[beta,eta,SY]
+    
+    print ('RX',RX)
+    print ('SY',SY)
+    print ('ns',ns)
+    print (r'f_{%s %s}^{%s %s}'%(exp_beta,exp_eta,exp_alpha,exp_gamma),f(exp_beta,exp_eta,exp_alpha,exp_gamma,ns))
+    print (r'f_{%s %s}^{%s %s}'%(exp_alpha,exp_gamma,exp_beta,exp_eta),f(exp_alpha,exp_gamma,exp_beta,exp_eta,ns))
+    print (r'g_{%s %s %s %s}'%(exp_alpha,exp_gamma,exp_beta,exp_eta),g(exp_alpha,exp_gamma,exp_beta,exp_eta,ns))
+    
+    
+#    plt.figure()
+#    plt.subplot(2,2,1)
+#    plt.plot(Dl[alpha,gamma,RX], label=r'Dl^{%s}_{%s, %s}'%(RX,alpha,gamma))
+#    plt.legend()
+#    plt.subplot(2,2,2)
+#    plt.plot(Dl[beta,eta,SY], label=r'Dl^{%s}_{%s, %s}'%(SY,beta,eta))
+#    plt.legend()
+#    plt.subplot(2,2,3)
+#    plt.plot(DNl[beta,eta,SY], label=r'Nl^{%s}_{%s, %s}'%(SY,beta,eta))
+#    plt.legend()
+#    plt.subplot(2,2,4)
+#    plt.plot(DNl[alpha,gamma,RX], label=r'Nl^{%s}_{%s, %s}'%(RX,alpha,gamma))
+#    plt.legend()
+#    plt.show()
+
     chi= symmetrize(chi,mode='arithm')
     
     return chi

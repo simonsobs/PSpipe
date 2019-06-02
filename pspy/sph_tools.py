@@ -18,7 +18,6 @@ def map2alm(map,niter,lmax,theta_range=None):
     a range [theta_min,theta_max] in radian. All pixel outside this range
     will be assumed to be zero.
     """
-    print ('niter',niter)
     if map.pixel=='HEALPIX':
         if theta_range is None:
             alm= hp.sphtfunc.map2alm(map.data,lmax=lmax,iter=niter)

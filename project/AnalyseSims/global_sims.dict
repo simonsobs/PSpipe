@@ -21,8 +21,8 @@ synchrotron_maps=[synchrotron_dir+'simonsobs_synchrotron_uKCMB_la%s_nside4096_00
 cib_maps=[cib_dir+'simonsobs_cib_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 cmb_maps=[cmb_dir+'simonsobs_cmb_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 cmb_maps_unlensed=[cmb_dir+'simonsobs_cmb_unlensed_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-ksz_maps=[ksz_dir+'simonsobs_ksz_unlensed_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-tsz_maps=[tsz_dir+'simonsobs_tsz_unlensed_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+ksz_maps=[ksz_dir+'simonsobs_ksz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+tsz_maps=[tsz_dir+'simonsobs_tsz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 
 
 

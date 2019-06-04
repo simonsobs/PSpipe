@@ -21,7 +21,7 @@ for exp in experiment:
     maps_list= d['noise_maps']
     for map,f in zip(maps_list,freqs):
         mask=so_map.read_map(map)
-        id=np.where(mask.data!=0)
+        id=np.where(mask.data[0]!=0)
         mask.data[id]==1
         mask.write_map('%s/survey_mask_%s_%s.fits'%(survey_dir,exp,f))
         mask.plot(file_name='%s/mask_%s_%s'%(plot_dir,exp,f))

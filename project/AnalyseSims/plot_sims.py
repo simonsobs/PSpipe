@@ -15,6 +15,7 @@ pspy_utils.create_directory(spec_dir)
 
 experiment=d['experiment']
 content=d['content']
+lmax=d['lmax']
 
 for exp in experiment:
     
@@ -31,12 +32,11 @@ for exp in experiment:
                 color_range=250
 
             map.plot(file_name='%s/%s_%s_%s'%(plot_dir,cont,exp,f),color_range=color_range)
-            cls=hp.sphtfunc.anafast(map.data,lmax=8000)
+            cls=hp.sphtfunc.anafast(map.data,lmax=lmax)
             if len(cls) !=6:
                 zeros=np.zeros(len(cls))
                 cls=[cls,zeros,zeros,zeros,zeros,zeros]
             np.savetxt('%s/full_sky_cl_%s_%s_%s.dat'%(spec_dir,cont,exp,f), np.array(cls).T )
-
 
     masks= d['masks']
     for mask,f in zip(masks,freqs):

@@ -29,11 +29,9 @@ for exp in experiment:
             map=so_map.read_map(map)
             map.plot(file_name='%s/%s_%s_%s.png'%(plot_dir,cont,exp,f))
 
+    masks= d['masks']
     for mask,f in zip(masks,freqs):
         mask=so_map.read_map(mask)
-        mask.plot(file_name='%s/mask_%s_%s.png'%(plot_dir,cont,exp,f))
+        mask.plot(file_name='%s/mask_%s_%s.png'%(plot_dir,exp,f))
 
-    for f in freqs:
-        mask=so_map.read_map(d['mask_%s_%s'%(exp,f)])
-        mask.plot(file_name='%s/mask_%s_%s.png'%(plot_direxp,f))
 

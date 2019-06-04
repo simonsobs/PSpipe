@@ -7,13 +7,11 @@ import os,sys
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-window_dir='window'
-pspy_utils.create_directory(window_dir)
-mcm_dir='mcm'
 plot_dir='plot'
+spec_dir='spectra'
 
-pspy_utils.create_directory(mcm_dir)
 pspy_utils.create_directory(plot_dir)
+pspy_utils.create_directory(spec_dir)
 
 experiment=d['experiment']
 content=d['content']
@@ -28,11 +26,17 @@ for exp in experiment:
         for map,f in zip(maps_list,freqs):
             map=so_map.read_map(map)
             if map.ncomp==3:
-                color_range=(250,50,50)
+                color_range=(200,20,20)
             else:
                 color_range=250
 
             map.plot(file_name='%s/%s_%s_%s'%(plot_dir,cont,exp,f),color_range=color_range)
+            cls=hp.sphtfunc.anafast(map.data,lmax=8000)
+            if len(cls) !=6:
+                zeros=np.zeros(len(cls))
+                cls=[cls,zeros,zeros,zeros,zeros,zeros]
+            np.savetxt('%s/full_sky_cl_%s_%s_%s.dat'%(spec_dir,cont,exp,f), np.array(cls).T )
+
 
     masks= d['masks']
     for mask,f in zip(masks,freqs):

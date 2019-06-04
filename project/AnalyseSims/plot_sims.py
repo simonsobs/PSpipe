@@ -3,6 +3,7 @@ matplotlib.use('Agg')
 from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils, so_dict
 import healpy as hp, numpy as np, pylab as plt
 import os,sys
+import time
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -25,6 +26,9 @@ for exp in experiment:
         print ('%s_%s'%(cont,exp))
         maps_list= d['%s_maps'%cont]
         for map,f in zip(maps_list,freqs):
+            
+            t0=time.time()
+            
             map=so_map.read_map(map)
             if map.ncomp==3:
                 color_range=(200,20,20)
@@ -32,11 +36,20 @@ for exp in experiment:
                 color_range=250
 
             map.plot(file_name='%s/%s_%s_%s'%(plot_dir,cont,exp,f),color_range=color_range)
+            
+            print ('time to plot %.02f s'%(time.time()-t0))
+            
+            t0=time.time()
+
             cls=hp.sphtfunc.anafast(map.data,lmax=lmax)
             if len(cls) !=6:
                 zeros=np.zeros(len(cls))
                 cls=[cls,zeros,zeros,zeros,zeros,zeros]
             np.savetxt('%s/full_sky_cl_%s_%s_%s.dat'%(spec_dir,cont,exp,f), np.array(cls).T )
+                
+            print ('time to compute spectra %.02f s'%(time.time()-t0))
+
+
 
     masks= d['masks']
     for mask,f in zip(masks,freqs):

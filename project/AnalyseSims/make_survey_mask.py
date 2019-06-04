@@ -21,7 +21,7 @@ for exp in experiment:
     maps_list= d['noise_maps']
     for map,f in zip(maps_list,freqs):
         mask=hp.fitsfunc.read_map(map)
-        id=np.where(mask!=0)
+        id=np.where(mask>-1*10**30)
         mask[id]=1
         hp.fitsfunc.write_map('%s/survey_mask_%s_%s.fits'%(survey_dir,exp,f),mask,overwrite=True)
         hp.mollview(mask)

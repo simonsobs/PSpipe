@@ -27,6 +27,11 @@ for exp in experiment:
         maps_list= d['%s_maps'%cont]
         for map,f in zip(maps_list,freqs):
             map=so_map.read_map(map)
+            if map.ncomp==3:
+                color_range=(250,50,50)
+            else:
+                color_range=250
+
             map.plot(file_name='%s/%s_%s_%s'%(plot_dir,cont,exp,f),color_range=(250,50,50))
 
     masks= d['masks']

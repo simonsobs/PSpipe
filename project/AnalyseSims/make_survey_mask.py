@@ -9,8 +9,10 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 survey_dir='survey_mask'
+plot_dir='plot'
 
 pspy_utils.create_directory(survey_dir)
+pspy_utils.create_directory(plot_dir)
 
 experiment=d['experiment']
 

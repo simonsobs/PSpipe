@@ -23,6 +23,7 @@ for exp in experiment:
     freqs=d['freq_%s'%exp]
     
     for cont in content:
+        print ('%s_%s_%s'%cont,exp,f)
         maps_list= d['%s_maps'%cont]
         for map,f in zip(maps_list,freqs):
             map=so_map.read_map(map)

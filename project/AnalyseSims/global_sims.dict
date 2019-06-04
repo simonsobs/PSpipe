@@ -25,7 +25,6 @@ ksz_maps=[ksz_dir+'simonsobs_ksz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq
 tsz_maps=[tsz_dir+'simonsobs_tsz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 
 
-
 mask_la_027=maskDir + 'mask_equatorial_pol_thr1p0_fsky0p28_ns4096.fits'
 mask_la_039=maskDir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits'
 mask_la_093=maskDir + 'mask_equatorial_pol_thr3p0_fsky0p62_ns4096.fits'

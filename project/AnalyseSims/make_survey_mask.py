@@ -23,7 +23,7 @@ for exp in experiment:
         mask=hp.fitsfunc.read_map(map)
         id=np.where(mask!=0)
         mask[id]==1
-        hp.fitsfunc.write_map('%s/survey_mask_%s_%s.fits'%(survey_dir,exp,f),mask)
+        hp.fitsfunc.write_map('%s/survey_mask_%s_%s.fits'%(survey_dir,exp,f),mask,overwrite=True)
         hp.mollview(mask)
         plt.savefig('%s/mask_%s_%s'%(plot_dir,exp,f))
         plt.clf()

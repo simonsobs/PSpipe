@@ -14,13 +14,14 @@ pspy_utils.create_directory(mcm_dir)
 pspy_utils.create_directory(plot_dir)
 
 experiment=d['experiment']
+content=d['content']
 
 for exp in experiment:
     
     freqs=d['freq_%s'%exp]
     
     for cont in content:
-        print ('%s_%s_%s'%cont,exp,f)
+        print ('%s_%s'%(cont,exp))
         maps_list= d['%s_maps'%cont]
         for map,f in zip(maps_list,freqs):
             map=so_map.read_map(map)

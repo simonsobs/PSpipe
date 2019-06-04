@@ -32,7 +32,7 @@ for exp in experiment:
             else:
                 color_range=250
 
-            map.plot(file_name='%s/%s_%s_%s'%(plot_dir,cont,exp,f),color_range=(250,50,50))
+            map.plot(file_name='%s/%s_%s_%s'%(plot_dir,cont,exp,f),color_range=color_range)
 
     masks= d['masks']
     for mask,f in zip(masks,freqs):

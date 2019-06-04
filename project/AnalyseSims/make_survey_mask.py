@@ -22,7 +22,7 @@ for exp in experiment:
     for map,f in zip(maps_list,freqs):
         mask=hp.fitsfunc.read_map(map)
         id=np.where(mask!=0)
-        mask[id]==1
+        mask[id]=1
         hp.fitsfunc.write_map('%s/survey_mask_%s_%s.fits'%(survey_dir,exp,f),mask,overwrite=True)
         hp.mollview(mask)
         plt.savefig('%s/mask_%s_%s'%(plot_dir,exp,f))

@@ -36,7 +36,6 @@ masks=[maskDir + 'mask_equatorial_pol_thr1p0_fsky0p28_ns4096.fits', \
 
 
 
-
 # Spectra  parameter
 type='Dl'
 binning_file='binning/BIN_ACTPOL_50_4_SC_low_ell_startAt2'

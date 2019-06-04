@@ -4,6 +4,8 @@ freq_la=['027','039','093','145','225','280']
 content=['dust','synchrotron','freefree','ame','cib','cmb','cmb_unlensed','ksz','tsz','noise']
 
 mask_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/masks/'
+survey_mask_dir='/global/homes/t/tlouis/PSpipe/project/AnalyseSims/survey_mask/'
+
 dust_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/dust/0000/'
 ame_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/ame/0000/'
 freefree_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/freefree/0000/'
@@ -28,6 +30,17 @@ noise_maps=[noise_dir+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f i
 
 
 masks=[mask_dir + 'mask_equatorial_pol_thr1p0_fsky0p28_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits',mask_dir + 'mask_equatorial_pol_thr3p0_fsky0p62_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr3p5_fsky0p67_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr4p0_fsky0p71_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr4p5_fsky0p75_ns4096.fits']
+survey_masks= [ survey_mask_dir+'survey_mask_la_%s.fits'%f for f in freq_la]
+
+
+beam_dir='beam/'
+
+beam_027=beam_dir+'beam_la_027.dat'
+beam_039=beam_dir+'beam_la_039.dat'
+beam_093=beam_dir+'beam_la_093.dat'
+beam_145=beam_dir+'beam_la_145.dat'
+beam_225=beam_dir+'beam_la_225.dat'
+beam_280=beam_dir+'beam_la_280.dat'
 
 
 

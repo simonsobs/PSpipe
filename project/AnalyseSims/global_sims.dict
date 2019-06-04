@@ -27,12 +27,12 @@ tsz_maps=[tsz_dir+'simonsobs_tsz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq
 noise_maps=[noise_dir+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 
 
-masks=[maskDir + 'mask_equatorial_pol_thr1p0_fsky0p28_ns4096.fits', \
-       maskDir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', \
-       maskDir + 'mask_equatorial_pol_thr3p0_fsky0p62_ns4096.fits', \
-       maskDir + 'mask_equatorial_pol_thr3p5_fsky0p67_ns4096.fits', \
-       maskDir + 'mask_equatorial_pol_thr4p0_fsky0p71_ns4096.fits', \
-       maskDir + 'mask_equatorial_pol_thr4p5_fsky0p75_ns4096.fits', \]
+masks=[mask_dir + 'mask_equatorial_pol_thr1p0_fsky0p28_ns4096.fits', \
+       mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', \
+       mask_dir + 'mask_equatorial_pol_thr3p0_fsky0p62_ns4096.fits', \
+       mask_dir + 'mask_equatorial_pol_thr3p5_fsky0p67_ns4096.fits', \
+       mask_dir + 'mask_equatorial_pol_thr4p0_fsky0p71_ns4096.fits', \
+       mask_dir + 'mask_equatorial_pol_thr4p5_fsky0p75_ns4096.fits']
 
 
 

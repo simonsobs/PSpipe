@@ -15,13 +15,11 @@ cov_dir='covariance'
 cov_plot_dir='plot_covariance'
 specDir='spectra'
 
-
 experiment=d['experiment']
 specDir='spectra'
 clfile=d['clfile']
 lmax=d['lmax']
 type=d['type']
-ns=d['nSplits']
 niter=d['niter']
 binning_file=d['binning_file']
 iStart= d['iStart']
@@ -30,6 +28,9 @@ type=d['type']
 lcut=d['lcut']
 hdf5=d['hdf5']
 multistep_path=d['multistep_path']
+foreground_dir=d['foreground_dir']
+extragal_foregrounds=d['extragal_foregrounds']
+
 
 pspy_utils.create_directory(cov_dir)
 pspy_utils.create_directory(cov_plot_dir)
@@ -54,7 +55,7 @@ spec_name=[]
 
 
 for exp in experiment:
-    ns[exp]=2
+    ns[exp]=d['nSplits_%s'%exp]
 
 for id_exp1,exp1 in enumerate(experiment):
     freqs1=d['freq_%s'%exp1]
@@ -73,6 +74,13 @@ for id_exp1,exp1 in enumerate(experiment):
                 for spec in ['TT','TE','ET','EE']:
                     
                     Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=bl1*bl2*Dlth[spec]
+                    
+                    if spec=='TT':
+                        flth_all=0
+                        for foreground in extragal_foregrounds:
+                            l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
+                            flth_all+=flth[:lmax]
+                        Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=bl1*bl2*(Dlth[spec]+flth_all)
 
                     if exp1==exp2:
             

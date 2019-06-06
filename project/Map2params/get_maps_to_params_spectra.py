@@ -19,10 +19,14 @@ lcut=d['lcut']
 hdf5=d['hdf5']
 writeAll=d['writeAll']
 
+foreground_dir=d['foreground_dir']
+extragal_foregrounds=d['extragal_foregrounds']
+
 window_dir='window'
 mcm_dir='mcm'
 noise_dir='noise_ps'
 specDir='spectra'
+
 lmax_simu=lmax
 
 if hdf5:
@@ -34,44 +38,55 @@ ncomp=3
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 spin_pairs=['spin0xspin0','spin0xspin2','spin2xspin0', 'spin2xspin2']
 
-
+allfreqs=[]
+for exp in experiment:
+    freqs=d['freq_%s'%exp]
+    for freq in freqs:
+        allfreqs+=[freq]
 
 ps=powspec.read_spectrum(d['clfile'])[:ncomp,:ncomp]
+l,ps_extragal=maps_to_params_utils.get_foreground_matrix(foreground_dir,extragal_foregrounds,allfreqs,lmax_simu+1)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d['iStart'], imax=d['iStop'])
 
-
 for iii in subtasks:
     t0=time.time()
+    
     alms= curvedsky.rand_alm(ps, lmax=lmax_simu)
+    flms=curvedsky.rand_alm(ps_extragal,lmax=lmax_simu)
 
     master_alms={}
+    
+    fcount=0
     for exp in experiment:
-        
         
         freqs=d['freq_%s'%exp]
         nSplits=d['nSplits_%s'%exp]
         
         template=so_map.car_template(ncomp,d['ra0_%s'%exp],d['ra1_%s'%exp],d['dec0_%s'%exp],d['dec1_%s'%exp],d['res_%s'%exp])
 
-
         l,Nl_array_T,Nl_array_P=maps_to_params_utils.get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax_simu+1,nSplits,lcut=lcut)
+        
         nlms=maps_to_params_utils.generate_noise_alms(Nl_array_T,Nl_array_P,lmax_simu,nSplits,ncomp)
     
         for fid,f in enumerate(freqs):
             window=so_map.read_map('%s/window_%s_%s.fits'%(window_dir,exp,f))
             window_tuple=(window,window)
             l,bl= np.loadtxt('beam/beam_%s_%s.dat'%(exp,f),unpack=True)
-            alms_convolved=maps_to_params_utils.convolved_alms(alms,bl,ncomp)
+            
+            alms_convolved=alms.copy()
+            alms_convolved[0]+=flms[fcount]
+            alms_convolved=maps_to_params_utils.convolved_alms(alms_convolved,bl,ncomp)
+            
+            fcount+=1
+            
             for k in range(nSplits):
                 noisy_alms=alms_convolved.copy()
-                if ncomp==1:
-                    noisy_alms+=nlms[k][fid]
-                elif ncomp==3:
-                    noisy_alms[0] +=  nlms['T',k][fid]
-                    noisy_alms[1] +=  nlms['E',k][fid]
-                    noisy_alms[2] +=  nlms['B',k][fid]
+                
+                noisy_alms[0] +=  nlms['T',k][fid]
+                noisy_alms[1] +=  nlms['E',k][fid]
+                noisy_alms[2] +=  nlms['B',k][fid]
 
                 split=sph_tools.alm2map(noisy_alms,template)
                 split=maps_to_params_utils.remove_mean(split,window_tuple,ncomp)
@@ -101,7 +116,6 @@ for iii in subtasks:
                     for s1 in range(nSplits1):
                         for s2 in range(nSplits2):
 
-#if (s1>s2) & (exp1==exp2) & (f1==f2): continue
                             mbb_inv,Bbl=so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
 
                             l,ps_master= so_spectra.get_spectra(master_alms[exp1,f1,s1],master_alms[exp2,f2,s2],spectra=spectra)

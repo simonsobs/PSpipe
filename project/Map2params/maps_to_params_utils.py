@@ -4,17 +4,14 @@ import  numpy as np, healpy as hp
 import os,sys
 from pixell import curvedsky
 
-
+def symmetrize(a):
+    return a + a.T - np.diag(a.diagonal())
 
 def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0):
-    
-    def symmetrize(a):
-        return a + a.T - np.diag(a.diagonal())
     
     Nfreq=len(freqs)
     Nl_array_T=np.zeros((Nfreq,Nfreq,lmax))
     Nl_array_P=np.zeros((Nfreq,Nfreq,lmax))
-    nSpecs=0
     
     for c1,f1 in enumerate(freqs):
         for c2,f2 in enumerate(freqs):
@@ -24,13 +21,30 @@ def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0):
             for i in range(lcut,lmax):
                 Nl_array_T[c1,c2,i]=Nl_T[i]*nSplits
                 Nl_array_P[c1,c2,i]=Nl_P[i]*nSplits
-            nSpecs+=1
     for i in range(lmax):
         Nl_array_T[:,:,i]=symmetrize(Nl_array_T[:,:,i])
         Nl_array_P[:,:,i]=symmetrize(Nl_array_P[:,:,i])
 
-
     return(l,Nl_array_T,Nl_array_P)
+
+def get_foreground_matrix(foreground_dir,extragal_foregrounds,allfreqs,lmax):
+    
+    Nfreq=len(allfreqs)
+    Fl_array_T=np.zeros((Nfreq,Nfreq,lmax))
+    for c1,f1 in enumerate(allfreqs):
+        for c2,f2 in enumerate(allfreqs):
+            if c1>c2 : continue
+            Fl_all=0
+            for foreground in extragal_foregrounds:
+                l,Fl=np.loadtxt('%s/%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
+                Fl_all+= Fl*2*np.pi/(l*(l+1))
+            for i in range(2,lmax):
+                Fl_array_T[c1,c2,i]=Fl_all[i-2]
+    for i in range(lmax):
+        Fl_array_T[:,:,i]=symmetrize(Fl_array_T[:,:,i])
+
+    return(l,Fl_array_T)
+
 
 def convolved_alms(alms,bl,ncomp):
     alms_convolved=alms.copy()

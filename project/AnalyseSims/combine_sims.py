@@ -18,6 +18,9 @@ pspy_utils.create_directory(combined_map_dir)
 
 experiment=d['experiment']
 
+
+color_range=(200,20,20)
+
 for exp in experiment:
     freqs=d['freq_%s'%exp]
     for count,freq in enumerate(freqs):
@@ -48,7 +51,7 @@ for exp in experiment:
         survey_mask=so_map.read_map(survey_mask_list[count])
                 
         map_all.data*=survey_mask.data
-        map_all.plot(file_name='%s/combined_%s_%s'%(plot_dir,exp,freq))
+        map_all.plot(file_name='%s/combined_%s_%s'%(plot_dir,exp,freq),color_range=color_range)
         map_all.write_map('%s/combined_map_%s.fits'%(combined_map_dir,freq))
         
         noise_map0.data+=map_all.data

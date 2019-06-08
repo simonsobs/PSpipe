@@ -21,7 +21,7 @@ experiment=d['experiment']
 for exp in experiment:
     freqs=d['freq_%s'%exp]
     for count,freq in enumerate(freqs):
-        map_all=so_map.healpix_template(ncomp=3,nside=256)
+        map_all=so_map.healpix_template(ncomp=3,nside=4096)
         for cont in content:
             
             maps_list= d['%s_maps'%cont]

@@ -125,38 +125,38 @@ for kind in ['cross','noise','auto']:
                         lb,mean_dict[kind,spec,exp1,f1,exp2,f2],std_dict[kind,spec,exp1,f1,exp2,f2]=np.loadtxt('%s/spectra_%s_%s_%sx%s_%s_%s.dat'%(mc_dir,spec,exp1,f1,exp2,f2,kind),unpack=True)
                         
                         mean=mean_dict[kind,spec,exp1,f1,exp2,f2]
-                        std=std_dict[kind,spec,exp1,f1,exp2,f2]
+                        std=std_dict[kind,spec,exp1,f1,exp2,f2].copy()
 
 
-#       plt.figure(figsize=(8,7))
+                        plt.figure(figsize=(8,7))
                 
-                #                       if spec=='TT':
-                #           plt.semilogy()
+                        if spec=='TT':
+                            plt.semilogy()
                 
-                #plt.plot(lth,theory[exp1,f1,exp2,f2,kind][spec],color='grey',alpha=0.4)
-                #       plt.plot(lb,bin_theory[exp1,f1,exp2,f2,kind][spec])
-                #       plt.errorbar(lb,mean,std,fmt='.',color='red')
-                #       plt.title(r'$D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}$'%(spec,exp1,f1,exp2,f2,kind),fontsize=20)
-                #       plt.xlabel(r'$\ell$',fontsize=20)
-                #       plt.savefig('plot/spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
-                #       plt.clf()
-                #       plt.close()
+                        plt.plot(lth,theory[exp1,f1,exp2,f2,kind][spec],color='grey',alpha=0.4)
+                        plt.plot(lb,bin_theory[exp1,f1,exp2,f2,kind][spec])
+                        plt.errorbar(lb,mean,std,fmt='.',color='red')
+                        plt.title(r'$D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}$'%(spec,exp1,f1,exp2,f2,kind),fontsize=20)
+                        plt.xlabel(r'$\ell$',fontsize=20)
+                        plt.savefig('plot/spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
+                        plt.clf()
+                        plt.close()
                 
-                #       plt.errorbar(lb,mean-bin_theory[exp1,f1,exp2,f2,kind][spec],std,fmt='.',color='red')
-                #       plt.title(r'$D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}-D^{%s,%s_{%s}x%s_{%s},th}_{%s,\ell}$'%(spec,exp1,f1,exp2,f2,kind,spec,exp1,f1,exp2,f2,kind),fontsize=20)
-                #      plt.xlabel(r'$\ell$',fontsize=20)
-                #      plt.savefig('plot/diff_spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
-                #       plt.clf()
-                #       plt.close()
+                        plt.errorbar(lb,mean-bin_theory[exp1,f1,exp2,f2,kind][spec],std,fmt='.',color='red')
+                        plt.title(r'$D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}-D^{%s,%s_{%s}x%s_{%s},th}_{%s,\ell}$'%(spec,exp1,f1,exp2,f2,kind,spec,exp1,f1,exp2,f2,kind),fontsize=20)
+                       plt.xlabel(r'$\ell$',fontsize=20)
+                       plt.savefig('plot/diff_spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
+                        plt.clf()
+                        plt.close()
                 
-                #                      std/=np.sqrt(iStop-iStart)
+                        std/=np.sqrt(iStop-iStart)
 
-#       plt.errorbar(lb,(mean-bin_theory[exp1,f1,exp2,f2,kind][spec])/std,color='red')
-#                       plt.title(r'$(D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}-D^{%s,%s_{%s}x%s_{%s},th}_{%s,\ell})/\sigma$'%(spec,exp1,f1,exp2,f2,kind,spec,exp1,f1,exp2,f2,kind),fontsize=20)
-#                       plt.xlabel(r'$\ell$',fontsize=20)
-#                       plt.savefig('plot/frac_spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
-#                       plt.clf()
-#                       plt.close()
+                        plt.errorbar(lb,(mean-bin_theory[exp1,f1,exp2,f2,kind][spec])/std,color='red')
+                        plt.title(r'$(D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}-D^{%s,%s_{%s}x%s_{%s},th}_{%s,\ell})/\sigma$'%(spec,exp1,f1,exp2,f2,kind,spec,exp1,f1,exp2,f2,kind),fontsize=20)
+                        plt.xlabel(r'$\ell$',fontsize=20)
+                        plt.savefig('plot/frac_spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
+                        plt.clf()
+                        plt.close()
 
                         id_spec+=1
                         n_spec[kind]+=1

@@ -22,6 +22,7 @@ for exp in experiment:
     freqs=d['freq_%s'%exp]
     for count,freq in enumerate(freqs):
         map_all=so_map.healpix_template(ncomp=3,nside=4096)
+        
         for cont in content:
             
             maps_list= d['%s_maps'%cont]
@@ -45,9 +46,7 @@ for exp in experiment:
 
         survey_mask_list= d['survey_masks']
         survey_mask=so_map.read_map(survey_mask_list[count])
-        
-        survey_mask.plot()
-        
+                
         map_all.data*=survey_mask.data
         map_all.plot(file_name='%s/combined_%s_%s'%(plot_dir,exp,freq))
         map_all.write_map('%s/combined_map_%s.fits'%(combined_map_dir,freq))

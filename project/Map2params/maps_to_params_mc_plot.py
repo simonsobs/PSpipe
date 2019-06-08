@@ -144,8 +144,8 @@ for kind in ['cross','noise','auto']:
                 
                         plt.errorbar(lb,mean-bin_theory[exp1,f1,exp2,f2,kind][spec],std,fmt='.',color='red')
                         plt.title(r'$D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}-D^{%s,%s_{%s}x%s_{%s},th}_{%s,\ell}$'%(spec,exp1,f1,exp2,f2,kind,spec,exp1,f1,exp2,f2,kind),fontsize=20)
-                       plt.xlabel(r'$\ell$',fontsize=20)
-                       plt.savefig('plot/diff_spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
+                        plt.xlabel(r'$\ell$',fontsize=20)
+                        plt.savefig('plot/diff_spectra_%s_%s_%sx%s_%s_%s.png'%(spec,exp1,f1,exp2,f2,kind),bbox_inches='tight')
                         plt.clf()
                         plt.close()
                 

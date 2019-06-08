@@ -15,7 +15,8 @@ cmb_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb/000
 cmb_unlensed_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb_unlensed/0000/'
 ksz_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/ksz/0000/'
 tsz_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/tsz/0000/'
-noise_dir='/project/projectdirs/sobs/v4_sims/mbs/201901_gaussian_fg_lensed_cmb_realistic_noise/4096/noise/0000/'
+noise_dir0='/project/projectdirs/sobs/v4_sims/mbs/201901_gaussian_fg_lensed_cmb_realistic_noise/4096/noise/0000/'
+noise_dir1='/project/projectdirs/sobs/v4_sims/mbs/201901_gaussian_fg_lensed_cmb_realistic_noise/4096/noise/0001/'
 
 dust_maps=[dust_dir+'simonsobs_dust_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 ame_maps=[ame_dir+'simonsobs_ame_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
@@ -28,8 +29,8 @@ ksz_maps=[ksz_dir+'simonsobs_ksz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq
 tsz_maps=[tsz_dir+'simonsobs_tsz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 
 
-noise_maps0=[noise_dir+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-noise_maps1=[noise_dir+'simonsobs_noise_uKCMB_la%s_nside4096_0001.fits'%f for f in freq_la]
+noise_maps0=[noise_dir0+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+noise_maps1=[noise_dir1+'simonsobs_noise_uKCMB_la%s_nside4096_0001.fits'%f for f in freq_la]
 
 
 masks=[mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits',mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits']

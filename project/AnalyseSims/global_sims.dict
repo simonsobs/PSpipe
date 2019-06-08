@@ -1,7 +1,7 @@
 experiment=['la']
 freq_la=['027','039','093','145','225','280']
 
-content=['dust','synchrotron','freefree','ame','cib','cmb','cmb_unlensed','ksz','tsz','noise']
+content=['dust','synchrotron','freefree','ame','cib','cmb','cmb_unlensed','ksz','tsz']
 
 mask_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/masks/'
 survey_mask_dir='/global/homes/t/tlouis/PSpipe/project/AnalyseSims/survey_mask/'
@@ -26,7 +26,10 @@ cmb_maps=[cmb_dir+'simonsobs_cmb_uKCMB_la%s_nside4096_0000.fits'%f for f in freq
 cmb_unlensed_maps=[cmb_unlensed_dir+'simonsobs_cmb_unlensed_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 ksz_maps=[ksz_dir+'simonsobs_ksz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 tsz_maps=[tsz_dir+'simonsobs_tsz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-noise_maps=[noise_dir+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+
+
+noise_maps0=[noise_dir+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+noise_maps1=[noise_dir+'simonsobs_noise_uKCMB_la%s_nside4096_0001.fits'%f for f in freq_la]
 
 
 masks=[mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits',mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits', mask_dir + 'mask_equatorial_pol_thr2p0_fsky0p50_ns4096.fits']

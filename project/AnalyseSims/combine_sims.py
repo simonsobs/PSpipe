@@ -54,7 +54,7 @@ for exp in experiment:
     for count,freq in enumerate(freq_la):
         map_all=so_map.healpix_template(ncomp=3,nside=nside)
         for cont in content:
-            maps_list= d['%s_maps'%cont]
+            maps_list= '%s_maps'
             map=maps_list[count]
             
             map=so_map.read_map(map)
@@ -64,8 +64,8 @@ for exp in experiment:
                 for i in range(3):
                     map_all.data[i]+=map.data[i]
 
-        noise0_list= d['noise_maps0']
-        noise1_list= d['noise_maps1']
+        noise0_list= 'noise_maps0'
+        noise1_list= 'noise_maps1'
         
         noise_map0=so_map.read_map(noise0_list[count])
         noise_map1=so_map.read_map(noise1_list[count])

@@ -15,6 +15,7 @@ type=d['type']
 binning_file=d['binning_file']
 hdf5=d['hdf5']
 writeAll=d['writeAll']
+run_name=d['run_name']
 
 def remove_mean(map,window,ncomp):
     for i in range(ncomp):
@@ -82,7 +83,7 @@ for id_exp1,exp1 in enumerate(experiment):
                         mbb_inv,Bbl=so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
                             
                         l,ps_master= so_spectra.get_spectra(master_alms[exp1,f1,s1],master_alms[exp2,f2,s2],spectra=spectra)
-                        spec_name='%s_%s_%s_%dx%s_%s_%d'%(type,exp1,f1,s1,exp2,f2,s2)
+                        spec_name='%s_%s_%s_%s_%dx%s_%s_%d'%(type,run_name,exp1,f1,s1,exp2,f2,s2)
                         lb,Db=so_spectra.bin_spectra(l,ps_master,binning_file,lmax,type=type,mbb_inv=mbb_inv,spectra=spectra)
                             
                         if writeAll:
@@ -109,13 +110,13 @@ for id_exp1,exp1 in enumerate(experiment):
                 for spec in spectra:
                         
                     Db_dict_cross[spec]=np.mean(Db_dict[exp1,f1,exp2,f2,spec,'cross'],axis=0)
-                    spec_name_cross='%s_%s_%sx%s_%s_cross'%(type,exp1,f1,exp2,f2)
+                    spec_name_cross='%s_%s_%s_%sx%s_%s_cross'%(type,run_name,exp1,f1,exp2,f2)
                         
                     if exp1==exp2:
                         Db_dict_auto[spec]=np.mean(Db_dict[exp1,f1,exp2,f2,spec,'auto'],axis=0)
-                        spec_name_auto='%s_%s_%sx%s_%s_auto'%(type,exp1,f1,exp2,f2)
+                        spec_name_auto='%s_%s_%s_%sx%s_%s_auto'%(type,run_name,exp1,f1,exp2,f2)
                         nb[spec]= (Db_dict_auto[spec]- Db_dict_cross[spec])/nSplits[exp]
-                        spec_name_noise='%s_%s_%sx%s_%s_noise'%(type,exp1,f1,exp2,f2)
+                        spec_name_noise='%s_%s_%s_%sx%s_%s_noise'%(type,run_name,exp1,f1,exp2,f2)
             
                 if hdf5:
                     so_spectra.write_ps_hdf5(spectra_hdf5,spec_name_cross,lb,Db_dict_cross,spectra=spectra)

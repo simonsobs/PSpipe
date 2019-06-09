@@ -35,6 +35,14 @@ noise_maps0=[noise_dir0+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f
 noise_maps1=[noise_dir1+'simonsobs_noise_uKCMB_la%s_nside4096_0001.fits'%f for f in freq_la]
 
 
+combined_maps_dir='combined_maps/'
+
+combined_maps_027=[combined_maps_dir+'combined_map_027.fits', combined_maps_dir+'combined_map_027.fits']
+combined_maps_039=[combined_maps_dir+'combined_map_039.fits', combined_maps_dir+'combined_map_039.fits']
+combined_maps_093=[combined_maps_dir+'combined_map_093.fits', combined_maps_dir+'combined_map_093.fits']
+combined_maps_145=[combined_maps_dir+'combined_map_145.fits', combined_maps_dir+'combined_map_145.fits']
+combined_maps_225=[combined_maps_dir+'combined_map_225.fits', combined_maps_dir+'combined_map_225.fits']
+combined_maps_280=[combined_maps_dir+'combined_map_280.fits', combined_maps_dir+'combined_map_280.fits']
 
 
 mask_T_la_027=mask_dir + 'mask_equatorial_temperature_fsky0p51_freq027_ns4096.fits'
@@ -73,6 +81,7 @@ beam_la_280=beam_dir+'beam_la_280.dat'
 
 
 # Spectra  parameter
+clfile='/Users/thibaut/Desktop/Project/so_ps_codes/PSpipe/data/cosmo2017_10K_acc3_lensedCls.dat'
 type='Dl'
 binning_file='/global/homes/t/tlouis/PSpipe/data/binningFile_400_30.dat'
 lmax=3000

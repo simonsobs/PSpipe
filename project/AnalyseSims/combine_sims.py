@@ -21,11 +21,10 @@ experiment=d['experiment']
 
 color_range=(200,20,20)
 
-for exp in experiment:
+for exp in ['la']:
     nside=d['nside_%s'%exp]
-    freqs=d['freq_%s'%exp]
     
-    for count,freq in enumerate(freqs):
+    for count,freq in enumerate(['027','039','093','145','225','280']):
         map_all=so_map.healpix_template(ncomp=3,nside=nside)
         for cont in content:
             maps_list= d['%s_maps'%cont]

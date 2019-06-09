@@ -44,12 +44,12 @@ apo_radius_survey_la=5
 
 beam_dir='beam/'
 
-beam_027=beam_dir+'beam_la_027.dat'
-beam_039=beam_dir+'beam_la_039.dat'
-beam_093=beam_dir+'beam_la_093.dat'
-beam_145=beam_dir+'beam_la_145.dat'
-beam_225=beam_dir+'beam_la_225.dat'
-beam_280=beam_dir+'beam_la_280.dat'
+beam_la_027=beam_dir+'beam_la_027.dat'
+beam_la_039=beam_dir+'beam_la_039.dat'
+beam_la_093=beam_dir+'beam_la_093.dat'
+beam_la_145=beam_dir+'beam_la_145.dat'
+beam_la_225=beam_dir+'beam_la_225.dat'
+beam_la_280=beam_dir+'beam_la_280.dat'
 
 
 # Spectra  parameter

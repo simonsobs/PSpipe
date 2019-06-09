@@ -189,61 +189,7 @@ for sid1, spec1 in enumerate(spec_name):
         cov[n1,n2,n3,n4]= cov[n1,n2,n3,n4]/(iStop-iStart)-np.outer(np.mean(Db_list1,axis=0), np.mean(Db_list2,axis=0))
 
         np.save('%s/analytic_cov_%sx%s_%sx%s.npy'%(cov_dir,n1,n2,n3,n4), analytic_cov[n1,n2,n3,n4] )
-        np.save('%s/mc_cov_%sx%s_%sx%s.npy'%(cov_dir,n1,n2,n3,n4), analytic_cov[n1,n2,n3,n4] )
-
-        plt.figure(figsize=(15,15))
-        plt.suptitle('%sx%s %sx%s'%(n1,n2,n3,n4),fontsize=30)
-        count=1
-        for bl in ['TTTT','EEEE','TETE','TTEE','TEEE','TETT']:
-            plt.subplot(2,3,count)
-            cov_select=so_cov.selectblock(cov[n1,n2,n3,n4], ['TT','TE','EE'],n_bins,block=bl)
-            analytic_cov_select=so_cov.selectblock(analytic_cov[n1,n2,n3,n4],  ['TT','TE','EE'],n_bins,block=bl)
-            var = cov_select.diagonal()
-            analytic_var = analytic_cov_select.diagonal()
-            if count==1:
-                plt.semilogy()
-            plt.plot(lb[1:],var[1:],'o',label='MC %sx%s'%(bl[:2],bl[2:4]))
-            plt.plot(lb[1:],analytic_var[1:],label='Analytic %sx%s'%(bl[:2],bl[2:4]))
-            if count==1 or count==4:
-                plt.ylabel(r'$\sigma^{2}_{\ell}$',fontsize=22)
-            if count >3:
-                plt.xlabel(r'$\ell$',fontsize=22)
-            plt.legend()
-            count+=1
-        plt.savefig('%s/cov_element_comparison_%sx%s_%sx%s.png'%(cov_plot_dir,n1,n2,n3,n4),bbox_inches='tight')
-        plt.clf()
-        plt.close()
-
-
-
-os.system('cp %s/multistep2.js %s/multistep2.js'%(multistep_path,cov_plot_dir))
-fileName='%s/SO_covariance.html'%cov_plot_dir
-g = open(fileName,mode="w")
-g.write('<html>\n')
-g.write('<head>\n')
-g.write('<title> SO covariance </title>\n')
-g.write('<script src="multistep2.js"></script>\n')
-g.write('<script> add_step("sub",  ["c","v"]) </script> \n')
-g.write('</head> \n')
-g.write('<body> \n')
-g.write('<div class=sub> \n')
-
-for sid1, spec1 in enumerate(spec_name):
-    for sid2, spec2 in enumerate(spec_name):
-        if sid1>sid2: continue
-        
-        n1,n2=spec1.split('x')
-        n3,n4=spec2.split('x')
-                
-        str='cov_element_comparison_%sx%s_%sx%s.png'%(n1,n2,n3,n4)
-        g.write('<div class=sub>\n')
-        g.write('<img src="'+str+'" width="50%" /> \n')
-        g.write('</div>\n')
-
-g.write('</body> \n')
-g.write('</html> \n')
-g.close()
-
+        np.save('%s/mc_cov_%sx%s_%sx%s.npy'%(cov_dir,n1,n2,n3,n4), cov[n1,n2,n3,n4] )
 
 
 

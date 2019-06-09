@@ -45,19 +45,19 @@ combined_maps_225=[combined_maps_dir+'combined_map_225.fits', combined_maps_dir+
 combined_maps_280=[combined_maps_dir+'combined_map_280.fits', combined_maps_dir+'combined_map_280.fits']
 
 
-mask_T_la_027=mask_dir + 'mask_equatorial_temperature_fsky0p51_freq027_ns4096.fits'
-mask_T_la_039=mask_dir + 'mask_equatorial_temperature_fsky0p51_freq039_ns4096.fits'
-mask_T_la_093=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq093_ns4096.fits'
+mask_T_la_027=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_T_la_039=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_T_la_093=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
 mask_T_la_145=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
-mask_T_la_225=mask_dir + 'mask_equatorial_temperature_fsky0p51_freq225_ns4096.fits'
-mask_T_la_280=mask_dir + 'mask_equatorial_temperature_fsky0p51_freq280_ns4096.fits'
+mask_T_la_225=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_T_la_280=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
 
-mask_P_la_027=mask_dir + 'mask_equatorial_pol_fsky0p49_freq027_ns4096.fits'
-mask_P_la_039=mask_dir + 'mask_equatorial_pol_fsky0p49_freq039_ns4096.fits'
-mask_P_la_093=mask_dir + 'mask_equatorial_pol_fsky0p69_freq093_ns4096.fits'
-mask_P_la_145=mask_dir + 'mask_equatorial_pol_fsky0p69_freq145_ns4096.fits'
-mask_P_la_225=mask_dir + 'mask_equatorial_pol_fsky0p49_freq225_ns4096.fits'
-mask_P_la_280=mask_dir + 'mask_equatorial_pol_fsky0p49_freq280_ns4096.fits'
+mask_P_la_027=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_039=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_093=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_145=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_225=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_280=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
 
 survey_mask_la_027=survey_mask_dir + 'survey_mask_la_027.fits'
 survey_mask_la_039=survey_mask_dir + 'survey_mask_la_039.fits'

@@ -1,6 +1,8 @@
 experiment=['la']
 freq_la=['027','039','093','145','225','280']
 
+nside_la=4096
+
 content=['dust','synchrotron','freefree','ame','cib','cmb','ksz','tsz']
 
 mask_dir='/global/cscratch1/sd/krach/SObs/FGawg/masks/040619/4096/'
@@ -28,22 +30,17 @@ cmb_unlensed_maps=[cmb_unlensed_dir+'simonsobs_cmb_unlensed_uKCMB_la%s_nside4096
 ksz_maps=[ksz_dir+'simonsobs_ksz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 tsz_maps=[tsz_dir+'simonsobs_tsz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 
-
 noise_maps0=[noise_dir0+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 noise_maps1=[noise_dir1+'simonsobs_noise_uKCMB_la%s_nside4096_0001.fits'%f for f in freq_la]
-
 
 masks_T=[mask_dir + 'mask_equatorial_temperature_fsky0p51_freq027_ns4096.fits', mask_dir + 'mask_equatorial_temperature_fsky0p51_freq039_ns4096.fits',mask_dir + 'mask_equatorial_temperature_fsky0p70_freq093_ns4096.fits', mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits', mask_dir + 'mask_equatorial_temperature_fsky0p51_freq225_ns4096.fits', mask_dir + 'mask_equatorial_temperature_fsky0p51_freq280_ns4096.fits']
 
 masks_P=[mask_dir + 'mask_equatorial_pol_fsky0p49_freq027_ns4096.fits', mask_dir + 'mask_equatorial_pol_fsky0p49_freq039_ns4096.fits',mask_dir + 'mask_equatorial_pol_fsky0p69_freq093_ns4096.fits', mask_dir + 'mask_equatorial_pol_fsky0p69_freq145_ns4096.fits', mask_dir + 'mask_equatorial_pol_fsky0p49_freq225_ns4096.fits', mask_dir + 'mask_equatorial_pol_fsky0p49_freq280_ns4096.fits']
 
-
 survey_masks= [ survey_mask_dir+'survey_mask_la_%s.fits'%f for f in freq_la]
-
 
 apo_type_survey_la='C1'
 apo_radius_survey_la=5
-
 
 beam_dir='beam/'
 
@@ -53,7 +50,6 @@ beam_093=beam_dir+'beam_la_093.dat'
 beam_145=beam_dir+'beam_la_145.dat'
 beam_225=beam_dir+'beam_la_225.dat'
 beam_280=beam_dir+'beam_la_280.dat'
-
 
 
 # Spectra  parameter

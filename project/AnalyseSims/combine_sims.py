@@ -22,12 +22,12 @@ experiment=d['experiment']
 color_range=(200,20,20)
 
 for exp in experiment:
+    nside=d['nside_%s'%exp]
     freqs=d['freq_%s'%exp]
+    
     for count,freq in enumerate(freqs):
-        map_all=so_map.healpix_template(ncomp=3,nside=4096)
-        
+        map_all=so_map.healpix_template(ncomp=3,nside=nside)
         for cont in content:
-            
             maps_list= d['%s_maps'%cont]
             map=maps_list[count]
             
@@ -52,14 +52,12 @@ for exp in experiment:
         
         color_range=(200,20,20)
 
-                
         map_all.data*=survey_mask.data
         map_all.plot(file_name='%s/combined_%s_%s'%(plot_dir,exp,freq),color_range=color_range)
         map_all.write_map('%s/combined_map_%s.fits'%(combined_map_dir,freq))
         
         color_range=(400,40,40)
 
-        
         noise_map0.data+=map_all.data
         noise_map0.data*=survey_mask.data
         noise_map0.plot(file_name='%s/combined_%s_%s_noise0'%(plot_dir,exp,freq),color_range=color_range)

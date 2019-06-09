@@ -32,7 +32,7 @@ for exp in experiment:
             
             map=so_map.read_map(map)
             if (len(map.data.shape)==1):
-                map_all.data[0]+=map.data[0]
+                map_all.data[0]+=map.data
             else:
                 for i in range(3):
                     map_all.data[i]+=map.data[i]

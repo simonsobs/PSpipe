@@ -16,8 +16,6 @@ combined_map_dir='combined_maps'
 pspy_utils.create_directory(plot_dir)
 pspy_utils.create_directory(combined_map_dir)
 
-experiment=d['experiment']
-
 
 color_range=(200,20,20)
 

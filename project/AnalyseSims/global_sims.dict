@@ -2,24 +2,24 @@ experiment=['la']
 #freq_la=['027','039','093','145','225','280']
 freq_la=['145']
 
-nside_la=4096
 run_name='cmb_lensed'
 
-mask_dir='/global/cscratch1/sd/krach/SObs/FGawg/masks/040619/4096/'
-survey_mask_dir='/global/homes/t/tlouis/PSpipe/project/AnalyseSims/survey_mask/'
 
 maps_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb/0000/'
 
 maps_la_145=[maps_dir+'simonsobs_cmb_uKCMB_la145_nside4096_0000.fits', maps_dir+'simonsobs_cmb_uKCMB_la145_nside4096_0000.fits']
 
 
-#maps_la_027=[combined_maps_dir+'combined_map_la_027.fits', combined_maps_dir+'combined_map_la_027.fits']
-#maps_la_039=[combined_maps_dir+'combined_map_la_039.fits', combined_maps_dir+'combined_map_la_039.fits']
-#maps_la_093=[combined_maps_dir+'combined_map_la_093.fits', combined_maps_dir+'combined_map_la_093.fits']
-#maps_la_145=[combined_maps_dir+'combined_map_la_145.fits', combined_maps_dir+'combined_map_la_145.fits']
-#maps_la_225=[combined_maps_dir+'combined_map_la_225.fits', combined_maps_dir+'combined_map_la_225.fits']
-#maps_la_280=[combined_maps_dir+'combined_map_la_280.fits', combined_maps_dir+'combined_map_la_280.fits']
+#maps_la_027=[maps_dir+'combined_map_la_027.fits', maps_dir+'combined_map_la_027.fits']
+#maps_la_039=[maps_dir+'combined_map_la_039.fits', maps_dir+'combined_map_la_039.fits']
+#maps_la_093=[maps_dir+'combined_map_la_093.fits', maps_dir+'combined_map_la_093.fits']
+#maps_la_145=[maps_dir+'combined_map_la_145.fits', maps_dir+'combined_map_la_145.fits']
+#maps_la_225=[maps_dir+'combined_map_la_225.fits', maps_dir+'combined_map_la_225.fits']
+#maps_la_280=[maps_dir+'combined_map_la_280.fits', maps_dir+'combined_map_la_280.fits']
 
+
+mask_dir='/global/cscratch1/sd/krach/SObs/FGawg/masks/040619/4096/'
+survey_mask_dir='/global/homes/t/tlouis/PSpipe/project/AnalyseSims/survey_mask/'
 
 mask_T_la_027=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
 mask_T_la_039=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'

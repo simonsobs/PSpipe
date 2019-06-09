@@ -57,7 +57,7 @@ for id_exp1,exp1 in enumerate(experiment):
         l,bl1= np.loadtxt(d['beam_%s_%s'%(exp1,f1)],unpack=True)
         
         window1_T=so_map.read_map('%s/window_T_%s_%s.fits'%(window_dir,exp1,f1))
-        window1_P=so_map.read_map('%s/window_T_%s_%s.fits'%(window_dir,exp1,f1))
+        window1_P=so_map.read_map('%s/window_P_%s_%s.fits'%(window_dir,exp1,f1))
 
         for id_exp2,exp2 in enumerate(experiment):
             freqs2=d['freq_%s'%exp2]
@@ -69,7 +69,7 @@ for id_exp1,exp1 in enumerate(experiment):
                 l,bl2= np.loadtxt(d['beam_%s_%s'%(exp2,f2)],unpack=True)
 
                 window2_T=so_map.read_map('%s/window_T_%s_%s.fits'%(window_dir,exp2,f2))
-                window2_P=so_map.read_map('%s/window_T_%s_%s.fits'%(window_dir,exp2,f2))
+                window2_P=so_map.read_map('%s/window_P_%s_%s.fits'%(window_dir,exp2,f2))
 
                 print (exp1,f1,exp2,f2)
                 mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=(window1_T,window1_P),win2=(window2_T,window2_P),bl1=(bl1,bl1),bl2=(bl2,bl2),binning_file= d['binning_file'],niter=0, lmax=d['lmax'], type=d['type'],save_file='%s/%s_%sx%s_%s'%(mcm_dir,exp1,f1,exp2,f2))

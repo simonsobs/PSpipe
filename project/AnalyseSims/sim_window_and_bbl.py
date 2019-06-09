@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('Agg')
 from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils, so_dict
 import healpy as hp, numpy as np, pylab as plt
 import os,sys
@@ -26,19 +26,17 @@ for exp in experiment:
     
     freqs=d['freq_%s'%exp]
     
-    masks_T=d['masks_T']
-    masks_P=d['masks_P']
-    survey_masks=d['survey_masks']
-    
-    for count,f in enumerate(freqs):
+    for f in freqs:
         
-        mask_T=so_map.read_map(masks_T[count])
-        mask_P=so_map.read_map(masks_P[count])
-        survey_mask=so_map.read_map(survey_masks[count])
+        print ('mask_T_%s_%s'%(exp,f))
+        
+        mask_T=so_map.read_map(d['mask_T_%s_%s'%(exp,f)])
+        mask_P=so_map.read_map(d['mask_P_%s_%s'%(exp,f)])
+        survey_mask=so_map.read_map(d['survey_mask_%s_%s'%(exp,f)])
         
         mask_T.data*=survey_mask.data
-        
         mask_P.data*=survey_mask.data
+        
         
         window_T=so_window.create_apodization(mask_T, apo_type=d['apo_type_survey_%s'%exp], apo_radius_degree=d['apo_radius_survey_%s'%exp])
         window_T.write_map('%s/window_T_%s_%s.fits'%(window_dir,exp,f))

@@ -43,7 +43,7 @@ for exp in experiment:
     freqs=d['freq_%s'%exp]
     for fid,f in enumerate(freqs):
         
-        maps=d['combined_maps_%s_%s'%(exp,f)]
+        maps=d['maps_%s_%s'%(exp,f)]
         nSplits[exp]=len(maps)
         window_T=so_map.read_map('%s/window_T_%s_%s.fits'%(window_dir,exp,f))
         window_P=so_map.read_map('%s/window_P_%s_%s.fits'%(window_dir,exp,f))

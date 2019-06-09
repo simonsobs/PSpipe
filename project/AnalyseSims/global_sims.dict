@@ -3,46 +3,22 @@ experiment=['la']
 freq_la=['145']
 
 nside_la=4096
-
-content=['dust','synchrotron','freefree','ame','cib','cmb','ksz','tsz']
+run_name='cmb_lensed'
 
 mask_dir='/global/cscratch1/sd/krach/SObs/FGawg/masks/040619/4096/'
 survey_mask_dir='/global/homes/t/tlouis/PSpipe/project/AnalyseSims/survey_mask/'
 
-dust_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/dust/0000/'
-ame_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/ame/0000/'
-freefree_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/freefree/0000/'
-synchrotron_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/synchrotron/0000/'
-cib_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cib/0000/'
-cmb_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb/0000/'
-cmb_unlensed_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb_unlensed/0000/'
-ksz_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/ksz/0000/'
-tsz_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/tsz/0000/'
-noise_dir0='/project/projectdirs/sobs/v4_sims/mbs/201901_gaussian_fg_lensed_cmb_realistic_noise/4096/noise/0000/'
-noise_dir1='/project/projectdirs/sobs/v4_sims/mbs/201901_gaussian_fg_lensed_cmb_realistic_noise/4096/noise/0001/'
+maps_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb/0000/'
 
-dust_maps=[dust_dir+'simonsobs_dust_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-ame_maps=[ame_dir+'simonsobs_ame_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-freefree_maps=[freefree_dir+'simonsobs_freefree_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-synchrotron_maps=[synchrotron_dir+'simonsobs_synchrotron_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-cib_maps=[cib_dir+'simonsobs_cib_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-cmb_maps=[cmb_dir+'simonsobs_cmb_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-cmb_unlensed_maps=[cmb_unlensed_dir+'simonsobs_cmb_unlensed_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-ksz_maps=[ksz_dir+'simonsobs_ksz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-tsz_maps=[tsz_dir+'simonsobs_tsz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-
-noise_maps0=[noise_dir0+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
-noise_maps1=[noise_dir1+'simonsobs_noise_uKCMB_la%s_nside4096_0001.fits'%f for f in freq_la]
+maps_la_145=[maps_dir+'simonsobs_cmb_uKCMB_la145_nside4096_0000.fits', maps_dir+'simonsobs_cmb_uKCMB_la145_nside4096_0000.fits']
 
 
-combined_maps_dir='combined_maps/'
-
-combined_maps_la_027=[combined_maps_dir+'combined_map_la_027.fits', combined_maps_dir+'combined_map_la_027.fits']
-combined_maps_la_039=[combined_maps_dir+'combined_map_la_039.fits', combined_maps_dir+'combined_map_la_039.fits']
-combined_maps_la_093=[combined_maps_dir+'combined_map_la_093.fits', combined_maps_dir+'combined_map_la_093.fits']
-combined_maps_la_145=[combined_maps_dir+'combined_map_la_145.fits', combined_maps_dir+'combined_map_la_145.fits']
-combined_maps_la_225=[combined_maps_dir+'combined_map_la_225.fits', combined_maps_dir+'combined_map_la_225.fits']
-combined_maps_la_280=[combined_maps_dir+'combined_map_la_280.fits', combined_maps_dir+'combined_map_la_280.fits']
+#maps_la_027=[combined_maps_dir+'combined_map_la_027.fits', combined_maps_dir+'combined_map_la_027.fits']
+#maps_la_039=[combined_maps_dir+'combined_map_la_039.fits', combined_maps_dir+'combined_map_la_039.fits']
+#maps_la_093=[combined_maps_dir+'combined_map_la_093.fits', combined_maps_dir+'combined_map_la_093.fits']
+#maps_la_145=[combined_maps_dir+'combined_map_la_145.fits', combined_maps_dir+'combined_map_la_145.fits']
+#maps_la_225=[combined_maps_dir+'combined_map_la_225.fits', combined_maps_dir+'combined_map_la_225.fits']
+#maps_la_280=[combined_maps_dir+'combined_map_la_280.fits', combined_maps_dir+'combined_map_la_280.fits']
 
 
 mask_T_la_027=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'

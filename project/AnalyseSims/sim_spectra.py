@@ -54,6 +54,13 @@ for exp in experiment:
         count=0
         for map in maps:
             split=so_map.read_map(map)
+            if split.ncomp==1:
+                Tsplit=split.copy()
+                split= so_map.healpix_template(ncomp=3,nside=split.nside)
+                split.data[0]=Tsplit.data
+                split.data[1]=Tsplit.data*0
+                split.data[2]=Tsplit.data*0
+            
             split=remove_mean(split,window_tuple,ncomp)
             master_alms[exp,f,count]= sph_tools.get_alms(split,window_tuple,niter,lmax)
             count+=1

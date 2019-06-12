@@ -89,7 +89,7 @@ for c1,ar1 in enumerate(arrays):
         
                 bl_tuple2=(bl2,bl2)
                 
-                mcm_inv,mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=window_tuple1,win2=window_tuple2, binning_file=binning_file, bl1=bl_tuple1,bl2=bl_tuple2, lmax=lmax,niter=niter, type=type, unbin=True,save_file='%s/%sx%s_%sx%s'%(mcmDir,ar1,ar2,hm1,hm2))
+                mcm_inv,mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=window_tuple1,win2=window_tuple2, binning_file=binning_file, bl1=bl_tuple1,bl2=bl_tuple2, lmax=lmax,niter=niter, type=type, unbin=True,save_file='%s/%sx%s_%sx%s'%(mcmDir,ar1,ar2,hm1,hm2),lmax_pad=5000)
 
 
 

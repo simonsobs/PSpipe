@@ -92,11 +92,11 @@ for c1,ar1 in enumerate(arrays):
                 
                 prefix= '%s/%sx%s_%sx%s'%(mcmDir,ar1,ar2,hm1,hm2)
 
-                mbb_inv,Bbl=so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
+                mcm_inv,mbb_inv,Bbl=so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs,unbin=True)
 
                 l,ps= so_spectra.get_spectra(alms[hm1,ar1],alms[hm2,ar2],spectra=spectra)
                 spec_name='%sx%s_%sx%s'%(ar1,ar2,hm1,hm2)
-                lb,Db_dict[spec_name]=so_spectra.bin_spectra(l,ps,binning_file,lmax,type=type,mbb_inv=mbb_inv,spectra=spectra)
+                lb,Db_dict[spec_name]=so_spectra.bin_spectra(l,ps,binning_file,lmax,type=type,mcm_inv=mcm_inv,spectra=spectra)
                 spec_name_list+=[spec_name]
                 so_spectra.write_ps('%s/spectra_%s.dat'%(spectraDir,spec_name),lb,Db_dict[spec_name],type=type,spectra=spectra)
 

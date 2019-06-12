@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH -N 4
+#SBATCH -C haswell
+#SBATCH -p regular
+#SBATCH -J get_spectra
+#SBATCH -L SCRATCH
+#SBATCH -t 6:00:00
+
+
+#OpenMP settings:
+
+export OMP_NUM_THREADS=16
+#export OMP_PLACES=threads
+#export OMP_PROC_BIND=spread
+
+#run the application:
+srun -n 16 -c 16 --cpu_bind=cores python get_maps_to_params_spectra.py global_CAR_spin02.dict
+
+
+
+

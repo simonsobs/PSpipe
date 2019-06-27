@@ -63,7 +63,7 @@ for id_exp1,exp1 in enumerate(experiment):
                     Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=bl1*bl2*Dl[spec]
                     
                     if exp1==exp2:
-                        DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=Nl[spec]
+                        DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=Nl[spec]*ns[exp1]
                     else:
                         DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=np.zeros(lmax)
     

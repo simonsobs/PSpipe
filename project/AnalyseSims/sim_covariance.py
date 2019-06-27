@@ -92,14 +92,14 @@ for sid1, spec1 in enumerate(spec_name):
         mbb_inv_cd=so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
 
         win={}
-        win['Ta']=so_map.read_map('%s/window_%s.fits'%(window_dir,n1))
-        win['Tb']=so_map.read_map('%s/window_%s.fits'%(window_dir,n2))
-        win['Tc']=so_map.read_map('%s/window_%s.fits'%(window_dir,n3))
-        win['Td']=so_map.read_map('%s/window_%s.fits'%(window_dir,n4))
-        win['Pa']=so_map.read_map('%s/window_%s.fits'%(window_dir,n1))
-        win['Pb']=so_map.read_map('%s/window_%s.fits'%(window_dir,n2))
-        win['Pc']=so_map.read_map('%s/window_%s.fits'%(window_dir,n3))
-        win['Pd']=so_map.read_map('%s/window_%s.fits'%(window_dir,n4))
+        win['Ta']=so_map.read_map('%s/window_T_%s.fits'%(window_dir,n1))
+        win['Tb']=so_map.read_map('%s/window_T_%s.fits'%(window_dir,n2))
+        win['Tc']=so_map.read_map('%s/window_T_%s.fits'%(window_dir,n3))
+        win['Td']=so_map.read_map('%s/window_T_%s.fits'%(window_dir,n4))
+        win['Pa']=so_map.read_map('%s/window_P_%s.fits'%(window_dir,n1))
+        win['Pb']=so_map.read_map('%s/window_P_%s.fits'%(window_dir,n2))
+        win['Pc']=so_map.read_map('%s/window_P_%s.fits'%(window_dir,n3))
+        win['Pd']=so_map.read_map('%s/window_P_%s.fits'%(window_dir,n4))
 
 
         coupling_dict=so_cov.cov_coupling_spin0and2(win, lmax, niter=niter)

@@ -11,7 +11,7 @@ window_dir='window'
 mcm_dir='mcm'
 cov_dir='covariance'
 specDir='spectra'
-bestFitDir='bestfit'
+ps_interpol_dir='bestfit'
 
 experiment=d['experiment']
 lmax=d['lmax']

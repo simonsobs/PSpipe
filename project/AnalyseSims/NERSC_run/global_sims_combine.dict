@@ -1,10 +1,11 @@
 experiment=['la']
 freq_la=['027','039','093','145','225','280']
 nside_la=4096
-combinaison_name='tsz_cib'
+combinaison_name='combined_newnoise'
 
-#content=['dust','synchrotron','freefree','ame','cib','cmb','ksz','tsz']
-content=['tsz','cib']
+content=['dust','synchrotron','freefree','ame','cib','cmb','ksz','tsz']
+#content=['tsz','cib']
+#content=['dust','synchrotron']
 
 dust_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/dust/0000/'
 ame_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/ame/0000/'
@@ -15,8 +16,8 @@ cmb_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb/000
 cmb_unlensed_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb_unlensed/0000/'
 ksz_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/ksz/0000/'
 tsz_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/tsz/0000/'
-noise_dir0='/project/projectdirs/sobs/v4_sims/mbs/201901_gaussian_fg_lensed_cmb_realistic_noise/4096/noise/0000/'
-noise_dir1='/project/projectdirs/sobs/v4_sims/mbs/201901_gaussian_fg_lensed_cmb_realistic_noise/4096/noise/0001/'
+noise_dir0='/global/project/projectdirs/sobs/v4_sims/mbs/201906_noise_no_lowell/4096/noise/0000/'
+noise_dir1='/global/project/projectdirs/sobs/v4_sims/mbs/201906_noise_no_lowell/4096/noise/0001/'
 
 dust_maps=[dust_dir+'simonsobs_dust_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 ame_maps=[ame_dir+'simonsobs_ame_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]

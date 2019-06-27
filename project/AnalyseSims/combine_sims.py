@@ -43,8 +43,8 @@ for exp in experiment:
         noise_map0=so_map.read_map(noise0_list[count])
         noise_map1=so_map.read_map(noise1_list[count])
         
-        noise_map0.data/=np.sqrt(2)
-        noise_map1.data/=np.sqrt(2)
+        noise_map0.data*=np.sqrt(2)
+        noise_map1.data*=np.sqrt(2)
         
         survey_mask=so_map.read_map(d['survey_mask_%s_%s'%(exp,freq)])
         

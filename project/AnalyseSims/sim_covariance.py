@@ -2,7 +2,6 @@ from pspy import pspy_utils, so_dict,so_map,so_mpi,sph_tools,so_mcm,so_spectra,s
 import  numpy as np, pylab as plt, healpy as hp
 import os,sys
 from pixell import curvedsky,powspec
-import maps_to_params_utils
 import h5py
 
 d = so_dict.so_dict()

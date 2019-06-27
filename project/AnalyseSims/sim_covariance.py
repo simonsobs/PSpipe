@@ -28,7 +28,6 @@ spin_pairs=['spin0xspin0','spin0xspin2','spin2xspin0', 'spin2xspin2']
 bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
 n_bins=len(bin_hi)
 
-lth,Dlth=pspy_utils.ps_lensed_theory_to_dict(clfile,output_type=type,lmax=lmax,lstart=2)
 
 Dl_all={}
 DNl_all={}

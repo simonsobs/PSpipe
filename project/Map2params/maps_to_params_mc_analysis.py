@@ -71,6 +71,8 @@ for kind in ['cross','noise','auto']:
         cov+=np.outer(vec_list[iii],vec_list[iii])
     cov=cov/(iStop-iStart)-np.outer(mean_vec, mean_vec)
 
+    np.save('%s/cov_all_%s.npy'%(mc_dir,kind),cov)
+
     id_spec=0
     for spec in spectra:
         for id_exp1,exp1 in enumerate(experiment):

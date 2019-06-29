@@ -39,8 +39,11 @@ spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 
 for kind in ['cross','noise','auto']:
     vec_list=[]
+    vec_list_restricted=[]
+
     for iii in range(iStart,iStop):
         vec=[]
+        vec_restricted=[]
         count=0
         for spec in spectra:
             for id_exp1,exp1 in enumerate(experiment):
@@ -63,15 +66,31 @@ for kind in ['cross','noise','auto']:
 
                             n_bins=len(lb)
                             vec=np.append(vec,Db[spec])
+                            if spec=='TT' or spec=='EE':
+                                vec_restricted=np.append(vec_restricted,Db[spec])
+                            if spec=='TE':
+                                vec_restricted=np.append(vec_restricted,(Db['TE']+Db['ET'])/2)
+
+                                
         vec_list+=[vec]
-   
+        vec_list_restricted+=[vec_restricted]
+
     mean_vec=np.mean(vec_list,axis=0)
+    mean_vec_restricted=np.mean(vec_list_restricted,axis=0)
+
     cov=0
+    cov_restricted=0
+
     for iii in range(iStart,iStop):
         cov+=np.outer(vec_list[iii],vec_list[iii])
+        cov_restricted+=np.outer(vec_list_restricted[iii],vec_list_restricted[iii])
+
     cov=cov/(iStop-iStart)-np.outer(mean_vec, mean_vec)
+    cov_restricted=cov_restricted/(iStop-iStart)-np.outer(mean_vec_restricted, mean_vec_restricted)
+
 
     np.save('%s/cov_all_%s.npy'%(mc_dir,kind),cov)
+    np.save('%s/cov_restricted_all_%s.npy'%(mc_dir,kind),cov_restricted)
 
     id_spec=0
     for spec in spectra:

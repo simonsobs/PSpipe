@@ -25,7 +25,7 @@ specDir='spectra'
 
 
 ps_model_dir='model'
-pspy_utils.create_directory(ps_interpol_dir)
+pspy_utils.create_directory(ps_model_dir)
 
 
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']

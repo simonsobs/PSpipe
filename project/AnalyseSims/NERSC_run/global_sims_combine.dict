@@ -4,8 +4,6 @@ nside_la=4096
 combinaison_name='combined_newnoise'
 
 content=['dust','synchrotron','freefree','ame','cib','cmb','ksz','tsz']
-#content=['tsz','cib']
-#content=['dust','synchrotron']
 
 dust_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/dust/0000/'
 ame_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/ame/0000/'
@@ -32,11 +30,3 @@ tsz_maps=[tsz_dir+'simonsobs_tsz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq
 noise_maps0=[noise_dir0+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
 noise_maps1=[noise_dir1+'simonsobs_noise_uKCMB_la%s_nside4096_0001.fits'%f for f in freq_la]
 
-survey_mask_dir='/global/homes/t/tlouis/PSpipe/project/AnalyseSims/survey_mask/'
-
-survey_mask_la_027=survey_mask_dir + 'survey_mask_la_027.fits'
-survey_mask_la_039=survey_mask_dir + 'survey_mask_la_039.fits'
-survey_mask_la_093=survey_mask_dir + 'survey_mask_la_093.fits'
-survey_mask_la_145=survey_mask_dir + 'survey_mask_la_145.fits'
-survey_mask_la_225=survey_mask_dir + 'survey_mask_la_225.fits'
-survey_mask_la_280=survey_mask_dir + 'survey_mask_la_280.fits'

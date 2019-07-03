@@ -14,6 +14,7 @@ from pixell import curvedsky,powspec
 import h5py
 
 def mat2dict(filename):
+    # function to read Alex file format
     mat=np.load(filename)
     return mat[0,0], mat[1,1], mat[2,2], mat[0,1]
 

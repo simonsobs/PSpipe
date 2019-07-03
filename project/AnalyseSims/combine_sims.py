@@ -22,7 +22,7 @@ d.read_from_file(sys.argv[1])
 experiment=d['experiment']
 content=d['content']
 
-plot_dir='plot'
+plot_dir='maps_plot'
 combined_map_dir='combined_maps'
 survey_mask_dir='survey_masks'
 

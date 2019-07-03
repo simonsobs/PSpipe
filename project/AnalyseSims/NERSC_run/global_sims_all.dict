@@ -63,6 +63,7 @@ beam_la_280=beam_dir+'beam_la_280.dat'
 
 
 # Spectra  parameter
+theory_file='PATH_TO_THEORY_FILE/lensed_scalar_cls.npy'
 type='Dl'
 binning_file='/global/homes/t/tlouis/PSpipe/data/binningFile_400_30.dat'
 lmax=5000

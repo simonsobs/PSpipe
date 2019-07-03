@@ -29,6 +29,8 @@ survey_mask_dir='survey_masks'
 # Create three folders, one for the plot of the simulations, one for storing the combined maps and one for the survey masks
 pspy_utils.create_directory(plot_dir)
 pspy_utils.create_directory(combined_map_dir)
+pspy_utils.create_directory(survey_mask_dir)
+
 
 # We loop on all the different experiments that we want to consider
 for exp in experiment:

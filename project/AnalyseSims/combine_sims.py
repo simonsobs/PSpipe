@@ -21,6 +21,7 @@ d.read_from_file(sys.argv[1])
 
 experiment=d['experiment']
 content=d['content']
+name=d['combinaison_name']
 
 plot_dir='maps_plot'
 combined_map_dir='combined_maps'
@@ -79,8 +80,8 @@ for exp in experiment:
         
         # we write the noiseless combined simulation and its plot to disk
         color_range=(200,20,20)
-        map_all.plot(file_name='%s/combined_%s_%s'%(plot_dir,exp,freq),color_range=color_range)
-        map_all.write_map('%s/combined_map_%s_%s.fits'%(combined_map_dir,exp,freq))
+        map_all.plot(file_name='%s/%s_map_%s_%s'%(plot_dir,name,exp,freq),color_range=color_range)
+        map_all.write_map('%s/%s_map_%s_%s.fits'%(combined_map_dir,name,exp,freq))
 
         # we coadd the noise simulations with signal simulation, and write them (and their plots) to disk.
 
@@ -88,10 +89,10 @@ for exp in experiment:
         
         noise_map0.data+=map_all.data
         noise_map0.data*=survey_mask.data
-        noise_map0.plot(file_name='%s/combined_%s_%s_noise0'%(plot_dir,exp,freq),color_range=color_range)
-        noise_map0.write_map('%s/combined_map_%s_%s_noise0.fits'%(combined_map_dir,exp,freq))
+        noise_map0.plot(file_name='%s/%s_map_%s_%s_noise0'%(plot_dir,name,exp,freq),color_range=color_range)
+        noise_map0.write_map('%s/%s_map_%s_%s_noise0.fits'%(combined_map_dir,name,exp,freq))
         
         noise_map1.data+=map_all.data
         noise_map1.data*=survey_mask.data
-        noise_map1.plot(file_name='%s/combined_%s_%s_noise1'%(plot_dir,exp,freq),color_range=color_range)
-        noise_map1.write_map('%s/combined_map_%s_%s_noise1.fits'%(combined_map_dir,exp,freq))
+        noise_map1.plot(file_name='%s/%s_map_%s_%s_noise1'%(plot_dir,name,exp,freq),color_range=color_range)
+        noise_map1.write_map('%s/%s_map_%s_%s_noise1.fits'%(combined_map_dir,name,exp,freq))

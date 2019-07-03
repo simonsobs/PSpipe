@@ -1,3 +1,12 @@
+"""
+This script is used to combine cmb with extragalactic and galactic simulations.
+It produces a noiseless combination of the signal maps as well as two noisy splits containing both signal and noise.
+To run it you need to specify a dictionnary file, for example global_combine.dict provided in the:
+https://github.com/simonsobs/PSpipe/tree/master/project/AnalyseSims/NERSC_run folder
+The code will run as follow:
+python combine_sims.py global_combine.dict
+"""
+
 import matplotlib
 matplotlib.use('Agg')
 from pspy import so_map,so_window,so_mcm,sph_tools,so_spectra, pspy_utils, so_dict
@@ -5,26 +14,27 @@ import healpy as hp, numpy as np, pylab as plt
 import os,sys
 import time
 
+# We start by reading the info in the dictionnary
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 experiment=d['experiment']
 content=d['content']
 
-
 plot_dir='plot'
 combined_map_dir='combined_maps'
 
+# Create two folders, one for the plot of the simulations and one for storing the combined maps
 pspy_utils.create_directory(plot_dir)
 pspy_utils.create_directory(combined_map_dir)
 
-color_range=(200,20,20)
-
+# We loop on all the different experiments that we want to consider
 for exp in experiment:
+    # Each experiment could have its associated nside and frequency list
     nside=d['nside_%s'%exp]
     freqs=d['freq_%s'%exp]
-    
     for count,freq in enumerate(freqs):
+        #We create a template for each frequency and add all composents present in 'content'
         map_all=so_map.healpix_template(ncomp=3,nside=nside)
         for cont in content:
             maps_list= d['%s_maps'%cont]
@@ -37,6 +47,19 @@ for exp in experiment:
                 for i in range(3):
                     map_all.data[i]+=map.data[i]
     
+        # We read the survey mask, that represent the SO coverage
+        survey_mask=so_map.read_map(d['survey_mask_%s_%s'%(exp,freq)])
+        # And multiply it with the simulation
+        map_all.data*=survey_mask.data
+        
+        # We write the noiseless combined simulation and its plot to disk
+        color_range=(200,20,20)
+        map_all.plot(file_name='%s/combined_%s_%s'%(plot_dir,exp,freq),color_range=color_range)
+        map_all.write_map('%s/combined_map_%s_%s.fits'%(combined_map_dir,exp,freq))
+
+        # we read two noise maps, since the noise maps represent the noise properties of the full SO survey
+        # we multiply them by sqrt(2)
+        
         noise0_list= d['noise_maps0']
         noise1_list= d['noise_maps1']
         
@@ -45,15 +68,9 @@ for exp in experiment:
         
         noise_map0.data*=np.sqrt(2)
         noise_map1.data*=np.sqrt(2)
-        
-        survey_mask=so_map.read_map(d['survey_mask_%s_%s'%(exp,freq)])
-        
-        color_range=(200,20,20)
-        
-        map_all.data*=survey_mask.data
-        map_all.plot(file_name='%s/combined_%s_%s'%(plot_dir,exp,freq),color_range=color_range)
-        map_all.write_map('%s/combined_map_%s_%s.fits'%(combined_map_dir,exp,freq))
-        
+
+        # We coadd them with signal simulation, and write them (and their plots) to disk.
+
         color_range=(400,40,40)
         
         noise_map0.data+=map_all.data

@@ -11,13 +11,14 @@ window_dir='window'
 mcm_dir='mcm'
 cov_dir='covariance'
 specDir='spectra'
-ps_interpol_dir='bestfit'
+ps_model_dir='model'
 
 experiment=d['experiment']
 lmax=d['lmax']
 type=d['type']
 niter=d['niter']
 binning_file=d['binning_file']
+run_name=d['run_name']
 
 pspy_utils.create_directory(cov_dir)
 
@@ -54,9 +55,9 @@ for id_exp1,exp1 in enumerate(experiment):
                 bl1,bl2= bl1[:lmax],bl2[:lmax]
                 
                 spec_name_combined='%s_%s_%sx%s_%s_cross'%(type,exp1,f1,exp2,f2)
-                l,Dl=so_spectra.read_ps(ps_interpol_dir+'/%s.dat'%spec_name_combined,spectra=spectra)
+                l,Dl=so_spectra.read_ps(ps_model_dir+'/%s.dat'%spec_name_combined,spectra=spectra)
                 spec_name_noise='%s_%s_%sx%s_%s_noise'%(type,exp1,f1,exp2,f2)
-                l,Nl=so_spectra.read_ps(ps_interpol_dir+'/%s.dat'%spec_name_noise,spectra=spectra)
+                l,Nl=so_spectra.read_ps(ps_model_dir+'/%s.dat'%spec_name_noise,spectra=spectra)
 
                 for spec in ['TT','TE','ET','EE']:
                     
@@ -66,6 +67,11 @@ for id_exp1,exp1 in enumerate(experiment):
                         DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=Nl[spec]*ns[exp1]
                     else:
                         DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=np.zeros(lmax)
+                    
+                    plt.plot(Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec])
+                    plt.plot(DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec])
+                    plt.show()
+
     
                     Dl_all['%s_%s'%(exp2,f2),'%s_%s'%(exp1,f1),spec]=Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]
                     DNl_all['%s_%s'%(exp2,f2),'%s_%s'%(exp1,f1),spec]=DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]
@@ -81,7 +87,6 @@ for sid1, spec1 in enumerate(spec_name):
         print (spec1,spec2)
         n1,n2=spec1.split('x')
         n3,n4=spec2.split('x')
-        
         
         prefix_ab= '%s/%sx%s'%(mcm_dir,n1,n2)
         prefix_cd= '%s/%sx%s'%(mcm_dir,n3,n4)
@@ -129,7 +134,7 @@ for sid1, spec1 in enumerate(spec_name):
         analytic_cov[n1,n2,n3,n4]=np.dot(np.dot(mbb_inv_ab,analytic_cov[n1,n2,n3,n4]),mbb_inv_cd.T)
 
 
-        np.save('%s/analytic_cov_%sx%s_%sx%s.npy'%(cov_dir,n1,n2,n3,n4), analytic_cov[n1,n2,n3,n4] )
+        np.save('%s/analytic_cov_%s_%sx%s_%sx%s.npy'%(cov_dir,run_name,n1,n2,n3,n4), analytic_cov[n1,n2,n3,n4] )
 
 
 

@@ -62,7 +62,7 @@ for exp in experiment:
         noise_map1.data*=np.sqrt(2)
         
         # We generate a survey mask, that represent the SO coverage
-        survey_mask=so_map.so_map.healpix_template(ncomp=1,nside=nside)
+        survey_mask=so_map.healpix_template(ncomp=1,nside=nside)
         id=np.where(noise_map0.data[0]<-1*10**30)
         survey_mask.data[id]=1
         

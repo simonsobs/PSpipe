@@ -13,6 +13,6 @@ export OMP_NUM_THREADS=64
 #export OMP_PROC_BIND=spread
 
 #run the application:
-srun -n 1 -c 64 --cpu_bind=cores python sim_window_and_bbl.py global_sims.dict
+srun -n 1 -c 64 --cpu_bind=cores python sim_window_and_bbl.py global_sims_all.dict
 
 

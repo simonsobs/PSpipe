@@ -69,7 +69,7 @@ for exp in experiment:
         survey_mask.data[id]=1
         
         # plot it and write it to disk
-        survey_mask.plot(file_name='%s/survey_mask_%s_%s'%(plot_dir,exp,freq),color_range=color_range)
+        survey_mask.plot(file_name='%s/survey_mask_%s_%s'%(plot_dir,exp,freq))
         survey_mask.write_map('%s/survey_mask_%s_%s.fits'%(survey_mask_dir,exp,freq))
 
         # and multiply it with the simulation

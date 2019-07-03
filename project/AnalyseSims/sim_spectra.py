@@ -1,9 +1,19 @@
+"""
+This script is used to compute all power spectra of the SO simulations.
+You can either write the spectra as separate files in a folder or put them all in a single hdf5 file.
+The code will run as follow (example):
+python sim_spectra.py global_sims_all.dict
+"""
+
 from pspy import pspy_utils, so_dict,so_map,so_mpi,sph_tools,so_mcm,so_spectra
 import  numpy as np, pylab as plt, healpy as hp
 import os,sys
 from pixell import curvedsky,powspec
 import h5py
 import time
+
+
+# We start by reading the info in the dictionnary
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -18,6 +28,7 @@ writeAll=d['writeAll']
 run_name=d['run_name']
 
 def remove_mean(map,window,ncomp):
+    # single function to remove the mean of the data before taking the power spectrum
     for i in range(ncomp):
         map.data[0]-=np.mean(map.data[0]*window[0].data)
         map.data[1]-=np.mean(map.data[1]*window[1].data)
@@ -29,6 +40,9 @@ window_dir='window'
 mcm_dir='mcm'
 specDir='spectra'
 
+# create spectra folder or initiale hdf5 file
+
+
 if hdf5:
     spectra_hdf5 = h5py.File('%s.hdf5'%(specDir), 'w')
 else:
@@ -38,6 +52,8 @@ ncomp=3
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 spin_pairs=['spin0xspin0','spin0xspin2','spin2xspin0', 'spin2xspin2']
 
+
+# We first compute all the alms of the different split frequency maps (that have been multiplied by their associated window function)
 master_alms={}
 nSplits={}
 for exp in experiment:
@@ -65,6 +81,7 @@ for exp in experiment:
             master_alms[exp,f,count]= sph_tools.get_alms(split,window_tuple,niter,lmax)
             count+=1
 
+# We then compute the cls from the alms and deconvolve the mcm that take into account the effect of the window function
 Db_dict={}
 for id_exp1,exp1 in enumerate(experiment):
     freqs1=d['freq_%s'%exp1]
@@ -113,6 +130,9 @@ for id_exp1,exp1 in enumerate(experiment):
                 Db_dict_auto={}
                 Db_dict_cross={}
                 nb={}
+                
+                # we combine the different cross spectra and auto spectra together and write them to disk
+                # we also write the noise power spectra defined as (auto-cross)/nsplits
                     
                 for spec in spectra:
                         

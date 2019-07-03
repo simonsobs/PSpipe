@@ -1,7 +1,7 @@
 """
 This script is used to combine cmb with extragalactic and galactic simulations.
 It produces a noiseless combination of the signal maps as well as two noisy splits containing both signal and noise.
-It also produce a survey mask which is a binary mask where SO observation are defined.
+It also produce a survey mask which is a binary mask where SO observations are defined.
 To run it you need to specify a dictionnary file, for example global_combine.dict provided in the:
 https://github.com/simonsobs/PSpipe/tree/master/project/AnalyseSims/NERSC_run folder
 The code will run as follow:
@@ -45,6 +45,8 @@ for exp in experiment:
             map=maps_list[count]
             
             map=so_map.read_map(map)
+            
+            #some of the component are I only while other are I,Q,U
             if (len(map.data.shape)==1):
                 map_all.data[0]+=map.data
             else:

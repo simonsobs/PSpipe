@@ -68,10 +68,6 @@ for id_exp1,exp1 in enumerate(experiment):
                     else:
                         DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=np.zeros(lmax)
                     
-                    plt.plot(Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec])
-                    plt.plot(DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec])
-                    plt.show()
-
     
                     Dl_all['%s_%s'%(exp2,f2),'%s_%s'%(exp1,f1),spec]=Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]
                     DNl_all['%s_%s'%(exp2,f2),'%s_%s'%(exp1,f1),spec]=DNl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]

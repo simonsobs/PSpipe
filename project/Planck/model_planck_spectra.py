@@ -51,6 +51,13 @@ experiment='Planck'
 
 
 lth,Dlth=pspy_utils.ps_lensed_theory_to_dict(d['theoryfile'],output_type='Dl',lmax=lmax,lstart=2)
+
+bl={}
+for ar in arrays:
+    beam= np.loadtxt(d['beam_%s'%ar])
+    ljunk,bl[ar]=beam[:,0],beam[:,1]
+
+
 lth,nlth=get_nlth(2, lmax+2, arrays,spectra,bl)
 
 Db_dict={}

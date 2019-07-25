@@ -30,8 +30,11 @@ type=d['type']
 binning_file=d['binning_file']
 pixWin=d['pixWin']
 
+
+
 print ('compute all Planck mode coupling matrices')
 
+experiment='Planck'
 split=['hm1','hm2']
 
 for c1,ar1 in enumerate(arrays):
@@ -42,16 +45,13 @@ for c1,ar1 in enumerate(arrays):
         window_pol_1=so_map.read_map(d['window_pol_%s'%ar1])
         
         cov_map=so_map.read_map('%s'%map1,fields_healpix=4)
-        badpix = (cov_map.data<-1e30)
+        badpix = (cov_map.data==hp.pixelfunc.UNSEEN)
         window_T_1.data[badpix]=0.0
         window_pol_1.data[badpix]=0.0
     
-        window_T_1.write_map('%s/window_T_%s_%s.fits'%(auxMapDir,hm1,ar1))
-        window_pol_1.write_map('%s/window_pol_%s_%s.fits'%(auxMapDir,hm1,ar1))
+        window_T_1.write_map('%s/window_T_%s_%s-%s.fits'%(auxMapDir,experiment,ar1,hm1))
+        window_pol_1.write_map('%s/window_P_%s_%s-%s.fits'%(auxMapDir,experiment,ar1,hm1))
         
-        window_T_1.write_map('test_window_planck.fits')
-
-
         window_tuple1=(window_T_1,window_pol_1)
         
         del window_T_1,window_pol_1,cov_map
@@ -74,7 +74,7 @@ for c1,ar1 in enumerate(arrays):
                 window_pol_2=so_map.read_map(d['window_pol_%s'%ar2])
 
                 cov_map=so_map.read_map('%s'%map2,fields_healpix=4)
-                badpix = (cov_map.data<-1e30)
+                badpix = (cov_map.data==hp.pixelfunc.UNSEEN)
                 window_T_2.data[badpix]=0.0
                 window_pol_2.data[badpix]=0.0
 
@@ -89,7 +89,7 @@ for c1,ar1 in enumerate(arrays):
         
                 bl_tuple2=(bl2,bl2)
                 
-                mcm_inv,mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=window_tuple1,win2=window_tuple2, binning_file=binning_file, bl1=bl_tuple1,bl2=bl_tuple2, lmax=lmax,niter=niter, type=type, unbin=True,save_file='%s/%sx%s_%sx%s'%(mcmDir,ar1,ar2,hm1,hm2),lmax_pad=5000)
+                mcm_inv,mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=window_tuple1,win2=window_tuple2, binning_file=binning_file, bl1=bl_tuple1,bl2=bl_tuple2, lmax=lmax,niter=niter, type=type, unbin=True,save_file='%s/%s_%sx%s_%s-%sx%s'%(mcmDir,experiment,ar1,experiment,ar2,hm1,hm2),lmax_pad=d['lmax_pad'])
 
 
 

@@ -7,6 +7,27 @@ from pixell import enmap
 import time
 
 
+def process_planck_spectra(l,cl,binning_file,lmax,type,spectra=None,mcm_inv=None):
+    bin_lo,bin_hi,bin_c,bin_size= pspy_utils.read_binning_file(binning_file,lmax)
+    n_bins=len(bin_hi)
+    fac=(l*(l+1)/(2*np.pi))
+    unbin_vec=[]
+    mcm_inv=so_mcm.coupling_dict_to_array(mcm_inv)
+    for f in spectra:
+        unbin_vec=np.append(unbin_vec,cl[f][2:lmax])
+    cl=so_spectra.vec2spec_dict(lmax-2,np.dot(mcm_inv,unbin_vec),spectra)
+    l=np.arange(2,lmax)
+    print (l.shape,cl['TT'].shape)
+    vec=[]
+    for f in spectra:
+        binnedPower=np.zeros(len(bin_c))
+        for ibin in range(n_bins):
+            loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))
+            binnedPower[ibin] = (cl[f][loc]*fac[loc]).mean()/(fac[loc].mean())
+        vec=np.append(vec,binnedPower)
+    return l,cl,bin_c,so_spectra.vec2spec_dict(n_bins,vec,spectra)
+
+
 def subtract_mono_di(map_in, mask_in, nside):
     #Taken from Zack script to remove monopole and dipole
     map_masked = hp.ma(map_in)
@@ -49,6 +70,9 @@ binning_file=d['binning_file']
 remove_mono_dipo_T=d['remove_mono_dipo_T']
 remove_mono_dipo_pol=d['remove_mono_dipo_pol']
 
+
+experiment='Planck'
+
 alms={}
 nsplit={}
 
@@ -58,15 +82,15 @@ for ar in arrays:
     maps=d['map_%s'%ar]
     for hm,map in zip(split,maps):
         
-        window_T=so_map.read_map('%s/window_T_%s_%s.fits'%(auxMapDir,hm,ar))
-        window_pol=so_map.read_map('%s/window_pol_%s_%s.fits'%(auxMapDir,hm,ar))
+        window_T=so_map.read_map('%s/window_T_%s_%s-%s.fits'%(auxMapDir,experiment,ar,hm))
+        window_pol=so_map.read_map('%s/window_P_%s_%s-%s.fits'%(auxMapDir,experiment,ar,hm))
         window_tuple=(window_T,window_pol)
         del window_T,window_pol
 
         pl_map=so_map.read_map('%s'%map,fields_healpix=(0,1,2))
         pl_map.data*=10**6
         cov_map=so_map.read_map('%s'%map,fields_healpix=4)
-        badpix = (cov_map.data<-1e30)
+        badpix = (cov_map.data==hp.pixelfunc.UNSEEN)
         for i in range(3):
             pl_map.data[i][badpix]= 0.0
 
@@ -90,14 +114,15 @@ for c1,ar1 in enumerate(arrays):
             for s2,hm2 in enumerate(split):
                 if (s1>s2) & (c1==c2): continue
                 
-                prefix= '%s/%sx%s_%sx%s'%(mcmDir,ar1,ar2,hm1,hm2)
+                prefix= '%s/%s_%sx%s_%s-%sx%s'%(mcmDir,experiment,ar1,experiment,ar2,hm1,hm2)
 
                 mcm_inv,mbb_inv,Bbl=so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs,unbin=True)
 
                 l,ps= so_spectra.get_spectra(alms[hm1,ar1],alms[hm2,ar2],spectra=spectra)
-                spec_name='%sx%s_%sx%s'%(ar1,ar2,hm1,hm2)
-                lb,Db_dict[spec_name]=so_spectra.bin_spectra(l,ps,binning_file,lmax,type=type,mcm_inv=mcm_inv,spectra=spectra)
+                spec_name='%s_%sx%s_%s-%sx%s'%(experiment,ar1,experiment,ar2,hm1,hm2)
+                l,cl,lb,Db=process_planck_spectra(l,ps,binning_file,lmax,type=type,mcm_inv=mcm_inv,spectra=spectra)
                 spec_name_list+=[spec_name]
-                so_spectra.write_ps('%s/spectra_%s.dat'%(spectraDir,spec_name),lb,Db_dict[spec_name],type=type,spectra=spectra)
+                so_spectra.write_ps('%s/spectra_%s.dat'%(spectraDir,spec_name),lb,Db,type=type,spectra=spectra)
+                so_spectra.write_ps('%s/spectra_unbin_%s.dat'%(spectraDir,spec_name),l,cl,type=type,spectra=spectra)
 
 

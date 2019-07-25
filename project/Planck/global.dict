@@ -32,6 +32,8 @@ pixWin=True
 remove_mono_dipo_T=True
 remove_mono_dipo_pol=False
 
+theoryfile=data_dir+'theory/cosmo2017_10K_acc3_lensedCls.dat'
+
 # theoretical nl_Th
 
 beam_th_100=9.66

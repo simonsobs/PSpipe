@@ -47,7 +47,7 @@ for c1,ar1 in enumerate(arrays):
         l,bl2= np.loadtxt(d['beam_%s'%ar2],unpack=True)
         bl1,bl2= bl1[:lmax],bl2[:lmax]
                 
-        lth,ps_th=pspy_utils.ps_lensed_theory_to_dict('theory/cosmo2017_10K_acc3_lensedCls.dat',output_type=type,lmax=lmax,lstart=2)
+        lth,ps_th=pspy_utils.ps_lensed_theory_to_dict(d['theoryfile'],output_type=type,lmax=lmax,lstart=2)
         
         spec_name_noise='%s_%sx%s_%s_noise'%(experiment,ar1,experiment,ar2)
         l,Nl=so_spectra.read_ps(ps_model_dir+'/%s.dat'%spec_name_noise,spectra=spectra)

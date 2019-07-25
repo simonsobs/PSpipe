@@ -1,5 +1,5 @@
-#import matplotlib
-#matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np,healpy as hp,pylab as plt
 from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
 import os,sys
@@ -35,10 +35,9 @@ d.read_from_file(sys.argv[1])
 auxMapDir='window'
 mcmDir='mcm'
 spectraDir='spectra'
-experiment='Planck'
+
 ps_model_dir='model'
 pspy_utils.create_directory(ps_model_dir)
-
 
 
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
@@ -48,6 +47,17 @@ niter=d['niter']
 binning_file=d['binning_file']
 lmax=d['lmax']
 split=['hm1','hm2']
+experiment='Planck'
+
+
+lth,Dlth=pspy_utils.ps_lensed_theory_to_dict(d['theoryfile'],output_type='Dl',lmax=lmax,lstart=2)
+lth,nlth=get_nlth(2, lmax+2, arrays,spectra,bl)
+
+Db_dict={}
+nb_dict={}
+Nl_interpolate={}
+spec_name_list=[]
+
 
 ylim={}
 ylim['TT']=[10**-2,10**6]
@@ -62,23 +72,7 @@ ylim['BB']=[-2,2]
 ylim['BB']=[10**-2,10**6]
 
 
-lth,Dlth=pspy_utils.ps_lensed_theory_to_dict('theory/cosmo2017_10K_acc3_lensedCls.dat',output_type='Dl',lmax=lmax,lstart=2)
 
-
-bl={}
-bb={}
-for ar in arrays:
-    beam= np.loadtxt(d['beam_%s'%ar])
-    ljunk,bl[ar]=beam[:,0],beam[:,1]
-    lb,bb[ar]= pspy_utils.naive_binning(ljunk,bl[ar],binning_file,lmax)
-
-
-lth,nlth=get_nlth(2, lmax+2, arrays,spectra,bl)
-
-Db_dict={}
-nb_dict={}
-Nl_interpolate={}
-spec_name_list=[]
 for c1,ar1 in enumerate(arrays):
     
     beam1= np.loadtxt(d['beam_%s'%ar1])
@@ -101,7 +95,6 @@ for c1,ar1 in enumerate(arrays):
                 
                 spec_name='%s_%sx%s_%s-%sx%s'%(experiment,ar1,experiment,ar2,hm1,hm2)
 
-# spec_name='%sx%s_%sx%s'%(ar1,ar2,hm1,hm2)
                 lb,Db= so_spectra.read_ps('%s/spectra_%s.dat'%(spectraDir,spec_name),spectra=spectra)
                 for spec in spectra:
                     if (hm1==hm2):
@@ -117,7 +110,6 @@ for c1,ar1 in enumerate(arrays):
             Db_dict[ar1,ar2,spec,'cross']=np.mean(Db_dict[ar1,ar2,spec,'cross'],axis=0)
             nb_dict[ar1,ar2,spec]= (Db_dict[ar1,ar2,spec,'auto']-Db_dict[ar1,ar2,spec,'cross'])/2
             
-
             if (spec=='TT' or spec=='EE' or spec=='BB') & (ar1==ar2) :
     
                 Nl = scipy.interpolate.interp1d(lb,nb_dict[ar1,ar2,spec], fill_value='extrapolate')
@@ -126,15 +118,13 @@ for c1,ar1 in enumerate(arrays):
         
             else:
                 Nl_interpolate[spec]=np.zeros(len(lth))
-                
-
-
+            
             plt.semilogy()
-            plt.plot(lb,nb_dict[ar1,ar2,spec]*bb[ar1]*bb[ar2])
             plt.plot(lth,nlth[ar1,ar2,spec])
             plt.plot(lth,Nl_interpolate[spec])
-            plt.show()
-
+            plt.savefig('%s/noise_%s_%s_%s.png'%(ps_model_dir,ar1,ar2,spec),bbox_inches='tight')
+            plt.clf()
+            plt.close()
 
             plt.figure(figsize=(10,7))
             if spec=='TT' or spec=='EE' or spec=='BB':
@@ -145,8 +135,11 @@ for c1,ar1 in enumerate(arrays):
             plt.errorbar(lb,Db_dict[ar1,ar2,spec,'cross']*fb,fmt='.')
             plt.errorbar(lb,nb_dict[ar1,ar2,spec]*fb,fmt='.',color='red')
             plt.ylim(ylim[spec][0],ylim[spec][1])
-            plt.show()
-                
+            plt.savefig('%s/spectra_%s_%s_%s.png'%(ps_model_dir,ar1,ar2,spec),bbox_inches='tight')
+            plt.clf()
+            plt.close()
+            
+            
         spec_name_noise='%s_%sx%s_%s_noise'%(experiment,ar1,experiment,ar2)
         so_spectra.write_ps(ps_model_dir+'/%s.dat'%spec_name_noise,lth,Nl_interpolate,type,spectra=spectra)
 

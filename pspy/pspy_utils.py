@@ -17,7 +17,7 @@ def ps_lensed_theory_to_dict(filename,output_type,lmax=None,lstart=2):
     fields=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
     ps={}
     l,ps['TT'],ps['EE'],ps['BB'],ps['TE']=np.loadtxt(filename,unpack=True)
-    ps['ET']=ps['TE']
+    ps['ET']=ps['TE'].copy()
     ps['TB'],ps['BT'],ps['EB'],ps['BE']=np.zeros((4,len(l)))
     
     if lmax is not None:

@@ -1,5 +1,5 @@
-#import matplotlib
-#matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np,healpy as hp,pylab as plt
 from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
 import os,sys
@@ -123,8 +123,10 @@ for c1,ar1 in enumerate(arrays):
                 plt.semilogy()
                 plt.plot(lth,nlth[ar1,ar2,spec])
                 plt.plot(lth,Nl_interpolate[spec])
-                plt.show()
-        
+                plt.savefig('%s/noise_interpolate_%s_%s_%s.png'%(ps_model_dir,ar1,ar2,spec),bbox_inches='tight')
+                plt.clf()
+                plt.close()
+
             else:
                 Nl_interpolate[spec]=np.zeros(len(lth))
             
@@ -139,10 +141,9 @@ for c1,ar1 in enumerate(arrays):
             plt.errorbar(lb,Db_dict[ar1,ar2,spec,'cross']*fb,fmt='.')
             plt.errorbar(lb,nb_dict[ar1,ar2,spec]*fb,fmt='.',color='red')
             plt.ylim(ylim[spec][0],ylim[spec][1])
-            plt.show()
-#            plt.savefig('%s/spectra_%s_%s_%s.png'%(ps_model_dir,ar1,ar2,spec),bbox_inches='tight')
-#           plt.clf()
-#           plt.close()
+            plt.savefig('%s/spectra_%s_%s_%s.png'%(ps_model_dir,ar1,ar2,spec),bbox_inches='tight')
+            plt.clf()
+            plt.close()
     
 
         np.savetxt('%s/noise_T_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,ar1,experiment,ar2),  np.transpose([lth,Nl_interpolate['TT']]))

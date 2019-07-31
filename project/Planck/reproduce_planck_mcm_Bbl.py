@@ -67,8 +67,9 @@ for c1,ar1 in enumerate(arrays):
             if c1>c2: continue
             maps2= d['map_%s'%ar2]
             for hm2,map2,count2 in zip(split,maps2,np.arange(2)):
-                print (count1,count2)
                 if (count1>count2) & (c1==c2): continue
+                print (ar1,ar2)
+
 
                 window_T_2=so_map.read_map(d['window_T_%s'%ar2])
                 window_pol_2=so_map.read_map(d['window_pol_%s'%ar2])

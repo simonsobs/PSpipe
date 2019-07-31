@@ -1,12 +1,11 @@
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('Agg')
 import numpy as np,healpy as hp,pylab as plt
 from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
 import os,sys
 from pixell import enmap
 import time
 import scipy.interpolate
-
 
 def get_nlth(lmin, lmax, arrays,spectra,bl):
     nlth={}
@@ -24,7 +23,7 @@ def get_nlth(lmin, lmax, arrays,spectra,bl):
                         sigma=d['sigma_pol_th_%s'%ar1]
                     sigma = np.deg2rad(sigma)/60
                     print (spec,sigma,ar1,ar2)
-                    nlth[ar1,ar2,spec]=l*0+sigma**2#/(fl**2)*l*(l+1)/(2*np.pi)
+                    nlth[ar1,ar2,spec]=l*0+sigma**2*(hp.pixwin(2048)[:len(l)])**2  #/(fl**2)*l*(l+1)/(2*np.pi)*
                 else:
                     nlth[ar1,ar2,spec]=l*0
     return l,nlth
@@ -78,8 +77,6 @@ ylim['BE']=[-2,2]
 ylim['BB']=[-2,2]
 ylim['BB']=[10**-2,10**6]
 
-
-
 for c1,ar1 in enumerate(arrays):
     
     beam1= np.loadtxt(d['beam_%s'%ar1])
@@ -122,16 +119,16 @@ for c1,ar1 in enumerate(arrays):
                 Nl = scipy.interpolate.interp1d(lb,nb_dict[ar1,ar2,spec], fill_value='extrapolate')
                 Nl_interpolate[spec]=np.array([Nl(i) for i in lth])
                 Nl_interpolate[spec]*=bl1[:len(lth)]*bl2[:len(lth)]
+            
+                plt.semilogy()
+                plt.plot(lth,nlth[ar1,ar2,spec])
+                plt.plot(lth,Nl_interpolate[spec])
+                plt.show()
         
             else:
                 Nl_interpolate[spec]=np.zeros(len(lth))
             
-            plt.semilogy()
-            plt.plot(lth,nlth[ar1,ar2,spec])
-            plt.plot(lth,Nl_interpolate[spec])
-            plt.savefig('%s/noise_%s_%s_%s.png'%(ps_model_dir,ar1,ar2,spec),bbox_inches='tight')
-            plt.clf()
-            plt.close()
+      
 
             plt.figure(figsize=(10,7))
             if spec=='TT' or spec=='EE' or spec=='BB':
@@ -142,11 +139,15 @@ for c1,ar1 in enumerate(arrays):
             plt.errorbar(lb,Db_dict[ar1,ar2,spec,'cross']*fb,fmt='.')
             plt.errorbar(lb,nb_dict[ar1,ar2,spec]*fb,fmt='.',color='red')
             plt.ylim(ylim[spec][0],ylim[spec][1])
-            plt.savefig('%s/spectra_%s_%s_%s.png'%(ps_model_dir,ar1,ar2,spec),bbox_inches='tight')
-            plt.clf()
-            plt.close()
-            
-            
+            plt.show()
+#            plt.savefig('%s/spectra_%s_%s_%s.png'%(ps_model_dir,ar1,ar2,spec),bbox_inches='tight')
+#           plt.clf()
+#           plt.close()
+    
+
+        np.savetxt('%s/noise_T_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,ar1,experiment,ar2),  np.transpose([lth,Nl_interpolate['TT']]))
+        np.savetxt('%s/noise_P_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,ar1,experiment,ar2),  np.transpose([lth,Nl_interpolate['EE']]))
+
         spec_name_noise='%s_%sx%s_%s_noise'%(experiment,ar1,experiment,ar2)
         so_spectra.write_ps(ps_model_dir+'/%s.dat'%spec_name_noise,lth,Nl_interpolate,type,spectra=spectra)
 

@@ -5,7 +5,7 @@ Note that we are using homogeneous non white noise here
 #import matplotlib
 #matplotlib.use('Agg')
 import numpy as np,healpy as hp,pylab as plt
-from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
+from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing,so_mpi
 import os,sys
 from pixell import enmap,curvedsky,powspec
 import time
@@ -49,7 +49,11 @@ nSplits=len(split)
 l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,arrays,lmax,nSplits,lcut=0)
 pixwin=hp.pixwin(nside)
 
-for iii in range(iStart,iStop):
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=d['iStart'], imax=d['iStop'])
+
+
+for iii in subtasks:
 
     t0=time.time()
     alms={}

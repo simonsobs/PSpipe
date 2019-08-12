@@ -4,8 +4,8 @@ splits=['hm1','hm2']
 data_dir = '/Users/thibaut/Desktop/Project/so_ps_codes/PSpipe/project/Planck/Planck_Data/2018/'
 
 map_100 = [data_dir+'maps/HFI_SkyMap_100_2048_R3.01_halfmission-%d.fits'%(i) for i in [1,2]]
-map_143 = [data_dir+'maps/HFI_SkyMap_100_2048_R3.01_halfmission-%d.fits'%(i) for i in [1,2]]
-map_217 = [data_dir+'maps/HFI_SkyMap_100_2048_R3.01_halfmission-%d.fits'%(i) for i in [1,2]]
+map_143 = [data_dir+'maps/HFI_SkyMap_143_2048_R3.01_halfmission-%d.fits'%(i) for i in [1,2]]
+map_217 = [data_dir+'maps/HFI_SkyMap_217_2048_R3.01_halfmission-%d.fits'%(i) for i in [1,2]]
 
 window_T_100 = [data_dir+'likelihood_mask/COM_Mask_Likelihood-temperature-100-hm%d_2048_R3.00.fits'%(i) for i in [1,2]]
 window_pol_100 = [data_dir+'likelihood_mask/COM_Mask_Likelihood-polarization-100-hm%d_2048_R3.00.fits'%(i) for i in [1,2]]

@@ -114,8 +114,8 @@ for c1,freq1 in enumerate(freqs):
         np.savetxt('%s/noise_T_hm2_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nl_hm2['TT']]))
         np.savetxt('%s/noise_P_hm2_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nl_hm2['EE']]))
 
-        np.savetxt('%s/noise_T_mean_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nl_mean['TT']]))
-        np.savetxt('%s/noise_P_mean_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nl_mean['EE']]))
+        np.savetxt('%s/noise_T_mean_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nl_mean['TT']/2]))
+        np.savetxt('%s/noise_P_mean_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nl_mean['EE']/2]))
 
         spec_name_noise_hm1='hm1_%s_%sx%s_%s_noise'%(experiment,freq1,experiment,freq2)
         spec_name_noise_hm2='hm2_%s_%sx%s_%s_noise'%(experiment,freq1,experiment,freq2)

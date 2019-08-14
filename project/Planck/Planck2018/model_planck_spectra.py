@@ -91,7 +91,7 @@ for c1,freq1 in enumerate(freqs):
                 nl_mean[spec]=np.array([nl_interpol_mean(i) for i in lth])
 
                 if spec=='TT':
-                    plt.ylim(-0.005,0.005)
+                    plt.ylim(-0.002,0.002)
                 plt.plot(lth,nlth,label='white noise %sx%s %s'%(freq1,freq2,spec))
                 plt.plot(lth,nl_hm1[spec],color='red')
                 plt.plot(lth,nl_hm2[spec],color='blue')

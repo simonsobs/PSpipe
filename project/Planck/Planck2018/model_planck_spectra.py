@@ -46,6 +46,7 @@ ps_dict={}
 nl_hm1={}
 nl_hm2={}
 nl_mean={}
+nlth={}
 
 for c1,freq1 in enumerate(freqs):
     for c2,freq2 in enumerate(freqs):
@@ -71,7 +72,7 @@ for c1,freq1 in enumerate(freqs):
                     sigma_th=d['sigma_pol_th_%s'%freq1]
                 sigma_th = np.deg2rad(sigma_th)/60
                 
-                nlth=lth*0+2*sigma_th**2
+                nlth[spec]=lth*0+2*sigma_th**2
                 
                 bl_hm1=bl[freq1,'hm1',spec]
                 bl_hm2=bl[freq1,'hm2',spec]
@@ -116,6 +117,10 @@ for c1,freq1 in enumerate(freqs):
 
         np.savetxt('%s/noise_T_mean_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nl_mean['TT']/2]))
         np.savetxt('%s/noise_P_mean_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nl_mean['EE']/2]))
+        
+        np.savetxt('%s/noise_T_th_mean_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nlth['TT']/2]))
+        np.savetxt('%s/noise_P_th_mean_%s_%sx%s_%s.dat'%(ps_model_dir,experiment,freq1,experiment,freq2),  np.transpose([lth,nlth['EE']/2]))
+
 
         spec_name_noise_hm1='hm1_%s_%sx%s_%s_noise'%(experiment,freq1,experiment,freq2)
         spec_name_noise_hm2='hm2_%s_%sx%s_%s_noise'%(experiment,freq1,experiment,freq2)

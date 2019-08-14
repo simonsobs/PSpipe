@@ -29,7 +29,7 @@ def process_planck_spectra(l,cl,binning_file,lmax,type,spectra=None,mcm_inv=None
     return l,cl,bin_c,so_spectra.vec2spec_dict(n_bins,vec,spectra)
 
 
-def subtract_mono_di(map_in, mask_in, nside):
+def subtract_mono_di(map_in,mask_in, nside):
     #Taken from Zack script to remove monopole and dipole
     map_masked = hp.ma(map_in)
     map_masked.mask = (mask_in<1)
@@ -49,7 +49,7 @@ def subtract_mono_di(map_in, mask_in, nside):
         m.flat[ipix] -= mono
     return m
 
-def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0):
+def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0,use_noise_th=None):
     
     Nfreq=len(freqs)
     Nl_array_T=np.zeros((Nfreq,Nfreq,lmax))
@@ -58,8 +58,15 @@ def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0):
     for c1,f1 in enumerate(freqs):
         for c2,f2 in enumerate(freqs):
             if c1 !=c2 : continue
-            l,Nl_T=np.loadtxt('%s/noise_T_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
-            l,Nl_P=np.loadtxt('%s/noise_P_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+            
+            if use_noise_th is not None:
+                l,Nl_T=np.loadtxt('%s/noise_T_th_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+                l,Nl_P=np.loadtxt('%s/noise_P_th_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+            else:
+                l,Nl_T=np.loadtxt('%s/noise_T_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+                l,Nl_P=np.loadtxt('%s/noise_P_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+
+            
             for i in range(lcut,lmax):
                 Nl_array_T[c1,c2,i]=Nl_T[i]*nSplits
                 Nl_array_P[c1,c2,i]=Nl_P[i]*nSplits

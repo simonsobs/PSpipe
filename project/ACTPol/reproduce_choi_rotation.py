@@ -101,7 +101,7 @@ for ar in ['pa1']:
         so_spectra.write_ps('%s/spectra_%03d.dat'%(spectraDir,iii),lb,Db_dict,type=type,spectra=spectra)
         so_spectra.write_ps('%s/spectra_filt_%03d.dat'%(spectraDir,iii),lb,Db_dict_filt,type=type,spectra=spectra)
 
-        plt.plot(lb,Db_dict['EB'])
-        plt.plot(lb,Db_dict_filt['EB'],'.')
-        plt.show()
+#plt.plot(lb,Db_dict['EB'])
+#        plt.plot(lb,Db_dict_filt['EB'],'.')
+#        plt.show()
 

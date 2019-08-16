@@ -32,8 +32,8 @@ fsky['pa2']='fsky0.01071187'
 
 apo = so_map.read_map(d['apo_path'])
 box=so_map.bounding_box_from_map(apo)
-recompute_mcm=True
-clfile='../../data/bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat'
+recompute_mcm=False
+clfile=d['theoryfile']
 
 
 for ar in ['pa1']:
@@ -66,6 +66,7 @@ for ar in ['pa1']:
 
     nSims=300
     for iii in range(nSims):
+        t0=time.time()
         print (iii)
   
         template=so_map.from_components(map_T,map_Q,map_U)
@@ -100,8 +101,4 @@ for ar in ['pa1']:
 
         so_spectra.write_ps('%s/spectra_%03d.dat'%(spectraDir,iii),lb,Db_dict,type=type,spectra=spectra)
         so_spectra.write_ps('%s/spectra_filt_%03d.dat'%(spectraDir,iii),lb,Db_dict_filt,type=type,spectra=spectra)
-
-#plt.plot(lb,Db_dict['EB'])
-#        plt.plot(lb,Db_dict_filt['EB'],'.')
-#        plt.show()
-
+        print (time.time()-t0)

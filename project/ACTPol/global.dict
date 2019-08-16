@@ -23,7 +23,7 @@ map_U_pa2 = [data_dir+'maps/ACTPol_148_D56_pa2_f150_s14_4way_split%d_U.fits'%(i)
 apo_path = data_dir+ 'apo_mask/deep56_c7v5_car_190220_rect_master_apo_w0.fits'
 steve_ps_dir = data_dir +'ps'
 
-use_filtered_maps=True
+use_filtered_maps=False
 filter_dict={'kx_cut':90,'ky_cut':50,'kx_cut_apo':0, 'ky_cut_apo':0, 'unpixwin':True, 'd_th':1/120., 'zero_pad': False}
 
 beam_pa1 = data_dir+'beam/beam_tform_160201_s14_pa1_f150_jitter_CMB_deep56.txt'
@@ -39,4 +39,4 @@ binning_file=data_dir+'binning/BIN_ACTPOL_50_4_SC_low_ell'
 niter=0
 lmax=5000
 type='Dl'
-#theoryfile= '/global/homes/t/tlouis/PSpipe/data/bode_almost_wmap5_lmax_1e4_lensedCls.dat'
+theoryfile= data_dir+'theory/bode_almost_wmap5_lmax_1e4_lensedCls.dat'   

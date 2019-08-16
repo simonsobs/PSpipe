@@ -40,3 +40,6 @@ niter=0
 lmax=5000
 type='Dl'
 theoryfile= data_dir+'theory/bode_almost_wmap5_lmax_1e4_lensedCls.dat'   
+
+iStart=0
+iStop=300

@@ -2,7 +2,7 @@
 #matplotlib.use('Agg')
 import numpy as np
 import pylab as plt
-from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
+from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing,so_mpi
 import os,sys
 from pixell import enmap
 import time,os
@@ -64,8 +64,11 @@ for ar in ['pa1']:
 
     print ("compute harmonic transform ...")
 
-    nSims=300
-    for iii in range(nSims):
+
+    so_mpi.init(True)
+    subtasks = so_mpi.taskrange(imin=d['iStart'], imax=d['iStop'])
+
+    for iii in range(subtasks):
         t0=time.time()
         print (iii)
   

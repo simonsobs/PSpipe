@@ -21,11 +21,6 @@ mcmDir='mcm'
 simSpectraDir='sim_spectra'
 ps_model_dir='model'
 
-try:
-    os.makedirs(simSpectraDir)
-except:
-    pass
-
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 
 iStart=d['iStart']
@@ -41,6 +36,11 @@ remove_mono_dipo_pol=d['remove_mono_dipo_pol']
 experiment='Planck'
 splits=d['splits']
 include_sys=d['include_systematics']
+
+if include_sys==True:
+    pspy_utils.create_directory(simSpectraDir+'_syst')
+else:
+    pspy_utils.create_directory(simSpectraDir)
 
 nside=2048
 ncomp=3

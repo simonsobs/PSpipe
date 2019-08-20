@@ -1,11 +1,9 @@
 '''
-This script is used to generate simulations of Planck data and compute their power spectra.
-to run it:
-python planck_sim_spectra.py global.dict
 Note that we are using homogeneous non white noise here
 '''
 
-
+#import matplotlib
+#matplotlib.use('Agg')
 import numpy as np,healpy as hp,pylab as plt
 from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing,so_mpi
 import os,sys
@@ -40,7 +38,6 @@ remove_mono_dipo_T=d['remove_mono_dipo_T']
 remove_mono_dipo_pol=d['remove_mono_dipo_pol']
 experiment='Planck'
 splits=d['splits']
-include_sys=d['include_systematics']
 
 nside=2048
 ncomp=3
@@ -49,7 +46,7 @@ template=so_map.healpix_template(ncomp,nside)
 ps_th=powspec.read_spectrum(d['theoryfile'])[:ncomp,:ncomp]
 
 nSplits=len(splits)
-l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,freqs,lmax,nSplits,lcut=0)
+l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,freqs,lmax,nSplits,lcut=0,use_noise_th=True)
 pixwin=hp.pixwin(nside)
 
 so_mpi.init(True)
@@ -71,8 +68,8 @@ for iii in subtasks:
             
             noisy_alms=sim_alm.copy()
             
-            l,bl_T= np.loadtxt(d['beam_%s_%s_T'%(freq,hm)],unpack=True)
-            l,bl_pol= np.loadtxt(d['beam_%s_%s_pol'%(freq,hm)],unpack=True)
+            l,bl_T= np.loadtxt(d['beam_syst_%s_%s_T'%(freq,hm)],unpack=True)
+            l,bl_pol= np.loadtxt(d['beam_syst_%s_%s_pol'%(freq,hm)],unpack=True)
 
             noisy_alms[0]=hp.sphtfunc.almxfl(noisy_alms[0],bl_T)
             noisy_alms[1]=hp.sphtfunc.almxfl(noisy_alms[1],bl_pol)
@@ -81,6 +78,13 @@ for iii in subtasks:
             noisy_alms[0] +=  nlms['T',k][freq_id]
             noisy_alms[1] +=  nlms['E',k][freq_id]
             noisy_alms[2] +=  nlms['B',k][freq_id]
+
+            l,Tl_T=np.loadtxt(d['TF_%s_%s_T'%(freq,hm)],unpack=True)
+            l,Tl_pol=np.loadtxt(d['TF_%s_%s_pol'%(freq,hm)],unpack=True)
+            
+            noisy_alms[0]=hp.sphtfunc.almxfl(noisy_alms[0],Tl_T)
+            noisy_alms[1]=hp.sphtfunc.almxfl(noisy_alms[1],Tl_pol)
+            noisy_alms[2]=hp.sphtfunc.almxfl(noisy_alms[2],Tl_pol)
             
             for i in range(3):
                 noisy_alms[i]=hp.sphtfunc.almxfl(noisy_alms[i],pixwin)
@@ -92,10 +96,10 @@ for iii in subtasks:
             window_tuple=(window_T,window_pol)
             del window_T,window_pol
 
-            cov_map=so_map.read_map('%s'%map,fields_healpix=4)
-            badpix = (cov_map.data==hp.pixelfunc.UNSEEN)
-            for i in range(3):
-                pl_map.data[i][badpix]= 0.0
+#            cov_map=so_map.read_map('%s'%map,fields_healpix=4)
+ #           badpix = (cov_map.data==hp.pixelfunc.UNSEEN)
+  #          for i in range(3):
+   #             pl_map.data[i][badpix]= 0.0
             if remove_mono_dipo_T:
                 pl_map.data[0]=planck_utils.subtract_mono_di(pl_map.data[0], window_tuple[0].data, pl_map.nside )
             if remove_mono_dipo_pol:

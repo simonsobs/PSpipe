@@ -47,6 +47,8 @@ noise_binning_size=100
 
 #Simulation
 
+include_systematics=False
+
 theoryfile='theory_file/cosmo2017_10K_acc3_lensedCls.dat'
 
 iStart=0

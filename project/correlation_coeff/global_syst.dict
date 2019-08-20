@@ -11,15 +11,22 @@ window_pol_143 = [data_dir+'likelihood_mask/COM_Mask_Likelihood-polarization-143
 
 beam_143_hm1_T = data_dir+'beams/beam_T_143_hm1.dat'
 beam_143_hm2_T = data_dir+'beams/beam_T_143_hm2.dat'
-
 beam_143_hm1_pol = data_dir+'beams/beam_pol_143_hm1.dat'
 beam_143_hm2_pol = data_dir+'beams/beam_pol_143_hm2.dat'
 
-beam_143_hm1_T_syst = './systematics/beam.dat'
-beam_143_hm2_T_syst = './systematics/beam.dat'
 
-beam_143_hm1_pol_syst = './systematics/beam.dat'
-beam_143_hm2_pol_syst = './systematics/beam.dat'
+syst_dir='systematics/'
+
+beam_143_hm1_T_syst = syst_dir+'beam.dat'
+beam_143_hm2_T_syst = syst_dir+'beam.dat'
+beam_143_hm1_pol_syst = syst_dir+'beam.dat'
+beam_143_hm2_pol_syst = syst_dir+'beam.dat'
+
+TF_143_hm1_T= syst_dir+'transferfunction_T.dat'
+TF_143_hm2_T=  syst_dir+'transferfunction_T.dat'
+TF_143_hm1_pol= syst_dir+'transferfunction_pol.dat'
+TF_143_hm2_pol= syst_dir+'transferfunction_pol.dat'
+
 
 binning_file=data_dir+'binning_file/binning.dat'
 

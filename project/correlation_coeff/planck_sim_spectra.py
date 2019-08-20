@@ -71,8 +71,12 @@ for iii in subtasks:
             
             noisy_alms=sim_alm.copy()
             
-            l,bl_T= np.loadtxt(d['beam_%s_%s_T'%(freq,hm)],unpack=True)
-            l,bl_pol= np.loadtxt(d['beam_%s_%s_pol'%(freq,hm)],unpack=True)
+            if include_sys==True:
+                l,bl_T= np.loadtxt(d['beam_%s_%s_T_syst'%(freq,hm)],unpack=True)
+                l,bl_pol= np.loadtxt(d['beam_%s_%s_pol_syst'%(freq,hm)],unpack=True)
+            else:
+                l,bl_T= np.loadtxt(d['beam_%s_%s_T'%(freq,hm)],unpack=True)
+                l,bl_pol= np.loadtxt(d['beam_%s_%s_pol'%(freq,hm)],unpack=True)
 
             noisy_alms[0]=hp.sphtfunc.almxfl(noisy_alms[0],bl_T)
             noisy_alms[1]=hp.sphtfunc.almxfl(noisy_alms[1],bl_pol)
@@ -81,6 +85,15 @@ for iii in subtasks:
             noisy_alms[0] +=  nlms['T',k][freq_id]
             noisy_alms[1] +=  nlms['E',k][freq_id]
             noisy_alms[2] +=  nlms['B',k][freq_id]
+            
+            if include_sys==True:
+                l,Tl_T=np.loadtxt(d['TF_%s_%s_T'%(freq,hm)],unpack=True)
+                l,Tl_pol=np.loadtxt(d['TF_%s_%s_pol'%(freq,hm)],unpack=True)
+            
+                noisy_alms[0]=hp.sphtfunc.almxfl(noisy_alms[0],Tl_T)
+                noisy_alms[1]=hp.sphtfunc.almxfl(noisy_alms[1],Tl_pol)
+                noisy_alms[2]=hp.sphtfunc.almxfl(noisy_alms[2],Tl_pol)
+
             
             for i in range(3):
                 noisy_alms[i]=hp.sphtfunc.almxfl(noisy_alms[i],pixwin)

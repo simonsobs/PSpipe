@@ -47,9 +47,10 @@ noise_binning_size=100
 
 #Simulation
 
-theoryfile=data_dir+'theory/cosmo2017_10K_acc3_lensedCls.dat'
+theoryfile='theory_file/cosmo2017_10K_acc3_lensedCls.dat'
+
 iStart=0
-iStop=10
+iStop=1000
 
 # theoretical nl_Th
 

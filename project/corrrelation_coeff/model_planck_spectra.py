@@ -1,3 +1,9 @@
+'''
+This script is used to get estimate of the planck noise power spectra
+It take the unbinned power spectra, bin them with large bin and interpolate between the bin
+The logic here is to reduce the scatter in the measured noise power spectra
+'''
+
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np,healpy as hp,pylab as plt

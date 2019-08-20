@@ -1,13 +1,2 @@
-This folder contain documented codes used for the paper: The TE correlation coefficient of Planck legacy data
-It contains different python scripts that can be used to reproduce the analysis.
-First you need to install PSPy, detailed instruction to the installation at NERSC are provided in:
-https://github.com/simonsobs/PSpipe
-
-Then you have to download the public 2018 planck data this can be achieved by running:
-
-python get_planck_data.py global.dict
-
-Note that before doing so, you should specify the path to the data directory using the 'data_dir' key in global.dict.
-
-Now we should compute planck power spectra, to do so, we proceed in two different steps:
-1) First compute 
+A complete documentation on how to use the scripts is available at:
+https://github.com/simonsobs/PSpipe/wiki/Documentation-for-'The-TE-correlation-coefficient-of-Planck-legacy-data'-software

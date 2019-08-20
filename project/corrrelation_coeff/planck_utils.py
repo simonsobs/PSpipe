@@ -1,5 +1,7 @@
-#import matplotlib
-#matplotlib.use('Agg')
+'''
+Some utility functions for processing the planck data
+'''
+
 import numpy as np,healpy as hp,pylab as plt
 from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
 import os,sys
@@ -49,7 +51,7 @@ def subtract_mono_di(map_in,mask_in, nside):
         m.flat[ipix] -= mono
     return m
 
-def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0):
+def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0,use_noise_th=None):
     
     Nfreq=len(freqs)
     Nl_array_T=np.zeros((Nfreq,Nfreq,lmax))
@@ -58,8 +60,15 @@ def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0):
     for c1,f1 in enumerate(freqs):
         for c2,f2 in enumerate(freqs):
             if c1 !=c2 : continue
-            l,Nl_T=np.loadtxt('%s/noise_T_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
-            l,Nl_P=np.loadtxt('%s/noise_P_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+            
+            if use_noise_th is not None:
+                l,Nl_T=np.loadtxt('%s/noise_T_th_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+                l,Nl_P=np.loadtxt('%s/noise_P_th_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+            else:
+                l,Nl_T=np.loadtxt('%s/noise_T_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+                l,Nl_P=np.loadtxt('%s/noise_P_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
+
+            
             for i in range(lcut,lmax):
                 Nl_array_T[c1,c2,i]=Nl_T[i]*nSplits
                 Nl_array_P[c1,c2,i]=Nl_P[i]*nSplits
@@ -68,7 +77,6 @@ def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0):
         Nl_array_P[:,:,i]=symmetrize(Nl_array_P[:,:,i])
     
     return(l,Nl_array_T,Nl_array_P)
-
 
 def generate_noise_alms(Nl_array_T,Nl_array_P,lmax,nSplits,ncomp):
     nlms={}
@@ -83,12 +91,8 @@ def generate_noise_alms(Nl_array_T,Nl_array_P,lmax,nSplits,ncomp):
     
     return nlms
 
-
-
 def symmetrize(a):
     return a + a.T - np.diag(a.diagonal())
-
-
 
 def binning(l,cl,lmax,binning_file=None,size=None):
     

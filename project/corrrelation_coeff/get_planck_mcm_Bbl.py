@@ -1,5 +1,9 @@
-#import matplotlib
-#matplotlib.use('Agg')
+'''
+This script is used to compute the mode coupling matrices of the Planck data.
+The inputs for the script are the Planck beam and likelihood masks.
+To run it:
+python get_planck_mcm_Bbl.py global.dict
+'''
 import numpy as np,healpy as hp,pylab as plt
 from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
 import os,sys

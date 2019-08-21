@@ -18,7 +18,6 @@ d.read_from_file(sys.argv[1])
 
 auxMapDir='window'
 mcmDir='mcm'
-simSpectraDir='sim_spectra'
 ps_model_dir='model'
 
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
@@ -38,9 +37,11 @@ splits=d['splits']
 include_sys=d['include_systematics']
 
 if include_sys==True:
-    pspy_utils.create_directory(simSpectraDir+'_syst')
+    simSpectraDir='sim_spectra_syst'
 else:
-    pspy_utils.create_directory(simSpectraDir)
+    simSpectraDir='sim_spectra'
+
+pspy_utils.create_directory(simSpectraDir)
 
 nside=2048
 ncomp=3

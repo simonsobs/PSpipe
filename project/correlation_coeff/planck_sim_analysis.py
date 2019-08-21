@@ -12,8 +12,6 @@ import planck_utils
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-
-
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 binning_file=d['binning_file']
 iStart=d['iStart']

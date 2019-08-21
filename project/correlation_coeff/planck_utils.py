@@ -51,7 +51,7 @@ def subtract_mono_di(map_in,mask_in, nside):
         m.flat[ipix] -= mono
     return m
 
-def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0,use_noise_th=None):
+def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0,use_noise_th=False):
     
     Nfreq=len(freqs)
     Nl_array_T=np.zeros((Nfreq,Nfreq,lmax))
@@ -61,7 +61,7 @@ def get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax,nSplits,lcut=0,use_noise
         for c2,f2 in enumerate(freqs):
             if c1 !=c2 : continue
             
-            if use_noise_th is not None:
+            if use_noise_th==True:
                 l,Nl_T=np.loadtxt('%s/noise_T_th_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
                 l,Nl_P=np.loadtxt('%s/noise_P_th_mean_%s_%sx%s_%s.dat'%(noise_dir,exp,f1,exp,f2),unpack=True)
             else:

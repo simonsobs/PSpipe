@@ -45,6 +45,7 @@ lrange_143x143=[50,1300]
 
 #Simulation
 
+use_noise_th=True
 include_systematics=True
 theoryfile='theory_file/cosmo2017_10K_acc3_lensedCls.dat'
 iStart=0

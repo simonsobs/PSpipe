@@ -35,6 +35,7 @@ remove_mono_dipo_pol=d['remove_mono_dipo_pol']
 experiment='Planck'
 splits=d['splits']
 include_sys=d['include_systematics']
+use_noise_th=d['use_noise_th']
 
 if include_sys==True:
     simSpectraDir='sim_spectra_syst'
@@ -50,7 +51,12 @@ template=so_map.healpix_template(ncomp,nside)
 ps_th=powspec.read_spectrum(d['theoryfile'])[:ncomp,:ncomp]
 
 nSplits=len(splits)
-l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,freqs,lmax,nSplits,lcut=0)
+
+if use_noise_th==True:
+    l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,freqs,lmax,nSplits,lcut=0,use_noise_th=use_noise_th)
+else:
+    l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,freqs,lmax,nSplits,lcut=0,use_noise_th=use_noise_th)
+
 pixwin=hp.pixwin(nside)
 
 so_mpi.init(True)

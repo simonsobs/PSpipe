@@ -23,17 +23,19 @@ freqs=d['freqs']
 lthmax=1600
 
 if include_sys==True:
-    simSpectraDir='sim_spectra_syst'
     mc_dir='monteCarlo_syst'
+    plot_name='robustness'
 else:
-    simSpectraDir='sim_spectra'
     mc_dir='monteCarlo'
+    plot_name='bias'
 
 freq_pairs=[]
 for c1,freq1 in enumerate(freqs):
     for c2,freq2 in enumerate(freqs):
         if c1>c2: continue
         freq_pairs+=[[freq1,freq2]]
+
+print (freq_pairs)
 
 lth,psth= pspy_utils.ps_lensed_theory_to_dict(d['theoryfile'],output_type='Cl',lmax=lthmax,lstart=2)
 
@@ -106,7 +108,7 @@ for fpair in freq_pairs:
         plt.legend(fontsize=14)
         count+=1
 
-    plt.savefig('%s/robustness_%s.pdf'%(figure_dir,fname),bbox_inches = 'tight')
+    plt.savefig('%s/%s_%s.pdf'%(figure_dir,plot_name,fname),bbox_inches = 'tight')
     plt.clf()
     plt.close()
 

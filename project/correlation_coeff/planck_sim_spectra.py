@@ -52,10 +52,7 @@ ps_th=powspec.read_spectrum(d['theoryfile'])[:ncomp,:ncomp]
 
 nSplits=len(splits)
 
-if use_noise_th==True:
-    l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,freqs,lmax,nSplits,lcut=0,use_noise_th=use_noise_th)
-else:
-    l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,freqs,lmax,nSplits,lcut=0,use_noise_th=use_noise_th)
+l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,freqs,lmax,nSplits,lcut=0,use_noise_th=use_noise_th)
 
 pixwin=hp.pixwin(nside)
 

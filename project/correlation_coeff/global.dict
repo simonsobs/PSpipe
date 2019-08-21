@@ -45,6 +45,15 @@ remove_mono_dipo_pol=False
 
 noise_binning_size=100
 
+lrange_100x100=[50,1000]
+lrange_100x143=[50,1000]
+lrange_100x217=[50,1000]
+lrange_143x143=[50,1300]
+lrange_143x217=[50,1400]
+lrange_217x217=[50,1400]
+
+
+
 #Simulation
 
 use_noise_th=False

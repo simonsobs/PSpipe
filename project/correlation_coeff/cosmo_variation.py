@@ -24,9 +24,9 @@ p['ns']=0.9649
 
 #if use_H0==True, this will produce Figure 1 of the paper
 # otherwise we will vary parameters keeping the sound horizon constant
-use_H0=True
+use_H0=False
 
-lmax=2500
+lmax=3500
 nvalue=20 # number of parameters value for which the spectra are computed
 max_range=0.2 #The range of variation of the parameter values (0.2=20%)
 
@@ -40,8 +40,8 @@ if use_H0==True:
     namelist=[r'$H_0$',r'$\Omega_{b}h^{2}$',r'$\Omega_{c}h^{2}$',r'$\tau$',r'$A_s$',r'$n_s$']
 else:
     cosmomc_theta=0.0104092
-    paramlist=['cosmomc_theta','ombh2','omch2','tau','As','ns']
-    namelist=[r'$\theta_{MC}$',r'$\Omega_{b}h^{2}$',r'$\Omega_{c}h^{2}$',r'$\tau$',r'$A_s$',r'$n_s$']
+    paramlist=['ombh2','omch2','tau','As','ns','cosmomc_theta']
+    namelist=[r'$\Omega_{b}h^{2}$',r'$\Omega_{c}h^{2}$',r'$\tau$',r'$A_s$',r'$n_s$',r'$\theta_{MC}$']
 
 
 fig, axes = plt.subplots(nrows=2, ncols=3,figsize=(12,7))

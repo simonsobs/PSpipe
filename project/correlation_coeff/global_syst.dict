@@ -40,6 +40,8 @@ remove_mono_dipo_T=True
 remove_mono_dipo_pol=False
 
 noise_binning_size=100
+lrange_143x143=[50,1300]
+
 
 #Simulation
 

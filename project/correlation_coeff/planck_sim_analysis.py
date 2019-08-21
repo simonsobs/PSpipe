@@ -21,6 +21,7 @@ binning_file=d['binning_file']
 iStart=d['iStart']
 iStop=d['iStop']
 include_sys=d['include_systematics']
+freqs=d['freqs']
 
 if include_sys==True:
     simSpectraDir='sim_spectra_syst'
@@ -33,8 +34,9 @@ for c1,freq1 in enumerate(freqs):
         if c1>c2: continue
         freq_pairs+=[freq1,freq2]
 
-halfmission_pairs=[['hm1','hm1'],['hm1','hm2'],['hm2','hm2']]
+print (freq_pairs)
 
+halfmission_pairs=[['hm1','hm1'],['hm1','hm2'],['hm2','hm2']]
 
 for hm_pair in halfmission_pairs:
     hm0,hm1=hm_pair
@@ -49,7 +51,6 @@ for hm_pair in halfmission_pairs:
     for iii in range(iStart,iStop):
     
         count=0
-
         for fpair in freq_pairs:
             
             f0,f1=fpair

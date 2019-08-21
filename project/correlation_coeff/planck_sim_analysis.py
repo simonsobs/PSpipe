@@ -32,7 +32,7 @@ freq_pairs=[]
 for c1,freq1 in enumerate(freqs):
     for c2,freq2 in enumerate(freqs):
         if c1>c2: continue
-        freq_pairs+=[freq1,freq2]
+        freq_pairs+=[[freq1,freq2]]
 
 print (freq_pairs)
 

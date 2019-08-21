@@ -12,9 +12,7 @@ import planck_utils
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-mc_dir='monteCarlo'
 
-pspy_utils.create_directory(mc_dir)
 
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 binning_file=d['binning_file']
@@ -25,8 +23,13 @@ freqs=d['freqs']
 
 if include_sys==True:
     simSpectraDir='sim_spectra_syst'
+    mc_dir='monteCarlo_syst'
 else:
     simSpectraDir='sim_spectra'
+    mc_dir='monteCarlo'
+
+pspy_utils.create_directory(mc_dir)
+
 
 freq_pairs=[]
 for c1,freq1 in enumerate(freqs):

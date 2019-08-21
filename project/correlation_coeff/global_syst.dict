@@ -49,6 +49,6 @@ use_noise_th=True
 include_systematics=True
 theoryfile='theory_file/cosmo2017_10K_acc3_lensedCls.dat'
 iStart=0
-iStop=300
+iStop=200
 
 

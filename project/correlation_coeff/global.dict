@@ -32,7 +32,7 @@ beam_217_hm2_T = data_dir+'beams/beam_T_217_hm2.dat'
 beam_217_hm1_pol = data_dir+'beams/beam_pol_217_hm1.dat'
 beam_217_hm2_pol = data_dir+'beams/beam_pol_217_hm2.dat'
 
-binning_file=data_dir+'binning_file/binning.dat'
+binning_file=data_dir+'binning/binning.dat'
 
 niter=3
 lmax=3000

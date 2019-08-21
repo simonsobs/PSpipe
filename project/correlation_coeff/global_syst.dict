@@ -28,7 +28,7 @@ TF_143_hm1_pol= syst_dir+'transferfunction_pol.dat'
 TF_143_hm2_pol= syst_dir+'transferfunction_pol.dat'
 
 
-binning_file=data_dir+'binning_file/binning.dat'
+binning_file=data_dir+'binning/binning.dat'
 
 niter=3
 lmax=3000

@@ -44,14 +44,51 @@ for hm_pair in halfmission_pairs:
     hmname='%sx%s'%(hm0,hm1)
     
     spec_name=[]
+    vec_lb=[]
     id_start={}
     id_stop={}
-    vec_lb=[]
     spec_name_list=[]
-
-    for iii in range(iStart,iStop):
+    count=0
     
-        count=0
+    vec=[]
+    for fpair in freq_pairs:
+        f0,f1=fpair
+        fname='%sx%s'%(f0,f1)
+        spec_name='Planck_%sxPlanck_%s-%s'%(f0,f1,hmname)
+
+        lb,ps_dict=so_spectra.read_ps('%s/sim_spectra_%s_%04d.dat'%(simSpectraDir,spec_name,000),spectra=spectra)
+        lmin,lmax=d['lrange_%sx%s'%(f0,f1)]
+
+        id=np.where((lb>lmin) &(lb<lmax))
+            
+        lb=lb[id]
+        for id_spec,spec in enumerate(['TT','TE','EE','r']):
+            
+            if spec !='r':
+                ps_dict[spec]=ps_dict[spec][id]
+                vec=np.append(vec,ps_dict[spec])
+            else:
+                r=ps_dict['TE']/np.sqrt(ps_dict['TT']*ps_dict['EE'])
+                vec=np.append(vec,r)
+    
+            spec_name='%s_%s_%s'%(spec,fname,hmname)
+            id_start[spec_name]=count
+            id_stop[spec_name]=count+len(lb)
+            spec_name_list+=[spec_name]
+            vec_lb=np.append(vec_lb,lb)
+            count+=len(lb)
+
+
+    nbins_tot=len(vec)
+    vec_mean=np.zeros(nbins_tot)
+    cov_mean=np.zeros((nbins_tot,nbins_tot))
+
+    
+    for iii in range(iStart,iStop):
+
+        vec=[]
+
+
         for fpair in freq_pairs:
             
             f0,f1=fpair
@@ -76,8 +113,6 @@ for hm_pair in halfmission_pairs:
 
             id=np.where((lb>lmin) &(lb<lmax))
         
-            lb=lb[id]
-            vec=[]
 
             for spec in ['TT','TE','EE','r']:
             
@@ -88,21 +123,7 @@ for hm_pair in halfmission_pairs:
                     r=ps_dict['TE']/np.sqrt(ps_dict['TT']*ps_dict['EE'])
                     vec=np.append(vec,r)
 
-            if iii==0:
-                for id_spec,spec in enumerate(['TT','TE','EE','r']):
-                
-                    spec_name='%s_%s_%s'%(spec,fname,hmname)
-                    id_start[spec_name]=count+id_spec*len(lb)
-                    id_stop[spec_name]=count+(id_spec+1)*len(lb)
-                    spec_name_list+=[spec_name]
-                    vec_lb=np.append(vec_lb,lb)
 
-                count+=len(vec)
-
-        if iii==0:
-            nbins_tot=len(vec)
-            vec_mean=np.zeros(nbins_tot)
-            cov_mean=np.zeros((nbins_tot,nbins_tot))
 
         vec_mean+=vec
         cov_mean+=np.outer(vec,vec)
@@ -113,11 +134,14 @@ for hm_pair in halfmission_pairs:
     np.savetxt('%s/full_cov_mat_%s.dat'%(mc_dir,hmname),cov_mean )
 
     for spec_name1 in spec_name_list:
+        #print (vec_lb.shape,vec_mean.shape,cov_mean.shape)
 
         lb=vec_lb[id_start[spec_name1]:id_stop[spec_name1]]
         ps=vec_mean[id_start[spec_name1]:id_stop[spec_name1]]
         cov=cov_mean[id_start[spec_name1]:id_stop[spec_name1],id_start[spec_name1]:id_stop[spec_name1]]
         error=np.sqrt(cov.diagonal())
+        
+        print (spec_name1,lb.shape,ps.shape,error.shape)
     
         np.savetxt('%s/spectra_%s.dat'%(mc_dir,spec_name1), np.transpose([lb,ps,error]))
     

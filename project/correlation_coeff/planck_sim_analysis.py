@@ -123,8 +123,6 @@ for hm_pair in halfmission_pairs:
                     r=ps_dict['TE']/np.sqrt(ps_dict['TT']*ps_dict['EE'])
                     vec=np.append(vec,r)
 
-
-
         vec_mean+=vec
         cov_mean+=np.outer(vec,vec)
 

@@ -107,7 +107,6 @@ for fpair,color in zip(freq_pairs,color_array):
 
     plt.subplot(6,2,2*(count+1))
 
-    plt.plot(l,0.005*r,'--',color='gray',alpha=0.2)
     plt.errorbar(l,bias_r,mc_std_r,fmt='.',color=color)
     plt.plot(l,bias_r_th,color=color)
     if count==0:

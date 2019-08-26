@@ -1,4 +1,7 @@
-
+"""
+    This script is used for producing the figure of the paper displaying the comparison of the bias and covariance of the correlation coefficient with the analytical expectation
+    To run it: python plot_bias_covariance.py global.dict
+"""
 
 import numpy as np
 import pylab as plt

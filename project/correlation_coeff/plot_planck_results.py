@@ -1,9 +1,15 @@
+"""
+    This script is used for producing the figure of the paper displaying the correlation coefficient of the Planck data
+    To run it: python plot_planck_results.py global.dict
+"""
+
 import numpy as np
 import pylab as plt
 from pspy import so_dict,so_spectra,pspy_utils
 import os,sys
 import planck_utils
 import matplotlib as mpl
+from scipy.stats.distributions import chi2
 
 label_size = 18
 mpl.rcParams['xtick.labelsize'] = label_size
@@ -132,7 +138,7 @@ for c,f in zip(color_array,freq_pairs):
     plt.xlim(0,lthmax)
     plt.legend(fontsize=15)
     if count==0:
-        plt.title(r'${\cal R}^{\rm TE}_{\ell} $',fontsize=22)
+        plt.title(r'${\cal R}^{\rm TE, c}_{\ell} $',fontsize=22)
 
     if count==3:
         plt.xlabel(r'$\ell$',fontsize=22)
@@ -146,7 +152,8 @@ for c,f in zip(color_array,freq_pairs):
         chi2_planck=np.dot(vec.T,np.dot(inv_cov,vec))
 
     dof=len(r)
-    
+    print (f, chi2.sf(chi2_planck,dof))
+
     ax = fig.add_subplot(6,2,2*count+2)
     plt.errorbar(lth,lth*0)
     if (fname !='100x143') & (fname !='100x217'):
@@ -157,7 +164,7 @@ for c,f in zip(color_array,freq_pairs):
     plt.xlim(0,lthmax)
     plt.ylim(-0.075,0.075)
     if count==0:
-        plt.title(r'${\cal R}^{\rm TE}_{\ell} -{\cal R}^{\rm TE, bestfit}_{\ell}$',fontsize=22)
+        plt.title(r'${\cal R}^{\rm TE, c}_{\ell} -{\cal R}^{\rm TE, bestfit}_{\ell}$',fontsize=22)
     if count==3:
         plt.xlabel(r'$\ell$',fontsize=22)
     plt.legend(fontsize=15)

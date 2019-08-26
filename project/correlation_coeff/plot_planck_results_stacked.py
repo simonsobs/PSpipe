@@ -1,3 +1,8 @@
+"""
+    This script is used for producing the figure of the paper displaying the stacked correlation coefficient of the Planck data
+    To run it: python plot_planck_results_stacked.py global.dict
+"""
+
 import numpy as np
 import pylab as plt
 from pspy import so_dict,so_spectra,pspy_utils
@@ -134,7 +139,7 @@ for c,f in zip(color_array,freq_pairs):
 
 
 #    plt.plot(lb,mean['r',fname],color='black')
-    plt.ylabel(r'${\cal R}^{\rm TE}_{\ell}$',fontsize=30)
+    plt.ylabel(r'${\cal R}^{\rm TE, c}_{\ell}$',fontsize=30)
     plt.xlabel(r'$\ell$',fontsize=30)
 
     plt.errorbar(lb,r,std['r',fname],label='%s'%(fname),color=c,fmt='.')

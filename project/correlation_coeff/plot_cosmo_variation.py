@@ -1,5 +1,5 @@
 """
-This script is used for producing figure of the paper displaying the sensitivity to parameter of the cross correlation coeff
+This script is used for producing the figure of the paper displaying the sensitivity to cosmological parameters of the cross correlation coeff
 To run it: python cosmo_variation.py
 It uses pycamb and compute the correlation coefficient for different values of the LCDM cosmological parameters
 """
@@ -24,7 +24,7 @@ p['ns']=0.9649
 
 #if use_H0==True, this will produce Figure 1 of the paper
 # otherwise we will vary parameters keeping the sound horizon constant
-use_H0=False
+use_H0=True
 
 lmax=3500
 nvalue=20 # number of parameters value for which the spectra are computed

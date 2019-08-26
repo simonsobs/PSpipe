@@ -9,6 +9,8 @@ from pspy import so_dict,so_spectra,pspy_utils,so_map
 import os,sys
 import planck_utils
 
+
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
@@ -75,7 +77,7 @@ for fpair in freq_pairs:
     ylabel_bottom[3]=r'$ \langle \hat{D}^{\rm EE, syst}_{b} \rangle- D^{\rm EE, th}_{b}  $'
     ylabel_bottom[4]=r'$ \langle \hat{R}^{\rm TE, syst}_{b} \rangle-  R^{\rm TE, th}_{b} $'
 
-    plt.figure(figsize=(20,10))
+    plt.figure(figsize=(20,16))
     count=1
 
     for spec in ['TT','TE','EE','r']:
@@ -94,8 +96,8 @@ for fpair in freq_pairs:
         plt.subplot(2,4,count)
         plt.yticks([])
         plt.ylabel(ylabel_top[count],fontsize=20)
-        plt.errorbar(l,cl[spec]*fac,mc_error[spec]*fac,fmt='.',color='black',label='recovered mean')
-        plt.plot(l,model[spec,fname]*fac,color='grey',label='input theory')
+        plt.errorbar(l,cl[spec]*fac,mc_error[spec]*fac,fmt='.',color='red',label='recovered mean',markersize='5')
+        plt.plot(l,model[spec,fname]*fac,color='grey',label='input theory', linewidth=0.5)
         if count==1:
             plt.legend(fontsize=14)
         plt.subplot(2,4,4+count)
@@ -103,7 +105,7 @@ for fpair in freq_pairs:
         plt.ylabel(ylabel_bottom[count],fontsize=20)
         plt.ylim(ylim[count][0], ylim[count][1])
         plt.errorbar(l,l*0,color='grey')
-        plt.errorbar(l, (cl[spec]-model[spec,fname]),mc_error[spec],fmt='.',label=r'$\chi^{2}$/DoF= %.0f/%d'%(chi2,dof),color='black')
+        plt.errorbar(l, (cl[spec]-model[spec,fname]),mc_error[spec],fmt='.',label=r'$\chi^{2}$/DoF= %.0f/%d'%(chi2,dof),color='red')
         plt.xlabel(r'$\ell$',fontsize=18)
         plt.legend(fontsize=14)
         count+=1

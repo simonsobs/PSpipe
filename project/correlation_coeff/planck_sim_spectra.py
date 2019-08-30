@@ -76,7 +76,7 @@ for iii in subtasks:
     for freq_id,freq in enumerate(freqs):
         
         maps=d['map_%s'%freq]
-        freq_alm=np.zeros((3,sim_alm.shape[1])
+        freq_alm=np.zeros((3,sim_alm.shape[1]))
         freq_alm[0]=sim_alm[0+freq_id*3].copy()
         freq_alm[1]=sim_alm[1+freq_id*3].copy()
         freq_alm[2]=sim_alm[2+freq_id*3].copy()

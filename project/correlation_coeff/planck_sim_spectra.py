@@ -19,6 +19,8 @@ d.read_from_file(sys.argv[1])
 auxMapDir='window'
 mcmDir='mcm'
 ps_model_dir='model'
+theoryFgDir='theory_and_fg'
+
 
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 
@@ -48,7 +50,10 @@ nside=2048
 ncomp=3
 
 template=so_map.healpix_template(ncomp,nside)
-ps_th=powspec.read_spectrum(d['theoryfile'])[:ncomp,:ncomp]
+
+#ps_th=powspec.read_spectrum(d['theoryfile'])[:ncomp,:ncomp]
+ps_th=np.load('%s/signal_fg_matrix.npy'%theoryFgDir)
+
 
 nSplits=len(splits)
 
@@ -69,11 +74,16 @@ for iii in subtasks:
     nlms=planck_utils.generate_noise_alms(Nl_T,Nl_P,lmax,nSplits,ncomp)
 
     for freq_id,freq in enumerate(freqs):
+        
         maps=d['map_%s'%freq]
+        freq_alm=np.zeros((3,sim_alm.shape[1])
+        freq_alm[0]=sim_alm[0+freq_id*3].copy()
+        freq_alm[1]=sim_alm[1+freq_id*3].copy()
+        freq_alm[2]=sim_alm[2+freq_id*3].copy()
 
         for hm,map,k in zip(splits,maps,np.arange(nSplits)):
             
-            noisy_alms=sim_alm.copy()
+            noisy_alms=freq_alm.copy()
             
             if include_sys==True:
                 l,bl_T= np.loadtxt(d['beam_%s_%s_T_syst'%(freq,hm)],unpack=True)

@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np,healpy as hp,pylab as plt
 from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
 import os,sys
@@ -87,10 +89,5 @@ for c1,freq1 in enumerate(freqs):
                 fname='%sx%s'%(freq1,freq2)
                 print (count1+3*c1,count2+3*c2, field1+field2,fname)
                 mat[count1+3*c1,count2+3*c2,:lth_max]=cl_th_and_fg[field1+field2,fname]
-
-from pixell import enmap,curvedsky,powspec
-
-sim_alm=curvedsky.rand_alm(mat, lmax=1000-1)
-print(sim_alm.shape)
 
 np.save('%s/signal_fg_matrix.npy'%theoryFgDir,mat)

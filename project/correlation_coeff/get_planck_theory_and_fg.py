@@ -3,7 +3,7 @@ matplotlib.use('Agg')
 import numpy as np,healpy as hp,pylab as plt
 from pspy import so_dict, so_map,so_mcm,sph_tools,so_spectra,pspy_utils, so_map_preprocessing
 import os,sys
-from pixell import enmap
+from pixell import enmap,powspec
 import time
 import planck_utils
 
@@ -56,15 +56,15 @@ for spec in ['TT','EE','TE']:
         fg_regularised[:l_regul]=fg[spec,fname][:l_regul]/fth[:l_regul]
         fg_regularised[l_regul:]=fg_regularised[l_regul-1]
         
-        cl_th_and_fg[spec,fname]=clth[spec][:lth_max]+fg_regularised*fth
+        cl_th_and_fg[spec,fname]=np.zeros(lth_max)
+        cl_th_and_fg[spec,fname][2:lth_max]=clth[spec][:lth_max-2]/fth[:lth_max-2]+fg_regularised[:lth_max-2]
         np.savetxt('%s/clth_fg_%s_%s.dat'%(theoryFgDir,fname,spec),np.transpose( [lth,cl_th_and_fg[spec,fname]]))
         
-        plt.plot(lth,cl_th_and_fg[spec,fname],label='%s'%fname)
+        plt.plot(lth,cl_th_and_fg[spec,fname]*fth,label='%s'%fname)
     plt.legend()
     plt.savefig('%s/clth_fg_%s.png'%(theoryFgDir,spec))
     plt.clf()
     plt.close()
-
 
 for f in freq_pairs:
     f0,f1=f[0],f[1]
@@ -74,7 +74,8 @@ for f in freq_pairs:
     cl_th_and_fg['BE',fname]=cl_th_and_fg['TE',fname]*0
     cl_th_and_fg['TB',fname]=cl_th_and_fg['TE',fname]*0
     cl_th_and_fg['BT',fname]=cl_th_and_fg['TE',fname]*0
-    cl_th_and_fg['BB',fname]=clth['BB'][:lth_max]
+    cl_th_and_fg['BB',fname]=np.zeros(lth_max)
+    cl_th_and_fg['BB',fname][2:lth_max]=clth['BB'][:lth_max-2]/fth[:lth_max-2]
     for spec in spectra:
         fname_revert='%sx%s'%(f1,f0)
         cl_th_and_fg[spec,fname_revert]=cl_th_and_fg[spec,fname]
@@ -88,6 +89,11 @@ for c1,freq1 in enumerate(freqs):
 
                 fname='%sx%s'%(freq1,freq2)
                 print (count1+3*c1,count2+3*c2, field1+field2,fname)
-                mat[count1+3*c1,count2+3*c2,:lth_max]=cl_th_and_fg[field1+field2,fname]/fth
+                mat[count1+3*c1,count2+3*c2,:lth_max]=cl_th_and_fg[field1+field2,fname]
+
+
+ps_th=powspec.read_spectrum(d['theoryfile'])[:3,:3]
+print (ps_th[0,1])
+print (mat[0,1])
 
 np.save('%s/signal_fg_matrix.npy'%theoryFgDir,mat)

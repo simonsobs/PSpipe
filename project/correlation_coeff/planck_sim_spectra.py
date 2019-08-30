@@ -37,6 +37,7 @@ remove_mono_dipo_pol=d['remove_mono_dipo_pol']
 experiment='Planck'
 splits=d['splits']
 include_sys=d['include_systematics']
+include_foregrounds=d['include_foregrounds']
 use_noise_th=d['use_noise_th']
 
 if include_sys==True:
@@ -51,8 +52,11 @@ ncomp=3
 
 template=so_map.healpix_template(ncomp,nside)
 
-#ps_th=powspec.read_spectrum(d['theoryfile'])[:ncomp,:ncomp]
-ps_th=np.load('%s/signal_fg_matrix.npy'%theoryFgDir)
+
+if include_foregrounds==True:
+    ps_th=np.load('%s/signal_fg_matrix.npy'%theoryFgDir)
+else:
+    ps_th=powspec.read_spectrum(d['theoryfile'])[:ncomp,:ncomp]
 
 
 nSplits=len(splits)
@@ -64,7 +68,6 @@ pixwin=hp.pixwin(nside)
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d['iStart'], imax=d['iStop'])
 
-
 for iii in subtasks:
 
     t0=time.time()
@@ -75,15 +78,21 @@ for iii in subtasks:
 
     for freq_id,freq in enumerate(freqs):
         
+        
         maps=d['map_%s'%freq]
-        freq_alm=np.zeros((3,sim_alm.shape[1]),dtype='complex')
-        freq_alm[0]=sim_alm[0+freq_id*3].copy()
-        freq_alm[1]=sim_alm[1+freq_id*3].copy()
-        freq_alm[2]=sim_alm[2+freq_id*3].copy()
+        
+        if include_foreground==True:
+            freq_alm=np.zeros((3,sim_alm.shape[1]),dtype='complex')
+            freq_alm[0]=sim_alm[0+freq_id*3].copy()
+            freq_alm[1]=sim_alm[1+freq_id*3].copy()
+            freq_alm[2]=sim_alm[2+freq_id*3].copy()
 
         for hm,map,k in zip(splits,maps,np.arange(nSplits)):
             
-            noisy_alms=freq_alm.copy()
+            if include_foreground==True:
+                noisy_alms=freq_alm.copy()
+            else:
+                noisy_alms=sim_alm.copy()
             
             if include_sys==True:
                 l,bl_T= np.loadtxt(d['beam_%s_%s_T_syst'%(freq,hm)],unpack=True)

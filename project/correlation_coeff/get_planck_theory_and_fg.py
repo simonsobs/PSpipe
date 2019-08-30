@@ -88,6 +88,6 @@ for c1,freq1 in enumerate(freqs):
 
                 fname='%sx%s'%(freq1,freq2)
                 print (count1+3*c1,count2+3*c2, field1+field2,fname)
-                mat[count1+3*c1,count2+3*c2,:lth_max]=cl_th_and_fg[field1+field2,fname]
+                mat[count1+3*c1,count2+3*c2,:lth_max]=cl_th_and_fg[field1+field2,fname]/fth
 
 np.save('%s/signal_fg_matrix.npy'%theoryFgDir,mat)

@@ -63,7 +63,7 @@ include_systematics=False
 theoryfile='theory_file/cosmo2017_10K_acc3_lensedCls.dat'
 
 iStart=0
-iStop=3000
+iStop=500
 
 # theoretical nl_Th
 

@@ -34,8 +34,14 @@ clth['BB']=cl_BB
 
 lth,fg['TT','100x100'],fg['TT','143x143'],fg['TT','143x217'],fg['TT','217x217'],fg['EE','100x100'],fg['EE','100x143'],fg['EE','100x217'],fg['EE','143x143'],fg['EE','143x217'],fg['EE','217x217'],fg['TE','100x100'],fg['TE','100x143'],fg['TE','100x217'],fg['TE','143x143'],fg['TE','143x217'],fg['TE','217x217']=np.loadtxt('theory_file/base_plikHM_TTTEEE_lowl_lowE_lensing.minimum.plik_foregrounds',unpack=True)
 
+# We don't have a foreground model for the TT 100x143 and 100x217 spectra, we set foreground to zero for these spectra
 fg['TT','100x143']=fg['TT','100x100']*0
 fg['TT','100x217']=fg['TT','100x100']*0
+fg['TE','100x143']=fg['TT','100x100']*0
+fg['TE','100x217']=fg['TT','100x100']*0
+fg['EE','100x143']=fg['TT','100x100']*0
+fg['EE','100x217']=fg['TT','100x100']*0
+
 
 # The foreground+syst spectra have a very strange shape at high ell, we therefore regularize them
 # Note that the scales beyond the regularisation scale will not be used in the paper

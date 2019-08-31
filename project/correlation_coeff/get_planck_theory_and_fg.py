@@ -14,6 +14,8 @@ theoryFgDir='theory_and_fg'
 
 pspy_utils.create_directory(theoryFgDir)
 freqs=d['freqs']
+include_foregrounds=d['include_foregrounds']
+
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 
 
@@ -58,7 +60,13 @@ for spec in ['TT','EE','TE']:
         fg_regularised[l_regul:]=fg_regularised[l_regul-1]
         
         cl_th_and_fg[spec,fname]=np.zeros(lth_max)
-        cl_th_and_fg[spec,fname][2:lth_max]=clth[spec][:lth_max-2]/fth[:lth_max-2]+fg_regularised[:lth_max-2]
+        
+        if include_foregrounds:
+            cl_th_and_fg[spec,fname][2:lth_max]=clth[spec][:lth_max-2]/fth[:lth_max-2]+fg_regularised[:lth_max-2]
+        else:
+            cl_th_and_fg[spec,fname][2:lth_max]=clth[spec][:lth_max-2]/fth[:lth_max-2]
+
+        
         np.savetxt('%s/clth_fg_%s_%s.dat'%(theoryFgDir,fname,spec),np.transpose( [lth_padded,cl_th_and_fg[spec,fname]]))
         
         plt.plot(lth_padded,cl_th_and_fg[spec,fname]*fth,label='%s'%fname)

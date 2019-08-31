@@ -44,6 +44,7 @@ lth_max=6000
 l_regul=1450
 fg_regularised=np.zeros(lth_max)
 lth=np.arange(2,lth_max+2)
+lth_padded=np.arange(lth_max)
 fth=lth*(lth+1)/(2*np.pi)
 cl_th_and_fg={}
 
@@ -58,9 +59,9 @@ for spec in ['TT','EE','TE']:
         
         cl_th_and_fg[spec,fname]=np.zeros(lth_max)
         cl_th_and_fg[spec,fname][2:lth_max]=clth[spec][:lth_max-2]/fth[:lth_max-2]+fg_regularised[:lth_max-2]
-        np.savetxt('%s/clth_fg_%s_%s.dat'%(theoryFgDir,fname,spec),np.transpose( [lth,cl_th_and_fg[spec,fname]]))
+        np.savetxt('%s/clth_fg_%s_%s.dat'%(theoryFgDir,fname,spec),np.transpose( [lth_padded,cl_th_and_fg[spec,fname]]))
         
-        plt.plot(lth,cl_th_and_fg[spec,fname]*fth,label='%s'%fname)
+        plt.plot(lth_padded,cl_th_and_fg[spec,fname]*fth,label='%s'%fname)
     plt.legend()
     plt.savefig('%s/clth_fg_%s.png'%(theoryFgDir,spec))
     plt.clf()
@@ -93,7 +94,4 @@ for c1,freq1 in enumerate(freqs):
 
 
 ps_th=powspec.read_spectrum(d['theoryfile'])[:3,:3]
-print (ps_th[0,1])
-print (mat[0,1])
-
 np.save('%s/signal_fg_matrix.npy'%theoryFgDir,mat)

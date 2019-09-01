@@ -56,6 +56,8 @@ lrange_217x217=[50,1400]
 
 #Simulation
 
+use_ffp10=True
+ffp10_dir='/project/projectdirs/cmb/data/planck2018/ffp10/mc_noise'
 include_foregrounds=True
 use_noise_th=False
 include_systematics=False
@@ -63,7 +65,7 @@ include_systematics=False
 theoryfile='theory_file/cosmo2017_10K_acc3_lensedCls.dat'
 
 iStart=0
-iStop=500
+iStop=1000
 
 # theoretical nl_Th
 

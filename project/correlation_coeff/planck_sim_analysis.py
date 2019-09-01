@@ -23,8 +23,14 @@ if include_sys==True:
     simSpectraDir='sim_spectra_syst'
     mc_dir='monteCarlo_syst'
 else:
-    simSpectraDir='sim_spectra'
-    mc_dir='monteCarlo'
+    
+    if use_ffp10==True:
+        simSpectraDir='sim_spectra_ffp10'
+        mc_dir='monteCarlo_ffp10'
+    else:
+        simSpectraDir='sim_spectra'
+        mc_dir='monteCarlo'
+
 
 pspy_utils.create_directory(mc_dir)
 

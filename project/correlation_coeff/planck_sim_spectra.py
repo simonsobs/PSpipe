@@ -39,11 +39,16 @@ splits=d['splits']
 include_sys=d['include_systematics']
 include_foregrounds=d['include_foregrounds']
 use_noise_th=d['use_noise_th']
+use_ffp10=d['use_ffp10']
+
 
 if include_sys==True:
     simSpectraDir='sim_spectra_syst'
 else:
-    simSpectraDir='sim_spectra'
+    if use_ffp10==True:
+        simSpectraDir='sim_spectra_ffp10'
+    else:
+        simSpectraDir='sim_spectra'
 
 pspy_utils.create_directory(simSpectraDir)
 
@@ -104,11 +109,13 @@ for iii in subtasks:
             noisy_alms[0]=hp.sphtfunc.almxfl(noisy_alms[0],bl_T)
             noisy_alms[1]=hp.sphtfunc.almxfl(noisy_alms[1],bl_pol)
             noisy_alms[2]=hp.sphtfunc.almxfl(noisy_alms[2],bl_pol)
-
-            noisy_alms[0] +=  nlms['T',k][freq_id]
-            noisy_alms[1] +=  nlms['E',k][freq_id]
-            noisy_alms[2] +=  nlms['B',k][freq_id]
             
+            if use_ffp10==False:
+                noisy_alms[0] +=  nlms['T',k][freq_id]
+                noisy_alms[1] +=  nlms['E',k][freq_id]
+                noisy_alms[2] +=  nlms['B',k][freq_id]
+            
+
             if include_sys==True:
                 l,Tl_T=np.loadtxt(d['TF_%s_%s_T'%(freq,hm)],unpack=True)
                 l,Tl_pol=np.loadtxt(d['TF_%s_%s_pol'%(freq,hm)],unpack=True)
@@ -121,7 +128,14 @@ for iii in subtasks:
             for i in range(3):
                 noisy_alms[i]=hp.sphtfunc.almxfl(noisy_alms[i],pixwin)
 
+
             pl_map=sph_tools.alm2map(noisy_alms,template)
+            
+            if use_ffp10==True:
+                noise_sim=so_map.read_map('%s/%s/ffp10_noise_%s_%s_map_mc_%05d.fits'%(d['ffp10_dir'],freq,freq,hm,iii))
+                noise_sim.data*=10**6
+                pl_map.data+=noise_sim.data
+                    
 
             window_T=so_map.read_map('%s/window_T_%s_%s-%s.fits'%(auxMapDir,experiment,freq,hm))
             window_pol=so_map.read_map('%s/window_P_%s_%s-%s.fits'%(auxMapDir,experiment,freq,hm))

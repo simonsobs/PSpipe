@@ -2,7 +2,6 @@
 This script is used to generate simulations of Planck data and compute their power spectra.
 to run it:
 python planck_sim_spectra.py global.dict
-Note that we are using homogeneous non white noise here
 '''
 
 

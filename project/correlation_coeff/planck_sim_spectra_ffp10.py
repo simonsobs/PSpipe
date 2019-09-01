@@ -90,7 +90,6 @@ for iii in subtasks:
             l,bl_T= np.loadtxt(d['beam_%s_%s_T'%(freq,hm)],unpack=True)
             l,bl_pol= np.loadtxt(d['beam_%s_%s_pol'%(freq,hm)],unpack=True)
 
-            
             my_alms[0]=hp.sphtfunc.almxfl(my_alms[0],bl_T)
             my_alms[1]=hp.sphtfunc.almxfl(my_alms[1],bl_pol)
             my_alms[2]=hp.sphtfunc.almxfl(my_alms[2],bl_pol)
@@ -99,7 +98,7 @@ for iii in subtasks:
                 my_alms[i]=hp.sphtfunc.almxfl(my_alms[i],pixwin)
 
             pl_map=sph_tools.alm2map(my_alms,template)
-            noise_map=so_map.read_map('%s/%s/ffp10_noise_%s_%s_map_mc_%05d.fits'%(ffp10_dir,freq,freq,hm,iii))
+            noise_map=so_map.read_map('%s/%s/ffp10_noise_%s_%s_map_mc_%05d.fits'%(d['ffp10_dir'],freq,freq,hm,iii))
             noise_map.data*=10**6
             pl_map.data+=noise_map.data
 

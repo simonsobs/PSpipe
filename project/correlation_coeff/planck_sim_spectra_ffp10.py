@@ -73,7 +73,7 @@ for iii in subtasks:
         
         maps=d['map_%s'%freq]
         
-        if include_foreground==True:
+        if include_foregrounds==True:
             freq_alm=np.zeros((3,sim_alm.shape[1]),dtype='complex')
             freq_alm[0]=sim_alm[0+freq_id*3].copy()
             freq_alm[1]=sim_alm[1+freq_id*3].copy()
@@ -81,7 +81,7 @@ for iii in subtasks:
 
         for hm,map,k in zip(splits,maps,np.arange(nSplits)):
             
-            if include_foreground==True:
+            if include_foregrounds==True:
                 my_alms=freq_alm.copy()
             else:
                 my_alms=sim_alm.copy()

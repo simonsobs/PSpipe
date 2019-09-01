@@ -86,6 +86,11 @@ for iii in subtasks:
             else:
                 my_alms=sim_alm.copy()
             
+            
+            l,bl_T= np.loadtxt(d['beam_%s_%s_T'%(freq,hm)],unpack=True)
+            l,bl_pol= np.loadtxt(d['beam_%s_%s_pol'%(freq,hm)],unpack=True)
+
+            
             my_alms[0]=hp.sphtfunc.almxfl(my_alms[0],bl_T)
             my_alms[1]=hp.sphtfunc.almxfl(my_alms[1],bl_pol)
             my_alms[2]=hp.sphtfunc.almxfl(my_alms[2],bl_pol)

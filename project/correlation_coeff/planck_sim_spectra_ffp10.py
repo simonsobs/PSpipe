@@ -36,14 +36,9 @@ remove_mono_dipo_T=d['remove_mono_dipo_T']
 remove_mono_dipo_pol=d['remove_mono_dipo_pol']
 experiment='Planck'
 splits=d['splits']
-include_sys=d['include_systematics']
 include_foregrounds=d['include_foregrounds']
-use_noise_th=d['use_noise_th']
 
-if include_sys==True:
-    simSpectraDir='sim_spectra_syst'
-else:
-    simSpectraDir='sim_spectra'
+simSpectraDir='sim_spectra_ffp10'
 
 pspy_utils.create_directory(simSpectraDir)
 
@@ -61,8 +56,6 @@ else:
 
 nSplits=len(splits)
 
-l,Nl_T,Nl_P=planck_utils.get_noise_matrix_spin0and2(ps_model_dir,experiment,freqs,lmax,nSplits,lcut=0,use_noise_th=use_noise_th)
-
 pixwin=hp.pixwin(nside)
 
 so_mpi.init(True)
@@ -74,7 +67,6 @@ for iii in subtasks:
     alms={}
 
     sim_alm=curvedsky.rand_alm(ps_th, lmax=lmax-1) #the nlms and sim_alm lmax need to be investigated, there is a mismatch of 1 that is not understood at the moment
-    nlms=planck_utils.generate_noise_alms(Nl_T,Nl_P,lmax,nSplits,ncomp)
 
     for freq_id,freq in enumerate(freqs):
         
@@ -90,38 +82,21 @@ for iii in subtasks:
         for hm,map,k in zip(splits,maps,np.arange(nSplits)):
             
             if include_foreground==True:
-                noisy_alms=freq_alm.copy()
+                my_alms=freq_alm.copy()
             else:
-                noisy_alms=sim_alm.copy()
+                my_alms=sim_alm.copy()
             
-            if include_sys==True:
-                l,bl_T= np.loadtxt(d['beam_%s_%s_T_syst'%(freq,hm)],unpack=True)
-                l,bl_pol= np.loadtxt(d['beam_%s_%s_pol_syst'%(freq,hm)],unpack=True)
-            else:
-                l,bl_T= np.loadtxt(d['beam_%s_%s_T'%(freq,hm)],unpack=True)
-                l,bl_pol= np.loadtxt(d['beam_%s_%s_pol'%(freq,hm)],unpack=True)
-
-            noisy_alms[0]=hp.sphtfunc.almxfl(noisy_alms[0],bl_T)
-            noisy_alms[1]=hp.sphtfunc.almxfl(noisy_alms[1],bl_pol)
-            noisy_alms[2]=hp.sphtfunc.almxfl(noisy_alms[2],bl_pol)
-
-            noisy_alms[0] +=  nlms['T',k][freq_id]
-            noisy_alms[1] +=  nlms['E',k][freq_id]
-            noisy_alms[2] +=  nlms['B',k][freq_id]
-            
-            if include_sys==True:
-                l,Tl_T=np.loadtxt(d['TF_%s_%s_T'%(freq,hm)],unpack=True)
-                l,Tl_pol=np.loadtxt(d['TF_%s_%s_pol'%(freq,hm)],unpack=True)
-            
-                noisy_alms[0]=hp.sphtfunc.almxfl(noisy_alms[0],Tl_T)
-                noisy_alms[1]=hp.sphtfunc.almxfl(noisy_alms[1],Tl_pol)
-                noisy_alms[2]=hp.sphtfunc.almxfl(noisy_alms[2],Tl_pol)
-
+            my_alms[0]=hp.sphtfunc.almxfl(my_alms[0],bl_T)
+            my_alms[1]=hp.sphtfunc.almxfl(my_alms[1],bl_pol)
+            my_alms[2]=hp.sphtfunc.almxfl(my_alms[2],bl_pol)
             
             for i in range(3):
-                noisy_alms[i]=hp.sphtfunc.almxfl(noisy_alms[i],pixwin)
+                my_alms[i]=hp.sphtfunc.almxfl(my_alms[i],pixwin)
 
-            pl_map=sph_tools.alm2map(noisy_alms,template)
+            pl_map=sph_tools.alm2map(my_alms,template)
+            noise_map=so_map.read_map('%s/%s/ffp10_noise_%s_%s_map_mc_%05d.fits'%(ffp10_dir,freq,freq,hm,iii))
+            noise_map.data*=10**6
+            pl_map.data+=noise_map.data
 
             window_T=so_map.read_map('%s/window_T_%s_%s-%s.fits'%(auxMapDir,experiment,freq,hm))
             window_pol=so_map.read_map('%s/window_P_%s_%s-%s.fits'%(auxMapDir,experiment,freq,hm))

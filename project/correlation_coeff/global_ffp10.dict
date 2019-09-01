@@ -56,25 +56,12 @@ lrange_217x217=[50,1400]
 
 #Simulation
 
+use_ffp10=True
+ffp10_dir='/project/projectdirs/cmb/data/planck2018/ffp10/mc_noise'
 include_foregrounds=True
-use_noise_th=False
-include_systematics=False
 
 theoryfile='theory_file/cosmo2017_10K_acc3_lensedCls.dat'
 
 iStart=0
-iStop=1000
+iStop=99
 
-# theoretical nl_Th
-
-beam_th_100=9.66
-beam_th_143=7.22
-beam_th_217=4.90
-
-sigma_th_100=77.4
-sigma_th_143=33.0
-sigma_th_217=46.8
-
-sigma_pol_th_100=117.6
-sigma_pol_th_143=70.2
-sigma_pol_th_217=105.0

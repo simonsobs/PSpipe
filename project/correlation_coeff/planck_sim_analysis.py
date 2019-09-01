@@ -24,7 +24,7 @@ if include_sys==True:
     mc_dir='monteCarlo_syst'
 else:
     
-    if use_ffp10==True:
+    if d['use_ffp10']==True:
         simSpectraDir='sim_spectra_ffp10'
         mc_dir='monteCarlo_ffp10'
     else:
@@ -93,7 +93,6 @@ for hm_pair in halfmission_pairs:
     for iii in range(iStart,iStop):
 
         vec=[]
-
 
         for fpair in freq_pairs:
             

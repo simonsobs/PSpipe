@@ -18,21 +18,27 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 figure_dir='figures'
+theoryFgDir='theory_and_fg'
+
 pspy_utils.create_directory(figure_dir)
 
 iStart=d['iStart']
 iStop=d['iStop']
 binning_file=d['binning_file']
 include_sys=d['include_systematics']
+include_foregrounds=d['include_foregrounds']
 freqs=d['freqs']
 lthmax=1600
 
-if include_sys==True:
-    mc_dir='monteCarlo_syst'
-    plot_name='robustness'
+
+
+if d['use_ffp10']==True:
+    mc_dir='monteCarlo_ffp10'
+    plot_name='bias_and_cov_ffp10'
 else:
     mc_dir='monteCarlo'
-    plot_name='bias'
+    plot_name='bias_and_cov'
+
 
 freq_pairs=[]
 for c1,freq1 in enumerate(freqs):
@@ -59,7 +65,11 @@ for fpair,color in zip(freq_pairs,color_array):
     lmin,lmax=d['lrange_%sx%s'%(f0,f1)]
 
     for spec in ['TT','EE','TE']:
-        model[spec,fname]=psth[spec]
+        if include_foregrounds==True:
+            lth,model[spec,fname]=np.loadtxt('%s/clth_fg_%s_%s.dat'%(theoryFgDir,fname,spec),unpack=True)
+        else:
+            model[spec,fname]=psth[spec]
+        
         lb,model[spec,fname]= planck_utils.binning(lth, model[spec,fname],lthmax,binning_file=binning_file)
         id=np.where((lb>lmin) &(lb<lmax))
         model[spec,fname]=model[spec,fname][id]
@@ -116,7 +126,7 @@ for fpair,color in zip(freq_pairs,color_array):
     count+=1
 
 #plt.show()
-plt.savefig('%s/bias_and_cov.pdf'%(figure_dir),bbox_inches = 'tight')
+plt.savefig('%s/%s.pdf'%(figure_dir,plot_name),bbox_inches = 'tight')
 plt.clf()
 plt.close()
 

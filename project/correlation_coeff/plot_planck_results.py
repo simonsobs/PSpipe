@@ -24,6 +24,16 @@ pspy_utils.create_directory(figure_dir)
 
 
 spectraDir='spectra'
+
+
+if d['use_ffp10']==True:
+    mc_dir='monteCarlo_ffp10'
+    plot_name='planck_results_ffp10'
+else:
+    mc_dir='monteCarlo'
+    plot_name='planck_results'
+
+
 mc_dir='monteCarlo'
 
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
@@ -172,8 +182,8 @@ for c,f in zip(color_array,freq_pairs):
 
 #plt.show()
 if simple_chi2==True:
-    plt.savefig('%s/planck_results_simple.pdf'%figure_dir,bbox_inches='tight')
+    plt.savefig('%s/%s_simple.pdf'%(figure_dir,plot_name),bbox_inches='tight')
 else:
-    plt.savefig('%s/planck_results_full.pdf'%figure_dir,bbox_inches='tight')
+    plt.savefig('%s/%s_full.pdf'%(figure_dir,plot_name),bbox_inches='tight')
 plt.clf()
 plt.close()

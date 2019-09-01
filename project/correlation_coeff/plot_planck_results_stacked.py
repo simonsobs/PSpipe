@@ -23,7 +23,14 @@ pspy_utils.create_directory(figure_dir)
 
 
 spectraDir='spectra'
-mc_dir='monteCarlo'
+
+if d['use_ffp10']==True:
+    mc_dir='monteCarlo_ffp10'
+    plot_name='all_cross_ffp10'
+else:
+    mc_dir='monteCarlo'
+    plot_name='all_cross'
+
 
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 binning_file=d['binning_file']
@@ -147,7 +154,7 @@ for c,f in zip(color_array,freq_pairs):
         plt.errorbar(lb,cb_th_and_fg['r',fname],color=c,alpha=0.3,label='Planck best fit (binned)')
 
 plt.legend(frameon=False,fontsize=15)
-plt.savefig('%s/all_cross.pdf'%figure_dir,bbox_inches='tight')
+plt.savefig('%s/%s.pdf'%(figure_dir,plot_name),bbox_inches='tight')
 plt.clf()
 plt.close()
 

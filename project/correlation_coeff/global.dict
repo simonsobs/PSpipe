@@ -56,6 +56,7 @@ lrange_217x217=[50,1400]
 
 #Simulation
 
+use_ffp10=False
 include_foregrounds=True
 use_noise_th=False
 include_systematics=False

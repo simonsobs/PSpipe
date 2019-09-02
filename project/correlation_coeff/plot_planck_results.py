@@ -1,6 +1,6 @@
 """
-    This script is used for producing the figure of the paper displaying the correlation coefficient of the Planck data
-    To run it: python plot_planck_results.py global.dict
+This script is used for producing the figure of the paper displaying the correlation coefficient of the Planck data
+To run it: python plot_planck_results.py global.dict
 """
 
 import numpy as np
@@ -34,8 +34,6 @@ else:
     plot_name='planck_results'
 
 
-mc_dir='monteCarlo'
-
 spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
 binning_file=d['binning_file']
 freqs=d['freqs']
@@ -60,6 +58,7 @@ clth['EE']=cl_EE[:lthmax]
 lth,fg['TT','100x100'],fg['TT','143x143'],fg['TT','143x217'],fg['TT','217x217'],fg['EE','100x100'],fg['EE','100x143'],fg['EE','100x217'],fg['EE','143x143'],fg['EE','143x217'],fg['EE','217x217'],fg['TE','100x100'],fg['TE','100x143'],fg['TE','100x217'],fg['TE','143x143'],fg['TE','143x217'],fg['TE','217x217']=np.loadtxt('theory_file/base_plikHM_TTTEEE_lowl_lowE_lensing.minimum.plik_foregrounds',unpack=True)
 
 
+
 lth=lth[:lthmax]
 
 cl_th_and_fg={}
@@ -77,9 +76,9 @@ for f in freq_pairs:
 
         if spec != 'r':
             if (fname !='100x143') & (fname !='100x217'):
-                cl_th_and_fg[spec,fname]=clth[spec]+fg[spec,fname][:lthmax]
+                cl_th_and_fg[spec,fname]=(clth[spec]+fg[spec,fname][:lthmax])*2*np.pi/(lth*(lth+1))
             else:
-                cl_th_and_fg[spec,fname]=clth[spec]
+                cl_th_and_fg[spec,fname]=clth[spec]*2*np.pi/(lth*(lth+1))
             
             lb,cb_th_and_fg[spec,fname]= planck_utils.binning(lth, cl_th_and_fg[spec,fname],lthmax,binning_file=binning_file)
             id=np.where((lb>lmin) &(lb<lmax))
@@ -105,7 +104,7 @@ for f in freq_pairs:
     bias_r_th[fname]*=mean['r',fname]
 
 
-simple_chi2=False
+diagonal_chi2=True
 
 
 color_array=['red','blue','green','purple']
@@ -138,8 +137,6 @@ for c,f in zip(color_array,freq_pairs):
     r=Db_dict['TE'][id]/np.sqrt(Db_dict['TT'][id]*Db_dict['EE'][id])
     r-= bias_r_th[fname]
 
-
-
     ax = fig.add_subplot(6,2,2*count+1)
     plt.errorbar(lb,r,std['r',fname],label='%s'%(fname),color=c,fmt='.')
     if (fname !='100x143') & (fname !='100x217'):
@@ -155,7 +152,7 @@ for c,f in zip(color_array,freq_pairs):
 
     cov=np.loadtxt('%s/select_cov_mat_r_%s_hm1xhm2_r_%s_hm1xhm2.dat'%(mc_dir,fname,fname))
     inv_cov=np.linalg.inv(cov)
-    if simple_chi2:
+    if diagonal_chi2:
         chi2_planck=np.sum((r-cb_th_and_fg['r',fname])**2/std['r',fname]**2)
     else:
         vec=r-cb_th_and_fg['r',fname]
@@ -181,8 +178,8 @@ for c,f in zip(color_array,freq_pairs):
     count+=1
 
 #plt.show()
-if simple_chi2==True:
-    plt.savefig('%s/%s_simple.pdf'%(figure_dir,plot_name),bbox_inches='tight')
+if diagonal_chi2==True:
+    plt.savefig('%s/%s_diagonal.pdf'%(figure_dir,plot_name),bbox_inches='tight')
 else:
     plt.savefig('%s/%s_full.pdf'%(figure_dir,plot_name),bbox_inches='tight')
 plt.clf()

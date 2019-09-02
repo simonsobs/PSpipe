@@ -72,9 +72,9 @@ for f in freq_pairs:
 
         if spec != 'r':
             if (fname !='100x143') & (fname !='100x217'):
-                cl_th_and_fg[spec,fname]=clth[spec]+fg[spec,fname][:lthmax]
+                cl_th_and_fg[spec,fname]=(clth[spec]+fg[spec,fname][:lthmax])*2*np.pi/(lth*(lth+1))
             else:
-                cl_th_and_fg[spec,fname]=clth[spec]
+                cl_th_and_fg[spec,fname]=clth[spec]*2*np.pi/(lth*(lth+1))
             
             lb,cb_th_and_fg[spec,fname]= planck_utils.binning(lth, cl_th_and_fg[spec,fname],lthmax,binning_file=binning_file)
             id=np.where((lb>lmin) &(lb<lmax))
@@ -99,20 +99,6 @@ for f in freq_pairs:
     bias_r_th[fname]-=1./2*(cov_TTTE/(mean['TE',fname]*mean['TT',fname])+ cov_EETE/(mean['TE',fname]*mean['EE',fname]))
     bias_r_th[fname]*=mean['r',fname]
 
-
-simple_chi2=False
-
-#for spec in ['TT','EE','TE']:
-#    for f in freq_pairs:
-#        f0,f1=f[0],f[1]
-#        lmin,lmax=d['lrange_%sx%s'%(f0,f1)]
-#        print (lb,lmin,lmax)
-#        id=np.where((lb>lmin) &(lb<lmax))
-
-#        f0,f1=f[0],f[1]
-#        fname='%sx%s'%(f0,f1)
-#        plt.plot(lb[id],cb_th_and_fg[spec,fname])
-#    plt.show()
 
 
 color_array=['red','gray','orange','blue','green','purple']
@@ -157,4 +143,51 @@ plt.legend(frameon=False,fontsize=15)
 plt.savefig('%s/%s.pdf'%(figure_dir,plot_name),bbox_inches='tight')
 plt.clf()
 plt.close()
+
+
+
+
+color_array=['red','blue','green','purple']
+freq_pairs=[[100,100],[143,143],[143,217],[217,217]]
+plt.figure(figsize=(16,14))
+count=0
+for c,f in zip(color_array,freq_pairs):
+    f0,f1=f[0],f[1]
+    fname='%sx%s'%(f0,f1)
+    
+    lmin,lmax=d['lrange_%sx%s'%(f0,f1)]
+    
+    spec_name='Planck_%sxPlanck_%s-%sx%s'%(f0,f1,'hm1','hm2')
+    file_name= '%s/spectra_%s.dat'%(spectraDir,spec_name)
+    lb,Db_dict=so_spectra.read_ps(file_name,spectra=spectra)
+    
+    id=np.where((lb>lmin) &(lb<lmax))
+    
+    Db_dict['TE']=(Db_dict['TE']+Db_dict['ET'])/2
+    if f0 != f1:
+        spec_name2='Planck_%sxPlanck_%s-%sx%s'%(f0,f1,'hm2','hm1')
+        file_name2= '%s/spectra_%s.dat'%(spectraDir,spec_name2)
+        lb,Db_dict2=so_spectra.read_ps(file_name2,spectra=spectra)
+        Db_dict2['TE']=(Db_dict2['TE']+Db_dict2['ET'])/2
+        Db_dict['TE']=(Db_dict['TE']+Db_dict2['TE'])/2
+
+    lb=lb[id]
+
+    r=Db_dict['TE'][id]/np.sqrt(Db_dict['TT'][id]*Db_dict['EE'][id])
+    r-= bias_r_th[fname]
+
+
+#    plt.plot(lb,mean['r',fname],color='black')
+    plt.ylabel(r'${\Delta \cal R}^{\rm TE, c}_{\ell}$',fontsize=30)
+    plt.xlabel(r'$\ell$',fontsize=30)
+
+    plt.errorbar(lb-6+count*3,r-cb_th_and_fg['r',fname],std['r',fname],label='%s'%(fname),color=c,fmt='.',alpha=0.3)
+    plt.plot(lb,lb*0,color='grey')
+    count+=1
+plt.legend(frameon=False,fontsize=15)
+plt.savefig('%s/test.pdf'%(figure_dir),bbox_inches='tight')
+plt.clf()
+plt.close()
+
+
 

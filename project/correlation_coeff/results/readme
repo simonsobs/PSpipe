@@ -1,0 +1,7 @@
+These folder contain the correlation coefficient of Planck legacy data.
+
+The format of the file is:
+
+lb, Rb_TE,sigma_TE
+
+where lb is the bin center, Rb_TE the correlation coefficient and sigma_TE the errors on the correlations coefficient estimated from CMB+FG simulation and FFP10 noise.

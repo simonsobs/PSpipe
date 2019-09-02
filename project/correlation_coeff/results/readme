@@ -2,6 +2,6 @@ This folder contains the final result of 'The TE correlation coefficient of Plan
 
 The format of the files is:
 
-lb, Rb_TE,sigma_TE
+lb, Rb_TE,sigma_b_TE
 
-where lb is the bin center, Rb_TE the correlation coefficient and sigma_TE the errors on the correlations coefficient estimated from CMB+FG simulation and FFP10 noise simulations.
+where lb is the bin center, Rb_TE the correlation coefficient and sigma_b_TE the errors on the correlations coefficient estimated from CMB + FG + FFP10 noise simulations.

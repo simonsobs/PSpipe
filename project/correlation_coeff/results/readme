@@ -1,6 +1,6 @@
-These folder contain the correlation coefficient of Planck legacy data.
+This folder contains the correlation coefficients of Planck legacy data.
 
-The format of the file is:
+The format of the files is:
 
 lb, Rb_TE,sigma_TE
 

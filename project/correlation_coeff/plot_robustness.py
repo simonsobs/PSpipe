@@ -73,11 +73,11 @@ for fpair in freq_pairs:
 
     model['r',fname]=model['TE',fname]/np.sqrt(model['TT',fname]*model['EE',fname])
 
-    ylim={}
-    ylim[1]=[-0.015,0.01]
-    ylim[2]=[-0.0005,0.0005]
-    ylim[3]=[-0.00001,0.00003]
-    ylim[4]=[-0.01,0.01]
+#   ylim={}
+#   ylim[1]=[-0.015,0.01]
+#   ylim[2]=[-0.0005,0.0005]
+#   ylim[3]=[-0.00001,0.00003]
+#    ylim[4]=[-0.01,0.01]
 
     ylabel_top={}
     ylabel_bottom={}
@@ -108,18 +108,16 @@ for fpair in freq_pairs:
             fac=l*(l+1)/(2*np.pi)
 
         plt.subplot(2,4,count)
-        plt.yticks([])
-        plt.ylabel(ylabel_top[count],fontsize=20)
+        plt.title(ylabel_top[count],fontsize=20)
         plt.errorbar(l,cl[spec]*fac,mc_error[spec]*fac,fmt='.',color='red',label='recovered mean',markersize='5')
         plt.plot(l,model[spec,fname]*fac,color='grey',label='input theory', linewidth=0.5)
         if count==1:
             plt.legend(fontsize=14)
         plt.subplot(2,4,4+count)
-        plt.yticks([])
-        plt.ylabel(ylabel_bottom[count],fontsize=20)
-        plt.ylim(ylim[count][0], ylim[count][1])
+        plt.title(ylabel_bottom[count],fontsize=20)
+#plt.ylim(ylim[count][0], ylim[count][1])
         plt.errorbar(l,l*0,color='grey')
-        plt.errorbar(l, (cl[spec]-model[spec,fname]),mc_error[spec],fmt='.',label=r'$\chi^{2}$/DoF= %.0f/%d'%(chi2,dof),color='red')
+        plt.errorbar(l, (cl[spec]-model[spec,fname])*fac,mc_error[spec]*fac,fmt='.',label=r'$\chi^{2}$/DoF= %.0f/%d'%(chi2,dof),color='red')
         plt.xlabel(r'$\ell$',fontsize=18)
         plt.legend(fontsize=14)
         count+=1

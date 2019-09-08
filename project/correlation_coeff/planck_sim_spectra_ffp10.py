@@ -1,7 +1,7 @@
 '''
-This script is used to generate simulations of Planck data and compute their power spectra.
+This script is used to generate simulations of Planck data, add the ffp10 noise simulations and compute their power spectra.
 to run it:
-python planck_sim_spectra.py global.dict
+python planck_sim_spectra_ffp10.py global_ffp10.dict
 '''
 
 
@@ -68,7 +68,6 @@ for iii in subtasks:
     sim_alm=curvedsky.rand_alm(ps_th, lmax=lmax-1) #the nlms and sim_alm lmax need to be investigated, there is a mismatch of 1 that is not understood at the moment
 
     for freq_id,freq in enumerate(freqs):
-        
         
         maps=d['map_%s'%freq]
         

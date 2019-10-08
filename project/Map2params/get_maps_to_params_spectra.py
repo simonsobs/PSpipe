@@ -64,7 +64,10 @@ for iii in subtasks:
         freqs=d['freq_%s'%exp]
         nSplits=d['nSplits_%s'%exp]
         
-        template=so_map.car_template(ncomp,d['ra0_%s'%exp],d['ra1_%s'%exp],d['dec0_%s'%exp],d['dec1_%s'%exp],d['res_%s'%exp])
+        if d['pixel_%s'%exp]=='CAR':
+            template=so_map.car_template(ncomp,d['ra0_%s'%exp],d['ra1_%s'%exp],d['dec0_%s'%exp],d['dec1_%s'%exp],d['res_%s'%exp])
+        elif d['pixel_%s'%exp]=='HEALPIX':
+            template=so_map.healpix_template(ncomp,nside=d['nside_%s'%exp])
 
         l,Nl_array_T,Nl_array_P=maps_to_params_utils.get_noise_matrix_spin0and2(noise_dir,exp,freqs,lmax_simu+1,nSplits,lcut=lcut)
         

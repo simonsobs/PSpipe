@@ -41,10 +41,12 @@ for exp in experiment:
         window=binary.copy()
         
         if d['galactic_mask_%s'%exp]==True:
-            gal_mask=so_map.read_map(d['galactic_mask_%s_file_93'%exp])
+            gal_mask=so_map.read_map(d['galactic_mask_%s_file_%s'%(exp,f)])
+            gal_mask.plot(file_name='%s/gal_mask_%s_%s'%(window_dir,exp,f))
             window.data[:]*=gal_mask.data[:]
         if d['survey_mask_%s'%exp]==True:
-            survey_mask=so_map.read_map(d['survey_mask_%s_file_93'%exp])
+            survey_mask=so_map.read_map(d['survey_mask_%s_file_%s'%(exp,f)])
+            survey_mask.plot(file_name='%s/survey_mask_mask_%s_%s'%(window_dir,exp,f))
             window.data[:]*=survey_mask.data[:]
 
         apo_radius_degree=(d['apo_radius_survey_%s'%exp])#* np.random.randint(50,200)/100

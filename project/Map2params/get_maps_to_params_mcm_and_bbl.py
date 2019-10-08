@@ -40,10 +40,10 @@ for exp in experiment:
     for f in freqs:
         window=binary.copy()
         
-        if d'galactic_mask_%s'%exp]==True:
+        if d['galactic_mask_%s'%exp]==True:
             gal_mask=so_map.read_map(d['galactic_mask_%s_file_93'%exp])
             window.data[:]*=gal_mask.data[:]
-        if d'survey_mask_%s'%exp]==True:
+        if d['survey_mask_%s'%exp]==True:
             survey_mask=so_map.read_map(d['survey_mask_%s_file_93'%exp])
             window.data[:]*=survey_mask.data[:]
 

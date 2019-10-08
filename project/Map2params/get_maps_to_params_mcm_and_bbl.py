@@ -75,7 +75,7 @@ for id_exp1,exp1 in enumerate(experiment):
                 l,bl2= np.loadtxt('beam/beam_%s_%s.dat'%(exp2,f2),unpack=True)
                 window2=so_map.read_map('%s/window_%s_%s.fits'%(window_dir,exp2,f2))
                 print (exp1,f1,exp2,f2)
-                mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=(window1,window1),win2=(window2,window2),bl1=(bl1,bl1),bl2=(bl2,bl2),binning_file= d['binning_file'],niter=0, lmax=d['lmax'], type=d['type'],save_file='%s/%s_%sx%s_%s'%(mcm_dir,exp1,f1,exp2,f2))
+                mbb_inv,Bbl=so_mcm.mcm_and_bbl_spin0and2(win1=(window1,window1),win2=(window2,window2),bl1=(bl1,bl1),bl2=(bl2,bl2),binning_file= d['binning_file'],niter=d['niter'], lmax=d['lmax'], type=d['type'],save_file='%s/%s_%sx%s_%s'%(mcm_dir,exp1,f1,exp2,f2))
 
 
 

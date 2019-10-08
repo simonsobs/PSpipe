@@ -30,7 +30,9 @@ for exp in experiment:
 
     elif d['pixel_%s'%exp]=='HEALPIX':
         binary=so_map.healpix_template(ncomp=1,nside=d['nside_%s'%exp])
+        binary.data[:]=1
         if d['disc_%s'%exp]==True:
+            binary.data[:]=0
             vec=hp.pixelfunc.ang2vec(d['lon_disc_%s'%exp],d['lat_disc_%s'%exp], lonlat=True)
             disc=hp.query_disc(d['nside_%s'%exp], vec, radius=d['radius_disc_%s'%exp]*np.pi/180)
             binary.data[disc]=1
@@ -39,7 +41,6 @@ for exp in experiment:
 
     for f in freqs:
         window=binary.copy()
-        window.data[:]=1
         if d['galactic_mask_%s'%exp]==True:
             gal_mask=so_map.read_map(d['galactic_mask_%s_file_%s'%(exp,f)])
             gal_mask.plot(file_name='%s/gal_mask_%s_%s'%(window_dir,exp,f))

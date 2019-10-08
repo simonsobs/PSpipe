@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 from pspy import pspy_utils, so_dict,so_map,so_mpi,sph_tools,so_mcm,so_spectra
 from matplotlib.pyplot import cm
 import  numpy as np, pylab as plt, healpy as hp

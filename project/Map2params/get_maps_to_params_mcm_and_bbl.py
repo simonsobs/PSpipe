@@ -39,7 +39,7 @@ for exp in experiment:
 
     for f in freqs:
         window=binary.copy()
-        
+        window.data[:]=1
         if d['galactic_mask_%s'%exp]==True:
             gal_mask=so_map.read_map(d['galactic_mask_%s_file_%s'%(exp,f)])
             gal_mask.plot(file_name='%s/gal_mask_%s_%s'%(window_dir,exp,f))

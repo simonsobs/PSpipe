@@ -115,9 +115,7 @@ n_cov_element=0
 for sid1, spec1 in enumerate(spec_name):
     for sid2, spec2 in enumerate(spec_name):
         if sid1>sid2: continue
-        
         print (spec1,spec2)
-
         n1,n2=spec1.split('x')
         n3,n4=spec2.split('x')
         n1_list+=[n1]
@@ -128,7 +126,8 @@ for sid1, spec1 in enumerate(spec_name):
 
 print (n_cov_element)
 so_mpi.init(True)
-subtasks = so_mpi.taskrange(imin=0, imax=n_cov_element)
+subtasks = so_mpi.taskrange(imin=0, imax=n_cov_element-1)
+print (subtasks)
 
 for task in subtasks:
     print (task)

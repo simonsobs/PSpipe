@@ -133,10 +133,10 @@ subtasks = so_mpi.taskrange(imin=0, imax=n_cov_element)
 for task in subtasks:
     print (task)
     
-    n1=n1_list['%d'%task]
-    n2=n2_list['%d'%task]
-    n3=n3_list['%d'%task]
-    n4=n4_list['%d'%task]
+    n1=n1_list[int(task)]
+    n2=n2_list[int(task)]
+    n3=n3_list[int(task)]
+    n4=n4_list[int(task)]
         
     prefix_ab= '%s/%sx%s'%(mcm_dir,n1,n2)
     prefix_cd= '%s/%sx%s'%(mcm_dir,n3,n4)

@@ -90,8 +90,8 @@ for id_exp1,exp1 in enumerate(experiment):
                         if spec=='TT':
                             if include_fg:
                                 flth_all=0
-                                for foreground in extragal_foregrounds:
-                                    l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
+                                for foreground in fg_components:
+                                    l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(fg_dir,foreground,f1,f2),unpack=True)
                                     flth_all+=flth[:lmax]
                                 ps=Dlth[spec]+flth_all
                     

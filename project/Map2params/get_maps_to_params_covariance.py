@@ -78,7 +78,7 @@ for id_exp1,exp1 in enumerate(experiment):
                         if include_fg:
                             flth_all=0
                             for foreground in fg_components:
-                                l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
+                                l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(fg_dir,foreground,f1,f2),unpack=True)
                                 flth_all+=flth[:lmax]
                             Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=bl1*bl2*(Dlth[spec]+flth_all)
                 

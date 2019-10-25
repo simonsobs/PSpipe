@@ -12,7 +12,6 @@ d.read_from_file(sys.argv[1])
 window_dir='window'
 mcm_dir='mcm'
 cov_dir='covariance'
-cov_plot_dir='plot_covariance'
 specDir='spectra'
 
 experiment=d['experiment']
@@ -28,12 +27,13 @@ type=d['type']
 lcut=d['lcut']
 hdf5=d['hdf5']
 
-foreground_dir=d['foreground_dir']
+include_fg=d['include_fg']
+fg_dir=d['fg_dir']
 fg_components=d['fg_components']
 
 
+
 pspy_utils.create_directory(cov_dir)
-pspy_utils.create_directory(cov_plot_dir)
 
 if hdf5:
     spectra_hdf5 = h5py.File('%s.hdf5'%(specDir), 'r')
@@ -75,11 +75,12 @@ for id_exp1,exp1 in enumerate(experiment):
                     Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=bl1*bl2*Dlth[spec]
                     
                     if spec=='TT':
-                        flth_all=0
-                        for foreground in fg_components:
-                            l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
-                            flth_all+=flth[:lmax]
-                        Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=bl1*bl2*(Dlth[spec]+flth_all)
+                        if include_fg:
+                            flth_all=0
+                            for foreground in fg_components:
+                                l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
+                                flth_all+=flth[:lmax]
+                            Dl_all['%s_%s'%(exp1,f1),'%s_%s'%(exp2,f2),spec]=bl1*bl2*(Dlth[spec]+flth_all)
                 
                     if exp1==exp2:
                         

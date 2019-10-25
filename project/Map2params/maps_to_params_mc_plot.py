@@ -23,8 +23,10 @@ lcut=d['lcut']
 hdf5=d['hdf5']
 multistep_path=d['multistep_path']
 
-foreground_dir=d['foreground_dir']
-extragal_foregrounds=d['extragal_foregrounds']
+include_fg=d['include_fg']
+fg_dir=d['fg_dir']
+fg_components=d['fg_components']
+
 
 specDir='spectra'
 
@@ -86,11 +88,12 @@ for id_exp1,exp1 in enumerate(experiment):
                         ps=Dlth[spec].copy()
                         
                         if spec=='TT':
-                            flth_all=0
-                            for foreground in extragal_foregrounds:
-                                l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
-                                flth_all+=flth[:lmax]
-                            ps=Dlth[spec]+flth_all
+                            if include_fg:
+                                flth_all=0
+                                for foreground in extragal_foregrounds:
+                                    l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
+                                    flth_all+=flth[:lmax]
+                                ps=Dlth[spec]+flth_all
                     
                         if kind=='cross':
                             ps_th[spec]=ps

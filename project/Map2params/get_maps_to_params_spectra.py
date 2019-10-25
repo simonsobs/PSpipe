@@ -19,7 +19,8 @@ lcut=d['lcut']
 hdf5=d['hdf5']
 writeAll=d['writeAll']
 
-foreground_dir=d['foreground_dir']
+include_fg=d['include_fg']
+fg_dir=d['fg_dir']
 fg_components=d['fg_components']
 
 window_dir='window'
@@ -45,7 +46,9 @@ for exp in experiment:
         allfreqs+=[freq]
 
 ps=powspec.read_spectrum(d['clfile'])[:ncomp,:ncomp]
-l,ps_extragal=maps_to_params_utils.get_foreground_matrix(foreground_dir,fg_components,allfreqs,lmax_simu+1)
+
+if include_fg==True:
+    l,ps_extragal=maps_to_params_utils.get_foreground_matrix(fg_dir,fg_components,allfreqs,lmax_simu+1)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d['iStart'], imax=d['iStop'])
@@ -54,7 +57,9 @@ for iii in subtasks:
     t0=time.time()
     
     alms= curvedsky.rand_alm(ps, lmax=lmax_simu)
-    flms=curvedsky.rand_alm(ps_extragal,lmax=lmax_simu)
+    
+    if include_fg==True:
+        flms=curvedsky.rand_alm(ps_extragal,lmax=lmax_simu)
 
     master_alms={}
     
@@ -79,7 +84,9 @@ for iii in subtasks:
             l,bl= np.loadtxt('beam/beam_%s_%s.dat'%(exp,f),unpack=True)
             
             alms_convolved=alms.copy()
-            alms_convolved[0]+=flms[fcount]
+            if include_fg==True:
+                alms_convolved[0]+=flms[fcount]
+            
             alms_convolved=maps_to_params_utils.convolved_alms(alms_convolved,bl,ncomp)
             
             fcount+=1

@@ -20,7 +20,7 @@ hdf5=d['hdf5']
 writeAll=d['writeAll']
 
 foreground_dir=d['foreground_dir']
-extragal_foregrounds=d['extragal_foregrounds']
+fg_components=d['fg_components']
 
 window_dir='window'
 mcm_dir='mcm'
@@ -45,7 +45,7 @@ for exp in experiment:
         allfreqs+=[freq]
 
 ps=powspec.read_spectrum(d['clfile'])[:ncomp,:ncomp]
-l,ps_extragal=maps_to_params_utils.get_foreground_matrix(foreground_dir,extragal_foregrounds,allfreqs,lmax_simu+1)
+l,ps_extragal=maps_to_params_utils.get_foreground_matrix(foreground_dir,fg_components,allfreqs,lmax_simu+1)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d['iStart'], imax=d['iStop'])

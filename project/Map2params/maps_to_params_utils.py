@@ -36,7 +36,7 @@ def get_foreground_matrix(foreground_dir,extragal_foregrounds,allfreqs,lmax):
             if c1>c2 : continue
             Fl_all=0
             for foreground in extragal_foregrounds:
-                l,Fl=np.loadtxt('%s/%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
+                l,Fl=np.loadtxt('%s/tt_%s_%sx%s.dat'%(foreground_dir,foreground,f1,f2),unpack=True)
                 Fl_all+= Fl*2*np.pi/(l*(l+1))
             for i in range(2,lmax):
                 Fl_array_T[c1,c2,i]=Fl_all[i-2]

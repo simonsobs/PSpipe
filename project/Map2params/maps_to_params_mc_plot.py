@@ -91,7 +91,7 @@ for id_exp1,exp1 in enumerate(experiment):
                             if include_fg:
                                 flth_all=0
                                 for foreground in fg_components:
-                                    l,flth=np.loadtxt('%s/%s_%sx%s.dat'%(fg_dir,foreground,f1,f2),unpack=True)
+                                    l,flth=np.loadtxt('%s/tt_%s_%sx%s.dat'%(fg_dir,foreground,f1,f2),unpack=True)
                                     flth_all+=flth[:lmax]
                                 ps=Dlth[spec]+flth_all
                     

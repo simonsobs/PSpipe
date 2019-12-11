@@ -13,11 +13,7 @@ The SO power spectrum pipeline will have 3 mains modules:
 -a likelihood code: pslike
 
 
-The healpix version of pspy has the following additional dependencies: cfitsio and HEALPix.
-
-A guide to install these libraries at NERSC is provided in [NERSC_INSTALL.md](NERSC_INSTALL.md).
-
-The CAR version of pspy requires pixell:  https://github.com/simonsobs/pixell .
+PSpipe requires pixell:  https://github.com/simonsobs/pixell .
 
 We have simplified the installation of `pspy`, just clone this repository, go to the root of `pspy` and run
 

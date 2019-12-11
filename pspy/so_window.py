@@ -10,41 +10,57 @@ import tempfile
 import os, sys
 import shutil
 
+#def get_distance_old(binary):
+#   """
+#   @brief get the distance to the closest masked pixels for CAR and healpix pixellisation.
+#   This routine is not ideal, for healpix we use the excecutable process mask from the healpix fortran distribution
+#   For CAR we use the scipy distance transform that assume that pixel are all of the same size.
+#   @param binary, a so_map with binary data (1 is observed, 0 is masked)
+#   @return the distance to the closest masked pixels in degree
+#   """
+#
+#       def write_dict_file(tempdir):
+#    file = open("%s/distance.dict"%tempdir,'w')
+#           file.write("mask_file=%s/tempmask \n"%tempdir)
+#           file.write("hole_min_size=0 \n")
+#        file.write("hole_min_surf_arcmin2=0.0 \n")
+#        file.write("filled_file='' \n")
+#        file.write("distance_file=%s/tempfile \n"%tempdir)
+#        file.close()
+#        return
+#
+#    dist=binary.copy()
+#    if binary.pixel=='HEALPIX':
+#
+#        tempdir=tempfile.mkdtemp()
+#        hp.fitsfunc.write_map('%s/tempmask'%tempdir, binary.data)
+#        write_dict_file(tempdir)
+#        os.system('source $HOME/.profile; process_mask %s/distance.dict'%tempdir)
+#        dist.data=hp.fitsfunc.read_map('%s/tempfile'%tempdir)
+#        shutil.rmtree(tempdir)
+#        dist.data*=180/np.pi
+#
+#    if binary.pixel=='CAR':
+#        pixSize_arcmin= np.sqrt(binary.data.pixsize()*(60*180/np.pi)**2)
+#        dist.data[:]= scipy.ndimage.distance_transform_edt(binary.data)
+#        dist.data[:]*=pixSize_arcmin/60
+#
+#    return dist
+
 def get_distance(binary):
     """
     @brief get the distance to the closest masked pixels for CAR and healpix pixellisation.
-    This routine is not ideal, for healpix we use the excecutable process mask from the healpix fortran distribution
-    For CAR we use the scipy distance transform that assume that pixel are all of the same size.
     @param binary, a so_map with binary data (1 is observed, 0 is masked)
     @return the distance to the closest masked pixels in degree
     """
-    
-    def write_dict_file(tempdir):
-        file = open("%s/distance.dict"%tempdir,'w')
-        file.write("mask_file=%s/tempmask \n"%tempdir)
-        file.write("hole_min_size=0 \n")
-        file.write("hole_min_surf_arcmin2=0.0 \n")
-        file.write("filled_file='' \n")
-        file.write("distance_file=%s/tempfile \n"%tempdir)
-        file.close()
-        return
-    
     dist=binary.copy()
     if binary.pixel=='HEALPIX':
-
-        tempdir=tempfile.mkdtemp()
-        hp.fitsfunc.write_map('%s/tempmask'%tempdir, binary.data)
-        write_dict_file(tempdir)
-        os.system('source $HOME/.profile; process_mask %s/distance.dict'%tempdir)
-        dist.data=hp.fitsfunc.read_map('%s/tempfile'%tempdir)
-        shutil.rmtree(tempdir)
+        dist.data= enmap.distance_transform_healpix(binary.data, method="heap")
         dist.data*=180/np.pi
-    
     if binary.pixel=='CAR':
         pixSize_arcmin= np.sqrt(binary.data.pixsize()*(60*180/np.pi)**2)
         dist.data[:]= scipy.ndimage.distance_transform_edt(binary.data)
         dist.data[:]*=pixSize_arcmin/60
-
     return dist
 
 

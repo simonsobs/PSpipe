@@ -12,7 +12,7 @@ PSpipe is a pipeline creator for the analysis of the high resolution maps of the
 
 Requirements
 ===============
-The pipeline is mainly written in python and make use of three different codes
+The pipelines are mainly written in python and make use of three different codes
 
 * pspy : python library for power spectrum estimation (https://github.com/simonsobs/pspy)
 * namaster : C library + python wrapper for power spectrum estimation (https://github.com/LSSTDESC/NaMaster)

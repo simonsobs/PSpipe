@@ -1,7 +1,0 @@
-This folder contains the final result of 'The TE correlation coefficient of Planck legacy data' paper, it is a set of correlation coefficients at 100 GHz x 100 GHz, 143 GHz x 143 GHz, 143 GHz x 217 GHz and 217 GHz x 217 GHz.
-
-The format of the files is:
-
-lb, Rb_TE, sigma_b_TE
-
-where lb is the bin center, Rb_TE the correlation coefficient and sigma_b_TE the errors on the correlation coefficients estimated from CMB + FG + FFP10 noise simulations.

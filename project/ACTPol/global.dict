@@ -1,0 +1,45 @@
+arrays = ['pa1','pa2']
+data_dir = '/Users/thibaut/Desktop/Project/so_ps_codes/reproduce_choi/190222/'
+
+map_T_pa1_filtered = [data_dir+'maps/filtered/ACTPol_148_deep56_pa1_f150_s14_4way_split%d_srcadd_I_filt_unpixwin.fits'%(i) for i in range(4)]
+map_Q_pa1_filtered = [data_dir+'maps/filtered/ACTPol_148_deep56_pa1_f150_s14_4way_split%d_Q_filt_unpixwin.fits'%(i) for i in range(4)]
+map_U_pa1_filtered = [data_dir+'maps/filtered/ACTPol_148_deep56_pa1_f150_s14_4way_split%d_U_filt_unpixwin.fits'%(i) for i in range(4)]
+
+map_T_pa2_filtered = [data_dir+'maps/filtered/ACTPol_148_deep56_pa2_f150_s14_4way_split%d_srcadd_I_filt_unpixwin.fits'%(i) for i in range(4)]
+map_Q_pa2_filtered = [data_dir+'maps/filtered/ACTPol_148_deep56_pa2_f150_s14_4way_split%d_Q_filt_unpixwin.fits'%(i) for i in range(4)]
+map_U_pa2_filtered = [data_dir+'maps/filtered/ACTPol_148_deep56_pa2_f150_s14_4way_split%d_U_filt_unpixwin.fits'%(i) for i in range(4)]
+
+
+map_T_pa1 = [data_dir+'maps/ACTPol_148_D56_pa1_f150_s14_4way_split%d_srcadd_I.fits'%(i) for i in range(4)]
+map_Q_pa1 = [data_dir+'maps/ACTPol_148_D56_pa1_f150_s14_4way_split%d_Q.fits'%(i) for i in range(4)]
+map_U_pa1 = [data_dir+'maps/ACTPol_148_D56_pa1_f150_s14_4way_split%d_U.fits'%(i) for i in range(4)]
+
+map_T_pa2 = [data_dir+'maps/ACTPol_148_D56_pa2_f150_s14_4way_split%d_srcadd_I.fits'%(i) for i in range(4)]
+map_Q_pa2 = [data_dir+'maps/ACTPol_148_D56_pa2_f150_s14_4way_split%d_Q.fits'%(i) for i in range(4)]
+map_U_pa2 = [data_dir+'maps/ACTPol_148_D56_pa2_f150_s14_4way_split%d_U.fits'%(i) for i in range(4)]
+
+
+
+apo_path = data_dir+ 'apo_mask/deep56_c7v5_car_190220_rect_master_apo_w0.fits'
+steve_ps_dir = data_dir +'ps'
+
+use_filtered_maps=False
+filter_dict={'kx_cut':90,'ky_cut':50,'kx_cut_apo':0, 'ky_cut_apo':0, 'unpixwin':True, 'd_th':1/120., 'zero_pad': False}
+
+beam_pa1 = data_dir+'beam/beam_tform_160201_s14_pa1_f150_jitter_CMB_deep56.txt'
+beam_pa2 = data_dir+'beam/beam_tform_160201_s14_pa2_f150_jitter_CMB_deep56.txt'
+
+window_T_pa1 = data_dir+'window/deep56_s14_pa1_f150_c7v5_car_190220_rect_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_pa1 = data_dir+'window/deep56_s14_pa1_f150_c7v5_car_190220_rect_w0_cl0.00nK_pt1.00_nt0.0.fits'
+
+window_T_pa2 = data_dir+'window/deep56_s14_pa2_f150_c7v5_car_190220_rect_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_pa2 = data_dir+'/window/deep56_s14_pa2_f150_c7v5_car_190220_rect_w0_cl0.00nK_pt1.00_nt0.0.fits'
+
+binning_file=data_dir+'binning/BIN_ACTPOL_50_4_SC_low_ell'
+niter=0
+lmax=5000
+type='Dl'
+theoryfile= data_dir+'theory/bode_almost_wmap5_lmax_1e4_lensedCls.dat'   
+
+iStart=0
+iStop=300

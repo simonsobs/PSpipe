@@ -1,0 +1,4 @@
+A complete documentation on how to use the scripts is available at:
+https://github.com/simonsobs/PSpipe/wiki/Documentation-for-'The-TE-correlation-coefficient-of-Planck-legacy-data'-software
+
+The final result of 'The TE correlation coefficient of Planck legacy data' paper, consisting in a set of correlation coefficients at 100 GHz x 100 GHz, 143 GHz x 143 GHz, 143 GHz x 217 GHz, 217 GHz x 217 GHz, is available in the 'results' folder. 

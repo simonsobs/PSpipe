@@ -1,0 +1,52 @@
+Reproduction of Planck results.
+
+List of planck spectra: (format lmin,lmax,lmean,Cl,sigma in the planck_spectra folder)
+
+TT_100x100, lmin=30,lmax=1197
+
+TT_143x143, lmin=30,lmax=1196
+
+TT_143x217, lmin=30,lmax=2508
+
+TT_217x217, lmin=30,lmax=2508
+
+EE_100x100, lmin=30,lmax=999
+
+EE_100x143, lmin=30,lmax=999
+
+EE_100x217, lmin=505,lmax=999
+
+EE_143x143, lmin=30,lmax=1996
+
+EE_143x217, lmin=505,lmax=1996
+
+EE_217x217, lmin=505,lmax=1996
+
+TE_100x100, lmin=30,lmax=999
+
+TE_100x143, lmin=30,lmax=999
+
+TE_100x217, lmin=505,lmax=999
+
+TE_143x143, lmin=30,lmax=1996
+
+TE_143x217, lmin=505,lmax=1996
+
+TE_217x217, lmin=505,lmax=1996
+
+The binning file also leave there (binused.dat)
+
+A list of planck maps used in the likelihood is available:
+
+https://irsa.ipac.caltech.edu/data/Planck/release_2/all-sky-maps/
+
+Plik used the half-mission maps.
+
+
+The mask can be found on the PLA:
+
+https://pla.esac.esa.int/#maps
+
+Go to PR2 2015, mask, and then likelihood mask you will find P70,P50,P41 and T66,T57,T47 corresponding to the masks used in the likelihood paper.
+
+The beams can be found in the planck_beam folder, I didn't find the corresponding 2015 one so let's use 2018 ones. I take them from files of the form 'BeamWf_HFI_R3.01/Bl_T_R3.01_fullsky_%s.fits' from the PLA.

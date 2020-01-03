@@ -7,7 +7,7 @@
 
 The package
 ===============
-PSpipe is a package to extract cosmological parameters information from the high resolution maps of the large aperture telescope of the Simons Observatory. It contains tools for estimating power spectra and a multi-frequency likelihood interfaced with the cobaya MCMC sampler.
+PSpipe is a pipeline creator for the analysis of the high resolution maps of the large aperture telescope of the Simons Observatory. It contains tools for estimating power spectra and a multi-frequency likelihood interfaced with the cobaya MCMC sampler.
 
 
 Requirements

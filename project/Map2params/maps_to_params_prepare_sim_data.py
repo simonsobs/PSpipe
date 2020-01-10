@@ -2,9 +2,10 @@
 This script generates the data needed for the simple map2parameter simulation.
 It generates the expected noise power spectra of the Simons Observatory
 large aperture telescope and the expeted Planck white noise power spectra and write them to disk
-in formal: ell, n_ell.
-Note that SO has correlated noise between frequency channels.
+in formal: ell, n_ell. Note that SO has correlated noise between frequency channels.
 It also generates beam files for SO and Planck with format: ell, b_ell.
+Finally it generates a binning_file for SO with format : bin_min, bin_max, bin_mean.
+
 The code makes use of the SO noise calculator: so_noise_calculator_public_20180822.
 """
 #import matplotlib
@@ -21,6 +22,9 @@ from copy import deepcopy
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+
+pspy_utils.create_directory("sim_data")
+
 linestyle = {}
 linestyle["LAT"] = "solid"
 linestyle["Planck"] = "dashed"
@@ -35,7 +39,7 @@ freqs["LAT"] = ["27", "39", "93", "145", "225", "280"]
 ell_min, ell_max = 2, 10000
 delta_ell = 1
 
-pspy_utils.create_directory("noise_ps")
+pspy_utils.create_directory("sim_data/noise_ps")
 
 # We use the SO noise calculator to compute the expected noise in temperature and polarisation.
 ell, n_ell_t_LAT, n_ell_pol_LAT, map_wn = noise_calc.Simons_Observatory_V3_LA_noise(sensitivity_mode,
@@ -96,16 +100,16 @@ for f_pair in f_pairs_Planck:
     n_ell_pol[f_pair] = ell * 0 + sigma_pol_rad**2
 
 # Now let's write the n_ell_t and n_ell_pol dictionnary to disk
-# Note that we are creating a lot of small files, we could also use another data format
+# Note that we are creating a lot of small files, we could use another data format
 
 for exp in ["LAT", "Planck"]:
     my_freqs = freqs[exp]
     for cross in cwr(my_freqs, 2):
         f1, f2 = cross
         name = "%s_%sx%s_%s"%(exp,f1,exp,f2)
-        print (exp, name)
-        np.savetxt("noise_ps/noise_t_%s.dat"%(name), np.transpose([ell,n_ell_t[name]]))
-        np.savetxt("noise_ps/noise_p_%s.dat"%(name), np.transpose([ell,n_ell_pol[name]]))
+        print (name)
+        np.savetxt("sim_data/noise_ps/noise_t_%s.dat"%(name), np.transpose([ell,n_ell_t[name]]))
+        np.savetxt("sim_data/noise_ps/noise_pol_%s.dat"%(name), np.transpose([ell,n_ell_pol[name]]))
 
 
 # Finally let's generate the beam harmonic transform for Planck and SO LAT
@@ -114,7 +118,7 @@ for exp in ["LAT", "Planck"]:
 # For SO we use info from Table 1 of
 # https://arxiv.org/pdf/1808.07445.pdf
 
-pspy_utils.create_directory("beams")
+pspy_utils.create_directory("sim_data/beams")
 
 beam_fwhm = {}
 beam_fwhm["LAT_27"] = 7.4
@@ -135,20 +139,19 @@ for exp in ["LAT", "Planck"]:
     my_freqs = freqs[exp]
     for f in my_freqs:
         l, bl[exp + f] = pspy_utils.beam_from_fwhm(beam_fwhm[exp + '_' + f], ell_max)
-        np.savetxt("beams/beam_%s_%s.dat" % (exp,f), np.transpose([l, bl[exp + f] ]))
+        np.savetxt("sim_data/beams/beam_%s_%s.dat" % (exp,f), np.transpose([l, bl[exp + f] ]))
         
         plt.plot(l, bl[exp + f] , linestyle=linestyle[exp], label="%s_%s" % (exp, f))
         plt.xlabel(r"$\ell$", fontsize=22)
         plt.ylabel(r"$b_{\ell}$", fontsize=22)
 plt.legend()
-plt.savefig("beams/beams_plot.pdf")
+plt.savefig("sim_data/beams/beams_plot.pdf")
 plt.clf()
 plt.close()
 
 # Let's compare the noise power spectra with signal power spectra
-
-
 # We generate the signal power spectra using camb
+
 import camb
 
 # Some standard cosmo parameters
@@ -177,9 +180,8 @@ for exp in ["LAT", "Planck"]:
         
         fac = ell * (ell + 1) / (2 * np.pi)
         
-        # plot only the spectra that are non zero
-        if (len(np.nonzero(n_ell_t[name])[0])) != 0:
-            
+        if (len(np.nonzero(n_ell_t[name])[0])) != 0:  # plot only the spectra that are non zero
+
             plt.subplot(2, 1, 1)
             plt.semilogy()
             plt.ylim(1, 10**5)
@@ -203,7 +205,33 @@ for exp in ["LAT", "Planck"]:
             plt.ylabel(r"$N^{P}_{\ell}$", fontsize=22)
 
 plt.legend()
-plt.savefig("noise_ps/noise_ps_plot.pdf")
+plt.savefig("sim_data/noise_ps/noise_ps_plot.pdf")
 plt.clf()
 plt.close()
+
+
+# Create binning file
+
+pspy_utils.create_directory("sim_data/binning")
+n_bins = 200
+bin_size = np.zeros(n_bins)
+bin_size[0] = 50
+bin_size[1:80] = 35
+bin_size[80:100] = 60
+bin_size[100:200] = 100
+
+bin_min = 2
+
+g = open("sim_data/binning/binning.dat", mode="w")
+for i in range(n_bins):
+    bin_max = bin_min + bin_size[i]
+    bin_mean = (bin_min + bin_max) / 2
+    g.write("%f %f %f\n" % (bin_min, bin_max, bin_mean))
+    bin_min += bin_size[i] + 1
+g.close()
+
+
+
+
+
 

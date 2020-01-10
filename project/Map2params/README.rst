@@ -1,4 +1,4 @@
-Map2Parameter (internal)
+Maps2Parameters (internal)
 =========================
 
 In this ``project``

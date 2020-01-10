@@ -1,0 +1,2 @@
+include versioneer.py
+include pspipe/_version.py

@@ -164,11 +164,11 @@ for iii in subtasks:
                             for count, spec in enumerate(spectra):
                                 if (s1 == s2) & (exp1 == exp2):
                                     if count == 0:
-                                        print ("auto %s_%s split%d X %s_%s split%d" % (exp1, f1, s1, exp2, f2, s2))
+                                        print("auto %s_%s split%d X %s_%s split%d" % (exp1, f1, s1, exp2, f2, s2))
                                     ps_dict[spec, "auto"] += [ps[spec]]
                                 else:
                                     if count == 0:
-                                        print ("cross %s_%s split%d X %s_%s split%d" % (exp1, f1, s1, exp2, f2, s2))
+                                        print("cross %s_%s split%d X %s_%s split%d" % (exp1, f1, s1, exp2, f2, s2))
                                     ps_dict[spec, "cross"] += [ps[spec]]
 
                     ps_dict_auto_mean = {}

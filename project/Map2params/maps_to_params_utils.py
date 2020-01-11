@@ -1,7 +1,7 @@
 """
 Some utility functions for the map2parameters project.
 """
-import  numpy as np, healpy as hp
+import numpy as np, healpy as hp
 from pixell import curvedsky
 
 def symmetrize(mat):
@@ -38,7 +38,7 @@ def get_noise_matrix_spin0and2(noise_data_dir, exp, freqs, lmax, nsplits, lcut=0
       the number of data splits we want to simulate
       nl_per_split= nl * n_{splits}
     lcut: integer
-      the noise of SO being very red we will cut out the lowest mode to avoid
+      the noise of SO being very red we will cut out the lowest modes to avoid
       leakage
     """
 
@@ -53,8 +53,8 @@ def get_noise_matrix_spin0and2(noise_data_dir, exp, freqs, lmax, nsplits, lcut=0
             l, nl_t = np.loadtxt("%s/noise_t_%s_%sx%s_%s.dat"%(noise_data_dir, exp, freq1, exp, freq2), unpack=True)
             l, nl_pol = np.loadtxt("%s/noise_pol_%s_%sx%s_%s.dat"%(noise_data_dir, exp, freq1, exp, freq2), unpack=True)
             
-            nl_array_t[c1, c2, lcut:lmax] = nl_t[lcut:lmax] * n_splits
-            nl_array_pol[c1, c2, lcut:lmax] = nl_pol[lcut:lmax] * n_splits
+            nl_array_t[c1, c2, lcut:lmax] = nl_t[lcut:lmax] * nsplits
+            nl_array_pol[c1, c2, lcut:lmax] = nl_pol[lcut:lmax] * nsplits
 
     for i in range(lmax):
         nl_array_t[:,:,i] = symmetrize(nl_array_t[:,:,i])

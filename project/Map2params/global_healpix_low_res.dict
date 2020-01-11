@@ -3,7 +3,7 @@ iStop = 99
 
 experiments = ["LAT"]
 
-freqs_LAT = ["93","145","225"]
+freqs_LAT = ["93", "145", "225"]
 
 #noise properties of LAT
 f_sky_LAT = 0.4
@@ -21,7 +21,7 @@ apo_type_survey_LAT = "C1"
 apo_radius_survey_LAT = 5
 
 pixel_LAT = "HEALPIX"
-nSplits_LAT = 2
+nsplits_LAT = 2
 nside_LAT = 1024
 
 disc_LAT = False
@@ -53,5 +53,5 @@ niter = 3
 lcut = 30 # parameter to regularize the noise power spectrum at very low ell
 
 hdf5 = False
-writeAll = False
+write_all_spectra = False
 multistep_path = "/global/homes/t/tlouis/PSpipe/data/"

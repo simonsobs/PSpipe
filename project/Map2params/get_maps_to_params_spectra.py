@@ -2,7 +2,7 @@
 This script generates the simulations and compute their power spectra.
 The simulation are generated on the fly and the spectra are written to disk.
 """
-from pspy import pspy_utils, so_dict,so_map,so_mpi,sph_tools,so_mcm,so_spectra
+from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 import numpy as np
 import sys
 from pixell import curvedsky, powspec

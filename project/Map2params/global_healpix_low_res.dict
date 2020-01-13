@@ -3,7 +3,7 @@ iStop = 2
 
 experiments = ["LAT"]
 
-freqs_LAT = ["93"]#, "145", "225"]
+freqs_LAT = ["93", "145", "225"]
 
 #noise properties of LAT
 f_sky_LAT = 0.4

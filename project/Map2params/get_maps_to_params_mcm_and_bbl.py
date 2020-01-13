@@ -83,7 +83,7 @@ for id_exp1, exp1 in enumerate(experiments):
     freqs1 = d["freqs_%s" % exp1]
     
     for id_f1, freq1 in enumerate(freqs1):
-        l, bl1 = np.loadtxt("sim_data/beams/beam_%s_%s.dat" % (exp1,freq1),unpack=True)
+        l, bl1 = np.loadtxt("sim_data/beams/beam_%s_%s.dat" % (exp1,freq1), unpack=True)
         window1 = so_map.read_map("%s/window_%s_%s.fits" % (window_dir, exp1, freq1))
         
         for id_exp2, exp2 in enumerate(experiments):
@@ -96,7 +96,7 @@ for id_exp1, exp1 in enumerate(experiments):
                 
                 print("%s_%s x %s_%s" % (exp1, freq1, exp2, freq2))
 
-                l, bl2 = np.loadtxt("sim_data/beams/beam_%s_%s.dat" % (exp2, freq2),unpack=True)
+                l, bl2 = np.loadtxt("sim_data/beams/beam_%s_%s.dat" % (exp2, freq2), unpack=True)
                 window2 = so_map.read_map("%s/window_%s_%s.fits" % (window_dir,exp2,freq2))
                 
                 mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(window1, window1),

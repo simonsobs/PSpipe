@@ -29,6 +29,7 @@ mcm_dir = "mcms"
 noise_data_dir = "sim_data/noise_ps"
 specDir = "spectra"
 
+np.random.seed(0)
 lmax_simu = lmax
 
 pspy_utils.create_directory(specDir)
@@ -37,7 +38,6 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
 all_freqs = [freq for exp in experiments for freq in d["freqs_%s" % exp]]
-print (all_freqs)
 ncomp = 3
 ps_cmb = powspec.read_spectrum(d["clfile"])[:ncomp, :ncomp]
 
@@ -94,8 +94,8 @@ for iii in subtasks:
             alms_beamed = alms.copy()
             
             if include_fg == True:
-                # Pol not implemented yet
-                print("include fg for the temperature alms")
+                # include fg for the temperature alms
+                # pol not implemented yet
                 alms_beamed[0] += fglms[fcount]
             
             alms_beamed = maps_to_params_utils.multiply_alms(alms_beamed, bl, ncomp)
@@ -113,7 +113,6 @@ for iii in subtasks:
                 
                 # Now that we have generated a split of data of experiment exp
                 # and frequency freq, we take its harmonic transform
-                
                 split = maps_to_params_utils.remove_mean(split, window_tuple, ncomp)
                 master_alms[exp, freq, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
 
@@ -182,7 +181,7 @@ for iii in subtasks:
                         if exp1 == exp2:
                             ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
                             spec_name_auto = "%s_%s_%sx%s_%s_auto_%05d" % (type, exp1, f1, exp2, f2, iii)
-                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec]- ps_dict_cross_mean[spec]) / d["nsplits_%s" % exp]
+                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / d["nsplits_%s" % exp]
                             spec_name_noise = "%s_%s_%sx%s_%s_noise_%05d" % (type, exp1, f1, exp2, f2, iii)
 
                     so_spectra.write_ps(specDir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)

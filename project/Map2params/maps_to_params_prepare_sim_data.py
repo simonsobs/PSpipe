@@ -8,8 +8,8 @@ Finally it generates a binning_file for SO with format : bin_min, bin_max, bin_m
 
 The code makes use of the SO noise calculator: so_noise_calculator_public_20180822.
 """
-#import matplotlib
-#matplotlib.use("Agg")
+import matplotlib
+matplotlib.use("Agg")
 from pspy import pspy_utils, so_dict
 import numpy as np
 import pylab as plt

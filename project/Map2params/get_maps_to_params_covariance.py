@@ -7,7 +7,7 @@ d.read_from_file(sys.argv[1])
 
 window_dir = "windows"
 mcm_dir = "mcms"
-cov_dir = "covariance"
+cov_dir = "covariances"
 specDir = "spectra"
 
 experiments = d["experiments"]

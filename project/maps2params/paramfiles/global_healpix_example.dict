@@ -1,0 +1,70 @@
+# the simulations index will go from iStart to iStop, nsims = iStop - iStart
+iStart = 0
+iStop = 199
+
+# the list of experiments, e.g ["LAT", "Planck"], ["LAT"], ["Planck"]
+
+experiments = ["LAT"]
+
+# the list of frequencies
+
+freqs_LAT = ["145", "225"]
+
+# noise properties of LAT, this will be used by the SO noise calculator
+f_sky_LAT = 0.4
+sensitivity_mode = 1
+
+# cmb and fg power spectra that should be included
+spin = "0-2"
+clfile = 'sim_data/cosmo_and_fg/cosmo_spectra.dat'
+include_fg = True
+fg_dir = "sim_data/cosmo_and_fg/"
+fg_components = ["cibc", "cibp", "kSZ", "radio", "tSZ"]
+
+
+# map pixellisation
+pixel_LAT = "HEALPIX"
+
+# number of splits of data
+nsplits_LAT = 2
+
+# angular resolution
+nside_LAT = 1024
+
+# wether to include galactic mask and survey mask and location of the files
+galactic_mask_LAT = True
+galactic_mask_LAT_file_93 = "masks/mask_equatorial_1024.fits"
+galactic_mask_LAT_file_145 = "masks/mask_equatorial_1024.fits"
+galactic_mask_LAT_file_225 = "masks/mask_equatorial_1024.fits"
+
+survey_mask_LAT = True
+survey_mask_LAT_file_93 = "masks/survey_mask_1024.fits"
+survey_mask_LAT_file_145 = "masks/survey_mask_1024.fits"
+survey_mask_LAT_file_225 = "masks/survey_mask_1024.fits"
+
+# apodisation type and apodisation lenght (in degree)
+
+apo_type_survey_LAT = "C1"
+apo_radius_survey_LAT = 5
+
+
+# wether to include a point source mask and its properties
+pts_source_mask_LAT = False
+source_mask_nholes_LAT = 100
+source_mask_radius_LAT = 10
+apo_radius_mask_LAT = 0.3
+
+
+
+# recovered spectra parameters
+type = "Dl"
+binning_file = "sim_data/binning/binning.dat"
+lmax = 2000
+lmax_mcm = 2500
+niter = 3
+lcut = 30 # parameter to regularize the noise power spectrum at very low ell
+
+
+write_all_spectra = False
+get_mc_cov = True
+multistep_path = "js/"

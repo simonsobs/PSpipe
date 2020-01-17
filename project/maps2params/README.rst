@@ -64,4 +64,4 @@ We are done with the simulations/spectra and covariances part, it's time to plot
 .. code:: shell
 
     python maps_to_params_mc_plot_spectra.py global.dict
-    python maps_to_params_covariance_plot.py global.dict
+    python maps_to_params_mc_plot_covariances.py global.dict

@@ -34,7 +34,7 @@ This can be done simply by running
 
     python maps_to_params_prepare_sim_data.py global.dict
 
-Then we generate the window functions and associated mode coupling matrices 
+then we generate the window functions and associated mode coupling matrices 
 
 .. code:: shell
 
@@ -46,7 +46,7 @@ The next step is to generate simulations and take their power spectra this is do
 
     python get_maps_to_params_spectra.py global.dict
     
-Note that for this step and since you might want to generate many simulations, you might benefit from using a computer cluster and MPI. Details on how to run this script at NERSC with MPI are given in the NERSC section.
+note that for this step and since you might want to generate many simulations, you might benefit from using a computer cluster and MPI. Details on how to run this script at NERSC with MPI are given in the NERSC section.
 And analysis of the simulations can be performed by running
 
 .. code:: shell

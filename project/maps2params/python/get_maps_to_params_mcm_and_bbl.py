@@ -13,9 +13,11 @@ d.read_from_file(sys.argv[1])
 
 window_dir = "windows"
 mcm_dir = "mcms"
+plot_dir = "plots/windows/"
 
 pspy_utils.create_directory(window_dir)
 pspy_utils.create_directory(mcm_dir)
+pspy_utils.create_directory(plot_dir)
 
 experiments = d["experiments"]
 lmax = d["lmax"]
@@ -54,12 +56,12 @@ for exp in experiments:
         
         if d["galactic_mask_%s" % exp] == True:
             gal_mask = so_map.read_map(d["galactic_mask_%s_file_%s" % (exp, freq)])
-            gal_mask.plot(file_name="%s/gal_mask_%s_%s" % (window_dir, exp, freq))
+            gal_mask.plot(file_name="%s/gal_mask_%s_%s" % (plot_dir, exp, freq))
             window.data[:] *= gal_mask.data[:]
         
         if d["survey_mask_%s" % exp] == True:
             survey_mask = so_map.read_map(d["survey_mask_%s_file_%s" % (exp, freq)])
-            survey_mask.plot(file_name="%s/survey_mask_mask_%s_%s" % (window_dir, exp, freq))
+            survey_mask.plot(file_name="%s/survey_mask_mask_%s_%s" % (plot_dir, exp, freq))
             window.data[:] *= survey_mask.data[:]
 
         apo_radius_degree = (d["apo_radius_survey_%s" % exp])
@@ -72,7 +74,7 @@ for exp in experiments:
             window.data[:] *= mask.data[:]
 
         window.write_map("%s/window_%s_%s.fits" % (window_dir, exp, freq))
-        window.plot(file_name="%s/window_%s_%s" % (window_dir, exp, freq))
+        window.plot(file_name="%s/window_%s_%s" % (plot_dir, exp, freq))
 
 # We then compute the mode coupling matrices and binning matrices BBl for the different cross spectra
 # that we will form, the code print the cross spectra to be considered in this computation.

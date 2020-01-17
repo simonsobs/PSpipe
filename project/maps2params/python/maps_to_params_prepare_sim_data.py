@@ -22,8 +22,10 @@ from copy import deepcopy
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-
 pspy_utils.create_directory("sim_data")
+
+plot_dir = "plots/instrument_model/"
+pspy_utils.create_directory(plot_dir)
 
 linestyle = {}
 linestyle["LAT"] = "solid"
@@ -145,7 +147,7 @@ for exp in ["LAT", "Planck"]:
         plt.xlabel(r"$\ell$", fontsize=22)
         plt.ylabel(r"$b_{\ell}$", fontsize=22)
 plt.legend()
-plt.savefig("sim_data/beams/beams_plot.pdf")
+plt.savefig("%s/beams_plot.pdf"%plot_dir)
 plt.clf()
 plt.close()
 
@@ -205,7 +207,7 @@ for exp in ["LAT", "Planck"]:
             plt.ylabel(r"$N^{P}_{\ell}$", fontsize=22)
 
 plt.legend()
-plt.savefig("sim_data/noise_ps/noise_ps_plot.pdf")
+plt.savefig("%s/noise_ps_plot.pdf"%plot_dir)
 plt.clf()
 plt.close()
 

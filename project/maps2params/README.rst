@@ -1,5 +1,5 @@
 **************************
-Maps2Parameters (internal)
+Maps2Parameters 
 **************************
 
 In this ``project`` we generate CMB maps simulations and compute their power spectra and covariance matrices.

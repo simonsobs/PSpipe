@@ -55,7 +55,7 @@ Now that we have simulations spectra, we should generate analytical covariances 
 
 .. code:: shell
 
-    python get_maps_to_params_covariance.py global.dict
+    python get_maps_to_params_covariances.py global.dict
 
 Again for this step, mpi is recommended.
 

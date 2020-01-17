@@ -1,5 +1,6 @@
-projects
-========
+********
+Projects
+********
 
 This page describes the different projects we are working on in PSPipe, they are at different states of completion/documentation
 
@@ -17,12 +18,14 @@ correlation_coeff
 This folder contains the code used for this analysis: https://arxiv.org/abs/1909.03967 (now published in PRD).
 We have computed the correlation coefficient R_TE of planck data.
 
-
 analyse_sims 
 =============
+This folder contains the (old) code used for the analysis of the official SO simulations (from Andrea Zonca)
 
 planck 
 =============
+This folder contains (old) code that can be used for the analysis of the Planck data
 
 actpol 
 =============
+This folder contains some code that can be used for the analysis of the actpol data

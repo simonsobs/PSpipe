@@ -176,8 +176,8 @@ for task in subtasks:
     analytic_cov[1*nbins:2*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_13, binning_file, lmax)
 
     # EaTbEcEd
-    M_23 = coupling["PaTcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EETE")
-    M_23 += coupling["PaTdPbPc"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EETE")
+    M_23 = coupling["PaPcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EETE")
+    M_23 += coupling["PaPdTbPc"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EETE")
     analytic_cov[2*nbins:3*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_23, binning_file, lmax)
 
     mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcm_dir, na, nb), spin_pairs=spin_pairs)

@@ -13,7 +13,7 @@ Requirements
 * mflike : mutlifrequency likelihood interfaced with cobaya (https://github.com/simonsobs/LAT_MFLike)
 
 
-pipeline flow chart
+Pipeline flow chart
 ===================
 
 First you need to write a dictionnary file: global.dict that will contains the parameters relevant for the maps2parameter project. Example of global.dict are given in the parameter_files folder.
@@ -53,13 +53,15 @@ And analysis of the simulations can be performed by running
     python maps_to_params_mc_analysis.py global.dict
 
 Now that we have simulations spectra, we should generate analytical covariances matrices 
+
 .. code:: shell
 
     python get_maps_to_params_covariance.py global.dict
 
 Again for this step, mpi is recommended.
 
-It's time to plot the results
+We are done ! it's time to plot the results,
+
 .. code:: shell
 
     python maps_to_params_mc_plot_spectra.py global.dict

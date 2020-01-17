@@ -46,11 +46,9 @@ for kind in ["cross", "noise", "auto"]:
 
                             n_bins = len(lb)
                             vec = np.append(vec, Db[spec])
-                            if spec == "TT" or spec == "EE":
+                            if spec == "TT" or spec == "EE" or spec == "TE" or spec == "ET":
                                 vec_restricted = np.append(vec_restricted, Db[spec])
-                            if spec == "TE":
-                                vec_restricted = np.append(vec_restricted, (Db["TE"] + Db["ET"])/2)
-
+    
         vec_list += [vec]
         vec_list_restricted += [vec_restricted]
 
@@ -66,7 +64,6 @@ for kind in ["cross", "noise", "auto"]:
 
     cov = cov / (iStop-iStart) - np.outer(mean_vec, mean_vec)
     cov_restricted = cov_restricted / (iStop-iStart) - np.outer(mean_vec_restricted, mean_vec_restricted)
-
 
     np.save("%s/cov_all_%s.npy" % (mc_dir, kind), cov)
     np.save("%s/cov_restricted_all_%s.npy" % (mc_dir, kind), cov_restricted)
@@ -87,8 +84,7 @@ for kind in ["cross", "noise", "auto"]:
                         mean = mean_vec[id_spec * n_bins:(id_spec + 1) * n_bins]
                         std = np.sqrt(cov[id_spec * n_bins:(id_spec + 1) * n_bins, id_spec * n_bins:(id_spec + 1) * n_bins].diagonal())
                         
-                        np.savetxt("%s/spectra_%s_%s_%sx%s_%s_%s.dat" % (mc_dir, spec, exp1, f1, exp2, f2, kind)
-                                   ,np.array([lb,mean,std]).T)
+                        np.savetxt("%s/spectra_%s_%s_%sx%s_%s_%s.dat" % (mc_dir, spec, exp1, f1, exp2, f2, kind), np.array([lb,mean,std]).T)
                                    
                         id_spec += 1
 

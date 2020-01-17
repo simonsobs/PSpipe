@@ -195,23 +195,43 @@ def remove_mean(so_map, window, ncomp):
     return so_map
 
 
-#def get_effective_noise(lmax, bl1, bl2, Nl_file_T, Nl_file_P, spectra, lcut=0):
-#
-#
-#    bl1=bl1[lcut:lmax]
-#    bl2=bl2[lcut:lmax]
-#    if spectra==None:
-#        l,noise_ps=np.loadtxt(Nl_file_T,unpack=True)
-#        noise_ps=np.zeros(lmax)
-#        noise_ps[lcut:lmax]/=(bl1*bl2)
-#    else:
-#        noise_ps={}
-#        for spec in spectra:
-#            noise_ps[spec]=np.zeros(lmax)
-#        l,noise_ps_T=np.loadtxt(Nl_file_T,unpack=True)
-#        l,noise_ps_P=np.loadtxt(Nl_file_P,unpack=True)
-#        noise_ps['TT'][lcut:lmax]=noise_ps_T[lcut:lmax]/(bl1*bl2)
-#        noise_ps['EE'][lcut:lmax]=noise_ps_P[lcut:lmax]/(bl1*bl2)
-#        noise_ps['BB'][lcut:lmax]=noise_ps_P[lcut:lmax]/(bl1*bl2)
+def get_effective_noise(nl_file_t, bl1, bl2, lmax,nl_file_pol=None, lcut=0):
+    """This function returns the effective noise power spectrum
+        which is defined as the ratio of the noise power spectrum and the
+        beam window function.
+        Parameters
+        ----------
+        nl_file_t: string
+          name of the temperature noise power spectrum file, expect l,nl
+        nl_file_p: string
+          name of the polarisation noise power spectrum file, expect l,nl
+        bl1: 1 d array
+          beam harmonic transform
+        bl2: 1 d array
+          beam harmonic transform
+        lmax : integer
+          the maximum multipole for the noise power spectra
+        lcut : integer
+          the noise of SO being very red we will cut out the lowest modes to avoid
+          leakage
+    """
+
+    bl1 = bl1[lcut:lmax]
+    bl2 = bl2[lcut:lmax]
+    if nl_file_pol == None:
+        l, noise = np.loadtxt(nl_file_t, unpack=True)
+        noise[lcut:lmax] /= (bl1 * bl2)
+    else:
+        noise = {}
+        spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+        for spec in spectra:
+            noise[spec] = np.zeros(lmax)
+        
+        l, noise_t = np.loadtxt(nl_file_t,unpack=True)
+        l, noise_pol = np.loadtxt(nl_file_pol,unpack=True)
+
+        noise["TT"][lcut:lmax] = noise_t[lcut:lmax] / (bl1 * bl2)
+        noise["EE"][lcut:lmax] = noise_pol[lcut:lmax] / (bl1 * bl2)
+        noise["BB"][lcut:lmax] = noise_pol[lcut:lmax] / (bl1 * bl2)
     
-#    return noise_ps
+    return noise

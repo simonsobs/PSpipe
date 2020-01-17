@@ -1,9 +1,9 @@
 iStart = 0
-iStop = 2
+iStop = 199
 
 experiments = ["LAT"]
 
-freqs_LAT = ["93", "145", "225"]
+freqs_LAT = ["145", "225"]
 
 #noise properties of LAT
 f_sky_LAT = 0.4
@@ -56,4 +56,4 @@ lcut = 30 # parameter to regularize the noise power spectrum at very low ell
 hdf5 = False
 write_all_spectra = False
 get_mc_cov = True
-multistep_path = "/global/homes/t/tlouis/PSpipe/data/"
+multistep_path = "./"

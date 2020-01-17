@@ -1,4 +1,4 @@
-Project 
+projects
 ========
 
 This page describe the different projects we are working on in PSPipe,
@@ -15,8 +15,8 @@ correlation_coeff
 analyse_sims 
 =============
 
-Planck 
+planck 
 =============
 
-ACTPol 
+actpol 
 =============

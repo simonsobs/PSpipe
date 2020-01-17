@@ -23,6 +23,7 @@ Then we can use the codes in the scripts folder to run the pipeline sequentially
 
 The first step of the pipeline is generating all the data necessary for the generation of simulation.
 This includes:
+
 * multi-frequency beam files
 * multi-frequency noise power spectra
 * input theory power spectra and multi-frequency fg cmb power spectra

@@ -1,4 +1,4 @@
-projects
+Projects
 ========
 
 This page describes the different projects we are working on in PSPipe, they are at different states of completion/documentation

@@ -16,12 +16,10 @@ Requirements
 Pipeline flow chart
 ===================
 
-First you need to write a dictionnary file: global.dict that will contains the parameters relevant for the maps2parameter project. Example of global.dict are given in the parameter_files folder.
+First you need to write a dictionnary file: global.dict that will contains the parameters relevant for the maps2parameter project. Examples of global.dict are given in the parameter_files folder.
 Then we can use the codes in the scripts folder to run the pipeline sequentially.
 
-
-
-The first step of the pipeline is generating all the data necessary for the generation of simulation.
+The first step of the pipeline is generating all the data necessary for the generation of simulations.
 This includes:
 
 * multi-frequency beam files

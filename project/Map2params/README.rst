@@ -22,6 +22,7 @@ This includes:
 - input theory power spectra and multi-frequency fg cmb power spectra
 
 This can be done simply by running
+
 .. code:: shell
 
     python maps_to_params_prepare_sim_data.py global_healpix.dict

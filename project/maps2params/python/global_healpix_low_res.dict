@@ -44,7 +44,7 @@ survey_mask_LAT_file_93 = "masks/survey_mask_1024.fits"
 survey_mask_LAT_file_145 = "masks/survey_mask_1024.fits"
 survey_mask_LAT_file_225 = "masks/survey_mask_1024.fits"
 
-# Spectra  parameter
+# Spectra parameters
 type = "Dl"
 binning_file = "sim_data/binning/binning.dat"
 lmax = 2000

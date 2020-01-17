@@ -3,11 +3,9 @@ iStart = 0
 iStop = 199
 
 # the list of experiments, e.g ["LAT", "Planck"], ["LAT"], ["Planck"]
-
 experiments = ["LAT"]
 
 # the list of frequencies
-
 freqs_LAT = ["145", "225"]
 
 # noise properties of LAT, this will be used by the SO noise calculator
@@ -20,7 +18,6 @@ clfile = 'sim_data/cosmo_and_fg/cosmo_spectra.dat'
 include_fg = True
 fg_dir = "sim_data/cosmo_and_fg/"
 fg_components = ["cibc", "cibp", "kSZ", "radio", "tSZ"]
-
 
 # map pixellisation
 pixel_LAT = "HEALPIX"
@@ -43,18 +40,14 @@ survey_mask_LAT_file_145 = "masks/survey_mask_1024.fits"
 survey_mask_LAT_file_225 = "masks/survey_mask_1024.fits"
 
 # apodisation type and apodisation lenght (in degree)
-
 apo_type_survey_LAT = "C1"
 apo_radius_survey_LAT = 5
-
 
 # wether to include a point source mask and its properties
 pts_source_mask_LAT = False
 source_mask_nholes_LAT = 100
 source_mask_radius_LAT = 10
 apo_radius_mask_LAT = 0.3
-
-
 
 # recovered spectra parameters
 type = "Dl"

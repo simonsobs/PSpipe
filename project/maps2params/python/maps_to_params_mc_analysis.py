@@ -46,9 +46,15 @@ for kind in ["cross", "noise", "auto"]:
 
                             n_bins = len(lb)
                             vec = np.append(vec, Db[spec])
-                            if spec == "TT" or spec == "EE" or spec == "TE" or spec == "ET":
-                                vec_restricted = np.append(vec_restricted, Db[spec])
-    
+                            
+                            if (exp1 == exp2) & (f1 == f2):
+                                if spec == "TT" or spec == "EE" or spec == "TE" :
+                                    vec_restricted = np.append(vec_restricted, Db[spec])
+                            else:
+                                if spec == "TT" or spec == "EE" or spec == "TE" or spec == "ET":
+                                    vec_restricted = np.append(vec_restricted, Db[spec])
+
+                                
         vec_list += [vec]
         vec_list_restricted += [vec_restricted]
 

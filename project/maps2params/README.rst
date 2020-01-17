@@ -59,7 +59,7 @@ Now that we have simulations spectra, we should generate analytical covariances 
 
 Again for this step, mpi is recommended.
 
-We are done with the simulations/spectra and covariances part, it's time to plot the results and check that the pipeline is working as expected
+We are done with the simulations/spectra and covariances part, it is time to plot the results and check that the pipeline is working as expected
 
 .. code:: shell
 

@@ -1,0 +1,62 @@
+experiment=['la']
+freq_la=['027','039','093','145','225','280']
+
+run_name='ame'
+
+maps_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/%s/0000/'%run_name
+
+maps_la_027=[maps_dir+'simonsobs_%s_uKCMB_la027_nside4096_0000.fits'%run_name,maps_dir+'simonsobs_%s_uKCMB_la027_nside4096_0000.fits'%run_name]
+maps_la_039=[maps_dir+'simonsobs_%s_uKCMB_la039_nside4096_0000.fits'%run_name,maps_dir+'simonsobs_%s_uKCMB_la039_nside4096_0000.fits'%run_name]
+maps_la_093=[maps_dir+'simonsobs_%s_uKCMB_la093_nside4096_0000.fits'%run_name,maps_dir+'simonsobs_%s_uKCMB_la093_nside4096_0000.fits'%run_name]
+maps_la_145=[maps_dir+'simonsobs_%s_uKCMB_la145_nside4096_0000.fits'%run_name,maps_dir+'simonsobs_%s_uKCMB_la145_nside4096_0000.fits'%run_name]
+maps_la_225=[maps_dir+'simonsobs_%s_uKCMB_la225_nside4096_0000.fits'%run_name,maps_dir+'simonsobs_%s_uKCMB_la225_nside4096_0000.fits'%run_name]
+maps_la_280=[maps_dir+'simonsobs_%s_uKCMB_la280_nside4096_0000.fits'%run_name,maps_dir+'simonsobs_%s_uKCMB_la280_nside4096_0000.fits'%run_name]
+
+
+mask_dir='/global/cscratch1/sd/krach/SObs/FGawg/masks/040619/4096/'
+survey_mask_dir='/global/homes/t/tlouis/PSpipe/project/AnalyseSims/survey_mask/'
+
+mask_T_la_027=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_T_la_039=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_T_la_093=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_T_la_145=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_T_la_225=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_T_la_280=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+
+mask_P_la_027=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_039=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_093=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_145=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_225=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+mask_P_la_280=mask_dir + 'mask_equatorial_temperature_fsky0p70_freq145_ns4096.fits'
+
+survey_mask_la_027=survey_mask_dir + 'survey_mask_la_027.fits'
+survey_mask_la_039=survey_mask_dir + 'survey_mask_la_039.fits'
+survey_mask_la_093=survey_mask_dir + 'survey_mask_la_093.fits'
+survey_mask_la_145=survey_mask_dir + 'survey_mask_la_145.fits'
+survey_mask_la_225=survey_mask_dir + 'survey_mask_la_225.fits'
+survey_mask_la_280=survey_mask_dir + 'survey_mask_la_280.fits'
+
+
+apo_type_survey_la='C1'
+apo_radius_survey_la=5
+
+beam_dir='beam/'
+
+beam_la_027=beam_dir+'beam_la_027.dat'
+beam_la_039=beam_dir+'beam_la_039.dat'
+beam_la_093=beam_dir+'beam_la_093.dat'
+beam_la_145=beam_dir+'beam_la_145.dat'
+beam_la_225=beam_dir+'beam_la_225.dat'
+beam_la_280=beam_dir+'beam_la_280.dat'
+
+
+# Spectra  parameter
+clfile='/Users/thibaut/Desktop/Project/so_ps_codes/PSpipe/data/cosmo2017_10K_acc3_lensedCls.dat'
+type='Dl'
+binning_file='/global/homes/t/tlouis/PSpipe/data/binningFile_400_30.dat'
+lmax=5000
+niter=0
+
+hdf5=False
+writeAll=False

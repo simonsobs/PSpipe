@@ -1,0 +1,32 @@
+experiment=['la']
+freq_la=['027','039','093','145','225','280']
+nside_la=4096
+combinaison_name='combined_newnoise'
+
+content=['dust','synchrotron','freefree','ame','cib','cmb','ksz','tsz']
+
+dust_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/dust/0000/'
+ame_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/ame/0000/'
+freefree_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/freefree/0000/'
+synchrotron_dir='/project/projectdirs/sobs/v4_sims/mbs/201904_highres_foregrounds_equatorial/4096/synchrotron/0000/'
+cib_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cib/0000/'
+cmb_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb/0000/'
+cmb_unlensed_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/cmb_unlensed/0000/'
+ksz_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/ksz/0000/'
+tsz_dir='/project/projectdirs/sobs/v4_sims/mbs/201905_extragalactic/4096/tsz/0000/'
+noise_dir0='/global/project/projectdirs/sobs/v4_sims/mbs/201906_noise_no_lowell/4096/noise/0000/'
+noise_dir1='/global/project/projectdirs/sobs/v4_sims/mbs/201906_noise_no_lowell/4096/noise/0001/'
+
+dust_maps=[dust_dir+'simonsobs_dust_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+ame_maps=[ame_dir+'simonsobs_ame_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+freefree_maps=[freefree_dir+'simonsobs_freefree_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+synchrotron_maps=[synchrotron_dir+'simonsobs_synchrotron_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+cib_maps=[cib_dir+'simonsobs_cib_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+cmb_maps=[cmb_dir+'simonsobs_cmb_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+cmb_unlensed_maps=[cmb_unlensed_dir+'simonsobs_cmb_unlensed_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+ksz_maps=[ksz_dir+'simonsobs_ksz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+tsz_maps=[tsz_dir+'simonsobs_tsz_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+
+noise_maps0=[noise_dir0+'simonsobs_noise_uKCMB_la%s_nside4096_0000.fits'%f for f in freq_la]
+noise_maps1=[noise_dir1+'simonsobs_noise_uKCMB_la%s_nside4096_0001.fits'%f for f in freq_la]
+

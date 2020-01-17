@@ -16,8 +16,8 @@ Requirements
 Pipeline flow chart
 ===================
 
-First you need to write a dictionnary file: global.dict that will contains the parameters relevant for the maps2parameter project. Examples of global.dict are given in the paramfiles folder.
-Then we can use the codes in the scripts folder to run the pipeline sequentially.
+First you need to write a dictionnary file: global.dict, it will contain the parameters relevant for the maps2parameter project. Examples of global.dict are given in the paramfiles folder.
+Then, we can use the codes in the python folder to run the pipeline sequentially.
 
 The first step of the pipeline is generating all the data necessary for the generation of simulations.
 This includes:
@@ -59,7 +59,7 @@ Now that we have simulations spectra, we should generate analytical covariances 
 
 Again for this step, mpi is recommended.
 
-We are done, with the simulations/spectra and covariances part, it's time to plot the results and check that the pipeline is working as expected
+We are done with the simulations/spectra and covariances part, it's time to plot the results and check that the pipeline is working as expected
 
 .. code:: shell
 

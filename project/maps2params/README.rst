@@ -44,7 +44,7 @@ The next step is to generate simulations and take their power spectra this is do
 
     python get_maps_to_params_spectra.py global.dict
     
-note that for this step and since you might want to generate many simulations, you might benefit from using a computer cluster and MPI. Details on how to run this script at NERSC with MPI are given in the NERSC section.
+for this step you might want to generate many simulations and you might benefit from using a computer cluster with MPI. Details on how to run this script at NERSC with MPI are given in the NERSC section.
 And analysis of the simulations can be performed by running
 
 .. code:: shell

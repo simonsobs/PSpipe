@@ -23,7 +23,7 @@ This folder contains the (old) code used for the analysis of the official SO sim
 
 planck 
 =============
-This folder contains the (old) code used for the analysis of the Planck data
+This folder contains (old) code that can be used for the analysis of the Planck data
 
 actpol 
 =============

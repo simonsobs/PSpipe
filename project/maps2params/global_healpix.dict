@@ -1,0 +1,59 @@
+iStart = 0
+iStop = 2
+
+experiments = ["LAT"]
+
+freqs_LAT = ["93", "145", "225"]
+
+#noise properties of LAT
+f_sky_LAT = 0.4
+sensitivity_mode = 1
+
+#type of simulations
+spin = "0-2"
+clfile = 'sim_data/cosmo_and_fg/cosmo_spectra.dat'
+
+include_fg = True
+fg_dir = "sim_data/cosmo_and_fg/"
+fg_components = ["cibc", "cibp", "kSZ", "radio", "tSZ"]
+
+apo_type_survey_LAT = "C1"
+apo_radius_survey_LAT = 5
+
+pixel_LAT = "HEALPIX"
+nsplits_LAT = 2
+nside_LAT = 4096
+
+disc_LAT = False
+lon_disc_LAT = 30
+lat_disc_LAT = 50
+radius_disc_LAT = 25
+
+pts_source_mask_LAT = False
+source_mask_nholes_LAT = 100
+source_mask_radius_LAT = 10
+apo_radius_mask_LAT = 0.3
+
+galactic_mask_LAT = True
+galactic_mask_LAT_file_93 = "masks/mask_equatorial_1024.fits"
+galactic_mask_LAT_file_145 = "masks/mask_equatorial_1024.fits"
+galactic_mask_LAT_file_225 = "masks/mask_equatorial_1024.fits"
+
+survey_mask_LAT = True
+survey_mask_LAT_file_93 = "masks/survey_mask_1024.fits"
+survey_mask_LAT_file_145 = "masks/survey_mask_1024.fits"
+survey_mask_LAT_file_225 = "masks/survey_mask_1024.fits"
+
+# Spectra  parameter
+type = "Dl"
+binning_file = "sim_data/binning/binning.dat"
+lmax = 6000
+lmax_mcm = 8000
+niter = 3
+lcut = 30 # parameter to regularize the noise power spectrum at very low ell
+
+
+hdf5 = False
+write_all_spectra = False
+get_mc_cov = True
+multistep_path = "/global/homes/t/tlouis/PSpipe/data/"

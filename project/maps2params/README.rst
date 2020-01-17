@@ -17,7 +17,7 @@ Pipeline flow chart
 ===================
 
 First you need to write a dictionnary file: global.dict, it will contain the parameters relevant for the maps2parameter project. Examples of global.dict are given in the paramfiles folder.
-Then, we can use the codes in the scripts folder to run the pipeline sequentially.
+Then, we can use the codes in the python folder to run the pipeline sequentially.
 
 The first step of the pipeline is generating all the data necessary for the generation of simulations.
 This includes:

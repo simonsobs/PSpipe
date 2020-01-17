@@ -1,8 +1,7 @@
 projects
 ========
 
-This page describe the different projects we are working on in PSPipe,
-they are at different states of completion/documentation
+This page describes the different projects we are working on in PSPipe, they are at different states of completion/documentation
 
 maps2params 
 ===========

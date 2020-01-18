@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 from pspy import pspy_utils, so_dict, so_cov
 import  numpy as np
 import pylab as plt
@@ -85,16 +85,9 @@ for sid1, spec1 in enumerate(spec_list):
         plt.figure(figsize=(15, 15))
         plt.suptitle("%s %s (press c/v to switch between covariance matrix elements)" % (spec1, spec2), fontsize=30)
         count = 1
-        for bl in ["TTTT",
-                   "TETE",
-                   "ETET",
-                   "EEEE",
-                   "TTTE",
-                   "TTEE",
-                   "TTET",
-                   "TEET",
-                   "TEEE",
-                   "ETEE"]:
+        for bl in ["TTTT", "TETE", "ETET", "EEEE",
+                   "TTTE", "TTEE", "TTET", "TEET",
+                   "TEEE", "ETEE"]:
             
             mc_cov_sub = so_cov.selectblock(mc_cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
             analytic_cov_sub= so_cov.selectblock(analytic_cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)

@@ -126,6 +126,9 @@ for task in subtasks:
     win["Pc"] = so_map.read_map("%s/window_%s.fits" % (window_dir, nc))
     win["Pd"] = so_map.read_map("%s/window_%s.fits" % (window_dir, nd))
 
+    # Hack for faster computation
+    win = so_map.read_map("%s/window_%s.fits" % (window_dir, nd))
+    
     coupling = so_cov.cov_coupling_spin0and2_simple(win, lmax, niter=niter)
     
     analytic_cov = np.zeros((4*nbins, 4*nbins))
@@ -157,27 +160,27 @@ for task in subtasks:
 
     # TaTbEcTd
     M_02 = coupling["TaPcTbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TETT")
-    M_02 += coupling["TaTdTbPc"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TTTE")
+    M_02 += coupling["TaTdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TTTE")
     analytic_cov[0*nbins:1*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_02, binning_file, lmax)
 
     # TaTbEcEd
     M_03 = coupling["TaPcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TETE")
-    M_03 += coupling["TaPdTbPc"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TETE")
+    M_03 += coupling["TaPdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TETE")
     analytic_cov[0*nbins:1*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_03, binning_file, lmax)
 
     # TaEbEcTd
     M_12 = coupling["TaPcPbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TEET")
-    M_12 += coupling["TaTdPbPc"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TTEE")
+    M_12 += coupling["TaTdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TTEE")
     analytic_cov[1*nbins:2*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_12, binning_file, lmax)
 
     # TaEbEcEd
     M_13 = coupling["TaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TEEE")
-    M_13 += coupling["TaPdPbPc"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TEEE")
+    M_13 += coupling["TaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TEEE")
     analytic_cov[1*nbins:2*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_13, binning_file, lmax)
 
     # EaTbEcEd
     M_23 = coupling["PaPcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EETE")
-    M_23 += coupling["PaPdTbPc"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EETE")
+    M_23 += coupling["PaPdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "EETE")
     analytic_cov[2*nbins:3*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_23, binning_file, lmax)
 
     mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcm_dir, na, nb), spin_pairs=spin_pairs)
@@ -209,7 +212,6 @@ for task in subtasks:
             vec_ab = []
             vec_cd = []
             for spec in ["TT", "TE", "ET", "EE"]:
-                # BUG: Need to sum TE + ET
                 vec_ab = np.append(vec_ab, ps_ab[spec])
                 vec_cd = np.append(vec_cd, ps_cd[spec])
         

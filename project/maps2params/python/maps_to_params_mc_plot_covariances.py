@@ -87,7 +87,9 @@ for sid1, spec1 in enumerate(spec_list):
         count = 1
         for bl in ["TTTT", "TETE", "ETET", "EEEE",
                    "TTTE", "TTEE", "TTET", "TEET",
-                   "TEEE", "ETEE"]:
+                   "TEEE", "ETEE",
+                   "EETE", "EEET", "ETTE", "ETTT",
+                   "EETT", "TETT"]:
             
             mc_cov_sub = so_cov.selectblock(mc_cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
             analytic_cov_sub= so_cov.selectblock(analytic_cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
@@ -95,11 +97,11 @@ for sid1, spec1 in enumerate(spec_list):
             var = mc_cov_sub.diagonal()
             analytic_var = analytic_cov_sub.diagonal()
 
-            plt.subplot(2,5,count)
+            plt.subplot(3,6,count)
             if count == 1:
                 plt.semilogy()
             plt.plot(lb[1:], var[1:], "o", label="MC %sx%s" % (bl[:2],bl[2:4]))
-            plt.plot(lb[1:], analytic_var[1:] ,label = "Analytic %sx%s" % (bl[:2],bl[2:4]))
+            plt.plot(lb[1:], analytic_var[1:], label = "Analytic %sx%s" % (bl[:2],bl[2:4]))
             if count == 1 or count == 4:
                 plt.ylabel(r"$Cov_{i,i,\ell}$", fontsize=22)
             if count > 3:

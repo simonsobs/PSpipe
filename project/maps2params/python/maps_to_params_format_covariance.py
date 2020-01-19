@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("Agg")
 from pspy import so_dict, pspy_utils
 import numpy as np
 import pylab as plt
@@ -15,6 +17,9 @@ d.read_from_file(sys.argv[1])
 
 cov_dir = "covariances"
 mc_dir = "montecarlo"
+cov_plot_dir = "plots/full_covariance"
+
+pspy_utils.create_directory(cov_plot_dir)
 
 experiments = d["experiments"]
 lmax = d["lmax"]
@@ -54,7 +59,6 @@ for sid1, name1 in enumerate(spec_name):
                 
                 sub_cov = analytic_cov[s1 * nbins:(s1 + 1) * nbins, s2 * nbins:(s2 + 1) * nbins]
                 analytic_dict[sid1, sid2, s1, s2] = sub_cov
-
 
 full_analytic_cov = np.zeros((4 * nspec * nbins, 4 * nspec * nbins))
 
@@ -96,6 +100,7 @@ size=int(full_analytic_cov.shape[0]/nbins)
 
 full_mc_cov = np.load("%s/cov_restricted_all_cross.npy"%mc_dir)
 
+count=0
 for ispec in range(-size+1, size):
     
     rows, cols = np.indices(full_mc_cov.shape)
@@ -111,4 +116,8 @@ for ispec in range(-size+1, size):
     plt.legend()
     plt.subplot(1,2,2)
     plt.imshow(np.log(np.abs(full_analytic_cov*mat)))
-    plt.show()
+    plt.savefig("%s/cov_diagonal_%03d.png"%(cov_plot_dir,count))
+    plt.clf()
+    plt.close()
+    
+    count+=1

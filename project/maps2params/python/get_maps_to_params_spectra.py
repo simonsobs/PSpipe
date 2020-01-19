@@ -29,7 +29,6 @@ mcm_dir = "mcms"
 noise_data_dir = "sim_data/noise_ps"
 specDir = "spectra"
 
-np.random.seed(0)
 lmax_simu = lmax
 
 pspy_utils.create_directory(specDir)

@@ -235,3 +235,10 @@ def get_effective_noise(nl_file_t, bl1, bl2, lmax,nl_file_pol=None, lcut=0):
         noise["BB"][lcut:lmax] = noise_pol[lcut:lmax] / (bl1 * bl2)
     
     return noise
+
+def is_symmetric(mat, tol=1e-8):
+    return np.all(np.abs(mat-mat.T) < tol)
+
+def is_pos_def(mat):
+    return np.all(np.linalg.eigvals(mat) > 0)
+

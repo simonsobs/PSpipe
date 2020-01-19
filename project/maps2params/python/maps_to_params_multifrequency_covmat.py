@@ -1,16 +1,10 @@
 import matplotlib
 matplotlib.use("Agg")
 from pspy import so_dict, pspy_utils
+import maps_to_params_utils
 import numpy as np
 import pylab as plt
 import sys
-
-def is_symmetric(mat, tol=1e-8):
-    return np.all(np.abs(mat-mat.T) < tol)
-
-def is_pos_def(mat):
-    return np.all(np.linalg.eigvals(mat) > 0)
-
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -81,6 +75,10 @@ transpose = full_analytic_cov.copy().T
 transpose[full_analytic_cov != 0] = 0
 full_analytic_cov += transpose
 
+
+np.save("%s/full_analytic_cov.npy"%cov_dir, full_analytic_cov)
+
+
 block_to_delete = []
 for sid, name in enumerate(spec_name):
     na, nb = name.split("x")
@@ -93,8 +91,10 @@ for sid, name in enumerate(spec_name):
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=1)
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=0)
 
-print ("is matrix positive definite:", is_pos_def(full_analytic_cov))
-print ("is matrix symmetric :", is_symmetric(full_analytic_cov))
+np.save("%s/truncated_analytic_cov.npy"%cov_dir, full_analytic_cov)
+
+print ("is matrix positive definite:", maps_to_params_utils.is_pos_def(full_analytic_cov))
+print ("is matrix symmetric :", maps_to_params_utils.is_symmetric(full_analytic_cov))
 
 size=int(full_analytic_cov.shape[0]/nbins)
 

@@ -102,7 +102,7 @@ full_mc_cov = np.load("%s/cov_restricted_all_cross.npy"%mc_dir)
 
 
 os.system("cp %s/multistep2.js %s/multistep2.js" % (multistep_path, cov_plot_dir))
-file = "%s/covariance.html" % (cov_plot_dir, filename)
+file = "%s/covariance.html" % (cov_plot_dir)
 g = open(file, mode="w")
 g.write('<html>\n')
 g.write('<head>\n')

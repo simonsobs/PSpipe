@@ -4,7 +4,7 @@ from pspy import so_dict, pspy_utils
 import maps_to_params_utils
 import numpy as np
 import pylab as plt
-import sys
+import sys, os
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])

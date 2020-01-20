@@ -2,7 +2,7 @@
 import numpy as np
 import os,sys
 from pspy import pspy_utils, so_dict, so_mcm, so_spectra
-import cov_utils
+import maps_to_params_utils
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])

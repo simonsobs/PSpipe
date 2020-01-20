@@ -1,4 +1,3 @@
-
 import numpy as np
 import os,sys
 from pspy import pspy_utils, so_dict, so_mcm, so_spectra
@@ -16,7 +15,6 @@ isims = np.arange(100)
 
 bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file,lmax)
 n_bins= len(bin_hi)
-
 
 like_dir = "like_products"
 mcm_dir = "mcms"
@@ -51,7 +49,6 @@ for id_exp1, exp1 in enumerate(experiments):
                                         type,
                                         spectra=spectra)
             
-            
                 prefix = "%s/%s" % (mcm_dir, spec_name)
                 
                 mbb_inv, Bbl = so_mcm.read_coupling(prefix=prefix, spin_pairs=spin_pairs)
@@ -75,9 +72,8 @@ print("trunc analytic cov is positive definite:", maps_to_params_utils.is_pos_de
 print("full analytic cov is symmetric:", maps_to_params_utils.is_symmetric(full_cov))
 print("trunc analytic cov is symmetric:", maps_to_params_utils.is_symmetric(trunc_cov))
 
-np.savetxt("%s/full_covariance.dat" % like_dir, full_cov)
-np.savetxt("%s/truncated_covariance.dat" % like_dir, trunc_cov)
-
+np.save("%s/full_covariance.npy" % like_dir, full_cov)
+np.save("%s/truncated_covariance.npy" % like_dir, trunc_cov)
 
 os.system("cp %s %s/binning.dat" % (binning_file, like_dir))
 

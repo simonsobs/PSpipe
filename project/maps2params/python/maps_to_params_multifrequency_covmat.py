@@ -18,6 +18,8 @@ pspy_utils.create_directory(cov_plot_dir)
 experiments = d["experiments"]
 lmax = d["lmax"]
 binning_file = d["binning_file"]
+multistep_path = d["multistep_path"]
+
 
 bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 nbins = len(bin_hi)
@@ -75,9 +77,7 @@ transpose = full_analytic_cov.copy().T
 transpose[full_analytic_cov != 0] = 0
 full_analytic_cov += transpose
 
-
 np.save("%s/full_analytic_cov.npy"%cov_dir, full_analytic_cov)
-
 
 block_to_delete = []
 for sid, name in enumerate(spec_name):
@@ -100,6 +100,24 @@ size=int(full_analytic_cov.shape[0]/nbins)
 
 full_mc_cov = np.load("%s/cov_restricted_all_cross.npy"%mc_dir)
 
+
+os.system("cp %s/multistep2.js %s/multistep2.js" % (multistep_path, cov_plot_dir))
+file = "%s/covariance.html" % (cov_plot_dir, filename)
+g = open(file, mode="w")
+g.write('<html>\n')
+g.write('<head>\n')
+g.write('<title> %s </title>\n'% filename)
+g.write('<script src="multistep2.js"></script>\n')
+g.write('<script> add_step("sub",  ["c","v"]) </script> \n')
+g.write('<style> \n')
+g.write('body { text-align: center; } \n')
+g.write('img { width: 100%; max-width: 1200px; } \n')
+g.write('</style> \n')
+g.write('</head> \n')
+g.write('<body> \n')
+g.write('<div class=sub>\n')
+
+
 count=0
 for ispec in range(-size+1, size):
     
@@ -109,15 +127,27 @@ for ispec in range(-size+1, size):
     mat = np.ones(full_mc_cov.shape)
     mat[row_vals, col_vals] = 0
     
+    str = "cov_diagonal_%03d.png" % (count)
+
     plt.figure(figsize=(12,8))
     plt.subplot(1,2,1)
     plt.plot(np.log(np.abs(full_analytic_cov.diagonal(ispec*nbins))))
-    plt.plot(np.log(np.abs(full_mc_cov.diagonal(ispec*nbins))), '.',label='%d'%ispec)
+    plt.plot(np.log(np.abs(full_mc_cov.diagonal(ispec*nbins))), '.')
     plt.legend()
     plt.subplot(1,2,2)
     plt.imshow(np.log(np.abs(full_analytic_cov*mat)))
-    plt.savefig("%s/cov_diagonal_%03d.png"%(cov_plot_dir,count))
+    plt.savefig("%s/%s"%(cov_plot_dir,str))
     plt.clf()
     plt.close()
     
+    g.write('<div class=sub>\n')
+    g.write('<img src="'+str+'"  /> \n')
+    g.write('</div>\n')
+    
     count+=1
+
+g.write('</body> \n')
+g.write('</html> \n')
+g.close()
+
+

@@ -72,8 +72,8 @@ trunc_cov = np.load("covariances/truncated_analytic_cov.npy")
 
 print("full analytic cov is positive definite:", maps_to_params_utils.is_pos_def(full_cov))
 print("trunc analytic cov is positive definite:", maps_to_params_utils.is_pos_def(trunc_cov))
-print("full analytic cov is symmetric:", maps_to_params_utils.is_pos_def(full_cov))
-print("trunc analytic cov is symmetric:", maps_to_params_utils.is_pos_def(trunc_cov))
+print("full analytic cov is symmetric:", maps_to_params_utils.is_symmetric(full_cov))
+print("trunc analytic cov is symmetric:", maps_to_params_utils.is_symmetric(trunc_cov))
 
 np.savetxt("%s/full_covariance.dat" % like_dir, full_cov)
 np.savetxt("%s/truncated_covariance.dat" % like_dir, trunc_cov)

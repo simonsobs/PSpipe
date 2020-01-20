@@ -9,8 +9,8 @@ import os, sys
 def write_html(filename, spec_list, multistep_path, cov_plot_dir):
 
     os.system('cp %s/multistep2.js %s/multistep2.js'%(multistep_path,cov_plot_dir))
-    filename = '%s/%s.html' % (cov_plot_dir, filename)
-    g = open(filename, mode="w")
+    file = '%s/%s.html' % (cov_plot_dir, filename)
+    g = open(file, mode="w")
     g.write('<html>\n')
     g.write('<head>\n')
     g.write('<title> %s </title>\n'% filename)
@@ -22,8 +22,7 @@ def write_html(filename, spec_list, multistep_path, cov_plot_dir):
     g.write('</style> \n')
     g.write('</head> \n')
     g.write('<body> \n')
-    g.write('<div class=sub> \n')
-
+    g.write('<div class=sub>\n')
     for sid1, spec1 in enumerate(spec_list):
         for sid2, spec2 in enumerate(spec_list):
             if sid1>sid2: continue
@@ -109,6 +108,37 @@ for sid1, spec1 in enumerate(spec_list):
             plt.legend()
             count += 1
         plt.savefig("%s/covariance_pseudo_diagonal_%s_%s.png"% (cov_plot_dir, spec1, spec2), bbox_inches="tight")
+        plt.clf()
+        plt.close()
+
+        analytic_corr=so_cov.cov2corr(analytic_cov)
+        mc_corr=so_cov.cov2corr(mc_cov)
+
+        plt.figure(figsize=(15, 15))
+        plt.suptitle("%s %s (press c/v to switch between covariance matrix elements)" % (spec1, spec2), fontsize=30)
+        count = 1
+        for bl in ["TTTT", "TETE", "ETET", "EEEE",
+                    "TTTE", "TTEE", "TTET", "TEET",
+                    "TEEE", "ETEE",
+                    "EETE", "EEET", "ETTE", "ETTT",
+                    "EETT", "TETT"]:
+            
+            mc_corr_sub = so_cov.selectblock(mc_corr, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
+            analytic_corr_sub= so_cov.selectblock(analytic_corr, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
+            
+            off_diag = mc_corr_sub.diagonal(1)
+            analytic_off_diag = analytic_corr_sub.diagonal(1)
+            
+            plt.subplot(3,6,count)
+            plt.plot(off_diag[1:], "o", label="MC %sx%s" % (bl[:2],bl[2:4]))
+            plt.plot(analytic_off_diag[1:], label = "Analytic %sx%s" % (bl[:2],bl[2:4]))
+            if count == 1 or count == 4:
+                plt.ylabel(r"$Cov_{i,i+1,\ell}$", fontsize=22)
+            if count > 3:
+                plt.xlabel(r"$\ell$", fontsize=22)
+            plt.legend()
+            count += 1
+        plt.savefig("%s/covariance_off_diagonal_%s_%s.png"% (cov_plot_dir, spec1, spec2), bbox_inches="tight")
         plt.clf()
         plt.close()
 

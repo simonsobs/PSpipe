@@ -4,12 +4,13 @@ It generates the expected noise power spectra of the Simons Observatory
 large aperture telescope and the expeted Planck white noise power spectra and write them to disk
 in formal: ell, n_ell. Note that SO has correlated noise between frequency channels.
 It also generates beam files for SO and Planck with format: ell, b_ell.
+It generates a theoretical power spectra from camb and compare it to noise power spectra and foreground power spectra.
 Finally it generates a binning_file for SO with format : bin_min, bin_max, bin_mean.
 
 The code makes use of the SO noise calculator: so_noise_calculator_public_20180822.
 """
-import matplotlib
-matplotlib.use("Agg")
+#import matplotlib
+#matplotlib.use("Agg")
 from pspy import pspy_utils, so_dict
 import numpy as np
 import pylab as plt
@@ -24,7 +25,7 @@ d.read_from_file(sys.argv[1])
 
 pspy_utils.create_directory("sim_data")
 
-plot_dir = "plots/instrument_model/"
+plot_dir = "plots/model/"
 pspy_utils.create_directory(plot_dir)
 
 linestyle = {}
@@ -151,27 +152,28 @@ plt.savefig("%s/beams_plot.pdf"%plot_dir)
 plt.clf()
 plt.close()
 
-# Let's compare the noise power spectra with signal power spectra
-# We generate the signal power spectra using camb
+# Let's compare the signal power spectra with the noise power spectra
+# We generate the signal power spectra using camb and write it to disk
 
 import camb
 
 # Some standard cosmo parameters
-cosmo_params = {
-    "H0": 67.5,
-    "As": 1e-10*np.exp(3.044),
-    "ombh2": 0.02237,
-    "omch2": 0.1200,
-    "ns": 0.9649,
-    "Alens": 1.0,
-    "tau": 0.0544
-}
+cosmo_params =  d["cosmo_params"]
 pars = camb.set_params(**cosmo_params)
 pars.set_for_lmax(ell_max, lens_potential_accuracy=1)
 results = camb.get_results(pars)
 powers = results.get_cmb_power_spectra(pars, CMB_unit="muK")
-tt = powers["total"][ell_min:ell_max][:,0]
-ee = powers["total"][ell_min:ell_max][:,1]
+dls = {}
+dls["tt"] = powers["total"][ell_min:ell_max][:,0]
+dls["ee"] = powers["total"][ell_min:ell_max][:,1]
+dls["bb"] = powers["total"][ell_min:ell_max][:,2]
+dls["te"] = powers["total"][ell_min:ell_max][:,3]
+
+
+cosmo_fg_dir=("sim_data/cosmo_and_fg")
+pspy_utils.create_directory(cosmo_fg_dir)
+np.savetxt("%s/cosmo_spectra.dat"% cosmo_fg_dir, np.transpose([ell, dls["tt"], dls["ee"], dls["bb"], dls["te"]]))
+
 
 plt.figure(figsize=(12, 12))
 for exp in ["LAT", "Planck"]:
@@ -187,7 +189,7 @@ for exp in ["LAT", "Planck"]:
             plt.subplot(2, 1, 1)
             plt.semilogy()
             plt.ylim(1, 10**5)
-            plt.plot(ell, tt, color='black')
+            plt.plot(ell, dls["tt"], color='black')
             plt.plot(ell, n_ell_t[name] * fac / (bl[exp + f1] * bl[exp + f2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
@@ -198,7 +200,7 @@ for exp in ["LAT", "Planck"]:
             plt.subplot(2, 1, 2)
             plt.semilogy()
             plt.ylim(5 * 10**-2, 10**3)
-            plt.plot(ell, ee, color='black')
+            plt.plot(ell, dls["ee"], color='black')
             plt.plot(ell, n_ell_pol[name] * fac / (bl[exp + f1] * bl[exp + f2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
@@ -210,6 +212,58 @@ plt.legend()
 plt.savefig("%s/noise_ps_plot.pdf"%plot_dir)
 plt.clf()
 plt.close()
+
+
+# We now compare the signal power spectra with foreground power spectra
+
+import mflike as mfl
+
+experiments = d["experiments"]
+
+fg_norm = d["fg_norm"]
+components = {"tt": d["fg_components"], "ee": [], "te": []}
+fg_model =  {"normalisation":  fg_norm, "components": components}
+fg_params =  d["fg_params"]
+
+all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
+nfreqs = len(all_freqs)
+fg_dict = mfl.get_foreground_model(fg_params, fg_model, all_freqs, ell_max)
+
+mode = "tt"
+fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))
+from itertools import product
+for i, cross in enumerate(product(all_freqs, all_freqs)):
+    f0, f1 = cross
+    idx = (i%nfreqs, i//nfreqs)
+    ax = axes[idx]
+    if idx in zip(*np.triu_indices(nfreqs, k=1)):
+        fig.delaxes(ax)
+        continue
+    for compo in fg_model["components"][mode]:
+        ax.plot(l, fg_dict[mode, compo, f0, f1])
+        np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, compo, f0, f1),
+                   np.transpose([l,fg_dict[mode, compo, f0, f1]]))
+
+
+    ax.plot(l, dls[mode], color="gray")
+    ax.plot(l, fg_dict[mode, "all", f0, f1], color="k")
+    np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, "all", f0, f1),
+               np.transpose([l,fg_dict[mode, "all", f0, f1]]))
+
+    ax.legend([], title="{}x{} GHz".format(*cross))
+    if mode == "tt":
+        ax.set_yscale("log")
+        ax.set_ylim(10**-1, 10**4)
+
+for i in range(nfreqs):
+    axes[-1, i].set_xlabel("$\ell$")
+    axes[i, 0].set_ylabel("$D_\ell$")
+fig.legend(fg_model["components"][mode], title=mode.upper(), bbox_to_anchor=(0.5,1))
+plt.tight_layout()
+plt.savefig("%s/foregrounds.pdf"%plot_dir)
+plt.clf()
+plt.close()
+
 
 
 # Create binning file

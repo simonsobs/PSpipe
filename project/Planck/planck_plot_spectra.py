@@ -36,10 +36,10 @@ for f1, freq1 in enumerate(freqs):
 
             if spec == "TE":
                 ps_dict["TE"] = (ps_dict["TE"] + ps_dict["ET"]) / 2
-                ps_dict["TE"] *= pol_efficiency[freq]
+                ps_dict["TE"] *= np.sqrt(pol_efficiency[freq1]*pol_efficiency[freq2])
     
             if spec == "EE":
-                ps_dict["EE"] *= np.sqrt(pol_efficiency[freq1]*pol_efficiency[freq2])
+                ps_dict["EE"] *= pol_efficiency[freq1]*pol_efficiency[freq2]
         
             ps_dict[spec] = ps_dict[spec][id]
             

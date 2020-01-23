@@ -30,8 +30,8 @@ for f1, freq1 in enumerate(freqs):
     
         for spec in ["TT", "TE", "EE"]:
             
-            if (spec == "TT") & (f1 == "100") & (f2 == "143") : continue
-            if (spec == "TT") & (f1 == "100") & (f2 == "217") : continue
+            if (spec == "TT") & (freq1 == "100") & (freq2 == "143") : continue
+            if (spec == "TT") & (freq1 == "100") & (freq2 == "217") : continue
 
             planck_name = "%s_%sx%s" % (spec, freq1, freq2)
             l, cl, error = np.loadtxt("data/planck_data/spectrum_" + planck_name + ".dat", unpack=True)

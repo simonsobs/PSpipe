@@ -65,7 +65,7 @@ for f1, freq1 in enumerate(freqs):
                     file_name_2 = "%s/spectra_%s.dat" % (spectra_dir, spec_name_2)
                     lb, ps_dict_2 = so_spectra.read_ps(file_name_2, spectra=spectra)
                     ps_dict["TE"] += (ps_dict_2["TE"] + ps_dict_2["ET"]) / 2
-
+                    ps_dict["TE"] /= 2
                 
                 ps_dict["TE"] *= np.sqrt(pol_efficiency[freq1]*pol_efficiency[freq2])
     

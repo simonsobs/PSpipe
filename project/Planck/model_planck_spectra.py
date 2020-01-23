@@ -17,7 +17,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 spectra_dir = "spectra"
-ps_model_dir = "model
+ps_model_dir = "model"
 plot_dir = "plots"
 
 pspy_utils.create_directory(ps_model_dir)
@@ -53,7 +53,7 @@ for f1, freq1 in enumerate(freqs):
                 if (s1>s2) & (f1==f2): continue
                 
                 spec_name = "%s_%sx%s_%s-%sx%s" % (exp, freq1, exp, freq2, hm1, hm2)
-                l, ps = so_spectra.read_ps("%s/spectra_unbin_%s.dat" % (spectraDir, spec_name), spectra=spectra)
+                l, ps = so_spectra.read_ps("%s/spectra_unbin_%s.dat" % (spectra_dir, spec_name), spectra=spectra)
                 
                 for spec in spectra:
                     ps_dict[hm1,hm2,spec]=ps[spec]

@@ -4,7 +4,7 @@ To run it:
 python get_planck_spectra.py global.dict
 '''
 
-import numpy as np,
+import numpy as np
 import healpy as hp
 from pspy import so_dict, so_map, so_mcm, sph_tools, so_spectra, pspy_utils
 import sys

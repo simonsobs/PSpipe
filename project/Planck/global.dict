@@ -32,7 +32,7 @@ beam_217_hm2_T = data_dir + "beams/beam_T_217_hm2.dat"
 beam_217_hm1_pol = data_dir + "beams/beam_pol_217_hm1.dat"
 beam_217_hm2_pol = data_dir + "beams/beam_pol_217_hm2.dat"
 
-binning_file = "data/binused_highell.dat"
+binning_file = "data/bin_planck.dat"
 
 niter = 3
 lmax = 3000

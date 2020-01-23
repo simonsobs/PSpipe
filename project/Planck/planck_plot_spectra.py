@@ -7,6 +7,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 freqs = d["freqs"]
+multistep_path = d["multistep_path"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 spectra_dir = "spectra"

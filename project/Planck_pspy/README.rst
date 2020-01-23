@@ -1,5 +1,5 @@
 **************************
-Planck
+Planck pspy
 **************************
 
 In this ``project`` we compute the power spectra and covariances matrices of the Planck data.

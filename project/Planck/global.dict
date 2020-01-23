@@ -1,7 +1,7 @@
 freqs = ["100", "143", "217"]
 splits = ["hm1", "hm2"]
 
-data_dir = 'planck_data'
+data_dir = 'planck_data/'
 
 map_100 = [data_dir + "maps/HFI_SkyMap_100_2048_R3.01_halfmission-%d.fits" % i for i in [1, 2]]
 map_143 = [data_dir + "maps/HFI_SkyMap_143_2048_R3.01_halfmission-%d.fits" % i for i in [1, 2]]
@@ -32,7 +32,7 @@ beam_217_hm2_T = data_dir + "beams/beam_T_217_hm2.dat"
 beam_217_hm1_pol = data_dir + "beams/beam_pol_217_hm1.dat"
 beam_217_hm2_pol = data_dir + "beams/beam_pol_217_hm2.dat"
 
-binning_file = data_dir + "binning_file/binused_highell.dat"
+binning_file = "data/binused_highell.dat"
 
 niter = 3
 lmax = 3000
@@ -47,7 +47,7 @@ noise_binning_size = 30
 
 #Simulation
 
-theoryfile = data_dir + "theory/cosmo2017_10K_acc3_lensedCls.dat"
+theoryfile = "data/cosmo2017_10K_acc3_lensedCls.dat"
 iStart = 0
 iStop = 10
 

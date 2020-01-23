@@ -22,12 +22,17 @@ pol_efficiency["217"] = 0.999
 for f1, freq1 in enumerate(freqs):
     for f2, freq2 in enumerate(freqs):
         if f1 > f2: continue
+        
 
         spec_name = "Planck_%sxPlanck_%s-%sx%s" % (freq1, freq2, "hm1", "hm2")
         file_name = "%s/spectra_%s.dat" % (spectra_dir, spec_name)
         lb, ps_dict = so_spectra.read_ps(file_name, spectra=spectra)
     
         for spec in ["TT", "TE", "EE"]:
+            
+            if (spec == "TT") & (f1 == "100") & (f2 == "143") : continue
+            if (spec == "TT") & (f1 == "100") & (f2 == "217") : continue
+
             planck_name = "%s_%sx%s" % (spec, freq1, freq2)
             l, cl, error = np.loadtxt("data/planck_data/spectrum_" + planck_name + ".dat", unpack=True)
             id = np.where((lb >= l[0]) & (lb <= l[-1]))

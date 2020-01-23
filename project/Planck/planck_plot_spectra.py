@@ -32,13 +32,13 @@ for freq in freqs:
         lb_sel = lb_sel[id]
 
         if spec == "TE":
-            Db_dict["TE"] = (Db_dict["TE"] + Db_dict["ET"]) / 2
-            Db_dict["TE"] *= pol_efficiency[freq]
+            ps_dict["TE"] = (ps_dict["TE"] + ps_dict["ET"]) / 2
+            ps_dict["TE"] *= pol_efficiency[freq]
     
         if spec == "EE":
-            Db_dict["EE"] *= pol_efficiency[freq]**2
+            ps_dict["EE"] *= pol_efficiency[freq]**2
         
-        Db_dict[spec] = Db_dict[spec][id]
+        ps_dict[spec] = ps_dict[spec][id]
 
         plt.figure(figsize=(14, 7))
         plt.subplot(2, 1, 1)

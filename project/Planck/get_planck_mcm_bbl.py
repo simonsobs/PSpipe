@@ -15,7 +15,7 @@ d.read_from_file(sys.argv[1])
 windows_dir = "windows"
 mcm_dir = "mcms"
 
-pspy_utils.create_directory(window_dir)
+pspy_utils.create_directory(windows_dir)
 pspy_utils.create_directory(mcm_dir)
 
 freqs = d["freqs"]
@@ -29,7 +29,7 @@ experiment = "Planck"
 
 print("Compute Planck 2018 mode coupling matrices")
 
-for c1, freq1 in enumerate(freqs):
+for f1, freq1 in enumerate(freqs):
     
     window_t_1 = d["window_T_%s" % freq1]
     window_pol_1 = d["window_pol_%s" % freq1]
@@ -55,14 +55,14 @@ for c1, freq1 in enumerate(freqs):
         
         bl_tuple1 = (bl1_t, bl1_pol)
 
-        for c2, freq2 in enumerate(freqs):
-            if c1 > c2: continue
+        for f2, freq2 in enumerate(freqs):
+            if f1 > f2: continue
             
             window_t_2 = d["window_T_%s" % freq2]
             window_pol_2 = d["window_pol_%s" % freq2]
 
             for count2, hm2 in enumerate(splits):
-                if (count1 > count2) & (c1 == c2): continue
+                if (count1 > count2) & (f1 == f2): continue
                 
                 print(freq1, freq2)
 
@@ -71,13 +71,13 @@ for c1, freq1 in enumerate(freqs):
 
                 window_tuple2 = (win_t2, win_pol2)
 
-                del win_T2, win_pol2
+                del win_t2, win_pol2
                 
-                l, bl2_t = np.loadtxt(d["beam_%s_%s_t" % (freq2, hm2)], unpack=True)
+                l, bl2_t = np.loadtxt(d["beam_%s_%s_T" % (freq2, hm2)], unpack=True)
                 l, bl2_pol = np.loadtxt(d["beam_%s_%s_pol" % (freq2, hm2)], unpack=True)
 
-                if pixWin == True:
-                    bl2_T *= hp.pixwin(window_tuple2[0].nside)[:len(bl2_t)]
+                if pixwin == True:
+                    bl2_t *= hp.pixwin(window_tuple2[0].nside)[:len(bl2_t)]
                     bl2_pol *= hp.pixwin(window_tuple2[0].nside)[:len(bl2_pol)]
 
                 bl_tuple2 = (bl2_t, bl2_pol)

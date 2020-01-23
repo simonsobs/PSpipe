@@ -50,9 +50,6 @@ def subtract_mono_di(map_in, mask_in, nside):
         m.flat[ipix] -= mono
     return m
 
-def symmetrize(a):
-    
-    return a + a.T - np.diag(a.diagonal())
 
 def binning(l, cl, lmax, binning_file=None, size=None):
     

@@ -14,11 +14,11 @@ import planck_utils
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-auxMapDir = "windows"
-mcmDir = "mcms"
-spectraDir = "spectra"
+windows_dir = "windows"
+mcms_dir = "mcms"
+spectra_dir = "spectra"
 
-pspy_utils.create_directory(spectraDir)
+pspy_utils.create_directory(spectra_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE","BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
@@ -42,8 +42,8 @@ for freq in freqs:
     maps = d["map_%s" % freq]
     for hm, map in zip(splits, maps):
         
-        window_t = so_map.read_map("%s/window_T_%s_%s-%s.fits" % (auxMapDir, experiment, freq, hm))
-        window_pol = so_map.read_map("%s/window_P_%s_%s-%s.fits" % (auxMapDir, experiment, freq, hm))
+        window_t = so_map.read_map("%s/window_T_%s_%s-%s.fits" % (windows_dir, experiment, freq, hm))
+        window_pol = so_map.read_map("%s/window_P_%s_%s-%s.fits" % (windows_dir, experiment, freq, hm))
         window_tuple = (window_t, window_pol)
         del window_t, window_pol
 
@@ -70,7 +70,7 @@ for c1, freq1 in enumerate(freqs):
             for s2, hm2 in enumerate(splits):
                 if (s1 > s2) & (c1 == c2): continue
                 
-                prefix= "%s/%s_%sx%s_%s-%sx%s" % (mcmDir, experiment, freq1, experiment, freq2, hm1, hm2)
+                prefix= "%s/%s_%sx%s_%s-%sx%s" % (mcms_dir, experiment, freq1, experiment, freq2, hm1, hm2)
 
                 mcm_inv, mbb_inv, Bbl = so_mcm.read_coupling(prefix=prefix, spin_pairs=spin_pairs, unbin=True)
 
@@ -83,7 +83,7 @@ for c1, freq1 in enumerate(freqs):
                                                                     mcm_inv=mcm_inv,
                                                                     spectra=spectra)
 
-                so_spectra.write_ps("%s/spectra_%s.dat" % (spectraDir, spec_name), lb ,Db, type=type, spectra=spectra)
-                so_spectra.write_ps("%s/spectra_unbin_%s.dat" % (spectraDir, spec_name), l, cl, type=type, spectra=spectra)
+                so_spectra.write_ps("%s/spectra_%s.dat" % (spectra_dir, spec_name), lb ,Db, type=type, spectra=spectra)
+                so_spectra.write_ps("%s/spectra_unbin_%s.dat" % (spectra_dir, spec_name), l, cl, type=type, spectra=spectra)
 
 

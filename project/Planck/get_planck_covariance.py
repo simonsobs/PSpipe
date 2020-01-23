@@ -32,7 +32,7 @@ nl_all = {}
 bl1,bl2 = {}, {}
 spec_name = []
 
-ns = 2
+ns = {"Planck": 2}
 
 for c1,freq1 in enumerate(freqs):
     for c2,freq2 in enumerate(freqs):
@@ -76,7 +76,7 @@ for c1,freq1 in enumerate(freqs):
             ps_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = bl1[spec] * bl2[spec] * ps_th[spec]
                     
             if freq1 == freq2:
-                nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = Nl[spec] * ns
+                nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = Nl[spec] * ns[exp]
             else:
                 nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = np.zeros(lmax)
                     
@@ -205,10 +205,10 @@ for task in subtasks:
     M_32 += coupling["PaTdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "ETEE")
     analytic_cov[3*nbins:4*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_32, binning_file, lmax)
     
-    mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s-hm1xhm2" % (mcm_dir, na, nb), spin_pairs=spin_pairs)
+    mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s-hm1xhm2" % (mcms_dir, na, nb), spin_pairs=spin_pairs)
     mbb_inv_ab = so_cov.extract_TTTEEE_mbb(mbb_inv_ab)
     
-    mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s-hm1xhm2" % (mcm_dir, nc, nd), spin_pairs=spin_pairs)
+    mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s-hm1xhm2" % (mcms_dir, nc, nd), spin_pairs=spin_pairs)
     mbb_inv_cd = so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
 
     analytic_cov = np.dot(np.dot(mbb_inv_ab, analytic_cov), mbb_inv_cd.T)

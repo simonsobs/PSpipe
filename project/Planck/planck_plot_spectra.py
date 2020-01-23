@@ -45,12 +45,14 @@ for f1, freq1 in enumerate(freqs):
         file_name = "%s/spectra_%s.dat" % (spectra_dir, spec_name)
         lb, ps_dict = so_spectra.read_ps(file_name, spectra=spectra)
         
-        spec_name_2 = "Planck_%sxPlanck_%s-%sx%s" % (freq1, freq2, "hm2", "hm1")
-        file_name_2 = "%s/spectra_%s.dat" % (spectra_dir, spec_name_2)
-        lb, ps_dict_2 = so_spectra.read_ps(file_name_2, spectra=spectra)
+        if freq1 != freq2:
+            spec_name_2 = "Planck_%sxPlanck_%s-%sx%s" % (freq1, freq2, "hm2", "hm1")
+            file_name_2 = "%s/spectra_%s.dat" % (spectra_dir, spec_name_2)
+            lb, ps_dict_2 = so_spectra.read_ps(file_name_2, spectra=spectra)
 
-        for spec in ["TT", "TE","ET", "EE"]:
-            ps_dict[spec] = (ps_dict[spec]+ ps_dict_2[spec])/2
+            for spec in ["TT", "TE", "ET", "EE"]:
+                ps_dict[spec] = (ps_dict[spec]+ ps_dict_2[spec])/2
+
 
         for spec in ["TT", "TE", "EE"]:
             

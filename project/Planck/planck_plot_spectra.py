@@ -1,6 +1,6 @@
 import numpy as np
 import pylab as plt
-from pspy import so_dict, so_spectra
+from pspy import so_dict, so_spectra, pspy_utils
 import sys
 
 d = so_dict.so_dict()

@@ -18,13 +18,16 @@ correlation_coeff
 This folder contains the code used for this analysis: https://arxiv.org/abs/1909.03967 (now published in PRD).
 We have computed the correlation coefficient R_TE of planck data.
 
+
+Planck 
+=============
+This folder contains codes that can be used for the reproduction of the planck results.
+
+
 analyse_sims 
 =============
 This folder contains the (old) code used for the analysis of the official SO simulations (from Andrea Zonca)
 
-planck 
-=============
-This folder contains (old) code that can be used for the analysis of the Planck data
 
 actpol 
 =============

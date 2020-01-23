@@ -12,6 +12,12 @@ We start with a set of cosmological parameters, a foreground model and an instru
 We generate simulations of the sky for different frequency channels, convolve them with the beams of the instrument, and add to them experimental noise.
 We compute the power spectra of the simulations given a galactic, survey a point source mask and compute their associated covariance matrices. 
 
+Planck 
+=============
+This folder contains codes that can be used for the reproduction of the planck results.
+
+
+
 correlation_coeff 
 =================
 
@@ -19,9 +25,6 @@ This folder contains the code used for this analysis: https://arxiv.org/abs/1909
 We have computed the correlation coefficient R_TE of planck data.
 
 
-Planck 
-=============
-This folder contains codes that can be used for the reproduction of the planck results.
 
 
 analyse_sims 

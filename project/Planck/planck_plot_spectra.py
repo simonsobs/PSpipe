@@ -19,6 +19,23 @@ pol_efficiency["100"] = 0.9995
 pol_efficiency["143"] = 0.999
 pol_efficiency["217"] = 0.999
 
+os.system("cp %s/multistep2.js %s/multistep2.js" % (multistep_path, plot_dir))
+file = "%s/compare_spectra.html" % (plot_dir)
+g = open(file, mode="w")
+g.write('<html>\n')
+g.write('<head>\n')
+g.write('<title> covariance </title>\n')
+g.write('<script src="multistep2.js"></script>\n')
+g.write('<script> add_step("sub",  ["c","v"]) </script> \n')
+g.write('<style> \n')
+g.write('body { text-align: center; } \n')
+g.write('img { width: 100%; max-width: 1200px; } \n')
+g.write('</style> \n')
+g.write('</head> \n')
+g.write('<body> \n')
+g.write('<div class=sub>\n')
+
+
 for f1, freq1 in enumerate(freqs):
     for f2, freq2 in enumerate(freqs):
         if f1 > f2: continue
@@ -49,6 +66,9 @@ for f1, freq1 in enumerate(freqs):
             ps_dict[spec] = ps_dict[spec][id]
             
             fpair = "%sx%s"%(freq1,freq2)
+            
+            str = "redo_planck_%s_%s.png" % (spec,fpair)
+
 
             plt.figure(figsize=(14, 7))
             plt.subplot(2, 1, 1)
@@ -64,9 +84,20 @@ for f1, freq1 in enumerate(freqs):
             plt.ylabel(r"$\Delta C_\ell/\sigma_{\ell} $", fontsize=22)
             plt.ylim(-0.5, 0.5)
             plt.legend()
-            plt.savefig("%s/redo_planck_%s_%s.png"%(plot_dir,spec,fpair))
+            plt.savefig("%s/%s"%(plot_dir,str))
             plt.clf()
             plt.close()
+
+
+            g.write('<div class=sub>\n')
+            g.write('<img src="'+str+'"  /> \n')
+            g.write('</div>\n')
+    
+
+g.write('</body> \n')
+g.write('</html> \n')
+g.close()
+
 
 
 

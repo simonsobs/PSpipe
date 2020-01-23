@@ -64,3 +64,5 @@ sigma_th_217 = 46.8
 sigma_pol_th_100 = 117.6
 sigma_pol_th_143 = 70.2
 sigma_pol_th_217 = 105.0
+
+multistep_path='./js'

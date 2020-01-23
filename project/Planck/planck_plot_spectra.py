@@ -1,7 +1,7 @@
 import numpy as np
 import pylab as plt
 from pspy import so_dict, so_spectra, pspy_utils
-import sys
+import os, sys
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])

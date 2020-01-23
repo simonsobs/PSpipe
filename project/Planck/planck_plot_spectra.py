@@ -41,15 +41,22 @@ for f1, freq1 in enumerate(freqs):
     for f2, freq2 in enumerate(freqs):
         if f1 > f2: continue
         
-
         spec_name = "Planck_%sxPlanck_%s-%sx%s" % (freq1, freq2, "hm1", "hm2")
         file_name = "%s/spectra_%s.dat" % (spectra_dir, spec_name)
         lb, ps_dict = so_spectra.read_ps(file_name, spectra=spectra)
-    
+        
+        spec_name_2 = "Planck_%sxPlanck_%s-%sx%s" % (freq1, freq2, "hm2", "hm1")
+        file_name_2 = "%s/spectra_%s.dat" % (spectra_dir, spec_name_2)
+        lb, ps_dict_2 = so_spectra.read_ps(file_name_2, spectra=spectra)
+
+        for spec in ["TT", "TE","ET", "EE"]:
+            ps_dict[spec] = (ps_dict[spec]+ ps_dict_2[spec])/2
+
         for spec in ["TT", "TE", "EE"]:
             
             if (spec == "TT") & (freq1 == "100") & (freq2 == "143") : continue
             if (spec == "TT") & (freq1 == "100") & (freq2 == "217") : continue
+            
 
             planck_name = "%s_%sx%s" % (spec, freq1, freq2)
             l, cl, error = np.loadtxt("data/planck_data/spectrum_" + planck_name + ".dat", unpack=True)
@@ -59,14 +66,6 @@ for f1, freq1 in enumerate(freqs):
 
             if spec == "TE":
                 ps_dict["TE"] = (ps_dict["TE"] + ps_dict["ET"]) / 2
-                
-                if freq1 != freq2:
-                    spec_name_2 = "Planck_%sxPlanck_%s-%sx%s" % (freq1, freq2, "hm2", "hm1")
-                    file_name_2 = "%s/spectra_%s.dat" % (spectra_dir, spec_name_2)
-                    lb, ps_dict_2 = so_spectra.read_ps(file_name_2, spectra=spectra)
-                    ps_dict["TE"] += (ps_dict_2["TE"] + ps_dict_2["ET"]) / 2
-                    ps_dict["TE"] /= 2
-                
                 ps_dict["TE"] *= np.sqrt(pol_efficiency[freq1]*pol_efficiency[freq2])
     
             if spec == "EE":

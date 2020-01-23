@@ -1,4 +1,4 @@
-from pspy import pspy_utils, so_dict, so_map, so_mcm, so_spectra, so_cov
+from pspy import pspy_utils, so_dict, so_map, so_mpi, so_mcm, so_spectra, so_cov
 import numpy as np
 import sys
 
@@ -27,14 +27,12 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(bin_hi)
 
-
-ps_all={}
-nl_all={}
-bl1,bl2={},{}
-spec_name=[]
+ps_all = {}
+nl_all = {}
+bl1,bl2 = {}, {}
+spec_name = []
 
 ns = 2
-
 
 for c1,freq1 in enumerate(freqs):
     for c2,freq2 in enumerate(freqs):
@@ -114,7 +112,7 @@ for task in subtasks:
     task = int(task)
     
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
-    win={}
+    win = {}
     win["Ta"] = so_map.read_map("%s/window_T_%s-hm1.fits"%(windows_dir, na))
     win["Tb"] = so_map.read_map("%s/window_T_%s-hm2.fits"%(windows_dir, nb))
     win["Tc"] = so_map.read_map("%s/window_T_%s-hm1.fits"%(windows_dir, nc))
@@ -212,8 +210,7 @@ for task in subtasks:
     
     mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s-hm1xhm2" % (mcm_dir, nc, nd), spin_pairs=spin_pairs)
     mbb_inv_cd = so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
-    
-    
+
     analytic_cov = np.dot(np.dot(mbb_inv_ab, analytic_cov), mbb_inv_cd.T)
     
     np.save("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, na, nb, nc, nd), analytic_cov)

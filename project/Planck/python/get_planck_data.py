@@ -2,7 +2,6 @@
 This script is used to download the public planck data
 To run it: python get_planck_data.py global.dict
 It will download maps, likelihood masks and beams of planck
-It will also generate a binning file suitable for the estimation of the cross correlation coefficient"
 """
 
 import numpy as np

@@ -15,7 +15,7 @@ Pipeline flow chart
 First you need to write a dictionnary file: ``global.dict``, it will contain the parameters relevant for the Planck project. Examples of ``global.dict`` are given in the ``paramfiles`` folder.
 Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
 
-The first step of the pipeline is to download all the public data planck necessary for the reproduction.
+The first step of the pipeline is to download all the public data necessary for the reproduction.
 This includes:
 
 * multi-frequency maps

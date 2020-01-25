@@ -52,6 +52,7 @@ fg_and_syst = "data/base_plikHM_TTTEEE_lowl_lowE_lensing.minimum.plik_foreground
 iStart = 0
 iStop = 10
 use_ffp10 = False
+ffp10 = "/global/cscratch1/sd/tlouis/ffp10/"
 
 lrange_TT_100x100 = [30, 1197]
 lrange_TT_143x143 = [30, 1996]

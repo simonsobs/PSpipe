@@ -44,7 +44,7 @@ we then need to model the power spectra in particular we need an estimate of the
 
 .. code:: shell
 
-    python model_planck_spectra.py global.dict
+    python planck_noise_model.py global.dict
 
 Now that we have simulations spectra, we should generate analytical covariances matrices 
 

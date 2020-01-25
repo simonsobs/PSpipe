@@ -48,8 +48,29 @@ noise_binning_size = 30
 #Simulation
 
 theoryfile = "data/cosmo2017_10K_acc3_lensedCls.dat"
+fg_and_syst = "data/base_plikHM_TTTEEE_lowl_lowE_lensing.minimum.plik_foregrounds"
 iStart = 0
 iStop = 10
+use_ffp10 = False
+
+lrange_TT_100x100 = [30, 1197]
+lrange_TT_143x143 = [30, 1996]
+lrange_TT_143x217 = [30, 2508]
+lrange_TT_217x217 = [30, 2508]
+
+lrange_TE_100x100 = [30, 999]
+lrange_TE_100x143 = [30, 999]
+lrange_TE_100x217 = [505, 1197]
+lrange_TE_143x143 = [30, 1996]
+lrange_TE_143x217 = [505, 1996]
+lrange_TE_217x217 = [505, 1996]
+
+lrange_EE_100x100 = [30, 999]
+lrange_EE_100x143 = [30, 999]
+lrange_EE_100x217 = [505, 1197]
+lrange_EE_143x143 = [30, 1996]
+lrange_EE_143x217 = [505, 1996]
+lrange_EE_217x217 = [505, 1996]
 
 # theoretical nl_Th
 

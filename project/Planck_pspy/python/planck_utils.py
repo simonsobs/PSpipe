@@ -88,27 +88,18 @@ def noise_matrix(noise_dir, exp, freqs, lmax, nsplits):
     n_splits: integer
       the number of data splits we want to simulate
       nl_per_split= nl * n_{splits}
-    """
-    
-    
+    """    
     nfreqs = len(freqs)
     nl_array_t = np.zeros((nfreqs, nfreqs, lmax))
     nl_array_pol = np.zeros((nfreqs, nfreqs, lmax))
 
-    for c1, freq1 in enumerate(freqs):
-        for c2, freq2 in enumerate(freqs):
-            if c1>c2 : continue
+    for count, freq in enumerate(freqs):
 
-            l, nl_t = np.loadtxt("%s/noise_TT_mean_%s_%sx%s_%s.dat"%(noise_dir, exp, freq1, exp, freq2), unpack=True)
-            l, nl_pol = np.loadtxt("%s/noise_EE_mean_%s_%sx%s_%s.dat"%(noise_dir, exp, freq1, exp, freq2), unpack=True)
+        l, nl_t = np.loadtxt("%s/noise_TT_mean_%s_%sx%s_%s.dat"%(noise_dir, exp, freq, exp, freq), unpack=True)
+        l, nl_pol = np.loadtxt("%s/noise_EE_mean_%s_%sx%s_%s.dat"%(noise_dir, exp, freq, exp, freq), unpack=True)
 
-            nl_array_t[c1, c2, :] = nl_t[:] * nsplits
-            nl_array_pol[c1, c2, :] = nl_pol[:] * nsplits
-
-            
-    for i in range(lmax):
-        nl_array_t[:,:,i]=symmetrize(nl_array_t[:,:,i])
-        nl_array_pol[:,:,i]=symmetrize(nl_array_pol[:,:,i])
+        nl_array_t[count, count, :] = nl_t[:] * nsplits
+        nl_array_pol[count, count, :] = nl_pol[:] * nsplits
     
     return l, nl_array_t, nl_array_pol
 

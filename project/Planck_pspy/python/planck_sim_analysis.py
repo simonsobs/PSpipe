@@ -6,158 +6,131 @@ It computes mean spectra and covariance from the sims
 import numpy as np
 import pylab as plt
 from pspy import so_dict, so_spectra, pspy_utils
-import os, sys
+from itertools import combinations_with_replacement as cwr
+import sys
 import planck_utils
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-spectra=['TT','TE','TB','ET','BT','EE','EB','BE','BB']
-binning_file=d['binning_file']
-iStart=d['iStart']
-iStop=d['iStop']
-include_sys=d['include_systematics']
-freqs=d['freqs']
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+binning_file = d["binning_file"]
+iStart = d["iStart"]
+iStop = d["iStop"]
+freqs = d["freqs"]
+lmax = d["lmax"]
+lrange = d["lrange"]
+bestfit_dir = "best_fits"
+iStop=300
 
-if include_sys==True:
-    simSpectraDir='sim_spectra_syst'
-    mc_dir='monteCarlo_syst'
+if d["use_ffp10"] == True:
+    sim_spectra_dir = "sim_spectra_ffp10"
+    mc_dir = "montecarlo_ffp10"
 else:
-    
-    if d['use_ffp10']==True:
-        simSpectraDir='sim_spectra_ffp10'
-        mc_dir='monteCarlo_ffp10'
-    else:
-        simSpectraDir='sim_spectra'
-        mc_dir='monteCarlo'
+    sim_spectra_dir = "sim_spectra"
+    mc_dir = "montecarlo"
 
 
 pspy_utils.create_directory(mc_dir)
 
+freq_pairs = []
+for cross in cwr(freqs, 2):
+    freq_pairs += [[cross[0],cross[1]]]
 
-freq_pairs=[]
-for c1,freq1 in enumerate(freqs):
-    for c2,freq2 in enumerate(freqs):
-        if c1>c2: continue
-        freq_pairs+=[[freq1,freq2]]
 
-print (freq_pairs)
+vec_list = []
+binrange = {}
 
-halfmission_pairs=[['hm1','hm1'],['hm1','hm2'],['hm2','hm2']]
-
-for hm_pair in halfmission_pairs:
-    hm0,hm1=hm_pair
-    hmname='%sx%s'%(hm0,hm1)
+for iii in range(iStart,iStop):
+    vec = []
+    bin_start = 0
+    bin_stop = 0
     
-    spec_name=[]
-    vec_lb=[]
-    id_start={}
-    id_stop={}
-    spec_name_list=[]
-    count=0
-    
-    vec=[]
-    for fpair in freq_pairs:
-        f0,f1=fpair
-        fname='%sx%s'%(f0,f1)
-        spec_name='Planck_%sxPlanck_%s-%s'%(f0,f1,hmname)
-
-        lb,ps_dict=so_spectra.read_ps('%s/sim_spectra_%s_%04d.dat'%(simSpectraDir,spec_name,000),spectra=spectra)
-        lmin,lmax=d['lrange_%sx%s'%(f0,f1)]
-
-        id=np.where((lb>lmin) &(lb<lmax))
-            
-        lb=lb[id]
-        for id_spec,spec in enumerate(['TT','TE','EE','r']):
-            
-            if spec !='r':
-                ps_dict[spec]=ps_dict[spec][id]
-                vec=np.append(vec,ps_dict[spec])
-            else:
-                r=ps_dict['TE']/np.sqrt(ps_dict['TT']*ps_dict['EE'])
-                vec=np.append(vec,r)
-    
-            spec_name='%s_%s_%s'%(spec,fname,hmname)
-            id_start[spec_name]=count
-            id_stop[spec_name]=count+len(lb)
-            spec_name_list+=[spec_name]
-            vec_lb=np.append(vec_lb,lb)
-            count+=len(lb)
-
-
-    nbins_tot=len(vec)
-    vec_mean=np.zeros(nbins_tot)
-    cov_mean=np.zeros((nbins_tot,nbins_tot))
-
-    
-    for iii in range(iStart,iStop):
-
-        vec=[]
+    for spec in ["TT", "TE", "EE"]:
 
         for fpair in freq_pairs:
             
-            f0,f1=fpair
+            f0, f1 = fpair
             
-            fname='%sx%s'%(f0,f1)
+            if (spec == "TT") & (f0 == "100") & (f1 == "143"): continue
+            if (spec == "TT") & (f0 == "100") & (f1 == "217"): continue
+
+            fname = "%sx%s" % (f0, f1)
         
-            spec_name='Planck_%sxPlanck_%s-%s'%(f0,f1,hmname)
+            spec_name = "Planck_%sxPlanck_%s-hm1xhm2" % (f0,f1)
         
-            lb,ps_dict=so_spectra.read_ps('%s/sim_spectra_%s_%04d.dat'%(simSpectraDir,spec_name,iii),spectra=spectra)
-        
-            ps_dict['TE']=(ps_dict['TE']+ps_dict['ET'])/2
-        
-            if (f0 !=f1) & (hm0 !=hm1):
-                
-                spec_name='Planck_%sxPlanck_%s-%sx%s'%(f0,f1,hm1,hm0)
-                lb,ps_dict_mirror=so_spectra.read_ps('%s/sim_spectra_%s_%04d.dat'%(simSpectraDir,spec_name,iii),spectra=spectra)
-                ps_dict_mirror['TE']=(ps_dict_mirror['TE']+ps_dict_mirror['ET'])/2
+            lb, ps_dict = so_spectra.read_ps("%s/sim_spectra_%s_%04d.dat" % (sim_spectra_dir, spec_name, iii), spectra=spectra)
             
-                ps_dict['TE']=(ps_dict['TE']+ps_dict_mirror['TE'])/2
-
-            lmin,lmax=d['lrange_%sx%s'%(f0,f1)]
-
-            id=np.where((lb>lmin) &(lb<lmax))
+            if spec == "TE":
+                ps_dict["TE"] = (ps_dict["TE"] + ps_dict["ET"]) / 2
+                if f0 != f1:
+                    spec_name2 = "Planck_%sxPlanck_%s-hm2xhm1" % (f0,f1)
+                    lb, ps_dict2 = so_spectra.read_ps("%s/sim_spectra_%s_%04d.dat" % (sim_spectra_dir, spec_name2, iii), spectra=spectra)
+                    ps_dict2["TE"] = (ps_dict2["TE"] + ps_dict2["ET"]) / 2
         
+                    ps_dict["TE"] = (ps_dict["TE"] + ps_dict2["TE"]) / 2
 
-            for spec in ['TT','TE','EE','r']:
+
+            ps_name = "%s_%sx%s" % (spec, f0, f1)
+
+
+            lmin_c, lmax_c = lrange[ps_name]
+
+            id=np.where((lb >= lmin_c) & (lb <= lmax_c))
+
+            ps_dict[spec] = ps_dict[spec][id]
+        
+            vec = np.append(vec, ps_dict[spec])
             
-                if spec !='r':
-                    ps_dict[spec]=ps_dict[spec][id]
-                    vec=np.append(vec,ps_dict[spec])
-                else:
-                    r=ps_dict['TE']/np.sqrt(ps_dict['TT']*ps_dict['EE'])
-                    vec=np.append(vec,r)
+            bin_stop += len(ps_dict[spec])
+            binrange[ps_name] = bin_start, bin_stop
+            bin_start = bin_stop
 
-        vec_mean+=vec
-        cov_mean+=np.outer(vec,vec)
+    vec_list += [vec]
 
-    vec_mean/=(iStop-iStart)
-    cov_mean=cov_mean/(iStop-iStart)-np.outer(vec_mean,vec_mean)
+mean_vec = np.mean(vec_list, axis=0)
+cov = 0
+for iii in range(iStart, iStop):
+    cov += np.outer(vec_list[iii], vec_list[iii])
+cov = cov / (iStop-iStart) - np.outer(mean_vec, mean_vec)
 
-    np.savetxt('%s/full_cov_mat_%s.dat'%(mc_dir,hmname),cov_mean )
+np.save("%s/mc_covariance.npy" % (mc_dir), cov)
 
-    for spec_name1 in spec_name_list:
-        #print (vec_lb.shape,vec_mean.shape,cov_mean.shape)
 
-        lb=vec_lb[id_start[spec_name1]:id_stop[spec_name1]]
-        ps=vec_mean[id_start[spec_name1]:id_stop[spec_name1]]
-        cov=cov_mean[id_start[spec_name1]:id_stop[spec_name1],id_start[spec_name1]:id_stop[spec_name1]]
-        error=np.sqrt(cov.diagonal())
+color_array = ["red", "blue", "orange", "green", "grey", "darkblue"]
+for spec in ["TT", "TE", "EE"]:
+    for id_f,fpair in enumerate(freq_pairs):
+        f0, f1 = fpair
         
-        print (spec_name1,lb.shape,ps.shape,error.shape)
-    
-        np.savetxt('%s/spectra_%s.dat'%(mc_dir,spec_name1), np.transpose([lb,ps,error]))
-    
-        for spec_name2 in spec_name_list:
-            cov_select=cov_mean[id_start[spec_name1]:id_stop[spec_name1],id_start[spec_name2]:id_stop[spec_name2]]
-            np.savetxt('%s/select_cov_mat_%s_%s.dat'%(mc_dir,spec_name1,spec_name2),cov_select)
-            np.savetxt('%s/diagonal_select_cov_mat_%s_%s.dat'%(mc_dir,spec_name1,spec_name2),cov_select.diagonal())
+        if (spec == "TT") & (f0 == "100") & (f1 == "143"): continue
+        if (spec == "TT") & (f0 == "100") & (f1 == "217"): continue
+        
+        lth, cl_th_and_fg = np.loadtxt("%s/best_fit_%sx%s_%s.dat" % (bestfit_dir, f0, f1, spec), unpack=True)
+        lb, cb_th = planck_utils.binning(lth, cl_th_and_fg, lmax, binning_file=binning_file)
+        ps_name = "%s_%sx%s" % (spec, f0, f1)
+        lmin_c, lmax_c = lrange[ps_name]
+        id=np.where((lb >= lmin_c) & (lb <= lmax_c))
+        
+        lb, cb_th = lb[id], cb_th[id]
 
-
-
-
-
-
-
-
+        bin_start, bin_stop = binrange[ps_name]
+        ps_mean = mean_vec[bin_start:bin_stop]
+        std_mean = np.sqrt(cov.diagonal())[bin_start:bin_stop]
+        
+        fac = lb * (lb + 1) / (2 * np.pi)
+        fth = lth * (lth + 1) /  (2 * np.pi)
+        
+        plt.plot(lb, cb_th/ps_mean)
+        
+        #plt.errorbar(lb, (cb_th-ps_mean)*fac, std_mean*fac/np.sqrt(iStop-iStart), fmt = ".", label = ps_name)
+        #plt.plot(lb, lb * 0)
+        #plt.legend()
+#plt.show()
+         
+         #  print (lb.shape, cb_th.shape,ps_mean.shape,std_mean.shape)
+         #plt.xlim(0,2200)
+         #plt.plot(lth, cl_th_and_fg*fth, color=color_array[id_f], alpha=0.4)
+         #plt.plot(lb, cb_th*fac, color=color_array[id_f], alpha=0.4)
+         #plt.errorbar(lb, ps_mean*fac, std_mean*fac/np.sqrt(iStop-iStart), fmt = ".",color=color_array[id_f], alpha=0.4)
+    plt.show()
 

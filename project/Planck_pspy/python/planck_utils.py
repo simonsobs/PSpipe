@@ -7,7 +7,6 @@ import healpy as hp
 from pspy import so_mcm, so_spectra, pspy_utils
 from pixell import curvedsky
 
-
 def process_planck_spectra(l, cl, binning_file, lmax, spectra, mcm_inv):
     
     bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
@@ -29,7 +28,6 @@ def process_planck_spectra(l, cl, binning_file, lmax, spectra, mcm_inv):
     Db = so_spectra.vec2spec_dict(n_bins, vec, spectra)
     return l, cl, bin_c, Db
 
-
 def subtract_mono_di(map_in, mask_in, nside):
     
     map_masked = hp.ma(map_in)
@@ -50,7 +48,6 @@ def subtract_mono_di(map_in, mask_in, nside):
         m.flat[ipix] -= mono
     return m
 
-
 def binning(l, cl, lmax, binning_file=None, size=None):
     
     if binning_file is not None:
@@ -68,6 +65,86 @@ def binning(l, cl, lmax, binning_file=None, size=None):
         binnedPower[ibin] = (cl[loc]*fac[loc]).mean()/(fac[loc].mean())
     return bin_c, binnedPower
 
+def noise_matrix(noise_dir, exp, freqs, lmax, nsplits):
+    
+    """This function uses the noise power spectra computed by 'planck_noise_model'
+    and generate a three dimensional array of noise power spectra [nfreqs,nfreqs,lmax] for temperature
+    and polarisation.
+    The different entries ([i,j,:]) of the arrays contain the noise power spectra
+    for the different frequency channel pairs.
+    for example nl_array_t[0,0,:] =>  nl^{TT}_{f_{0},f_{0}),  nl_array_t[0,1,:] =>  nl^{TT}_{f_{0},f_{1})
+    this allows to have correlated noise between different frequency channels.
+        
+    Parameters
+    ----------
+    noise_data_dir : string
+      the folder containing the noise power spectra
+    exp : string
+      the experiment to consider ('Planck')
+    freqs: 1d array of string
+      the frequencies we consider
+    lmax: integer
+      the maximum multipole for the noise power spectra
+    n_splits: integer
+      the number of data splits we want to simulate
+      nl_per_split= nl * n_{splits}
+    """
+    
+    
+    nfreqs = len(freqs)
+    nl_array_t = np.zeros((nfreqs, nfreqs, lmax))
+    nl_array_pol = np.zeros((nfreqs, nfreqs, lmax))
+
+    for c1, freq1 in enumerate(freqs):
+        for c2, freq2 in enumerate(freqs):
+            if c1>c2 : continue
+
+            l, nl_t = np.loadtxt("%s/noise_TT_mean_%s_%sx%s_%s.dat"%(noise_dir, exp, freq1, exp, freq2), unpack=True)
+            l, nl_pol = np.loadtxt("%s/noise_EE_mean_%s_%sx%s_%s.dat"%(noise_dir, exp, freq1, exp, freq2), unpack=True)
+
+            nl_array_t[c1, c2, :] = nl_t[:] * nsplits
+            nl_array_pol[c1, c2, :] = nl_pol[:] * nsplits
+
+            
+    for i in range(lmax):
+        nl_array_t[:,:,i]=symmetrize(nl_array_t[:,:,i])
+        nl_array_pol[:,:,i]=symmetrize(nl_array_pol[:,:,i])
+    
+    return l, nl_array_t, nl_array_pol
+
+def generate_noise_alms(nl_array_t, nl_array_pol, lmax, n_splits):
+    
+    """This function generates the alms corresponding to the noise power spectra matrices
+    nl_array_t, nl_array_pol. The function returns a dictionnary nlms["T", i].
+    The entry of the dictionnary are for example nlms["T", i] where i is the index of the split.
+    note that nlms["T", i] is a (nfreqs, size(alm)) array, it is the harmonic transform of
+    the noise realisation for the different frequencies.
+        
+    Parameters
+    ----------
+    nl_array_t : 3d array [nfreq, nfreq, lmax]
+      noise power spectra matrix for temperature data
+    nl_array_pol : 3d array [nfreq, nfreq, lmax]
+      noise power spectra matrix for polarisation data
+
+    lmax : integer
+      the maximum multipole for the noise power spectra
+    n_splits: integer
+      the number of data splits we want to simulate
+
+    """
+    
+    nlms = {}
+    for k in range(n_splits):
+        nlms["T", k] = curvedsky.rand_alm(nl_array_t, lmax=lmax)
+        nlms["E", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax)
+        nlms["B", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax)
+    
+    return nlms
+
+
+def symmetrize(a):
+    return a + a.T - np.diag(a.diagonal())
 
 
 

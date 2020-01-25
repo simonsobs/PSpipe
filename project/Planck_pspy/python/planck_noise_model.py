@@ -17,7 +17,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 spectra_dir = "spectra"
-ps_model_dir = "model"
+ps_model_dir = "noise_model"
 plot_dir = "plots"
 
 pspy_utils.create_directory(ps_model_dir)
@@ -81,8 +81,8 @@ for f1, freq1 in enumerate(freqs):
                 nth_hm1 = ps_dict["hm1", "hm1", spec] * bl_hm1**2 - ps_dict["hm1", "hm2", spec] * bl_hm1 * bl_hm2
                 nth_hm2 = ps_dict["hm2", "hm2", spec] * bl_hm2**2 - ps_dict["hm1", "hm2", spec] * bl_hm1 * bl_hm2
                 
-                lb,nb_hm1 = planck_utils.binning(l, nth_hm1, lmax, size=size)
-                lb,nb_hm2 = planck_utils.binning(l, nth_hm2, lmax, size=size)
+                lb, nb_hm1 = planck_utils.binning(l, nth_hm1, lmax, size=size)
+                lb, nb_hm2 = planck_utils.binning(l, nth_hm2, lmax, size=size)
 
                 nl_interpol_1 = scipy.interpolate.interp1d(lb, nb_hm1, fill_value = "extrapolate")
                 nl_interpol_2 = scipy.interpolate.interp1d(lb, nb_hm2, fill_value = "extrapolate")

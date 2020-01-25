@@ -8,7 +8,7 @@ d.read_from_file(sys.argv[1])
 windows_dir = "windows"
 mcms_dir = "mcms"
 spectra_dir = "spectra"
-ps_model_dir = "model"
+ps_model_dir = "noise_model"
 cov_dir = "covariances"
 
 pspy_utils.create_directory(cov_dir)

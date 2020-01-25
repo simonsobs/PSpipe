@@ -32,8 +32,8 @@ fg = {}
 for sid, spec in enumerate(spec_list):
     fg[spec] = data[:, sid+1]
 
-fg["TT_100x143"] = np.sqrt(fg["TT_100x100"] * fg["TT_143x143"])
-fg["TT_100x217"] = np.sqrt(fg["TT_100x100"] * fg["TT_217x217"])
+fg["TT_100x143"] = 0 * np.sqrt(fg["TT_100x100"] * fg["TT_143x143"])
+fg["TT_100x217"] = 0 * np.sqrt(fg["TT_100x100"] * fg["TT_217x217"])
 
 # The foreground+syst spectra have a very strange shape at high ell, we therefore regularize them
 # Note that the scales beyond the regularisation scale are not used in the paper

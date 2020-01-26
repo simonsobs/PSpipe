@@ -5,8 +5,8 @@ Projects
 This page describes the different projects we are working on in PSPipe, they are at different states of completion/documentation
 
 
- `maps2params <https://github.com/simonsobs/pspy/blob/master/INSTALL_NERSC.rst>`_. 
-==================================================================================
+maps2params
+===========
 
 The goal of this project is to make a simplistic 'end-to-end' simulation analysis.
 We start with a set of cosmological parameters, a foreground model and an instrument model.

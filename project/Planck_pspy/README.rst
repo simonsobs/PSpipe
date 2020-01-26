@@ -56,28 +56,28 @@ Now that we have an estimate of the noise, we should generate analytical covaria
 Simulation pipeline
 ===================
 
-We also have a pipeline to generate Planck simulation, either based on the measured noise properties of planck data or on ffp10 simulations (the choice happen in the global.dict). 
+We also have a pipeline to generate Planck simulations, either based on the measured noise properties of planck data or on ffp10 simulations (the choice happens in the global.dict). 
 
-First we use planck public chains result to generate best fit power spectra for the different frequencies of observation of Planck 
+First we use planck public chains result to generate the best fit power spectra for the different frequencies of observation of Planck 
 
 
 .. code:: shell
 
     python planck_best_fit.py global.dict
 
-From the best fit, the planck noise model and beam model we generate gaussian simulation of planck data (note that we also have an option for using the ffp10 noise sims)
+From best fits, the planck noise model and beam model we generate gaussian simulations of planck data (note that we also have an option for using the ffp10 noise sims)
 
 .. code:: shell
 
     python planck_sim_spectra.py global.dict
     
-Then we analyse the simulation, check that the mean agree with the input power spectra and that the std agree with planck analytical covariance matrix 
+Then we analyse the simulations, check that their mean agree with  input power spectra and that their std agree with planck analytical covariance matrix 
 
 .. code:: shell
 
     python planck_sim_analysis.py global.dict
 
-Finally we make a null test, comparing TE and ET using monte carlo errorbars
+Finally we make a bunch of null tests, comparing TE and ET using monte carlo errorbars
 
 .. code:: shell
 

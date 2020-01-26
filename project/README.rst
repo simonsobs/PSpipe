@@ -35,4 +35,4 @@ This folder contains the (old) code used for the analysis of the official SO sim
 
 actpol 
 =============
-This folder contains some code that can be used for the analysis of the actpol data
+This folder contains some (old) code that can be used for the analysis of the actpol data

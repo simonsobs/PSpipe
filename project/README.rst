@@ -5,7 +5,7 @@ Projects
 This page describes the different projects we are working on in PSPipe, they are at different states of completion/documentation
 
 
-maps2params (https://github.com/simonsobs/PSpipe/tree/master/project/maps2params)
+maps2params 
 =========== 
 
 The goal of this project is to make a simplistic 'end-to-end' simulation analysis.

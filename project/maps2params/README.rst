@@ -2,8 +2,8 @@
 Maps2Parameters 
 **************************
 
-In this ``project`` we generate CMB maps simulations and compute their power spectra and covariance matrices.
-We then pass the data to mflike and print the chi2 with respect to the input theory curves.
+In this ``project`` we generate CMB simulations and compute their power spectra and covariance matrices.
+We then pass the data to mflike and compute the chi2 with respect to the input theory curves.
 
 
 Requirements

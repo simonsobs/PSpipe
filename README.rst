@@ -25,4 +25,4 @@ Requirements
 * `GSL <https://www.gnu.org/software/gsl/>`_: version 2 required
 * `FFTW <http://www.fftw.org/>`_: version 3 required
 * `cfitsio <https://heasarc.gsfc.nasa.gov/fitsio/>`_: at least version 3.0
-* `HEALPix <https://sourceforge.net/projects/healpix/>`_: at least version 2.0
+* `healpix <https://sourceforge.net/projects/healpix/>`_: at least version 2.0

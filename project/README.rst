@@ -15,7 +15,7 @@ We compute the power spectra of the simulations given a galactic, survey a point
 Planck pspy
 =============
 This folder contains codes that can be used for the reproduction of the planck results using pspy.
-It also contains script allowing to generate simulations of the Planck data.
+It also contains different scripts allowing to generate simulations of the Planck data.
 
 
 correlation_coeff 

@@ -46,9 +46,41 @@ we then need to model the power spectra in particular we need an estimate of the
 
     python planck_noise_model.py global.dict
 
-Now that we have simulations spectra, we should generate analytical covariances matrices 
+Now that we have an estimate of the noise, we should generate analytical covariances matrices 
 
 .. code:: shell
 
     python get_planck_covariance.py global.dict
+
+
+Simulation pipeline
+===================
+
+We also have a pipeline to generate Planck simulations, either based on the measured noise properties of planck data or on ffp10 simulations (the choice happens in the global.dict). 
+
+First we use planck public chains result to generate the best fit power spectra for the different frequencies of observation of Planck 
+
+
+.. code:: shell
+
+    python planck_best_fit.py global.dict
+
+From best fits, the planck noise model and beam model we generate gaussian simulations of planck data (note that we also have an option for using the ffp10 noise sims)
+
+.. code:: shell
+
+    python planck_sim_spectra.py global.dict
+    
+Then we analyse the simulations, check that their mean agree with  input power spectra and that their std agree with planck analytical covariance matrix 
+
+.. code:: shell
+
+    python planck_sim_analysis.py global.dict
+
+Finally we make a bunch of null tests, comparing TE and ET using monte carlo errorbars
+
+.. code:: shell
+
+    python planck_sim_null_test.py global.dict
+
 

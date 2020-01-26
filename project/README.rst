@@ -2,10 +2,11 @@
 Projects
 ********
 
-This page describes the different projects we are working on in PSPipe, they are at different states of completion/documentation
+This page describes the different projects we are working on in PSpipe, they are at different states of completion/documentation
+
 
 maps2params 
-===========
+=========== 
 
 The goal of this project is to make a simplistic 'end-to-end' simulation analysis.
 We start with a set of cosmological parameters, a foreground model and an instrument model.
@@ -15,7 +16,7 @@ We compute the power spectra of the simulations given a galactic, survey a point
 Planck pspy
 =============
 This folder contains codes that can be used for the reproduction of the planck results using pspy.
-
+It also contains different scripts generating and analysing simulations of the Planck data.
 
 
 correlation_coeff 
@@ -34,4 +35,4 @@ This folder contains the (old) code used for the analysis of the official SO sim
 
 actpol 
 =============
-This folder contains some code that can be used for the analysis of the actpol data
+This folder contains some (old) code that can be used for the analysis of the actpol data

@@ -244,9 +244,8 @@ for i, cross in enumerate(product(all_freqs, all_freqs)):
         np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, compo, f0, f1),
                    np.transpose([l,fg_dict[mode, compo, f0, f1]]))
 
-
-    ax.plot(l, dls[mode], color="gray")
     ax.plot(l, fg_dict[mode, "all", f0, f1], color="k")
+    ax.plot(l, dls[mode], color="gray")
     np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, "all", f0, f1),
                np.transpose([l,fg_dict[mode, "all", f0, f1]]))
 
@@ -258,7 +257,7 @@ for i, cross in enumerate(product(all_freqs, all_freqs)):
 for i in range(nfreqs):
     axes[-1, i].set_xlabel("$\ell$")
     axes[i, 0].set_ylabel("$D_\ell$")
-fig.legend(fg_model["components"][mode], title=mode.upper(), bbox_to_anchor=(0.5,1))
+fig.legend(fg_model["components"][mode] + ["all"], title=mode.upper(), bbox_to_anchor=(1,1))
 plt.tight_layout()
 plt.savefig("%s/foregrounds.pdf"%plot_dir)
 plt.clf()

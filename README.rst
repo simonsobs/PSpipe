@@ -54,21 +54,21 @@ Then you can install the ``PSpipe`` library and its dependencies *via*
 
     $ pip install --user /where/to/clone
 
-Using `docker`
---------------
+Using ``docker``
+----------------
 
-Given the number of requirements, you can use a `docker` image already made with the needed
+Given the number of requirements, you can use a ``docker`` image already made with the needed
 libraries and everything compiled. You should first install `docker
-<https://docs.docker.com/install/>`_ for your operating system. Then you can run the `PSpipe` `image
-<https://hub.docker.com/repository/docker/simonsobs/pspipe>`_ with the following command
+<https://docs.docker.com/install/>`_ for your operating system. Then you can run the ``PSpipe``
+`image <https://hub.docker.com/repository/docker/simonsobs/pspipe>`_ with the following command
 
 .. code:: shell
 
    $ docker run --rm -it simonsobs/pspipe /bin/bash
 
-This will open a new `bash` terminal with a full installation of `PSpipe`, `pixell`,
-`NaMaster`... For instance, you can start the `ipython` interpreter and run the following `import`
-command
+This will open a new ``bash`` terminal with a full installation of ``PSpipe``, ``pixell``,
+``NaMaster``... For instance, you can start the ``ipython`` interpreter and run the following
+``import`` command
 
 .. code:: shell
 
@@ -82,24 +82,24 @@ command
 You can run the python scripts from the project directory that you will find under the home
 directory.
 
-You are done with the image, just type `exit` and you will go back to your local machine prompt.
+You are done with the image, just type ``exit`` and you will go back to your local machine prompt.
 
-Running a `jupyter` notebook
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Running a ``jupyter`` notebook
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It is also possible to start a `jupyter` server from the `PSpipe` image and run it into your web
-browser. You only need to start the `docker` image with the following command
+It is also possible to start a ``jupyter`` server from the ``PSpipe`` image and run it into your web
+browser. You only need to start the ``docker`` image with the following command
 
 .. code:: shell
 
    $ docker run -p 8888:8888 --rm -it simonsobs/pspipe /bin/bash
 
-to enable port forwarding between the `docker` image and your local machine. Then inside the image
-terminal, you have to start the `jupyter` server by typing
+to enable port forwarding between the ``docker`` image and your local machine. Then inside the image
+terminal, you have to start the ``jupyter`` server by typing
 
 .. code:: shell
 
    $ jupyter notebook --ip 0.0.0.0 PSpipe/notebooks
 
-Finally open the http link within your web browser and you should be able to run one of the `python`
-notebook.
+Finally open the ``http`` link (something like ``http://127.0.0.1:8888/?token...``) within your web
+browser and you should be able to run one of the ``python`` notebook.

@@ -99,7 +99,7 @@ terminal, you have to start the ``jupyter`` server by typing
 
 .. code:: shell
 
-   $ jupyter notebook --ip 0.0.0.0 PSpipe/notebooks
+   $ jupyter notebook --ip 0.0.0.0 ~/PSpipe/notebooks
 
 Finally open the ``http`` link (something like ``http://127.0.0.1:8888/?token...``) within your web
 browser and you should be able to run one of the ``python`` notebook.

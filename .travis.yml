@@ -20,7 +20,7 @@ jobs:
 
       before_install:
         - sudo apt-get update
-        - sudo apt-get -y install automake build_essential gfortran libcfitsio-dev libfftw3-dev libgsl-dev libchealpix-dev
+        - sudo apt-get -y install automake build-essential gfortran libcfitsio-dev libfftw3-dev libgsl-dev libchealpix-dev
         - gfortran --version
         - python --version
         - python -m pip install --upgrade pip numpy cython

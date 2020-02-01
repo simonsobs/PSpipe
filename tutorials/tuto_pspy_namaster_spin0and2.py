@@ -22,7 +22,7 @@ ncomp = 3
 # note that if you are doing cross correlation between galaxy and kappa for example, you should follow a similar structure
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 # clfile are the camb lensed power spectra
-clfile = "../data/bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
+clfile = "bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
 # the maximum multipole to consider
 lmax = 3 * nside - 1
 # the number of iteration in map2alm

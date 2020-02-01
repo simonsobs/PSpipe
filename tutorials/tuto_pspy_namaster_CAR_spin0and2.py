@@ -25,7 +25,7 @@ ncomp = 3
 # note that if you are doing cross correlation between galaxy and kappa for example, you should follow a similar structure
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 # clfile are the camb lensed power spectra
-clfile = "../data/bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
+clfile = "bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
 # the maximum multipole to consider, this is 180/(res [deg])
 lmax = 2160
 # the noise on the spin0 component, if not specified, the noise in polarisation wil be sqrt(2)x that

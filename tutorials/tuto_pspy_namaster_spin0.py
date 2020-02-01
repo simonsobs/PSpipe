@@ -19,7 +19,7 @@ nside = 512
 # ncomp=1 mean that we are going to use only spin0 field (ncomp=3 for spin 0 and 2 fields
 ncomp = 1
 # clfile are the camb lensed power spectra
-clfile = "../data/bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
+clfile = "bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
 # the maximum multipole to consider
 lmax = 3 * nside - 1
 # the number of iteration in map2alm

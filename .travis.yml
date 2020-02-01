@@ -11,4 +11,4 @@ script:
   - docker run --rm ${DOCKERHUB_ORG}/pspipe python -c "import camb"
 
 after_success:
-  - docker push ${DOCKERHUB_ORG}/pspipe:latest
+  # - docker push ${DOCKERHUB_ORG}/pspipe:latest

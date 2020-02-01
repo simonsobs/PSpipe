@@ -17,26 +17,25 @@ stages:
 
 jobs:
   include:
-    - stage: test
+    # - stage: test
 
-      before_install:
-        - sudo apt-get update
-        - sudo apt-get -y install automake build-essential gfortran libcfitsio-dev libfftw3-dev libgsl-dev libchealpix-dev
-        - gfortran --version
-        - python --version
-        - python -m pip install --upgrade pip numpy cython
+    #   before_install:
+    #     - sudo apt-get update
+    #     - sudo apt-get -y install automake build-essential gfortran libcfitsio-dev libfftw3-dev libgsl-dev libchealpix-dev
+    #     - gfortran --version
+    #     - python --version
+    #     - python -m pip install --upgrade pip numpy cython
 
-      install:
-        - python -m pip install .
+    #   install:
+    #     - python -m pip install .
 
-      script:
-        - python -c "import pspipe"
+    #   script:
+    #     - python -c "import pspipe"
 
     - stage: dockerize
 
       script:
-        - echo "${REGISTRY_PASSWORD}" | docker login -u "${REGISTRY_USER}" --password-stdin;
-        #- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
         - docker build -t cmb/pspipe .
         - docker images
 

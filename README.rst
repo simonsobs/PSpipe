@@ -108,3 +108,23 @@ terminal, you have to start the ``jupyter`` server by typing
 
 Finally open the ``http`` link (something like ``http://127.0.0.1:8888/?token...``) within your web
 browser and you should be able to run one of the ``python`` notebook.
+
+Sharing data between the ``docker`` container and the host
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The principle behind ``docker`` is to provide a fully usable workspace but within an encapsulated
+environment. For instance, within the ``docker`` session, it is not possible to "see" the host
+machine *i.e.* your local computer and, by default, it is impossible to transfer data after the
+completion of your ``PSpipe`` script. To be able to share data/directories between the ``docker``
+container and the host machine, you have to mount one of your host directory into the ``docker``
+container directory. The next command starts the ``docker`` container after having created a bridge
+between your host ``/tmp/data`` directory and the home directory in the ``docker`` container
+
+.. code:: shell
+
+   $ docker run --rm -it -v /tmp/data:/home/pspipe/data simonsobs/pspipe /bin/bash
+
+In this way, everything perfoms within the ``/home/pspipe/data`` directory will be reflected into
+the ``/tmp/data`` on your host machine. You can then share configuration files, source codes, data
+files... between the running ``docker`` container and your local machine. Nothing will be lost after
+you exit from the ``docker`` container.

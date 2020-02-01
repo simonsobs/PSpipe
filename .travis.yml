@@ -11,5 +11,4 @@ script:
   - docker run --rm ${DOCKERHUB_ORG}/pspipe python -c "import pspipe"
 
 after_success:
-  - docker tag cmb/pspipe:latest ${DOCKERHUB_ORG}/pspipe:latest
   - docker push ${DOCKERHUB_ORG}/pspipe:latest

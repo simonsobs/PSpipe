@@ -77,7 +77,7 @@ This will open a new ``bash`` terminal with a full installation of ``PSpipe``, `
    Type 'copyright', 'credits' or 'license' for more information
    IPython 7.11.1 -- An enhanced Interactive Python. Type '?' for help.
 
-   In [1]: import pixell, pymaster
+   In [1]: import pixell, pymaster, pspy
 
 You can run the python scripts from the project directory that you will find under the home
 directory.

@@ -67,7 +67,7 @@ libraries and everything compiled. You should first install `docker
    $ docker run --rm -it simonsobs/pspipe /bin/bash
 
 This will open a new ``bash`` terminal with a full installation of ``PSpipe``, ``pixell``,
-``NaMaster``... For instance, you can start the ``ipython`` interpreter and run the following
+``NaMaster``, ``pspy`... For instance, you can start the ``ipython`` interpreter and run the following
 ``import`` command
 
 .. code:: shell

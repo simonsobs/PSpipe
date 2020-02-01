@@ -9,6 +9,9 @@
 The package
 ===========
 
+.. image:: https://travis-ci.com/simonsobs/PSpipe.svg?branch=master
+   :target: https://travis-ci.com/simonsobs/PSpipe
+
 ``PSpipe`` is a pipeline creator for the analysis of the high resolution maps of the large aperture
 telescope of the Simons Observatory. It contains tools for estimating power spectra and a
 multi-frequency likelihood interfaced with the ``cobaya`` MCMC sampler.
@@ -19,10 +22,7 @@ The pipelines are mainly written in python and make use of three different codes
 * ``namaster`` : C library + python wrapper for power spectrum estimation (https://github.com/LSSTDESC/NaMaster)
 * ``mflike`` : mutlifrequency likelihood interfaced with ``cobaya`` (https://github.com/simonsobs/LAT_MFLike)
 
-.. image:: https://travis-ci.com/simonsobs/PSpipe.svg?branch=master
-   :target: https://travis-ci.com/simonsobs/PSpipe
-
-* Free software: BSD license
+The package is licensed under the BSD license.
 
 Requirements
 ============

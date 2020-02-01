@@ -1,5 +1,11 @@
 dist: bionic
 
+language: python
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+
 services:
   - docker
 
@@ -11,6 +17,16 @@ stages:
 jobs:
   include:
     - stage: test
+
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get -y install automake build_essential gfortran libcfitsio-dev libfftw3-dev libgsl-dev libchealpix-dev
+        - gfortran --version
+        - python3 --version
+        - python3 -m pip install --upgrade pip numpy cython
+
+      install:
+        - python3 -m pip install .
 
       script:
         - python -c "import pspipe"

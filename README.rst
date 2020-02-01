@@ -84,8 +84,8 @@ directory.
 
 You are done with the image, just type ``exit`` and you will go back to your local machine prompt.
 
-Running a ``jupyter`` notebook
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Running ``jupyter`` notebook from docker
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is also possible to start a ``jupyter`` server from the ``PSpipe`` image and run it into your web
 browser. You only need to start the ``docker`` image with the following command

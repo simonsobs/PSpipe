@@ -79,7 +79,7 @@ This will open a new ``bash`` terminal with a full installation of ``PSpipe``, `
 
    In [1]: import pixell, pymaster, pspy
 
-You can run the python scripts from the project directory that you will find under the home
+You can run the python scripts from the tutorials directory that you will find under the home
 directory.
 
 You are done with the image, just type ``exit`` and you will go back to your local machine prompt.

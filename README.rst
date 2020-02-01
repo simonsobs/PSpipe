@@ -19,6 +19,11 @@ The pipelines are mainly written in python and make use of three different codes
 * ``namaster`` : C library + python wrapper for power spectrum estimation (https://github.com/LSSTDESC/NaMaster)
 * ``mflike`` : mutlifrequency likelihood interfaced with ``cobaya`` (https://github.com/simonsobs/LAT_MFLike)
 
+.. image:: https://travis-ci.com/simonsobs/PSpipe.svg?branch=master
+   :target: https://travis-ci.com/simonsobs/PSpipe
+
+* Free software: BSD license
+
 Requirements
 ============
 

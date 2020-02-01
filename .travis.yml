@@ -10,9 +10,10 @@ services:
   - docker
 
 stages:
-  - test
-  - name: dockerize
-    if: branch = master AND type = push
+  - dockerize
+  # - test
+  # - name: dockerize
+  #   if: branch = master AND type = push
 
 jobs:
   include:

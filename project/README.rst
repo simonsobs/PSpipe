@@ -28,11 +28,11 @@ We have computed the correlation coefficient R_TE of planck data.
 
 
 
-analyse_sims 
+old/analyse_sims 
 =============
 This folder contains the (old) code used for the analysis of the official SO simulations (from Andrea Zonca)
 
 
-actpol 
+old/actpol 
 =============
 This folder contains some (old) code that can be used for the analysis of the actpol data

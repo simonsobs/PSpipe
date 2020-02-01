@@ -1,19 +1,11 @@
 dist: bionic
 
-language: python
-python:
-  # - "3.6"
-  # - "3.7"
-  - "3.8"
-
 services:
   - docker
 
 stages:
-  - dockerize
-  # - test
-  # - name: dockerize
-  #   if: branch = master AND type = push
+  - name: dockerize
+    if: branch = master AND type = push
 
 jobs:
   include:
@@ -36,8 +28,8 @@ jobs:
 
       script:
         - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-        - docker build -t cmb/pspipe .
-        - docker images
+        - docker build -t ${DOCKERHUB_ORG}/pspipe .
+        - docker run --rm ${DOCKERHUB_ORG}/pspipe python -c "import pspipe"
 
       after_success:
         - docker tag cmb/pspipe:latest ${DOCKERHUB_ORG}/pspipe:latest

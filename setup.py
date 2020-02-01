@@ -12,6 +12,9 @@ setup(
     author="Simons Observatory Collaboration Power Spectrum Task Force",
     url="https://github.com/simonsobs/PSpipe",
     description="Pipeline analysis for the SO LAT experiment",
+    long_description=readme,
+    license="BSD license",
+    python_requires=">=3.5",
     zip_safe=True,
     packages=find_packages(),
     install_requires=[

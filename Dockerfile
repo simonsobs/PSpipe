@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
         libgsl-dev                       \
         libchealpix-dev                  \
         python3                          \
-        python3-pip
+        python3-pip                      \
+        wget
 
 RUN ln -sfn /usr/bin/python3 /usr/bin/python
 

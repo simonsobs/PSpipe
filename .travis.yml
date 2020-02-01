@@ -1,0 +1,36 @@
+dist: bionic
+
+services:
+  - docker
+
+stages:
+  - name: dockerize
+    if: branch = master AND type = push
+
+jobs:
+  include:
+    # - stage: test
+
+    #   before_install:
+    #     - sudo apt-get update
+    #     - sudo apt-get -y install automake build-essential gfortran libcfitsio-dev libfftw3-dev libgsl-dev libchealpix-dev
+    #     - gfortran --version
+    #     - python --version
+    #     - python -m pip install --upgrade pip numpy cython
+
+    #   install:
+    #     - python -m pip install .
+
+    #   script:
+    #     - python -c "import pspipe"
+
+    - stage: dockerize
+
+      script:
+        - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+        - docker build -t ${DOCKERHUB_ORG}/pspipe .
+        - docker run --rm ${DOCKERHUB_ORG}/pspipe python -c "import pspipe"
+
+      after_success:
+        - docker tag cmb/pspipe:latest ${DOCKERHUB_ORG}/pspipe:latest
+        - docker push ${DOCKERHUB_ORG}/pspipe:latest

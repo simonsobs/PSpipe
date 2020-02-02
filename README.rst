@@ -64,12 +64,22 @@ Using ``docker``
 
 Given the number of requirements, you can use a ``docker`` image already made with the needed
 libraries and everything compiled. You should first install `docker
-<https://docs.docker.com/install/>`_ for your operating system. Then you can run the ``PSpipe``
-`image <https://hub.docker.com/repository/docker/simonsobs/pspipe>`_ with the following command
+<https://docs.docker.com/install/>`_ for your operating system.  
+
+
+Bash installation
+~~~~~~~~~~~~~~~~~~
+
+We have written a simple bash script to install the docker and to clone the main ``PSpipe`` libraries.
+Just run 
 
 .. code:: shell
 
-   $ docker run --rm -it simonsobs/pspipe /bin/bash
+   $ sh start_docker.sh
+  
+after specifying ``/WHERE/TO/WORK/pspipe_workspace``, which is the folder in which you want to be able to run ``PSpipe``. 
+
+
 
 This will open a new ``bash`` terminal with a full installation of ``PSpipe``, ``pixell``,
 ``NaMaster``, ``pspy``... For instance, you can start the ``ipython`` interpreter and run the following
@@ -84,8 +94,7 @@ This will open a new ``bash`` terminal with a full installation of ``PSpipe``, `
 
    In [1]: import pixell, pymaster, pspy
 
-You can run the python scripts from the tutorials directory that you will find under the home
-directory.
+You can run the python scripts from the tutorials directory of ``PSpipe``.
 
 You are done with the image, just type ``exit`` and you will go back to your local machine prompt.
 
@@ -112,19 +121,7 @@ browser and you should be able to run one of the ``python`` notebook.
 Sharing data between the ``docker`` container and the host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The principle behind ``docker`` is to provide a fully usable workspace but within an encapsulated
-environment. For instance, within the ``docker`` session, it is not possible to "see" the host
-machine *i.e.* your local computer and, by default, it is impossible to transfer data after the
-completion of your ``PSpipe`` script. To be able to share data/directories between the ``docker``
-container and the host machine, you have to mount one of your host directory into the ``docker``
-container directory. The next command starts the ``docker`` container after having created a bridge
-between your host ``/tmp/data`` directory and the home directory in the ``docker`` container
-
-.. code:: shell
-
-   $ docker run --rm -it -v /tmp/data:/home/pspipe/data simonsobs/pspipe /bin/bash
-
-In this way, everything perfoms within the ``/home/pspipe/data`` directory will be reflected into
-the ``/tmp/data`` on your host machine. You can then share configuration files, source codes, data
+Everything perfomed within the ``/home/pspipe/workspace`` directory will be reflected into
+the ``/WHERE/TO/WORK/pspipe_workspace`` on your host machine. You can then share configuration files, source codes, data
 files... between the running ``docker`` container and your local machine. Nothing will be lost after
 you exit from the ``docker`` container.

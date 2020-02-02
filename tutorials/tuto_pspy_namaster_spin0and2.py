@@ -146,8 +146,6 @@ Clb_namaster["BE"] = cls_uncoupled[5]
 Clb_namaster["BB"] = cls_uncoupled[6]
 
 print("namaster run in %.2f s"%(time.time()-t0))
-print (lb_namaster)
-print (lb_py)
 
 plt.figure(figsize=(20, 15))
 for c,f in enumerate(spectra):

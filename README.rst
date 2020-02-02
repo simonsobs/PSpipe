@@ -70,7 +70,7 @@ libraries and everything compiled. You should first install `docker
 Bash installation
 ~~~~~~~~~~~~~~~~~~
 
-We have written a simple bash script to install the docker and to clone the main ``PSpipe`` libraries.
+We have written a simple bash script to install the ``PSpipe`` docker and to clone the main ``PSpipe`` libraries.
 Just run 
 
 .. code:: shell

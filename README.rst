@@ -102,14 +102,7 @@ Running ``jupyter`` notebook from docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is also possible to start a ``jupyter`` server from the ``PSpipe`` image and run it into your web
-browser. You only need to start the ``docker`` image with the following command
-
-.. code:: shell
-
-   $ docker run -p 8888:8888 --rm -it simonsobs/pspipe /bin/bash
-
-to enable port forwarding between the ``docker`` image and your local machine. Then inside the image
-terminal, you have to start the ``jupyter`` server by typing
+browser.  Inside the image terminal, you have to start the ``jupyter`` server by typing
 
 .. code:: shell
 

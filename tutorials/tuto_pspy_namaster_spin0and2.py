@@ -15,7 +15,7 @@ import pymaster as nmt
 # It will have a resolution nside=512
 lon, lat = 30, 50
 radius = 25
-nside = 512
+nside = 256
 # ncomp=3 mean that we are going to use spin0 and 2 field
 ncomp = 3
 # specify the order of the spectra, this will be the order used in pspy

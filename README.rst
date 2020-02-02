@@ -77,7 +77,7 @@ Just run
 
    $ sh start_docker.sh
   
-after specifying ``/WHERE/TO/WORK/pspipe_workspace``, which is the folder in which you want to be able to run ``PSpipe``. 
+after specifying ``/WHERE/TO/WORK/pspipe_workspace``, which is the folder in which you want to be able to work with ``PSpipe``. 
 
 
 

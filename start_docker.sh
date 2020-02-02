@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pspipe_workspace=${PSPIPE_WORKSPACE:-/WHERE_TO_WORK}
+pspipe_workspace=${PSPIPE_WORKSPACE:-/WHERE/TO/WORK/pspipe_workspace}
 
 githubs=(
     "https://github.com/simonsobs/pixell"

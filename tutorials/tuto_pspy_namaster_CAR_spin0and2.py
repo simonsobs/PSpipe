@@ -59,6 +59,8 @@ binary = so_map.car_template(1, ra0, ra1, dec0, dec1, res)
 binary.data[:] = 0
 binary.data[1:-1, 1:-1] = 1
 
+print("Generate CMB realisation")
+
 #First let's generate a CMB realisation
 cmb = template.synfast(clfile)
 split = cmb.copy()
@@ -69,9 +71,14 @@ split.data += noise.data
 #First let's generate a CMB realisation
 cmb = template.synfast(clfile)
 split = cmb.copy()
+
 #let's add noise to it with rms 20 uk.arcmin in T ans sqrt(2)xthat in pol
 noise = so_map.white_noise(split, rms_uKarcmin_T=rms_uKarcmin_T)
 split.data += noise.data
+
+
+print("Generate window function")
+
 
 #we then apodize the survey mask
 window = so_window.create_apodization(binary, apo_type="Rectangle", apo_radius_degree=apo_radius_degree_survey)
@@ -82,12 +89,18 @@ mask = so_window.create_apodization(mask, apo_type="Rectangle", apo_radius_degre
 #the window is given by the product of the survey window and the mask window
 window.data *= mask.data
 
+#let's look at it
+window.plot(file_name="%s/window"%(test_dir))
+
+
 #for spin0 and 2 the window need to be a tuple made of two objects
 #the window used for spin0 and the one used for spin 2
 window = (window, window)
 
 # Compute spin 0 spin 2 spectra a la pspy
-t = time.time()
+print("Compute spin0 and spin2 power spectra a la pspy")
+
+t0=time.time()
 mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(window, binning_file, lmax=lmax, type=type, niter=niter)
 alms = sph_tools.get_alms(split, window, niter, lmax)
 l, ps = so_spectra.get_spectra(alms, spectra=spectra)
@@ -99,49 +112,61 @@ lb_py, Cb_pspy = so_spectra.bin_spectra(l,
                                         mbb_inv=mbb_inv,
                                         spectra=spectra)
 
-print("pspy time: %0.2f"%(time.time()-t))
+print("pspy run in %.2f s"%(time.time()-t0))
+
+print("Compute spin0 and spin2 power spectra a la namaster")
 
 # Compute spin 0 spin 2 spectra a la namaster
-t = time.time()
+t0=time.time()
 nlb = 40
 
 field_0 = nmt.NmtField(window[0].data, [split.data[0]], n_iter=niter, wcs=window[0].data.wcs)
 field_2 = nmt.NmtField(window[1].data, [split.data[1],split.data[2]], n_iter=niter, wcs=window[0].data.wcs)
 
-b = nmt.NmtBin(2048,nlb=nlb, lmax=lmax)
+b = nmt.NmtBin(2048, nlb=nlb, lmax=lmax)
 lb = b.get_effective_ells()
 
-w0 = nmt.NmtWorkspace()
-w0.compute_coupling_matrix(field_0, field_0, b, n_iter=niter)
-w1 = nmt.NmtWorkspace()
-w1.compute_coupling_matrix(field_0, field_2, b, n_iter=niter)
-w2 = nmt.NmtWorkspace()
-w2.compute_coupling_matrix(field_2, field_2, b, n_iter=niter)
 
-def compute_master(f_a, f_b, wsp) :
-    cl_coupled = nmt.compute_coupled_cell(f_a, f_b)
-    cl_decoupled = wsp.decouple_cell(cl_coupled)
-    return cl_decoupled
+wsp = nmt.NmtWorkspace()
+wsp.compute_coupling_matrix(field_0, field_2, b, is_teb=True,
+                            n_iter=niter, lmax_mask=lmax)
 
-Cb_namaster = {}
-Cb_namaster["TT"] = compute_master(field_0, field_0, w0)[0]
-spin1 = compute_master(field_0, field_2, w1)
-Cb_namaster["TE"] = spin1[0]
-Cb_namaster["TB"] = spin1[1]
-Cb_namaster["ET"] = Cb_namaster["TE"]
-Cb_namaster["BT"] = Cb_namaster["TB"]
-spin2 = compute_master(field_2,field_2,w2)
-Cb_namaster["EE"] = spin2[0]
-Cb_namaster["EB"] = spin2[1]
-Cb_namaster["BE"] = spin2[2]
-Cb_namaster["BB"] = spin2[3]
+# Compute mode-coupled Cls (for each pair of fields)
+cl_coupled_00 = nmt.compute_coupled_cell(field_0, field_0)
+cl_coupled_02 = nmt.compute_coupled_cell(field_0, field_2)
+cl_coupled_22 = nmt.compute_coupled_cell(field_2, field_2)
 
-print("namaster time: %0.2f" % (time.time()-t))
+# Bundle them up
+cls_coupled = np.array([cl_coupled_00[0],  # TT
+                        cl_coupled_02[0],  # TE
+                        cl_coupled_02[1],  # TB
+                        cl_coupled_22[0],  # EE
+                        cl_coupled_22[1],  # EB
+                        cl_coupled_22[2],  # BE
+                        cl_coupled_22[3]])  # BB
+
+# Invert MCM
+cls_uncoupled = wsp.decouple_cell(cls_coupled)
+
+Clb_namaster = {}
+Clb_namaster["TT"] = cls_uncoupled[0]
+Clb_namaster["TE"] = cls_uncoupled[1]
+Clb_namaster["TB"] = cls_uncoupled[2]
+Clb_namaster["ET"] = Clb_namaster["TE"]
+Clb_namaster["BT"] = Clb_namaster["TB"]
+Clb_namaster["EE"] = cls_uncoupled[3]
+Clb_namaster["EB"] = cls_uncoupled[4]
+Clb_namaster["BE"] = cls_uncoupled[5]
+Clb_namaster["BB"] = cls_uncoupled[6]
+
+
+
+print("namaster run in %.2f s"%(time.time()-t0))
 
 plt.figure(figsize=(20, 15))
 for c, f in enumerate(spectra):
     plt.subplot(3, 3, c+1)
-    plt.plot(lb, Cb_namaster[f]*lb**2/(2*np.pi), label="namaster")
+    plt.plot(lb, Clb_namaster[f]*lb**2/(2*np.pi), label="namaster")
     plt.plot(lb_py, Cb_pspy[f]*lb_py**2/(2*np.pi), '.', label="pspy")
     plt.ylabel(r"$D^{%s}_{\ell}$"%f, fontsize=20)
     plt.xlabel(r"$\ell$", fontsize=20)
@@ -154,7 +179,7 @@ plt.close()
 plt.figure(figsize=(20, 15))
 for c, f in enumerate(spectra):
     plt.subplot(3, 3, c+1)
-    plt.plot(lb, (Cb_namaster[f]-Cb_pspy[f])/Cb_pspy[f])
+    plt.plot(lb, (Clb_namaster[f]-Cb_pspy[f])/Cb_pspy[f])
     plt.xlabel(r"$\ell$", fontsize=20)
     plt.ylabel(r"$\Delta D^{%s}_{\ell}/D^{%s}_{\ell}$"%(f,f), fontsize=20)
     

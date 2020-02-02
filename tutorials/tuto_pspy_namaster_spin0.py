@@ -10,6 +10,7 @@ import numpy as np
 import pylab as plt
 import os
 import pymaster as nmt
+import time
 
 # We  specify the HEALPIX survey parameter, it will be a disk of radius 25 degree centered on longitude 30 degree and latitude 50 degree
 # It will have a resolution nside=512
@@ -56,6 +57,8 @@ vec = hp.pixelfunc.ang2vec(lon, lat, lonlat=True)
 disc = hp.query_disc(nside, vec, radius=radius*np.pi/180)
 binary.data[disc] = 1
 
+
+print("Generate noisy CMB realisation")
 # First let's generate a CMB realisation
 cmb = template.synfast(clfile)
 split = cmb.copy()
@@ -63,6 +66,7 @@ split = cmb.copy()
 noise = so_map.white_noise(split, rms_uKarcmin_T=rms_uKarcmin_T)
 split.data += noise.data
 
+print("Generate window function")
 # we then apodize the survey mask
 window = so_window.create_apodization(binary, apo_type="C1", apo_radius_degree=apo_radius_degree_survey)
 # we create a point source mask
@@ -75,22 +79,28 @@ window.data *= mask.data
 # let's look at it
 window.plot(file_name="%s/window" % (test_dir), hp_gnomv=(lon, lat, 3500, 1))
 
+
+print("Compute spin0 power spectra a la pspy")
+t0=time.time()
 # Compute spin 0 spectra a la pspy
 mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0(window, binning_file, lmax=lmax, type=type, niter=niter)
 alm = sph_tools.get_alms(split, window, niter, lmax)
 l, ps = so_spectra.get_spectra(alm)
 lb, Cb_pspy = so_spectra.bin_spectra(l, ps, binning_file, lmax, type=type, mbb_inv=mbb_inv)
+print("pspy run in %.2f s"%(time.time()-t0))
 
 # Compute spin 0 spectra a la namaster
+print("Compute spin0 power spectra a la namaster")
 nlb = 40
 field = nmt.NmtField(window.data, [split.data])
 cl_coupled = nmt.compute_coupled_cell(field, field)
 b = nmt.NmtBin(nside, nlb=nlb)
 lb = b.get_effective_ells()
-
 w0 = nmt.NmtWorkspace()
 w0.compute_coupling_matrix(field, field, b)
 Cb_namaster = w0.decouple_cell(cl_coupled)
+print("namaster run in %.2f s"%(time.time()-t0))
+
 
 # Plot the spectra
 plt.plot(lb, Cb_pspy*lb**2/(2*np.pi), label="pspy")

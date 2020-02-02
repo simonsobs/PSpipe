@@ -96,7 +96,7 @@ This will open a new ``bash`` terminal with a full installation of ``PSpipe``, `
 
 You can run the python scripts from the tutorials directory of ``PSpipe``.
 
-You are done with the image, just type ``exit`` and you will go back to your local machine prompt.
+When you are done with the image, just type ``exit`` and you will go back to your local machine prompt.
 
 Running ``jupyter`` notebook from docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

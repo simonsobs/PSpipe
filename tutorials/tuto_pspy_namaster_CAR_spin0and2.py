@@ -63,22 +63,18 @@ print("Generate CMB realisation")
 
 #First let's generate a CMB realisation
 cmb = template.synfast(clfile)
-print("ok")
 split = cmb.copy()
 #let's add noise to it with rms 20 uk.arcmin
 noise = so_map.white_noise(split, rms_uKarcmin_T=rms_uKarcmin_T)
 split.data += noise.data
-print ("ok")
 
 #First let's generate a CMB realisation
 cmb = template.synfast(clfile)
 split = cmb.copy()
-print ("ok")
 
 #let's add noise to it with rms 20 uk.arcmin in T ans sqrt(2)xthat in pol
 noise = so_map.white_noise(split, rms_uKarcmin_T=rms_uKarcmin_T)
 split.data += noise.data
-print ("ok")
 
 
 print("Generate window function")
@@ -92,6 +88,10 @@ mask = so_map.simulate_source_mask(binary, n_holes=source_mask_nholes, hole_radi
 mask = so_window.create_apodization(mask, apo_type="Rectangle", apo_radius_degree=apo_radius_degree_mask)
 #the window is given by the product of the survey window and the mask window
 window.data *= mask.data
+
+#let's look at it
+window.plot(file_name="%s/window"%(test_dir))
+
 
 #for spin0 and 2 the window need to be a tuple made of two objects
 #the window used for spin0 and the one used for spin 2

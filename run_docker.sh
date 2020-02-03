@@ -7,7 +7,8 @@
 # Requirements: docker
 # Status: not intended to be distributed yet
 
-pspipe_workspace=${PSPIPE_WORKSPACE:-/tmp/workspace}
+current_dir=$(dirname $0)
+pspipe_workspace=${PSPIPE_WORKSPACE:-${current_dir/\./$PWD}}
 githubs=(
     "https://github.com/simonsobs/pixell"
     "https://github.com/simonsobs/pspy"
@@ -35,35 +36,6 @@ function msg_warning()
 }
 
 function prepare_workspace() {
-    echo -en "\\033[0;34mNOTICE: Location of PSpipe workspace [default ${pspipe_workspace}]"
-    if [ ! -z ${PSPIPE_WORKSPACE} ]; then
-        echo -e "$@\\033[0;39m"
-        return 0
-    else
-        echo -en ": "
-        read -e ws
-    fi
-    echo -e "$@\\033[0;39m"
-    [[ ! -z ${ws} ]] && pspipe_workspace=${ws}
-    if [ ! -d "${pspipe_workspace}" ]; then
-        echo -e "\\033[0;35mWARNING: Directory '${pspipe_workspace}' does not exist. Create it ?"
-        yesno=("yes" "no")
-        select ans in "${yesno[@]}"; do
-            case $ans in
-                [Yy]*)
-                    mkdir -p ${pspipe_workspace}
-                    break
-                    ;;
-                [Nn]*)
-                    msg_warning "No workspace has been set."
-                    return 1
-                    break
-                    ;;
-            esac
-        done
-        echo -e "\\033[0;39m"
-    fi
-
     (
         cd ${pspipe_workspace}
         for gh in "${githubs[@]}"; do
@@ -94,11 +66,7 @@ function start_docker() {
     [[ -f ${cid_file} ]] && rm -f ${cid_file}
 
     local docker_options="-it -p 8888:8888"
-    if [ -z ${cid_file} ]; then
-        docker_options+=" --rm"
-    else
-        docker_options+=" --cidfile ${cid_file} -v ${pspipe_workspace}:/home/pspipe/workspace"
-    fi
+    docker_options+=" --cidfile ${cid_file} -v ${pspipe_workspace}:/home/pspipe/workspace"
 
     docker run $(echo ${docker_options}) simonsobs/pspipe:latest /bin/bash
     return 0

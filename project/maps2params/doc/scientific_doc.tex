@@ -196,9 +196,36 @@ Note that if we consider that different frequency channel have independent noise
 This will not be the case for SO, because dichroic arrays see the same atmospheric noise.
 
 
-\section{Computation of covariance matrices}
+\section{Computation of analytic covariance matrices}
 
 
+
+
+We estimate analytically the different covariance elements for the TT, TE and EE power spectrum as
+
+\ba
+\langle \Delta \tilde{C}^{R_{\nu_{1} \alpha}S_{\nu_{2} \beta}}_{\ell_{1}} \Delta  \tilde{C}^{X_{\nu_{3} \gamma}Y_{\nu_{4} \eta}}_{\ell_{2}}\rangle &=&      \chi_{RX,SY,\ell_{1}\ell_{2}}^{\nu_{1} \alpha \times \nu_{3} \gamma, \nu_{2} \beta \times  \nu_{4} \eta} M^{00}_{\ell_{1} \ell_{2}}(W_{R}^{\nu_{1}, } W_{X}^{\nu_{3}},W_{S}^{ \nu_{2} }W_{Y}^{ \nu_{4} })\nonumber \\
+& +&  \chi_{RY,SX,\ell_{1}\ell_{2}}^{\nu_{1} \alpha \times \nu_{4} \beta, \nu_{2} \beta \times  \nu_{3} \gamma}  M^{00}_{\ell_{1} \ell_{2}}(W_{R}^{\nu_{1}}W_{Y}^{ \nu_{4} },W_{S}^{ \nu_{2} }W_{X}^{\nu_{3}})
+\ea
+
+
+With 
+\ba
+ \chi_{RX,SY}^{\nu_{1} \alpha \times \nu_{3} \gamma, \nu_{2} \beta \times  \nu_{4} \eta} &=&  C^{\nu_{1} \alpha \times \nu_{3} \gamma}_{RX, \ell}   C^{ \nu_{2} \beta \times  \nu_{4} \eta}_{SY, \ell} +  C^{\nu_{1} \alpha \times \nu_{3} \gamma}_{RX, \ell}  \tilde{N}^{ \nu_{2} \beta \times  \nu_{4} \eta}_{SY, \ell}  f^{\alpha \gamma}_{\beta \eta} + C^{ \nu_{2} \beta \times  \nu_{4} \eta}_{SY, \ell} \tilde{N}^{\nu_{1} \alpha \times \nu_{3} \gamma}_{RX, \ell}   f^{\beta \eta}_{\alpha \gamma} \nonumber \\ & +&  g_{\alpha \gamma, \beta \eta} \tilde{N}^{\nu_{1} \alpha \times  \nu_{3} \gamma}_{RX, \ell}\tilde{N}^{ \nu_{2} \beta \times  \nu_{4} \eta}_{SY, \ell} \nonumber \\
+g_{\alpha \gamma, \beta \eta} &=& \frac{n^{2}_{s} \delta_{\alpha \gamma}\delta_{\beta \eta} -n_{s} \delta_{\alpha \beta \gamma \eta}}{n^{2}_{s}(n_{s} -\delta_{\alpha \beta}) (n_{s} -\delta_{\gamma \eta})} \nonumber \\
+ f^{\beta \eta}_{\alpha \gamma}  &=& \frac{n^{3}_{s}\delta_{\alpha \gamma}- n^{2}_{s}( \delta_{\alpha \beta \gamma} + \delta_{\alpha  \gamma \eta}) + n_{s} \delta_{\alpha \beta \gamma \eta}}{n^{2}_{s}(n_{s} -\delta_{\alpha \beta}) (n_{s} -\delta_{\gamma \eta})} \nonumber\\
+\ea
+
+$n_{s}$ is the number of splits of data and $\tilde{N}^{ \nu_{2} \beta \times  \nu_{4} \eta}_{SY, \ell}$ is the effective noise spectrum $ \tilde{N}^{ \nu_{2} \beta \times  \nu_{4} \eta}_{SY, \ell} = \frac{N^{ \nu_{2} \beta \times  \nu_{4} \eta}_{SY, \ell}}{ b_{\ell}^{\nu_{2}, \beta} b_{\ell}^{\nu_{3}, \eta} }$
+
+An example of a full analytic covariance matrix for three frequencies of LAT data is shown in Figure \ref{fig:cov}.
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=1 \textwidth]{covariance.png}
+  \caption{Covariance matrix for three frequency channels of LAT data.}
+  \label{fig:cov}
+\end{figure*}
 
 
 

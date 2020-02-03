@@ -66,6 +66,9 @@ split = cmb.copy()
 noise = so_map.white_noise(split, rms_uKarcmin_T=rms_uKarcmin_T)
 split.data += noise.data
 
+split.plot(file_name="%s/noisy_cmb" % (test_dir))
+
+
 print("Generate window function")
 # we then apodize the survey mask
 window = so_window.create_apodization(binary, apo_type="C1", apo_radius_degree=apo_radius_degree_survey)

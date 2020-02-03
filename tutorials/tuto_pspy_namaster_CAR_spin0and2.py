@@ -17,7 +17,7 @@ import time
 niter = 0
 #We specify the CAR parameters
 # It will have a resolution 5 arcmin
-ra0, ra1, dec0, dec1 = 10, 100, 10, 60
+ra0, ra1, dec0, dec1 = 10, 60, 10, 30
 res = 5
 # ncomp=3 mean that we are going to use spin0 and 2 field
 ncomp = 3
@@ -76,21 +76,21 @@ split = cmb.copy()
 noise = so_map.white_noise(split, rms_uKarcmin_T=rms_uKarcmin_T)
 split.data += noise.data
 
+split.plot(file_name="%s/noisy_cmb" % (test_dir), ticks_spacing_car = 4)
 
 print("Generate window function")
-
 
 #we then apodize the survey mask
 window = so_window.create_apodization(binary, apo_type="Rectangle", apo_radius_degree=apo_radius_degree_survey)
 #we create a point source mask
 mask = so_map.simulate_source_mask(binary, n_holes=source_mask_nholes, hole_radius_arcmin=source_mask_radius)
 #... and we apodize it
-mask = so_window.create_apodization(mask, apo_type="Rectangle", apo_radius_degree=apo_radius_degree_mask)
+mask = so_window.create_apodization(mask, apo_type="C1", apo_radius_degree=apo_radius_degree_mask)
 #the window is given by the product of the survey window and the mask window
 window.data *= mask.data
 
 #let's look at it
-window.plot(file_name="%s/window"%(test_dir))
+window.plot(file_name="%s/window"%(test_dir), ticks_spacing_car = 4)
 
 
 #for spin0 and 2 the window need to be a tuple made of two objects

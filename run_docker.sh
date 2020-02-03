@@ -3,7 +3,6 @@
 #
 # Copyright (C) 2020 Simons Observatory
 #
-# Author: garrido@lal.in2p3.fr
 # Keywords: docker, pspipe
 # Requirements: docker
 # Status: not intended to be distributed yet

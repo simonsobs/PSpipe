@@ -82,14 +82,12 @@ Bash installation
 ~~~~~~~~~~~~~~~~~~
 
 We have written a simple bash script to install the ``PSpipe`` docker and to clone the main ``PSpipe`` libraries.
-Just run 
+copy the script in /where/to/work_with_pspipe and run
 
 .. code:: shell
 
    $ sh start_docker.sh
   
-after specifying ``/WHERE/TO/WORK/pspipe_workspace``, which is the folder in which you want to be able to work with ``PSpipe``. 
-
 
 
 This will open a new ``bash`` terminal with a full installation of ``PSpipe``, ``pixell``,
@@ -126,6 +124,6 @@ Sharing data between the ``docker`` container and the host
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Everything perfomed within the ``/home/pspipe/workspace`` directory will be reflected into
-the ``/WHERE/TO/WORK/pspipe_workspace`` on your host machine. You can then share configuration files, source codes, data
+the ``/where/to/work_with_pspipe`` on your host machine. You can then share configuration files, source codes, data
 files... between the running ``docker`` container and your local machine. Nothing will be lost after
 you exit from the ``docker`` container.

@@ -58,6 +58,17 @@ Then you can install the ``PSpipe`` library and its dependencies *via*
 .. code:: shell
 
     $ pip install --user /where/to/clone
+    
+
+At ``NERSC``
+------------------
+
+    
+Instructions for installing ``pspy`` at ``NERSC`` are available at  `INSTALL_PSPY_NERSC <https://github.com/simonsobs/pspy/blob/master/INSTALL_NERSC.rst>`_.
+
+Instructions for installing ``Namaster`` at ``NERSC`` are available at  `INSTALL_NAMASTER_NERSC <https://github.com/LSSTDESC/NaMaster/blob/master/NERSC_installation.md>`_.
+
+
 
 Using ``docker``
 ----------------

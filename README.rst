@@ -82,7 +82,7 @@ Bash installation
 ~~~~~~~~~~~~~~~~~~
 
 We have written a simple bash script to install the ``PSpipe`` docker and to clone the main ``PSpipe`` libraries.
-copy the script in /where/to/work_with_pspipe and run
+Just copy the script in a directory where you want to work with pspipe and run
 
 .. code:: shell
 

@@ -66,7 +66,7 @@ At ``NERSC``
     
 Instructions for installing ``pspy`` at ``NERSC`` are available at  `INSTALL_PSPY_NERSC <https://github.com/simonsobs/pspy/blob/master/INSTALL_NERSC.rst>`_.
 
-Instructions for installing ``Namaster`` at ``NERSC`` are available at  `INSTALL_NAMASTER_NERSC <https://github.com/LSSTDESC/NaMaster/blob/master/NERSC_installation.md>`_.
+Instructions for installing ``NaMaster`` at ``NERSC`` are available at  `INSTALL_NAMASTER_NERSC <https://github.com/LSSTDESC/NaMaster/blob/master/NERSC_installation.md>`_.
 
 
 

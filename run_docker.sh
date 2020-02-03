@@ -35,8 +35,14 @@ function msg_warning()
 }
 
 function prepare_workspace() {
-    echo -en "\\033[0;34mNOTICE: Location of PSpipe workspace [default ${pspipe_workspace}]: "
-    read -e ws
+    echo -en "\\033[0;34mNOTICE: Location of PSpipe workspace [default ${pspipe_workspace}]"
+    if [ ! -z ${PSPIPE_WORKSPACE} ]; then
+        echo -e "$@\\033[0;39m"
+        return 0
+    else
+        echo -en ": "
+        read -e ws
+    fi
     echo -e "$@\\033[0;39m"
     [[ ! -z ${ws} ]] && pspipe_workspace=${ws}
     if [ ! -d "${pspipe_workspace}" ]; then

@@ -58,12 +58,12 @@ Then you can install the ``PSpipe`` library and its dependencies *via*
 .. code:: shell
 
     $ pip install --user /where/to/clone
-    
+
 
 At ``NERSC``
 ------------------
 
-    
+
 Instructions for installing ``pspy`` at ``NERSC`` are available at  `INSTALL_PSPY_NERSC <https://github.com/simonsobs/pspy/blob/master/INSTALL_NERSC.rst>`_.
 
 Instructions for installing ``NaMaster`` at ``NERSC`` are available at  `INSTALL_NAMASTER_NERSC <https://github.com/LSSTDESC/NaMaster/blob/master/NERSC_installation.md>`_.
@@ -75,7 +75,7 @@ Using ``docker``
 
 Given the number of requirements, you can use a ``docker`` image already made with the needed
 libraries and everything compiled. You should first install `docker
-<https://docs.docker.com/install/>`_ for your operating system.  
+<https://docs.docker.com/install/>`_ for your operating system.
 
 
 Bash installation
@@ -87,7 +87,7 @@ Just copy the script in a directory where you want to work with pspipe and run
 .. code:: shell
 
    $ sh start_docker.sh
-  
+
 
 
 This will open a new ``bash`` terminal with a full installation of ``PSpipe``, ``pixell``,
@@ -115,7 +115,7 @@ browser.  Inside the image terminal, you have to start the ``jupyter`` server by
 
 .. code:: shell
 
-   $ jupyter notebook --ip 0.0.0.0 ~/PSpipe/notebooks
+   $ jupyter notebook --ip 0.0.0.0
 
 Finally open the ``http`` link (something like ``http://127.0.0.1:8888/?token...``) within your web
 browser and you should be able to run one of the ``python`` notebook.

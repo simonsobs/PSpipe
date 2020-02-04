@@ -128,7 +128,7 @@ the ``/where/to/work_with_pspipe`` on your host machine. You can then share conf
 files... between the running ``docker`` container and your local machine. Nothing will be lost after
 you exit from the ``docker`` container.
 
-Resources available for Docker
+Cryptic ``Killed`` message
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Docker for Mac limits the resource available to 2Gb of RAM by default, This might cause the code to crash unexpectedly with a cryptic ``Killed`` message. It can easily be modified, click on the docker logo (top right of your screen), go in Preferences/Resources and increase the RAM allocated to Docker.

@@ -132,3 +132,9 @@ Cryptic ``Killed`` message
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Docker for Mac limits the resource available to 2Gb of RAM by default, This might cause the code to crash unexpectedly with a cryptic ``Killed`` message. It can easily be modified, click on the docker logo (top right of your screen), go in Preferences/Resources and increase the RAM allocated to Docker.
+
+Youtube video
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You are not ready for it:  `youtube_pspipe <https://www.youtube.com/watch?v=LtIuM3pxkng>`_
+

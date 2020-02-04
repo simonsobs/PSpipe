@@ -136,5 +136,5 @@ Docker for Mac limits the resource available to 2Gb of RAM by default, This migh
 Youtube video
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You are not ready for it:  `youtube_pspipe <https://www.youtube.com/watch?v=LtIuM3pxkng>`_
+You are not ready for it:  `youtube <https://www.youtube.com/watch?v=LtIuM3pxkng>`_
 

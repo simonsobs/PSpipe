@@ -47,13 +47,9 @@ function prepare_workspace() {
                 git clone ${http}
                 [[ ! -z ${branch} ]] && git checkout ${branch} -b ${branch}
                 continue
+            else
+                msg_notice "Package '${name}' already cloned."
             fi
-            (
-                msg_notice "Updating '${name}'..."
-                cd ${name}
-                git pull
-                [[ ! -z ${branch} ]] && git checkout ${branch}
-            )
         done
     )
     cid_file="${pspipe_workspace}/.cid"

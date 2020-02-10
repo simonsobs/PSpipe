@@ -45,7 +45,7 @@ function prepare_workspace() {
             if [ ! -d ${name} ]; then
                 msg_notice "Cloning '${name}' into ${psipe_workspace}..."
                 git clone ${http}
-                [[ ! -z ${branch} ]] && git checkout ${branch} -b ${branch}
+                [[ ! -z ${branch} ]] && (cd ${name} && git checkout origin/${branch} -b ${branch})
                 continue
             else
                 msg_notice "Package '${name}' already cloned."

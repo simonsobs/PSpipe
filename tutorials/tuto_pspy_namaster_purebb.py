@@ -65,7 +65,7 @@ mbb_inv_pure, Bbl_pure = so_mcm.mcm_and_bbl_spin0and2((window,window),
 alm_pure = sph_tools.get_pure_alms(cmb, (window,window), niter, lmax)
 l, ps_pure = so_spectra.get_spectra(alm_pure, alm_pure, spectra=spectra)
 
-lb, Db_dict_pure = so_spectra.bin_spectra(l,
+lb, ps_dict_pure = so_spectra.bin_spectra(l,
                                           ps_pure,
                                           binning_file,
                                           lmax,
@@ -74,7 +74,6 @@ lb, Db_dict_pure = so_spectra.bin_spectra(l,
                                           spectra=spectra)
 
 print("pspy run in %.2f s"%(time.time()-t0))
-print(Db_dict_pure["BB"])
 
 # Compute pure spin 2 spectra a la namaster
 t0=time.time()
@@ -91,10 +90,9 @@ leff = b.get_effective_ells()
 data = compute_master(fyp, fyp, w_yp)
 
 print("namaster run in %.2f s"%(time.time()-t0))
-print(data[3])
 
 plt.plot(leff, data[3])
-plt.plot(lb, Db_dict_pure["BB"], 'o')
+plt.plot(lb, ps_dict_pure["BB"], 'o')
 plt.savefig("%s/BB.png"%test_dir)
 plt.clf()
 plt.close()

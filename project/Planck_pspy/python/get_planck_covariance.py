@@ -10,6 +10,8 @@ mcms_dir = "mcms"
 spectra_dir = "spectra"
 ps_model_dir = "noise_model"
 cov_dir = "covariances"
+bestfit_dir = "best_fits"
+
 
 pspy_utils.create_directory(cov_dir)
 
@@ -51,8 +53,8 @@ for c1,freq1 in enumerate(freqs):
         l, bl2_hm2_pol = np.loadtxt(d["beam_%s_hm2_pol" % freq2], unpack=True)
 
 
-        bl1_hm1_T, bl1_hm2_T, bl2_hm1_T, bl2_hm2_T = bl1_hm1_T[:lmax], bl1_hm2_T[:lmax], bl2_hm1_T[:lmax], bl2_hm2_T[:lmax]
-        bl1_hm1_pol, bl1_hm2_pol, bl2_hm1_pol, bl2_hm2_pol = bl1_hm1_pol[:lmax], bl1_hm2_pol[:lmax], bl2_hm1_pol[:lmax], bl2_hm2_pol[:lmax]
+        bl1_hm1_T, bl1_hm2_T, bl2_hm1_T, bl2_hm2_T = bl1_hm1_T[2: lmax + 2], bl1_hm2_T[2: lmax + 2], bl2_hm1_T[2: lmax + 2], bl2_hm2_T[2: lmax + 2]
+        bl1_hm1_pol, bl1_hm2_pol, bl2_hm1_pol, bl2_hm2_pol = bl1_hm1_pol[2: lmax + 2], bl1_hm2_pol[2: lmax + 2], bl2_hm1_pol[2: lmax + 2], bl2_hm2_pol[2: lmax + 2]
 
         bl1["TT"] = np.sqrt(bl1_hm1_T * bl1_hm2_T)
         bl2["TT"] = np.sqrt(bl2_hm1_T * bl2_hm2_T)
@@ -66,13 +68,20 @@ for c1,freq1 in enumerate(freqs):
         bl1["ET"] = bl1["TE"]
         bl2["ET"] = bl2["TE"]
 
-        lth, ps_th = pspy_utils.ps_lensed_theory_to_dict(d["theoryfile"], output_type=type, lmax=lmax)
-        
+
         spec_name_noise = "mean_%s_%sx%s_%s_noise" % (exp, freq1, exp, freq2)
         l, Nl = so_spectra.read_ps(ps_model_dir + "/%s.dat" % spec_name_noise, spectra=spectra)
                 
         for spec in ["TT", "TE", "ET", "EE"]:
-                    
+            
+            if spec == "ET":
+                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, "TE"))
+            else:
+                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, spec))
+
+            ps_th = ps_th[2: lmax + 2]
+            
+            
             ps_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = bl1[spec] * bl2[spec] * ps_th[spec]
                     
             if freq1 == freq2:

@@ -82,7 +82,7 @@ for c1,freq1 in enumerate(freqs):
             ps_th = ps_th[2: lmax + 2]
             
             
-            ps_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = bl1[spec] * bl2[spec] * ps_th[spec]
+            ps_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = bl1[spec] * bl2[spec] * ps_th
                     
             if freq1 == freq2:
                 nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = Nl[spec] * ns[exp]

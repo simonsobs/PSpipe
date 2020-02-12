@@ -75,9 +75,9 @@ for c1,freq1 in enumerate(freqs):
         for spec in ["TT", "TE", "ET", "EE"]:
             
             if spec == "ET":
-                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, "TE"))
+                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, "TE"), unpack=True)
             else:
-                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, spec))
+                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, spec), unpack=True)
 
             ps_th = ps_th[2: lmax + 2]
             

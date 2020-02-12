@@ -86,7 +86,9 @@ for f1, freq1 in enumerate(freqs):
 
                 nl_interpol_1 = scipy.interpolate.interp1d(lb, nb_hm1, fill_value = "extrapolate")
                 nl_interpol_2 = scipy.interpolate.interp1d(lb, nb_hm2, fill_value = "extrapolate")
-                nl_interpol_mean = scipy.interpolate.interp1d(lb, (nb_hm1 + nb_hm2) / 2, fill_value="extrapolate")
+                
+                # Factor 4 since the noise on the 'mean' if 1/2 of the mean noise
+                nl_interpol_mean = scipy.interpolate.interp1d(lb, (nb_hm1 + nb_hm2) / 4, fill_value="extrapolate")
                 
                 nl_hm1[spec] = np.array([nl_interpol_1(i) for i in lth])
                 nl_hm2[spec] = np.array([nl_interpol_2(i) for i in lth])
@@ -94,7 +96,7 @@ for f1, freq1 in enumerate(freqs):
 
                 np.savetxt("%s/noise_%s_hm1_%s.dat" % (ps_model_dir, spec, name), np.transpose([lth, nl_hm1[spec]]))
                 np.savetxt("%s/noise_%s_hm2_%s.dat" % (ps_model_dir, spec, name), np.transpose([lth, nl_hm2[spec]]))
-                np.savetxt("%s/noise_%s_mean_%s.dat" % (ps_model_dir, spec, name), np.transpose([lth, nl_mean[spec] / 2]))
+                np.savetxt("%s/noise_%s_mean_%s.dat" % (ps_model_dir, spec, name), np.transpose([lth, nl_mean[spec] ]))
 
                 if spec == "TT":
                     plt.ylim(-0.002, 0.002)

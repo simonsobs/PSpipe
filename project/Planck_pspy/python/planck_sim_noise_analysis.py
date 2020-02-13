@@ -69,7 +69,7 @@ for fpair in freq_pairs:
         lb, ps_dict_auto2 = so_spectra.read_ps("%s/sim_spectra_unbin_%s_%04d.dat" % (sim_spectra_dir, spec_name_auto2, iii), spectra=spectra)
         
         for spec in spectra:
-            if (spec == "TT" or spec == "EE" or spec == "BB") & (freq1 == freq2):
+            if (spec == "TT" or spec == "EE" or spec == "BB") & (f0 == f1):
                 bl_hm1 = bl[freq1, "hm1", spec]
                 bl_hm2 = bl[freq1, "hm2", spec]
                 nth_hm1 = ps_dict_auto1[spec] * bl_hm1**2 - ps_dict_cross[spec] * bl_hm1 * bl_hm2

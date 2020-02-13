@@ -32,7 +32,6 @@ else:
     sim_spectra_dir = "sim_spectra"
     spec_name_noise_mean = "mean_noise_sim"
 
-pspy_utils.create_directory(mc_dir)
 pspy_utils.create_directory(plot_dir)
 
 
@@ -61,7 +60,6 @@ for fpair in freq_pairs:
     spec_name_cross = "Planck_%sxPlanck_%s-hm1xhm2" % (f0,f1)
     spec_name_auto1 = "Planck_%sxPlanck_%s-hm1xhm1" % (f0,f1)
     spec_name_auto2 = "Planck_%sxPlanck_%s-hm2xhm2" % (f0,f1)
-
 
     nl_sim_mean = {s: [] for s in spectra}
 

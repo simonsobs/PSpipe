@@ -69,8 +69,8 @@ for fpair in freq_pairs:
         
         for spec in spectra:
             if (spec == "TT" or spec == "EE" or spec == "BB") & (f0 == f1):
-                bl_hm1 = bl[freq1, "hm1", spec]
-                bl_hm2 = bl[freq1, "hm2", spec]
+                bl_hm1 = bl[f0, "hm1", spec]
+                bl_hm2 = bl[f0, "hm2", spec]
                 nth_hm1 = ps_dict_auto1[spec] * bl_hm1**2 - ps_dict_cross[spec] * bl_hm1 * bl_hm2
                 nth_hm2 = ps_dict_auto2[spec] * bl_hm2**2 - ps_dict_cross[spec] * bl_hm1 * bl_hm2
                 nth_mean = (nth_hm1 + nth_hm2) / 4

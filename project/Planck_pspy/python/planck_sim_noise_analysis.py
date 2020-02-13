@@ -93,5 +93,5 @@ for fpair in freq_pairs:
     for spec in spectra:
         nl_sim_mean[spec] = np.mean(nl_sim_mean[spec], axis=0)
 
-    so_spectra.write_ps(ps_model_dir + "/%s_%s_noise.dat" % (spec_name_noise_mean, name), l, nl_sim_mean, type, spectra=spectra)
+    so_spectra.write_ps(ps_model_dir + "/%s_%s_noise.dat" % (spec_name_noise_mean, name), lth, nl_sim_mean, type, spectra=spectra)
 

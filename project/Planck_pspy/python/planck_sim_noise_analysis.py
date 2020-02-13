@@ -88,7 +88,7 @@ for fpair in freq_pairs:
                 nl_hm2 = np.zeros(len(lth))
                 nl_mean = np.zeros(len(lth))
             
-            nl_sim_mean[spec] += [nth_mean]
+            nl_sim_mean[spec] += [nl_mean]
                 
     for spec in spectra:
         nl_sim_mean[spec] = np.mean(nl_sim_mean[spec], axis=0)

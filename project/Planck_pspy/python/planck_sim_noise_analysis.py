@@ -72,9 +72,9 @@ for fpair in freq_pairs:
                 nth_hm2 = ps_dict_auto2[spec] * bl_hm2**2 - ps_dict_cross[spec] * bl_hm1 * bl_hm2
                 nth_mean = (nth_hm1 + nth_hm2) / 4
             else:
-                nl_hm1 = np.zeros(len(lth))
-                nl_hm2 = np.zeros(len(lth))
-                nl_mean = np.zeros(len(lth))
+                nl_hm1 = np.zeros(len(l))
+                nl_hm2 = np.zeros(len(l))
+                nl_mean = np.zeros(len(l))
             
             nl_sim_mean[spec] += [nth_mean]
                 

@@ -33,9 +33,6 @@ else:
 
 pspy_utils.create_directory(ps_model_dir)
 
-
-lth = np.arange(2, lmax+2)
-
 bl = {}
 for freq in freqs:
     for hm in splits:
@@ -63,9 +60,9 @@ for fpair in freq_pairs:
     nl_sim_mean = {s: [] for s in spectra}
 
     for iii in range(iStart, iStop):
-        lb, ps_dict_cross = so_spectra.read_ps("%s/sim_spectra_unbin_%s_%04d.dat" % (sim_spectra_dir, spec_name_cross, iii), spectra=spectra)
-        lb, ps_dict_auto1 = so_spectra.read_ps("%s/sim_spectra_unbin_%s_%04d.dat" % (sim_spectra_dir, spec_name_auto1, iii), spectra=spectra)
-        lb, ps_dict_auto2 = so_spectra.read_ps("%s/sim_spectra_unbin_%s_%04d.dat" % (sim_spectra_dir, spec_name_auto2, iii), spectra=spectra)
+        l, ps_dict_cross = so_spectra.read_ps("%s/sim_spectra_unbin_%s_%04d.dat" % (sim_spectra_dir, spec_name_cross, iii), spectra=spectra)
+        l, ps_dict_auto1 = so_spectra.read_ps("%s/sim_spectra_unbin_%s_%04d.dat" % (sim_spectra_dir, spec_name_auto1, iii), spectra=spectra)
+        l, ps_dict_auto2 = so_spectra.read_ps("%s/sim_spectra_unbin_%s_%04d.dat" % (sim_spectra_dir, spec_name_auto2, iii), spectra=spectra)
         
         for spec in spectra:
             if (spec == "TT" or spec == "EE" or spec == "BB") & (f0 == f1):
@@ -84,5 +81,5 @@ for fpair in freq_pairs:
     for spec in spectra:
         nl_sim_mean[spec] = np.mean(nl_sim_mean[spec], axis=0)
 
-    so_spectra.write_ps(ps_model_dir + "/%s_%s.dat" % (spec_name_noise_mean, name), lth, nl_sim_mean, type, spectra=spectra)
+    so_spectra.write_ps(ps_model_dir + "/%s_%s.dat" % (spec_name_noise_mean, name), l, nl_sim_mean, type, spectra=spectra)
 

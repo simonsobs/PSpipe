@@ -55,6 +55,8 @@ lth = np.arange(2, lmax+2)
 
 for fpair in freq_pairs:
     
+    print(fpair)
+    
     f0, f1 = fpair
     name = "%s_%sx%s_%s" % (exp, f0, exp, f1)
 

@@ -36,6 +36,8 @@ spec_name = []
 
 ns = {"Planck": 2}
 
+pixwin = hp.pixwin(2048)[:lmax]
+
 for c1,freq1 in enumerate(freqs):
     for c2,freq2 in enumerate(freqs):
         if c1>c2: continue
@@ -82,10 +84,10 @@ for c1,freq1 in enumerate(freqs):
             ps_th = ps_th[2: lmax + 2]
             
             
-            ps_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = bl1[spec] * bl2[spec] * ps_th
+            ps_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = bl1[spec] * bl2[spec] * pixwin**2 * ps_th
                     
             if freq1 == freq2:
-                nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = Nl[spec] * ns[exp]
+                nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = Nl[spec] * ns[exp] * pixwin**2
             else:
                 nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = np.zeros(lmax)
                     

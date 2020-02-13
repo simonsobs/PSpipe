@@ -8,6 +8,7 @@ import pylab as plt
 from pspy import so_dict, so_spectra, pspy_utils
 from itertools import combinations_with_replacement as cwr
 import sys
+import scipy.interpolate
 import planck_utils
 
 d = so_dict.so_dict()

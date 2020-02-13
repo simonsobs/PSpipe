@@ -32,7 +32,7 @@ else:
     sim_spectra_dir = "sim_spectra"
     spec_name_noise_mean = "mean_noise_sim"
 
-pspy_utils.create_directory(plot_dir)
+pspy_utils.create_directory(ps_model_dir)
 
 
 lth = np.arange(2, lmax+2)

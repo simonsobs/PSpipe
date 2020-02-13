@@ -48,6 +48,10 @@ freq_pairs = []
 for cross in cwr(freqs, 2):
     freq_pairs += [[cross[0], cross[1]]]
 
+
+lth = np.arange(2, lmax+2)
+
+
 for fpair in freq_pairs:
     
     f0, f1 = fpair
@@ -70,11 +74,18 @@ for fpair in freq_pairs:
                 bl_hm2 = bl[f0, "hm2", spec]
                 nth_hm1 = ps_dict_auto1[spec] * bl_hm1**2 - ps_dict_cross[spec] * bl_hm1 * bl_hm2
                 nth_hm2 = ps_dict_auto2[spec] * bl_hm2**2 - ps_dict_cross[spec] * bl_hm1 * bl_hm2
-                nth_mean = (nth_hm1 + nth_hm2) / 4
+                
+                lb, nb_hm1 = planck_utils.binning(l, nth_hm1, lmax, size=8)
+                lb, nb_hm2 = planck_utils.binning(l, nth_hm2, lmax, size=8)
+
+                nb_mean = (nb_hm1 + nb_hm2) / 4
+                nl_interpol_mean = scipy.interpolate.interp1d(lb, nb_mean, fill_value="extrapolate")
+                nl_mean = np.array([nl_interpol_mean(i) for i in lth])
+
             else:
-                nl_hm1 = np.zeros(len(l))
-                nl_hm2 = np.zeros(len(l))
-                nl_mean = np.zeros(len(l))
+                nl_hm1 = np.zeros(len(lth))
+                nl_hm2 = np.zeros(len(lth))
+                nl_mean = np.zeros(len(lth))
             
             nl_sim_mean[spec] += [nth_mean]
                 

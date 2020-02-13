@@ -1,5 +1,6 @@
 '''
 This script analyze the result of the spectra simulation.
+It computes the mean noise power spectrum of the simss.
 '''
 
 import numpy as np
@@ -46,7 +47,6 @@ for freq in freqs:
 freq_pairs = []
 for cross in cwr(freqs, 2):
     freq_pairs += [[cross[0], cross[1]]]
-
 
 for fpair in freq_pairs:
     

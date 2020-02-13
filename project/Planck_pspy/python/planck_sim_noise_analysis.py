@@ -25,11 +25,11 @@ ps_model_dir = "noise_model"
 
 if d["use_ffp10"] == True:
     sim_spectra_dir = "sim_spectra_ffp10"
-    spec_name_noise_mean = "mean_noise_simffp10"
+    spec_name_noise_mean = "mean_simffp10"
 
 else:
     sim_spectra_dir = "sim_spectra"
-    spec_name_noise_mean = "mean_noise_sim"
+    spec_name_noise_mean = "mean_sim"
 
 pspy_utils.create_directory(ps_model_dir)
 
@@ -81,5 +81,5 @@ for fpair in freq_pairs:
     for spec in spectra:
         nl_sim_mean[spec] = np.mean(nl_sim_mean[spec], axis=0)
 
-    so_spectra.write_ps(ps_model_dir + "/%s_%s.dat" % (spec_name_noise_mean, name), l, nl_sim_mean, type, spectra=spectra)
+    so_spectra.write_ps(ps_model_dir + "/%s_%s_noise.dat" % (spec_name_noise_mean, name), l, nl_sim_mean, type, spectra=spectra)
 

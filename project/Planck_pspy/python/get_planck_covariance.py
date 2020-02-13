@@ -131,7 +131,7 @@ for task in subtasks:
     win["Pc"] = so_map.read_map("%s/window_P_%s-hm1.fits"%(windows_dir, nc))
     win["Pd"] = so_map.read_map("%s/window_P_%s-hm2.fits"%(windows_dir, nd))
 
-    coupling = so_cov.cov_coupling_spin0and2_simple(win, lmax, niter=niter)
+    coupling = so_cov.cov_coupling_spin0and2_simple(win, lmax, niter=niter, planck=True)
     analytic_cov = np.zeros((4*nbins, 4*nbins))
 
     # TaTbTcTd

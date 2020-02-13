@@ -1,5 +1,6 @@
 from pspy import pspy_utils, so_dict, so_map, so_mpi, so_mcm, so_spectra, so_cov
 import numpy as np
+import healpy as hp
 import sys
 
 d = so_dict.so_dict()

@@ -1,5 +1,6 @@
 from pspy import pspy_utils, so_dict, so_map, so_mpi, so_mcm, so_spectra, so_cov
 import numpy as np
+import healpy as hp
 import sys
 
 d = so_dict.so_dict()
@@ -10,6 +11,8 @@ mcms_dir = "mcms"
 spectra_dir = "spectra"
 ps_model_dir = "noise_model"
 cov_dir = "covariances"
+bestfit_dir = "best_fits"
+
 
 pspy_utils.create_directory(cov_dir)
 
@@ -34,6 +37,8 @@ spec_name = []
 
 ns = {"Planck": 2}
 
+pixwin = hp.pixwin(2048)[:lmax]
+
 for c1,freq1 in enumerate(freqs):
     for c2,freq2 in enumerate(freqs):
         if c1>c2: continue
@@ -51,8 +56,8 @@ for c1,freq1 in enumerate(freqs):
         l, bl2_hm2_pol = np.loadtxt(d["beam_%s_hm2_pol" % freq2], unpack=True)
 
 
-        bl1_hm1_T, bl1_hm2_T, bl2_hm1_T, bl2_hm2_T = bl1_hm1_T[:lmax], bl1_hm2_T[:lmax], bl2_hm1_T[:lmax], bl2_hm2_T[:lmax]
-        bl1_hm1_pol, bl1_hm2_pol, bl2_hm1_pol, bl2_hm2_pol = bl1_hm1_pol[:lmax], bl1_hm2_pol[:lmax], bl2_hm1_pol[:lmax], bl2_hm2_pol[:lmax]
+        bl1_hm1_T, bl1_hm2_T, bl2_hm1_T, bl2_hm2_T = bl1_hm1_T[2: lmax + 2], bl1_hm2_T[2: lmax + 2], bl2_hm1_T[2: lmax + 2], bl2_hm2_T[2: lmax + 2]
+        bl1_hm1_pol, bl1_hm2_pol, bl2_hm1_pol, bl2_hm2_pol = bl1_hm1_pol[2: lmax + 2], bl1_hm2_pol[2: lmax + 2], bl2_hm1_pol[2: lmax + 2], bl2_hm2_pol[2: lmax + 2]
 
         bl1["TT"] = np.sqrt(bl1_hm1_T * bl1_hm2_T)
         bl2["TT"] = np.sqrt(bl2_hm1_T * bl2_hm2_T)
@@ -66,17 +71,24 @@ for c1,freq1 in enumerate(freqs):
         bl1["ET"] = bl1["TE"]
         bl2["ET"] = bl2["TE"]
 
-        lth, ps_th = pspy_utils.ps_lensed_theory_to_dict(d["theoryfile"], output_type=type, lmax=lmax)
-        
+
         spec_name_noise = "mean_%s_%sx%s_%s_noise" % (exp, freq1, exp, freq2)
         l, Nl = so_spectra.read_ps(ps_model_dir + "/%s.dat" % spec_name_noise, spectra=spectra)
                 
         for spec in ["TT", "TE", "ET", "EE"]:
-                    
-            ps_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = bl1[spec] * bl2[spec] * ps_th[spec]
+            
+            if spec == "ET":
+                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, "TE"), unpack=True)
+            else:
+                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, spec), unpack=True)
+
+            ps_th = ps_th[2: lmax + 2]
+            
+            
+            ps_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = bl1[spec] * bl2[spec] * pixwin**2 * ps_th
                     
             if freq1 == freq2:
-                nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = Nl[spec] * ns[exp]
+                nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = Nl[spec] * ns[exp] * pixwin**2
             else:
                 nl_all["%s_%s" % (exp, freq1), "%s_%s" % (exp, freq2), spec] = np.zeros(lmax)
                     
@@ -122,7 +134,7 @@ for task in subtasks:
     win["Pc"] = so_map.read_map("%s/window_P_%s-hm1.fits"%(windows_dir, nc))
     win["Pd"] = so_map.read_map("%s/window_P_%s-hm2.fits"%(windows_dir, nd))
 
-    coupling = so_cov.cov_coupling_spin0and2_simple(win, lmax, niter=niter)
+    coupling = so_cov.cov_coupling_spin0and2_simple(win, lmax, niter=niter, planck=True)
     analytic_cov = np.zeros((4*nbins, 4*nbins))
 
     # TaTbTcTd

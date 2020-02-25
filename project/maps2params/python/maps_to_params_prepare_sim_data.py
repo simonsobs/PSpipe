@@ -39,7 +39,7 @@ sensitivity_mode = d["sensitivity_mode"]
 f_sky_LAT = d["f_sky_LAT"]
 freqs = {}
 freqs["LAT"] = ["27", "39", "93", "145", "225", "280"]
-ell_min, ell_max = 2, 10000
+ell_min, ell_max = 2, 9000
 delta_ell = 1
 
 pspy_utils.create_directory("sim_data/noise_ps")
@@ -159,9 +159,14 @@ import camb
 
 # Some standard cosmo parameters
 cosmo_params =  d["cosmo_params"]
-pars = camb.set_params(**cosmo_params)
-pars.set_for_lmax(ell_max, lens_potential_accuracy=1)
+camb_cosmo = {k: v for k, v in cosmo_params.items()
+              if k not in ["logA", "As"]}
+camb_cosmo.update({"As": 1e-10*np.exp(cosmo_params["logA"]),
+                   "lmax": ell_max, "lens_potential_accuracy": 1})
+pars = camb.set_params(**camb_cosmo)
 results = camb.get_results(pars)
+
+
 powers = results.get_cmb_power_spectra(pars, CMB_unit="muK")
 dls = {}
 dls["tt"] = powers["total"][ell_min:ell_max][:,0]
@@ -174,6 +179,7 @@ cosmo_fg_dir=("sim_data/cosmo_and_fg")
 pspy_utils.create_directory(cosmo_fg_dir)
 np.savetxt("%s/cosmo_spectra.dat"% cosmo_fg_dir, np.transpose([ell, dls["tt"], dls["ee"], dls["bb"], dls["te"]]))
 
+print(ell)
 
 plt.figure(figsize=(12, 12))
 for exp in ["LAT", "Planck"]:
@@ -190,6 +196,9 @@ for exp in ["LAT", "Planck"]:
             plt.semilogy()
             plt.ylim(1, 10**5)
             plt.plot(ell, dls["tt"], color='black')
+            print(ell.shape)
+            print(n_ell_t[name].shape)
+            print(bl[exp + f1].shape)
             plt.plot(ell, n_ell_t[name] * fac / (bl[exp + f1] * bl[exp + f2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
@@ -227,7 +236,7 @@ fg_params =  d["fg_params"]
 
 all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
 nfreqs = len(all_freqs)
-fg_dict = mfl.get_foreground_model(fg_params, fg_model, all_freqs, ell_max)
+fg_dict = mfl.get_foreground_model(fg_params, fg_model, all_freqs, ell)
 
 mode = "tt"
 fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))

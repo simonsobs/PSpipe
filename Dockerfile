@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
         libfftw3-dev                     \
         libgsl-dev                       \
         libchealpix-dev                  \
+        libopenmpi-dev                   \
         python3                          \
         python3-pip                      \
         vim                              \
@@ -24,5 +25,5 @@ ENV USER pspipe
 ENV PATH "/home/pspipe/.local/bin:${PATH}"
 WORKDIR /home/pspipe
 
-RUN python3 -m pip install --user --upgrade pip numpy cython ipython jupyter
+RUN python3 -m pip install --user --upgrade pip numpy cython mpi4py ipython jupyter
 RUN python3 -m pip install --user git+https://github.com/simonsobs/PSpipe.git

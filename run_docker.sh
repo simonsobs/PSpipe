@@ -15,6 +15,7 @@ githubs=(
     "https://github.com/LSSTDESC/NaMaster,easier_libsharp"
     "https://github.com/simonsobs/LAT_MFLike"
     "https://github.com/simonsobs/PSpipe"
+    "https://github.com/healpy/pysm"
 )
 
 function msg_error()

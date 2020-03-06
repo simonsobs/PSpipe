@@ -53,6 +53,8 @@ pts_source_mask_LAT = False
 source_mask_nholes_LAT = 100
 source_mask_radius_LAT = 10
 apo_radius_mask_LAT = 0.3
+apo_type_mask_LAT = "C1"
+
 
 # recovered spectra parameters
 type = "Dl"

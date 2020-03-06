@@ -63,7 +63,7 @@ for exp in experiments:
 
         if d["pts_source_mask_%s" % exp] == True:
             hole_radius_arcmin=(d["source_mask_radius_%s" % exp])
-            mask = so_map.simulate_source_mask(binary, nholes=d["source_mask_nholes_%s" % exp], hole_radius_arcmin=hole_radius_arcmin)
+            mask = so_map.simulate_source_mask(binary, n_holes=d["source_mask_nholes_%s" % exp], hole_radius_arcmin=hole_radius_arcmin)
             mask = so_window.create_apodization(mask, apo_type=d["apo_type_mask_%s" % exp], apo_radius_degree=d["apo_radius_mask_%s" % exp])
             window.data[:] *= mask.data[:]
 

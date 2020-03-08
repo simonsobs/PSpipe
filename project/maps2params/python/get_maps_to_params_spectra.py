@@ -7,7 +7,6 @@ import numpy as np
 import sys
 from pixell import curvedsky, powspec
 import maps_to_params_utils
-import h5py
 import time
 
 d = so_dict.so_dict()

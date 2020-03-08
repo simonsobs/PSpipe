@@ -40,7 +40,7 @@ for exp in experiments:
                                      res=d["res_%s" % exp])
                                      
         binary.data[:] = 1
-        if binary_is_survey_mask == True:
+        if d["binary_is_survey_mask"] == True:
             binary.data[:] = 0
             binary.data[1:-1, 1:-1] = 1
     

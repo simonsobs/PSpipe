@@ -38,8 +38,11 @@ for exp in experiments:
                                      dec0=d["dec0_%s" % exp],
                                      dec1=d["dec1_%s" % exp],
                                      res=d["res_%s" % exp])
-        binary.data[:] = 0
-        binary.data[1:-1, 1:-1] = 1
+                                     
+        binary.data[:] = 1
+        if binary_is_survey_mask == True:
+            binary.data[:] = 0
+            binary.data[1:-1, 1:-1] = 1
     
     elif d["pixel_%s" % exp] == "HEALPIX":
         binary=so_map.healpix_template(ncomp=1, nside=d["nside_%s" % exp])

@@ -114,11 +114,7 @@ for sid1, spec1 in enumerate(spec_list):
         plt.figure(figsize=(15, 15))
         plt.suptitle("%s %s (press c/v to switch between covariance matrix elements)" % (spec1, spec2), fontsize=30)
         count = 1
-        for bl in ["TTTT", "TETE", "ETET", "EEEE",
-                   "TTTE", "TTEE", "TTET", "TEET",
-                   "TEEE", "ETEE",
-                   "EETE", "EEET", "ETTE", "ETTT",
-                   "EETT", "TETT"]:
+        for bl in ["TTTT", "TETE", "ETET", "EEEE"]:
             
             mc_cov_sub = so_cov.selectblock(mc_cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
             analytic_cov_sub= so_cov.selectblock(analytic_cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
@@ -126,11 +122,11 @@ for sid1, spec1 in enumerate(spec_list):
             var = mc_cov_sub.diagonal()
             analytic_var = analytic_cov_sub.diagonal()
 
-            plt.subplot(3,6,count)
-            plt.plot(lb[1:], var[1:]/analytic_var[1:], ".", label="MC/Analytic %sx%s" % (bl[:2],bl[2:4]))
-            if count == 1 or count == 4:
+            plt.subplot(4,1,count)
+            plt.plot(lb[1:], var[1:]/analytic_var[1:], label="MC/Analytic %sx%s" % (bl[:2],bl[2:4]))
+            if count == 1:
                 plt.ylabel(r"Ratio $Cov_{i,i,\ell}$", fontsize=22)
-            if count > 3:
+            if count == 4:
                 plt.xlabel(r"$\ell$", fontsize=22)
             plt.legend()
             count += 1

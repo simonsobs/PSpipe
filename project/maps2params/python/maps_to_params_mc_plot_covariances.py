@@ -99,7 +99,7 @@ for sid1, spec1 in enumerate(spec_list):
             plt.subplot(3,6,count)
             if count == 1:
                 plt.semilogy()
-            plt.plot(lb[1:], var[1:], "o", label="MC %sx%s" % (bl[:2],bl[2:4]))
+            plt.plot(lb[1:], var[1:], ".", label="MC %sx%s" % (bl[:2],bl[2:4]))
             plt.plot(lb[1:], analytic_var[1:], label = "Analytic %sx%s" % (bl[:2],bl[2:4]))
             if count == 1 or count == 4:
                 plt.ylabel(r"$Cov_{i,i,\ell}$", fontsize=22)
@@ -130,7 +130,7 @@ for sid1, spec1 in enumerate(spec_list):
             analytic_off_diag = analytic_corr_sub.diagonal(1)
             
             plt.subplot(3,6,count)
-            plt.plot(off_diag[1:], "o", label="MC %sx%s" % (bl[:2],bl[2:4]))
+            plt.plot(off_diag[1:], ".", label="MC %sx%s" % (bl[:2],bl[2:4]))
             plt.plot(analytic_off_diag[1:], label = "Analytic %sx%s" % (bl[:2],bl[2:4]))
             if count == 1 or count == 4:
                 plt.ylabel(r"$Cov_{i,i+1,\ell}$", fontsize=22)

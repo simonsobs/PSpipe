@@ -91,8 +91,7 @@ for f1, freq1 in enumerate(freqs):
                                                                      niter=niter,
                                                                      type=type,
                                                                      unbin=True,
-                                                                     save_file="%s/%s_%sx%s_%s-%sx%s" % (mcm_dir, experiment, freq1, experiment, freq2, hm1, hm2),
-                                                                     lmax_pad=d["lmax_pad"])
+                                                                     save_file="%s/%s_%sx%s_%s-%sx%s" % (mcm_dir, experiment, freq1, experiment, freq2, hm1, hm2))
 
 
 

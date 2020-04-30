@@ -106,8 +106,7 @@ for id_exp1, exp1 in enumerate(experiments):
                                                             niter=d["niter"],
                                                             lmax=d["lmax"],
                                                             type=d["type"],
-                                                            save_file="%s/%s_%sx%s_%s"%(mcm_dir, exp1, freq1, exp2, freq2),
-                                                            lmax_pad=lmax_mcm)
+                                                            save_file="%s/%s_%sx%s_%s"%(mcm_dir, exp1, freq1, exp2, freq2))
 
 
 

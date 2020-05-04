@@ -86,7 +86,7 @@ Just copy the script in a directory where you want to work with pspipe and run
 
 .. code:: shell
 
-   $ sh start_docker.sh
+   $ ./run_docker.sh
 
 
 
@@ -137,4 +137,3 @@ Youtube video
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You are not ready for it:  `youtube <https://www.youtube.com/watch?v=LtIuM3pxkng>`_
-

@@ -92,10 +92,10 @@ for sid1, spec1 in enumerate(spec_name):
 nspecs=len(spec_name)
 
 print("number of covariance matrices to compute : %s" % ncovs)
-#so_mpi.init(True)
-#subtasks = so_mpi.taskrange(imin=0, imax=ncovs - 1)
-#print(subtasks)
-for task in range(55):#subtasks:
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=0, imax=ncovs - 1)
+print(subtasks)
+for task in subtasks:
     task = int(task)
     
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]

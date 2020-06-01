@@ -140,27 +140,31 @@ for isim in range(iStart,iStop):
             data_bandpasses = {"nu":[149, 150], "b_nu":[0.5, 0.5]}
             data_beams = {"l":np.arange(10000), "bl":np.ones(10000)}
 
-            spec_sacc.add_tracer("NuMap", "%s_%s_s0" % (exp, f), "temperature", 0,
-                        nu=data_bandpasses["nu"],
-                        bpss_nu=data_bandpasses["nu"],
-                        ell=data_beams["l"],
-                        beam_ell=data_beams["bl"])
-            spec_sacc.add_tracer("NuMap", "%s_%s_s2" % (exp, f), "polarization", 2,
-                        nu=data_bandpasses["nu"],
-                        bpss_nu=data_bandpasses["nu"],
-                        ell=data_beams["l"],
-                        beam_ell=data_beams["bl"])
+            spec_sacc.add_tracer("NuMap", "%s_%s_s0" % (exp, f),
+                                 quantity="cmb_temperature", spin=0,
+                                 nu=data_bandpasses["nu"],
+                                 bandpass=data_bandpasses["nu"],
+                                 ell=data_beams["l"],
+                                 beam=data_beams["bl"])
+            spec_sacc.add_tracer("NuMap", "%s_%s_s2" % (exp, f),
+                                 quantity="cmb_polarization", spin=2,
+                                 nu=data_bandpasses["nu"],
+                                 bandpass=data_bandpasses["nu"],
+                                 ell=data_beams["l"],
+                                 beam=data_beams["bl"])
             if isim == 0:
-                cov_sacc.add_tracer("NuMap", "%s_%s_s0" % (exp, f), "temperature", 0,
+                cov_sacc.add_tracer("NuMap", "%s_%s_s0" % (exp, f),
+                                    quantity="cmb_temperature", spin=0,
                                     nu=data_bandpasses["nu"],
-                                    bpss_nu=data_bandpasses["nu"],
+                                    bandpass=data_bandpasses["nu"],
                                     ell=data_beams["l"],
-                                    beam_ell=data_beams["bl"])
-                cov_sacc.add_tracer("NuMap", "%s_%s_s2" % (exp, f), "polarization", 2,
+                                    beam=data_beams["bl"])
+                cov_sacc.add_tracer("NuMap", "%s_%s_s2" % (exp, f),
+                                    quantity="cmb_polarization", spin=2,
                                     nu=data_bandpasses["nu"],
-                                    bpss_nu=data_bandpasses["nu"],
+                                    bandpass=data_bandpasses["nu"],
                                     ell=data_beams["l"],
-                                    beam_ell=data_beams["bl"])
+                                    beam=data_beams["bl"])
 
     data = {}
     for spec_name in spec_name_list:
@@ -200,11 +204,10 @@ for isim in range(iStart,iStop):
         if isim == 0:
             bbl = get_bbl(ea, fa, pa, eb, fb, pb)
             ls_w = np.arange(2, bbl.shape[-1] + 2)
-            wins = sacc.Window(ls_w, bbl.T)
+            wins = sacc.BandpowerWindow(ls_w, bbl.T)
             cov_sacc.add_ell_cl(cl_type, ta_name, tb_name,
-                                 lbin, cb, window=wins,
-                                 window_id=range(len(lbin)))
-            
+                                lbin, cb, window=wins)
+
     if isim == 0:
         cov_sacc.add_covariance(cov_full)
         cov_sacc.save_fits("%s/data_sacc_w_covar_and_Bbl.fits" % sacc_dir, overwrite=True)

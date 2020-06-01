@@ -1,0 +1,40 @@
+surveys = ["s15_d56", "planck"]
+arrays_s15_d56 = ["pa3_90"]
+arrays_planck = ["100"]
+
+
+# windows caracteristics
+pixel_s15_d56 = "CAR"
+ra0_s15_d56 = 45
+ra1_s15_d56 = 10
+dec0_s15_d56 = -8.5
+dec1_s15_d56 = 3.5
+apo_type_survey_s15_d56 = "C1"
+apo_radius_survey_s15_d56 = 1
+template_s15_d56 = data_dir+'src_masks/mask_deep56_mr3c_s13s16_15mJy_5.0arcmin_ext_20190416.fits'
+binary_is_survey_mask_s15_d56 = True
+galactic_mask_s15_d56 = False
+survey_mask_s15_d56 = False
+pts_source_mask_T_s15_d56 = True
+also_mask_pol_s15_d56 = True
+pts_source_mask_file_s15_d56_pa3_90 = data_dir+'src_masks/mask_deep56_mr3c_s13s16_15mJy_5.0arcmin_ext_20190416.fits'
+apo_type_mask_s15_d56 = "C1"
+apo_radius_mask_s15_d56_pa3_90 = 0.3
+
+pixel_planck = "CAR"
+ra0_planck = 45
+ra1_planck = 10
+dec0_planck = -8.5
+dec1_planck = 3.5
+apo_type_survey_planck = "C1"
+apo_radius_survey_planck = 1
+template_planck = data_dir+'src_masks/mask_deep56_mr3c_s13s16_15mJy_5.0arcmin_ext_20190416.fits'
+binary_is_survey_mask_planck = True
+galactic_mask_planck = False
+survey_mask_planck = False
+pts_source_mask_T_planck = True
+also_mask_pol_planck = True
+pts_source_mask_file_planck_100 = data_dir+'src_masks/mask_deep56_mr3c_s13s16_15mJy_5.0arcmin_ext_20190416.fits'
+apo_type_mask_planck = "C1"
+apo_radius_mask_planck_100 = 0.3
+

@@ -15,6 +15,9 @@ def fill_sym_mat(mat):
     """
     return mat + mat.T - np.diag(mat.diagonal())
 
+def get_ones(binning_file, lmax):
+
+
 
 def get_nspec(dict):
 

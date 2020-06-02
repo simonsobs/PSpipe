@@ -63,6 +63,7 @@ for sv in surveys:
 
 
 ps_dict = {}
+_, _, lb, _ = read_binning_file(binning_file, lmax)
 
 for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]

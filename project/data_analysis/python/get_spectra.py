@@ -70,7 +70,7 @@ for id_sv1, sv1 in enumerate(surveys):
     nsplits_1 = nsplit[sv1]
     
     if d["tf_%s" % sv1] is not None:
-        _, _, tf1, _ = np.loadtxt(d["tf_%s" % sv1])
+        _, _, tf1, _ = np.loadtxt(d["tf_%s" % sv1], unpack=True)
     else:
         tf1 = np.ones(len(lb))
 
@@ -82,7 +82,7 @@ for id_sv1, sv1 in enumerate(surveys):
             nsplits_2 = nsplit[sv2]
             
             if d["tf_%s" % sv2] is not None:
-                _, _, tf2, _ = np.loadtxt(d["tf_%s" % sv2])
+                _, _, tf2, _ = np.loadtxt(d["tf_%s" % sv2], unpack=True)
             else:
                 tf2 = np.ones(len(lb))
 

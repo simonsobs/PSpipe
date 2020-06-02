@@ -46,8 +46,6 @@ for id_sv1, sv1 in enumerate(surveys):
                 if  (id_sv1 > id_sv2) : continue
                 
                 print("%s_%s x %s_%s" % (sv1, ar1, sv2, ar2))
-                print("beam_%s_%s" % (sv2, ar2))
-                print(d["beam_%s_%s" % (sv2, ar2)])
                 l, bl2 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv2, ar2)])
                 win2_T = so_map.read_map(d["window_T_%s_%s" % (sv2, ar2)])
                 win2_pol = so_map.read_map(d["window_pol_%s_%s" % (sv2, ar2)])

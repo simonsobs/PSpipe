@@ -43,7 +43,7 @@ for sv in surveys:
         
             nl_dict = {}
             for spec in spectra:
-                nbs_mean = nbs[spec] * bb_ar1*bb_ar2 / nsplits
+                nbs_mean = nbs[spec] * bb_ar1*bb_ar2
                 plt.figure(figsize=(12,12))
 
                 if (spec == "TT" or spec == "EE" or spec == "BB") & (ar1 == ar2):

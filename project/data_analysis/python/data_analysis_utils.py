@@ -15,6 +15,29 @@ def fill_sym_mat(mat):
     """
     return mat + mat.T - np.diag(mat.diagonal())
 
+
+def get_nspec(dict):
+
+    surveys = dict["surveys"]
+    nspec = {}
+
+    for kind in ["cross", "noise", "auto"]:
+        nspec[kind] = 0
+        for id_sv1, sv1 in enumerate(surveys):
+            arrays_1 = dict["arrays_%s" % sv1]
+            for id_ar1, ar1 in enumerate(arrays_1):
+                for id_sv2, sv2 in enumerate(surveys):
+                    arrays_2 = dict["arrays_%s" % sv2]
+                    for id_ar2, ar2 in enumerate(arrays_2):
+
+                        if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
+                        if  (id_sv1 > id_sv2) : continue
+                        if (sv1 != sv2) & (kind == "noise"): continue
+                        if (sv1 != sv2) & (kind == "auto"): continue
+                        nspec[kind] += 1
+                    
+    return nspec
+
 def get_noise_matrix_spin0and2(noise_dir, survey, arrays, lmax, nsplits):
     
     """This function uses the measured noise power spectra
@@ -63,6 +86,7 @@ def get_noise_matrix_spin0and2(noise_dir, survey, arrays, lmax, nsplits):
         nl_array_pol[:,:,i] = fill_sym_mat(nl_array_pol[:,:,i])
 
     return l, nl_array_t, nl_array_pol
+
 
 
 def get_foreground_matrix(fg_dir, all_freqs, lmax):
@@ -191,6 +215,33 @@ def remove_mean(so_map, window, ncomp):
         so_map.data[2] -= np.mean(so_map.data[2] * window[1].data)
 
     return so_map
+
+def deconvolve_tf(ps, tf1, tf2, ncomp):
+
+    """This function deconvolves the transfer function
+    Parameters
+    ----------
+    ps : dict or 1d array
+      the power spectra with tf applied
+    tf1 : 1d array
+      transfer function of map1
+    tf2 : 1d array
+      transfer function of map2
+    ncomp : integer
+        the number of components
+        ncomp = 3 if T,Q,U
+        ncomp = 1 if T only
+
+    """
+
+    if ncomp == 1:
+        ps /= (tf1*tf2)
+    else:
+        spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+        for spec in spectra:
+            ps[spec] /= (tf1*tf2)
+            
+    return ps
 
 
 def is_symmetric(mat, tol=1e-8):

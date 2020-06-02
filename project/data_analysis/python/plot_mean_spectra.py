@@ -1,5 +1,6 @@
 import matplotlib
 matplotlib.use("Agg")
+from matplotlib.pyplot import cm
 from pspy import pspy_utils, so_dict, so_spectra, so_cov
 import numpy as np
 import pylab as plt
@@ -21,11 +22,13 @@ plot_dir = "plots/spectra/"
 pspy_utils.create_directory(plot_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+n_spectra = data_analysis_utils.get_nspec(d)
 
 
 for scale in ["log", "linear"]:
     for kind in ["cross", "noise", "auto"]:
         for spec in ["TT", "TE", "ET", "EE"]:
+            color = iter(cm.rainbow(np.linspace(0,1,n_spectra[kind]+1)))
 
             if (scale == "log"):
                 if (spec == "TE") or (spec == "ET"): continue
@@ -73,9 +76,9 @@ for scale in ["log", "linear"]:
                             if scale == "log":
                                 plt.semilogy()
                             if kind == "cross":
-                                plt.errorbar(lb + count*10, Db[spec], std, fmt=".", label="%s_%s" % (spec, combin))
+                                plt.errorbar(lb + count*10, Db[spec], std, fmt=".", label="%s_%s" % (spec, combin), color=c)
                             else:
-                                plt.errorbar(lb + count*10, Db[spec], fmt=".", label="%s_%s" % (spec, combin))
+                                plt.errorbar(lb + count*10, Db[spec], fmt=".", label="%s_%s" % (spec, combin), color=c)
                                 
                             plt.plot(lth[:lmax], bfth[:lmax])
 

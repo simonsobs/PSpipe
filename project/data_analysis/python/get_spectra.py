@@ -54,7 +54,9 @@ for sv in surveys:
                 split = so_map.read_map(map)
 
             split.data *= cal
-            split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
+            if d["remove_mean"] == True:
+                split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
+                
             split.plot(file_name="%s/split_%d_%s_%s" % (plot_dir, k, sv, ar), color_range=[250, 100, 100])
 
             master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
@@ -65,11 +67,23 @@ ps_dict = {}
 for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]
     nsplits_1 = nsplit[sv1]
+    
+    if d["tf_%s" % sv1] is not None:
+        _, _, tf1, _ = np.loadtxt(d["tf_%s" % sv1])
+    else:
+        tf1 = np.ones(len(lb))
+
+
     for id_ar1, ar1 in enumerate(arrays_1):
     
         for id_sv2, sv2 in enumerate(surveys):
             arrays_2 = d["arrays_%s" % sv2]
             nsplits_2 = nsplit[sv2]
+            
+            if d["tf_%s" % sv2] is not None:
+                _, _, tf2, _ = np.loadtxt(d["tf_%s" % sv2])
+            else:
+                tf2 = np.ones(len(lb))
 
             for id_ar2, ar2 in enumerate(arrays_2):
 
@@ -101,6 +115,8 @@ for id_sv1, sv1 in enumerate(surveys):
                                                         type=type,
                                                         mbb_inv=mbb_inv,
                                                         spectra=spectra)
+                                                        
+                        data_analysis_utils.deconvolve_tf(ps, tf1, tf2, ncomp)
                                                         
                         if write_all_spectra:
                             so_spectra.write_ps(specDir + "/%s.dat" % spec_name, lb, ps, type, spectra=spectra)

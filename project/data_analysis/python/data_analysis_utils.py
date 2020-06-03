@@ -236,11 +236,11 @@ def deconvolve_tf(ps, tf1, tf2, ncomp):
     """
 
     if ncomp == 1:
-        ps /= (tf1*tf2)
+        ps /= np.sqrt(tf1*tf2)
     else:
         spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
         for spec in spectra:
-            ps[spec] /= (tf1*tf2)
+            ps[spec] /= np.sqrt(tf1*tf2)
             
     return ps
 

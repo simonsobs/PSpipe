@@ -5,6 +5,7 @@ from pspy import pspy_utils, so_dict, so_spectra, so_cov
 import numpy as np
 import pylab as plt
 import sys
+import data_analysis_utils
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -72,6 +73,7 @@ for scale in ["log", "linear"]:
                             else:
                                 lth, bfth = np.loadtxt("%s/best_fit_%s_%s.dat"%(bestfit_dir, combin, "TE"), unpack=True)
 
+                            c=next(color)
                             
                             if scale == "log":
                                 plt.semilogy()

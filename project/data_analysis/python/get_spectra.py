@@ -47,7 +47,6 @@ for sv in surveys:
         
         for k, map in enumerate(maps):
             if win_T.pixel == "CAR":
-                car_box = so_map.bounding_box_from_map(win_T) * 180 / np.pi
                 split = so_map.read_map(map, geometry=win.data.geometry)
 
             elif win_T.pixel == "HEALPIX":

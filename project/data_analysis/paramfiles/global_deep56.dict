@@ -1,35 +1,65 @@
-surveys = ["s15_d56", "planck"]
-arrays_s15_d56 = ["pa3_90"]
-arrays_planck = ["100"]
+surveys = ["s14_deep56", "s15_deep56"]
+arrays_s14_deep56 = ["pa1_f150", "pa2_f150"]
+arrays_s15_deep56 = ["pa1_f150", "pa2_f150", "pa3_090", "par3_150"]
 
-data_dir = '../data/'
+data_dir = '../data/deep56_product/'
 
-maps_s15_d56_pa3_90 = [data_dir + 'maps/s15_deep56_pa3_f090_nohwp_night_3pass_4way_set%d_map.fits' % i for i in range(4)]
-maps_planck_100 = [data_dir + 'maps/planck_hybrid_100_2way_%d_deep56_map.fits' % i for i in range(2)]
+maps_s14_deep56_pa1_f150 = [data_dir + 'filtered_maps/s14_deep56_pa1_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s14_deep56_pa2_f150 = [data_dir + 'filtered_maps/s14_deep56_pa2_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s15_deep56_pa1_f150 = [data_dir + 'filtered_maps/s15_deep56_pa1_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s15_deep56_pa2_f150 = [data_dir + 'filtered_maps/s15_deep56_pa2_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s15_deep56_pa3_f090 = [data_dir + 'filtered_maps/s15_deep56_pa3_f090_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s15_deep56_pa3_f150 = [data_dir + 'filtered_maps/s15_deep56_pa3_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
 
-cal_s15_d56_pa3_90 = 1.029
-cal_planck_100= 1
+cal_s14_deep56_pa1_f150 = 0.9988993943335835
+cal_s14_deep56_pa2_f150 = 0.9892421341612982
+cal_s15_deep56_pa1_f150 = 0.9936800289831733
+cal_s15_deep56_pa2_f150 = 0.9789790600416334
+cal_s15_deep56_pa3_f090 = 1.0295630140987
+cal_s15_deep56_pa3_f150 = 1.0456576877735848
 
-nu_eff_s15_d56_pa3_90 = 90
-nu_eff_planck_100 = 90
+nu_eff_s14_deep56_pa1_f150 = 150
+nu_eff_s14_deep56_pa2_f150 = 150
+nu_eff_s15_deep56_pa1_f150 = 150
+nu_eff_s15_deep56_pa2_f150 = 150
+nu_eff_s15_deep56_pa3_f090 = 90
+nu_eff_s15_deep56_pa3_f150 = 150
 
-beam_s15_d56_pa3_90 = data_dir + 'beams/s15_pa3_f090_nohwp_night_beam_tform_jitter_normed.txt'
-beam_planck_100 = data_dir + 'beams/beam_T_100_hm1_pixwin.dat'
+beam_s14_deep56_pa1_f150 = data_dir + 'beam/b20190809_s14_pa1_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s14_deep56_pa2_f150 = data_dir + 'beam/b20190809_s14_pa2_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s15_deep56_pa1_f150 = data_dir + 'beam/b20190809_s15_pa1_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s15_deep56_pa2_f150 = data_dir + 'beam/b20190809_s15_pa2_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s15_deep56_pa3_f090 = data_dir + 'beam/b20190809_s15_pa3_f090_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s15_deep56_pa3_f150 = data_dir + 'beam/b20190809_s15_pa3_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+
+window_T_s14_deep56_pa1_f150 = data_dir + 'window/deep56_s14_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s14_deep56_pa2_f150 = data_dir + 'window/deep56_s14_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s15_deep56_pa1_f150 = data_dir + 'window/deep56_s15_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s15_deep56_pa2_f150 = data_dir + 'window/deep56_s15_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s15_deep56_pa3_f090 = data_dir + 'window/deep56_s15_pa3_f090_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s15_deep56_pa3_f150 = data_dir + 'window/deep56_s15_pa3_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+
+window_pol_s14_deep56_pa1_f150 = data_dir + 'window/deep56_s14_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s14_deep56_pa2_f150 = data_dir + 'window/deep56_s14_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s15_deep56_pa1_f150 = data_dir + 'window/deep56_s15_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s15_deep56_pa2_f150 = data_dir + 'window/deep56_s15_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s15_deep56_pa3_f090 = data_dir + 'window/deep56_s15_pa3_f090_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s15_deep56_pa3_f150 = data_dir + 'window/deep56_s15_pa3_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+
+tf_s14_deep56 = data_dir + "kfilter_tfunc/deep56_kfilter_tfunc_sim.txt"
+tf_s15_deep56 = data_dir + "kfilter_tfunc/deep56_kfilter_tfunc_sim.txt"
+
 
 theoryfile = data_dir + "cosmo_spectra.dat"
-fgfile = data_dir + "deep_fg.txt"
-binning_file = data_dir + "binning.dat"
+fgfile = data_dir + "wide_fg.txt"
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
 niter = 0
-lmax = 2000
+remove_mean = False
+lmax = 7930
 type = 'Dl'
 write_splits_spectra = True
 multistep_path = "/Users/thibautlouis/Desktop/projects/so_ps_codes/PSpipe/project/data_analysis/js/"
 
-window_T_s15_d56_pa3_90 = "toy_windows/window_T_s15_d56_pa3_90.fits"
-window_T_planck_100 = "toy_windows/window_T_planck_100.fits"
-
-window_pol_s15_d56_pa3_90 = "toy_windows/window_pol_s15_d56_pa3_90.fits"
-window_pol_planck_100 = "toy_windows/window_pol_planck_100.fits"
 
 #plot
 range_TT = [100, 8000]
@@ -39,4 +69,4 @@ range_EE = [-20, 50]
 
 #sim
 iStart = 0
-iStop = 100
+iStop = 99

@@ -1,17 +1,18 @@
 surveys = ["s15_boss"]
 arrays_s15_boss = ["pa1_f150", "pa2_f150", "pa3_f090", "pa3_f150"]
 
-data_dir = '../data/boss/boss_product/'
+data_dir = '../data/boss_product/'
 
 maps_s15_boss_pa1_f150 = [data_dir + 'filtered_maps/s15_boss_pa1_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits' % i for i in range(4)]
 maps_s15_boss_pa2_f150 = [data_dir + 'filtered_maps/s15_boss_pa2_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits' % i for i in range(4)]
 maps_s15_boss_pa3_f090 = [data_dir + 'filtered_maps/s15_boss_pa3_f090_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits' % i for i in range(4)]
 maps_s15_boss_pa3_f150 = [data_dir + 'filtered_maps/s15_boss_pa3_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits' % i for i in range(4)]
 
-cal_s15_boss_pa1_f150 = 1.0
-cal_s15_boss_pa2_f150 = 1.0
-cal_s15_boss_pa3_f090 = 1.0
-cal_s15_boss_pa3_f150 = 1.0
+cal_s15_boss_pa1_f150 = 1.034553043589356
+cal_s15_boss_pa2_f150 = 1.0311159003720192
+cal_s15_boss_pa3_f090 = 1.0611314715905846
+cal_s15_boss_pa3_f150 = 1.1043097391583576
+
 
 nu_eff_s15_boss_pa1_f150 = 150
 nu_eff_s15_boss_pa2_f150 = 150
@@ -23,14 +24,6 @@ beam_s15_boss_pa2_f150 = data_dir + 'beams/b20190809_s15_pa2_f150_nohwp_night_be
 beam_s15_boss_pa3_f090 = data_dir + 'beams/b20190809_s15_pa3_f090_nohwp_night_beam_tform_jitter_boss_cmbspec_norm.txt'
 beam_s15_boss_pa3_f150 = data_dir + 'beams/b20190809_s15_pa3_f150_nohwp_night_beam_tform_jitter_boss_cmbspec_norm.txt'
 
-theoryfile = data_dir + "cosmo_spectra.dat"
-fgfile = data_dir + "wide_fg.txt"
-binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
-niter = 0
-lmax = 500
-type = 'Dl'
-write_splits_spectra = True
-multistep_path = "/Users/thibautlouis/Desktop/projects/so_ps_codes/PSpipe/project/data_analysis/js/"
 
 window_T_s15_boss_pa1_f150 = data_dir + "window/boss_s15_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits"
 window_T_s15_boss_pa2_f150 = data_dir + "window/boss_s15_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits"
@@ -42,6 +35,18 @@ window_pol_s15_boss_pa2_f150 = data_dir + "window/boss_s15_pa2_f150_mr3f_2019050
 window_pol_s15_boss_pa3_f090 = data_dir + "window/boss_s15_pa3_f090_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits"
 window_pol_s15_boss_pa3_f150 = data_dir + "window/boss_s15_pa3_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits"
 
+tf_s15_boss = data_dir + "kfilter_tfunc/boss_kfilter_tfunc_sim.txt"
+
+theoryfile = data_dir + "cosmo_spectra.dat"
+fgfile = data_dir + "wide_fg.txt"
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
+niter = 0
+remove_mean = False
+lmax = 7930
+type = 'Dl'
+write_splits_spectra = True
+multistep_path = "/Users/thibautlouis/Desktop/projects/so_ps_codes/PSpipe/project/data_analysis/js/"
+
 #plot
 range_TT = [100, 8000]
 range_TE = [-150, 150]
@@ -50,4 +55,4 @@ range_EE = [-20, 50]
 
 #sim
 iStart = 0
-iStop = 100
+iStop = 99

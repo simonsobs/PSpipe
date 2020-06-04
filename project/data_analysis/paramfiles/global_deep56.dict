@@ -1,6 +1,6 @@
 surveys = ["s14_deep56", "s15_deep56"]
 arrays_s14_deep56 = ["pa1_f150", "pa2_f150"]
-arrays_s15_deep56 = ["pa1_f150", "pa2_f150", "pa3_090", "par3_150"]
+arrays_s15_deep56 = ["pa1_f150", "pa2_f150", "pa3_090", "pa3_150"]
 
 data_dir = '../data/deep56_product/'
 

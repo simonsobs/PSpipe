@@ -217,7 +217,7 @@ def remove_mean(so_map, window, ncomp):
 
     return so_map
 
-def deconvolve_tf(ps, tf1, tf2, ncomp):
+def deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax=None):
 
     """This function deconvolves the transfer function
     Parameters
@@ -238,6 +238,10 @@ def deconvolve_tf(ps, tf1, tf2, ncomp):
         tf = tf1
     else:
         tf = np.sqrt(tf1*tf2)
+        
+    if lmax is not None:
+        id = np.where(lb <= lmax)
+        tf = tf[id]
         
     if ncomp == 1:
         ps /= tf

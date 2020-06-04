@@ -116,7 +116,7 @@ for id_sv1, sv1 in enumerate(surveys):
                                                         mbb_inv=mbb_inv,
                                                         spectra=spectra)
                                                         
-                        data_analysis_utils.deconvolve_tf(ps, tf1, tf2, ncomp)
+                        data_analysis_utils.deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax)
                                                         
                         if write_all_spectra:
                             so_spectra.write_ps(specDir + "/%s.dat" % spec_name, lb, ps, type, spectra=spectra)

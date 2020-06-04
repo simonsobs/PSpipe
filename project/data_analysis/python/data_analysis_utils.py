@@ -240,7 +240,7 @@ def deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax=None):
         tf = np.sqrt(tf1*tf2)
         
     if lmax is not None:
-        id = np.where(lb <= lmax)
+        id = np.where(lb < lmax)
         tf = tf[id]
         
     if ncomp == 1:

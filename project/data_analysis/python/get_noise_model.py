@@ -39,6 +39,7 @@ for sv in surveys:
             nsplits = len(d["maps_%s_%s" % (sv, ar1)])
         
             spec_name_noise = "%s_%s_%sx%s_%s_noise" % (type, sv, ar1, sv, ar2)
+            print(spec_name_noise)
             lb, nbs = so_spectra.read_ps("%s/%s.dat" % (spectra_dir, spec_name_noise), spectra=spectra)
         
             nl_dict = {}

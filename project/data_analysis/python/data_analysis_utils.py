@@ -1,7 +1,7 @@
 """
 Some utility functions for the data analysis project.
 """
-import numpy as np, healpy as hp
+import numpy as np, healpy as hp, pylab as plt
 from pixell import curvedsky
 from pspy import pspy_utils, so_cov, so_spectra
 
@@ -436,3 +436,62 @@ def symm_power(Clth, mode="arithm"):
         return np.sqrt(np.abs(np.outer(Clth, Clth)))
     if mode == "arithm":
         return np.add.outer(Clth, Clth) / 2
+
+
+def plot_vs_choi(l, cl, error, mc_std, Db, std, plot_dir, combin, spec):
+               
+    str = "%s_%s_cross.png" % (spec, combin)
+
+    plt.figure(figsize=(12,12))
+    if spec == "TT":
+        plt.semilogy()
+    plt.errorbar(l, cl, error, fmt=".", label="steve %s" % combin)
+    plt.errorbar(l, Db[spec], fmt=".", label="thibaut")
+    plt.legend()
+    plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)
+    plt.xlabel(r"$\ell$", fontsize=20)
+    plt.savefig("%s/%s" % (plot_dir,str), bbox_inches="tight")
+    plt.clf()
+    plt.close()
+               
+               
+    plt.figure(figsize=(12,12))
+    plt.semilogy()
+    plt.errorbar(l, std, label="master %s" % combin, color= "blue")
+    plt.errorbar(l, mc_std, fmt=".", label="montecarlo", color = "red")
+    plt.errorbar(l, error, label="Knox", color= "lightblue")
+    plt.legend()
+    plt.title(r"$\sigma^{%s}_{\ell}$" % (spec), fontsize=20)
+    plt.xlabel(r"$\ell$", fontsize=20)
+    plt.savefig("%s/error_%s" % (plot_dir,str), bbox_inches="tight")
+    plt.clf()
+    plt.close()
+                         
+    plt.figure(figsize=(12,12))
+    plt.plot(l, l * 0 + 1, color="grey")
+    if std is not None:
+        plt.errorbar(l[2:], std[2:]/mc_std[2:], label="master %s" % combin, color= "blue")
+    plt.errorbar(l[2:], error[2:]/mc_std[2:], label="Knox", color= "lightblue")
+    plt.legend()
+    plt.title(r"$\sigma^{ %s}_{\ell}/\sigma^{MC, %s}_{\ell} $" % (spec, spec), fontsize=20)
+    plt.xlabel(r"$\ell$", fontsize=20)
+    plt.savefig("%s/error_divided_%s" % (plot_dir,str), bbox_inches="tight")
+    plt.clf()
+    plt.close()
+               
+    plt.figure(figsize=(12,12))
+    plt.plot(l,(cl-Db[spec])/mc_std, ".")
+    plt.title(r"$\Delta D^{%s}_{\ell}/\sigma^{MC}_{\ell}$" % (spec), fontsize=20)
+    plt.xlabel(r"$\ell$", fontsize=20)
+    plt.savefig("%s/frac_error_%s" % (plot_dir, str), bbox_inches="tight")
+    plt.clf()
+    plt.close()
+
+    plt.figure(figsize=(12,12))
+    plt.plot(l,(cl-Db[spec])/cl)
+    plt.title(r"$\Delta D^{%s}_{\ell}/ D^{%s}_{\ell}$" % (spec, spec), fontsize=20)
+    plt.xlabel(r"$\ell$", fontsize=20)
+    plt.savefig("%s/frac_%s" % (plot_dir, str), bbox_inches="tight")
+    plt.clf()
+    plt.close()
+               

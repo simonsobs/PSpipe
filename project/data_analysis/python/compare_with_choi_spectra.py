@@ -14,11 +14,12 @@ d.read_from_file(sys.argv[1])
 type = d["type"]
 surveys = d["surveys"]
 lmax = d["lmax"]
+data_dir = d["data_dir"]
 multistep_path = d["multistep_path"]
 binning_file = d["binning_file"]
 steve_dir = "%s" % d["steve_dir"]
 
-simDir = "sim_spectra"
+simDir = "%s/sim_spectra" % data_dir
 specDir = "spectra"
 cov_dir = "covariances"
 

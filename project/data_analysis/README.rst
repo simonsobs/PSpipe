@@ -28,6 +28,16 @@ The next step is to compute all different auto and cross power spectra
 .. code:: shell
 
     python get_spectra.py global.dict
+    
+We will then compute analytical errorbars, in order to do so we need best fit signal power spectra and measured noise power power spectra
+
+.. code:: shell
+
     python get_best_fit.py global.dict
     python get_noise_model.py global.dict
+    
+The covariance can then be obtained
+
+.. code:: shell
+
     python get_covariance.py global.dict

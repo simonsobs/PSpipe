@@ -17,10 +17,11 @@ Pipeline flow chart
 First you need to write a dictionnary file: ``global.dict``, it will contain the parameters relevant for the Data Analysis project. Examples of ``global.dict`` are given in the ``paramfiles`` folder.
 Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
 
-
+First we compute the mode coupling and binning matrices associated to the ACTPol window function 
 .. code:: shell
-
     python get_mcm_and_bbl.py global.dict
+    
+.. code:: shell
     python get_spectra.py global.dict
     python get_best_fit.py global.dict
     python get_noise_model.py global.dict

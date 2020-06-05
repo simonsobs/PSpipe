@@ -18,6 +18,7 @@ First you need to write a dictionnary file: ``global.dict``, it will contain the
 Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
 
 First we compute the mode coupling and binning matrices associated to the ACTPol window function 
+
 .. code:: shell
     python get_mcm_and_bbl.py global.dict
 

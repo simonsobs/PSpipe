@@ -1,4 +1,5 @@
 import matplotlib
+matplotlib.use("Agg")
 from pspy import pspy_utils, so_dict, so_spectra, so_cov
 from steve_notation import *
 import numpy as np

@@ -20,7 +20,9 @@ Then, we can use the codes in the ``python`` folder to run the pipeline sequenti
 First we compute the mode coupling and binning matrices associated to the ACTPol window function 
 .. code:: shell
     python get_mcm_and_bbl.py global.dict
-    
+
+The next step is to compute all different auto and cross power spectra 
+
 .. code:: shell
     python get_spectra.py global.dict
     python get_best_fit.py global.dict

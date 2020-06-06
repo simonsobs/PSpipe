@@ -1,0 +1,93 @@
+surveys = ["s14_deep56", "s15_deep56"]
+arrays_s14_deep56 = ["pa1_f150", "pa2_f150"]
+arrays_s15_deep56 = ["pa1_f150", "pa2_f150", "pa3_f090", "pa3_f150"]
+
+data_dir = '../data/deep56_product/'
+
+maps_s14_deep56_pa1_f150 = [data_dir + 'filtered_maps/s14_deep56_pa1_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s14_deep56_pa2_f150 = [data_dir + 'filtered_maps/s14_deep56_pa2_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s15_deep56_pa1_f150 = [data_dir + 'filtered_maps/s15_deep56_pa1_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s15_deep56_pa2_f150 = [data_dir + 'filtered_maps/s15_deep56_pa2_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s15_deep56_pa3_f090 = [data_dir + 'filtered_maps/s15_deep56_pa3_f090_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+maps_s15_deep56_pa3_f150 = [data_dir + 'filtered_maps/s15_deep56_pa3_f150_nohwp_night_3pass_4way_set%d_map_srcadd_filt_unpixwin.fits'  % i for i in range(4)]
+
+cal_s14_deep56_pa1_f150xs14_deep56_pa1_f150 = 0.9978
+cal_s14_deep56_pa1_f150xs14_deep56_pa2_f150 = 0.9882
+cal_s14_deep56_pa1_f150xs15_deep56_pa1_f150 = 0.9926
+cal_s14_deep56_pa1_f150xs15_deep56_pa2_f150 = 0.9779
+cal_s14_deep56_pa1_f150xs15_deep56_pa3_f090 = 1.0284
+cal_s14_deep56_pa1_f150xs15_deep56_pa3_f150 = 1.0445
+
+cal_s14_deep56_pa2_f150xs14_deep56_pa2_f150 = 0.9786
+cal_s14_deep56_pa2_f150xs15_deep56_pa1_f150 = 0.9830
+cal_s14_deep56_pa2_f150xs15_deep56_pa2_f150 = 0.9684
+cal_s14_deep56_pa2_f150xs15_deep56_pa3_f090 = 1.0185
+cal_s14_deep56_pa2_f150xs15_deep56_pa3_f150 = 1.0345
+
+cal_s15_deep56_pa1_f150xs15_deep56_pa1_f150 = 0.9874
+cal_s15_deep56_pa1_f150xs15_deep56_pa2_f150 = 0.9728
+cal_s15_deep56_pa1_f150xs15_deep56_pa3_f090 = 1.0231
+cal_s15_deep56_pa1_f150xs15_deep56_pa3_f150 = 1.0391
+
+cal_s15_deep56_pa2_f150xs15_deep56_pa2_f150 = 0.9584
+cal_s15_deep56_pa2_f150xs15_deep56_pa3_f090 = 1.0079
+cal_s15_deep56_pa2_f150xs15_deep56_pa3_f150 = 1.0237
+
+cal_s15_deep56_pa3_f090xs15_deep56_pa3_f090 = 1.0600
+cal_s15_deep56_pa3_f090xs15_deep56_pa3_f150 = 1.0766
+
+cal_s15_deep56_pa3_f150xs15_deep56_pa3_f150 = 1.0934
+
+
+nu_eff_s14_deep56_pa1_f150 = 150
+nu_eff_s14_deep56_pa2_f150 = 150
+nu_eff_s15_deep56_pa1_f150 = 150
+nu_eff_s15_deep56_pa2_f150 = 150
+nu_eff_s15_deep56_pa3_f090 = 90
+nu_eff_s15_deep56_pa3_f150 = 150
+
+beam_s14_deep56_pa1_f150 = data_dir + 'beam/b20190809_s14_pa1_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s14_deep56_pa2_f150 = data_dir + 'beam/b20190809_s14_pa2_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s15_deep56_pa1_f150 = data_dir + 'beam/b20190809_s15_pa1_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s15_deep56_pa2_f150 = data_dir + 'beam/b20190809_s15_pa2_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s15_deep56_pa3_f090 = data_dir + 'beam/b20190809_s15_pa3_f090_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+beam_s15_deep56_pa3_f150 = data_dir + 'beam/b20190809_s15_pa3_f150_nohwp_night_beam_tform_jitter_deep56_cmbspec_norm.txt'
+
+window_T_s14_deep56_pa1_f150 = data_dir + 'window/deep56_s14_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s14_deep56_pa2_f150 = data_dir + 'window/deep56_s14_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s15_deep56_pa1_f150 = data_dir + 'window/deep56_s15_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s15_deep56_pa2_f150 = data_dir + 'window/deep56_s15_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s15_deep56_pa3_f090 = data_dir + 'window/deep56_s15_pa3_f090_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_T_s15_deep56_pa3_f150 = data_dir + 'window/deep56_s15_pa3_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+
+window_pol_s14_deep56_pa1_f150 = data_dir + 'window/deep56_s14_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s14_deep56_pa2_f150 = data_dir + 'window/deep56_s14_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s15_deep56_pa1_f150 = data_dir + 'window/deep56_s15_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s15_deep56_pa2_f150 = data_dir + 'window/deep56_s15_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s15_deep56_pa3_f090 = data_dir + 'window/deep56_s15_pa3_f090_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+window_pol_s15_deep56_pa3_f150 = data_dir + 'window/deep56_s15_pa3_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits'
+
+tf_s14_deep56 = data_dir + "kfilter_tfunc/deep56_kfilter_tfunc_sim.txt"
+tf_s15_deep56 = data_dir + "kfilter_tfunc/deep56_kfilter_tfunc_sim.txt"
+
+theoryfile = data_dir + "cosmo_spectra.dat"
+fgfile = data_dir + "deep_fg.txt"
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
+niter = 0
+remove_mean = False
+lmax = 7930
+type = 'Dl'
+write_splits_spectra = True
+multistep_path = data_dir
+steve_dir = data_dir + "spectra/deep56_spec_200603/"
+
+
+#plot
+range_TT = [1, 8000]
+range_TE = [-150, 150]
+range_ET = [-150, 150]
+range_EE = [-20, 50]
+
+#sim
+iStart = 0
+iStop = 99

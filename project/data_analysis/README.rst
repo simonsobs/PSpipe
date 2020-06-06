@@ -41,6 +41,15 @@ The covariance can then be obtained
 .. code:: shell
 
     python get_covariance.py global.dict
+   
+For this step you might want to use mpi, at nersc, on interactive mode, it will be something like
+
+.. code:: shell
+
+    salloc -N 20 -C haswell -q interactive -t 03:00:00
+    srun -n 20 -c 64 --cpu_bind=cores python get_covariance.py global.dict
+
+We will put in the toeplitz approx to speed up this one very soon.
     
 Finally you can compare with Choi et al spectra by running
 

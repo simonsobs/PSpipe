@@ -41,3 +41,11 @@ The covariance can then be obtained
 .. code:: shell
 
     python get_covariance.py global.dict
+    
+Finally you can compare with Choi et al spectra by running
+
+.. code:: shell
+
+    python compare_with_choi_spectra.py global.dict
+
+  

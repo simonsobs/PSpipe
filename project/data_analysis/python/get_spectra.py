@@ -95,9 +95,7 @@ for id_sv1, sv1 in enumerate(surveys):
                     ps_dict[spec, "auto"] = []
                     ps_dict[spec, "cross"] = []
                 
-                
-                cal = d["cal_%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
-                
+                                
                 for s1 in range(nsplits_1):
                     for s2 in range(nsplits_2):
                         if (sv1 == sv2) & (ar1 == ar2) & (s1>s2) : continue

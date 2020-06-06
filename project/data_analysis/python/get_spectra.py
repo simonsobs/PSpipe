@@ -121,7 +121,7 @@ for id_sv1, sv1 in enumerate(surveys):
                                                         
                         data_analysis_utils.deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax)
                         
-                        for spec in enumerate(spectra):
+                        for spec in spectra:
                             ps[spec] *= cal
                                                         
                         if write_all_spectra:

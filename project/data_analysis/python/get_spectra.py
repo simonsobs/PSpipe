@@ -42,7 +42,7 @@ for sv in surveys:
         maps = d["maps_%s_%s" % (sv, ar)]
         nsplit[sv] = len(maps)
 
-        cal = d["cal_%s_%s" % (sv, ar)]
+        #cal = d["cal_%s_%s" % (sv, ar)]
         print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
         
         for k, map in enumerate(maps):
@@ -52,7 +52,7 @@ for sv in surveys:
             elif win_T.pixel == "HEALPIX":
                 split = so_map.read_map(map)
 
-            split.data *= cal
+           # split.data *= cal
             if d["remove_mean"] == True:
                 split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
@@ -95,6 +95,9 @@ for id_sv1, sv1 in enumerate(surveys):
                     ps_dict[spec, "auto"] = []
                     ps_dict[spec, "cross"] = []
                 
+                
+                cal = d["cal_%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
+                
                 for s1 in range(nsplits_1):
                     for s2 in range(nsplits_2):
                         if (sv1 == sv2) & (ar1 == ar2) & (s1>s2) : continue
@@ -117,6 +120,9 @@ for id_sv1, sv1 in enumerate(surveys):
                                                         spectra=spectra)
                                                         
                         data_analysis_utils.deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax)
+                        
+                        for spec in enumerate(spectra):
+                            ps[spec] *= cal
                                                         
                         if write_all_spectra:
                             so_spectra.write_ps(specDir + "/%s.dat" % spec_name, lb, ps, type, spectra=spectra)

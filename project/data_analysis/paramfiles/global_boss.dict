@@ -23,15 +23,6 @@ beam_s15_boss_pa2_f150 = data_dir + 'beams/b20190809_s15_pa2_f150_nohwp_night_be
 beam_s15_boss_pa3_f090 = data_dir + 'beams/b20190809_s15_pa3_f090_nohwp_night_beam_tform_jitter_boss_cmbspec_norm.txt'
 beam_s15_boss_pa3_f150 = data_dir + 'beams/b20190809_s15_pa3_f150_nohwp_night_beam_tform_jitter_boss_cmbspec_norm.txt'
 
-theoryfile = data_dir + "cosmo_spectra.dat"
-fgfile = data_dir + "wide_fg.txt"
-binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
-niter = 0
-lmax = 7930
-type = 'Dl'
-write_splits_spectra = True
-multistep_path = data_dir
-
 window_T_s15_boss_pa1_f150 = data_dir + "window/boss_s15_pa1_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits"
 window_T_s15_boss_pa2_f150 = data_dir + "window/boss_s15_pa2_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits"
 window_T_s15_boss_pa3_f090 = data_dir + "window/boss_s15_pa3_f090_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits"
@@ -42,6 +33,8 @@ window_pol_s15_boss_pa2_f150 = data_dir + "window/boss_s15_pa2_f150_mr3f_2019050
 window_pol_s15_boss_pa3_f090 = data_dir + "window/boss_s15_pa3_f090_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits"
 window_pol_s15_boss_pa3_f150 = data_dir + "window/boss_s15_pa3_f150_mr3f_20190502_191219_w0_cl0.00nK_pt1.00_nt0.0_T.fits"
 
+tf_s15_boss = data_dir + "kfilter_tfunc/boss_kfilter_tfunc_sim.txt"
+
 theoryfile = data_dir + "cosmo_spectra.dat"
 fgfile = data_dir + "wide_fg.txt"
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
@@ -51,8 +44,6 @@ lmax = 7930
 type = 'Dl'
 write_splits_spectra = True
 multistep_path = data_dir
-
-tf_s15_boss = data_dir + "kfilter_tfunc/boss_kfilter_tfunc_sim.txt"
 steve_dir = data_dir + "spectra/boss_spec_200530/"
 
 #plot

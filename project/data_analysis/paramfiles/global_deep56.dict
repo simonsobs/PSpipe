@@ -49,7 +49,6 @@ window_pol_s15_deep56_pa3_f150 = data_dir + 'window/deep56_s15_pa3_f150_mr3f_201
 tf_s14_deep56 = data_dir + "kfilter_tfunc/deep56_kfilter_tfunc_sim.txt"
 tf_s15_deep56 = data_dir + "kfilter_tfunc/deep56_kfilter_tfunc_sim.txt"
 
-
 theoryfile = data_dir + "cosmo_spectra.dat"
 fgfile = data_dir + "deep_fg.txt"
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
@@ -59,8 +58,6 @@ lmax = 7930
 type = 'Dl'
 write_splits_spectra = True
 multistep_path = data_dir
-
-
 steve_dir = data_dir + "spectra/deep56_spec_200603/"
 
 

@@ -36,7 +36,7 @@ We will then compute analytical errorbars, in order to do so we need best fit si
     python get_best_fit.py global.dict
     python get_noise_model.py global.dict
     
-The covariance can then be obtained
+The covariance matrices can then be obtained
 
 .. code:: shell
 

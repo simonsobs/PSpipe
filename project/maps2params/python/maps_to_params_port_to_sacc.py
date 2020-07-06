@@ -195,7 +195,11 @@ for isim in range(iStart,iStop):
         else:
             tb_name = "%s_%s_s2" % (eb, fb)
 
-        cl_type = "cl_" + map_types[pa] + map_types[pb]
+        if pb == "T":
+            cl_type = "cl_" + map_types[pb] + map_types[pa]
+        else:
+            cl_type = "cl_" + map_types[pa] + map_types[pb]
+            
         lbin = data["%s_%s" % (ea, fa), "%s_%s" % (eb, fb)]["lbin"]
         cb = data["%s_%s" % (ea, fa), "%s_%s" % (eb, fb)][pa + pb]
         

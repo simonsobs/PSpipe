@@ -5,6 +5,7 @@ from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra
 import numpy as np
 import sys
 import data_analysis_utils
+import time
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -44,7 +45,7 @@ for sv in surveys:
 
         cal = d["cal_%s_%s" % (sv, ar)]
         print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
-        
+        t = time.time()
         for k, map in enumerate(maps):
             if win_T.pixel == "CAR":
                 split = so_map.read_map(map, geometry=win_T.data.geometry)
@@ -56,10 +57,10 @@ for sv in surveys:
             if d["remove_mean"] == True:
                 split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
-            split.plot(file_name="%s/split_%d_%s_%s" % (plot_dir, k, sv, ar), color_range=[250, 100, 100])
+            #split.plot(file_name="%s/split_%d_%s_%s" % (plot_dir, k, sv, ar), color_range=[250, 100, 100])
 
             master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
-
+        print(time.time()- t)
 
 ps_dict = {}
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)

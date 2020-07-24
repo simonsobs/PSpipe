@@ -103,9 +103,9 @@ for id_sv1, sv1 in enumerate(surveys):
                         mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%sx%s_%s" % (mcm_dir, sv1, ar1, sv2, ar2),
                                                             spin_pairs=spin_pairs)
 
-                        l, ps_master = so_spectra.get_spectra(master_alms[sv1, ar1, s1],
-                                                              master_alms[sv2, ar2, s2],
-                                                              spectra=spectra)
+                        l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, s1],
+                                                                     master_alms[sv2, ar2, s2],
+                                                                     spectra=spectra)
                                                               
                         spec_name="%s_%s_%sx%s_%s_%d%d" % (type, sv1, ar1, sv2, ar2, s1, s2)
                         

@@ -5,6 +5,12 @@ Projects
 This page describes the different projects we are working on in PSpipe, they are at different states of completion/documentation
 
 
+data analysis 
+=========== 
+
+The goal of this project is to reproduce results for the Choi et al paper. 
+
+
 maps2params 
 =========== 
 

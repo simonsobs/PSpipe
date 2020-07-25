@@ -32,16 +32,11 @@ for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]
     
     for id_ar1, ar1 in enumerate(arrays_1):
+    
         l, bl1 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv1, ar1)])
-        
         win1_T = so_map.read_map(d["window_T_%s_%s" % (sv1, ar1)])
         win1_pol = so_map.read_map(d["window_pol_%s_%s" % (sv1, ar1)])
         
-        win1_T.write_map("%s/window_T_%s_%s.fits" % (window_dir, sv1, ar1))
-        win1_T.plot(file_name="%s/window_T_%s_%s" % (plot_dir, sv1, ar1))
-        win1_pol.write_map("%s/window_pol_%s_%s.fits" % (window_dir, sv1, ar1))
-        win1_pol.plot(file_name="%s/window_pol_%s_%s" % (plot_dir, sv1, ar1))
-
         for id_sv2, sv2 in enumerate(surveys):
             arrays_2 = d["arrays_%s" % sv2]
             

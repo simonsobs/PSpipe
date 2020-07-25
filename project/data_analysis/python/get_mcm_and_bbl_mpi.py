@@ -44,7 +44,6 @@ for id_sv1, sv1 in enumerate(surveys):
                 nd_list += [ar2]
                 n_mcms += 1
                 
-
 print("number of mcm matrices to compute : %s" % n_mcms)
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_mcms - 1)
@@ -59,9 +58,6 @@ for task in subtasks:
     win1_T = so_map.read_map(d["window_T_%s_%s" % (sv1, ar1)])
     win1_pol = so_map.read_map(d["window_pol_%s_%s" % (sv1, ar1)])
     
-    win1_T.write_map("%s/window_T_%s_%s.fits" % (window_dir, sv1, ar1))
-    win1_pol.write_map("%s/window_pol_%s_%s.fits" % (window_dir, sv1, ar1))
-
     l, bl2 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv2, ar2)])
     win2_T = so_map.read_map(d["window_T_%s_%s" % (sv2, ar2)])
     win2_pol = so_map.read_map(d["window_pol_%s_%s" % (sv2, ar2)])

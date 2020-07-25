@@ -35,8 +35,8 @@ nsplit = {}
 for sv in surveys:
     arrays = d["arrays_%s" % sv]
     for ar in arrays:
-        win_T = so_map.read_map("%s/window_T_%s_%s.fits" % (window_dir, sv, ar))
-        win_pol = so_map.read_map("%s/window_pol_%s_%s.fits" % (window_dir, sv, ar))
+        win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
+        win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
 
         window_tuple = (win_T, win_pol)
         

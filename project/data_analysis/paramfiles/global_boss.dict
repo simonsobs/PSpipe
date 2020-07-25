@@ -45,6 +45,7 @@ type = 'Dl'
 write_splits_spectra = True
 multistep_path = data_dir
 steve_dir = data_dir + "spectra/boss_spec_200530/"
+use_toeplitz  = False
 
 #plot
 range_TT = [100, 8000]

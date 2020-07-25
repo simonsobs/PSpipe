@@ -108,20 +108,19 @@ for task in subtasks:
     print("cov element (%s x %s, %s x %s)" % (na_r, nb_r, nc_r, nd_r))
     
     
-    
-    
     win = {}
-    win["Ta"] = so_map.read_map("%s/window_T_%s.fits"%(windows_dir, na_r))
-    win["Tb"] = so_map.read_map("%s/window_T_%s.fits"%(windows_dir, nb_r))
-    win["Tc"] = so_map.read_map("%s/window_T_%s.fits"%(windows_dir, nc_r))
-    win["Td"] = so_map.read_map("%s/window_T_%s.fits"%(windows_dir, nd_r))
-    win["Pa"] = so_map.read_map("%s/window_pol_%s.fits"%(windows_dir, na_r))
-    win["Pb"] = so_map.read_map("%s/window_pol_%s.fits"%(windows_dir, nb_r))
-    win["Pc"] = so_map.read_map("%s/window_pol_%s.fits"%(windows_dir, nc_r))
-    win["Pd"] = so_map.read_map("%s/window_pol_%s.fits"%(windows_dir, nd_r))
+
+    win["Ta"] = so_map.read_map(d["window_T_%s" % na_r])
+    win["Tb"] = so_map.read_map(d["window_T_%s" % nb_r])
+    win["Tc"] = so_map.read_map(d["window_T_%s" % nc_r])
+    win["Td"] = so_map.read_map(d["window_T_%s" % nd_r])`
+    win["Pa"] = so_map.read_map(d["window_pol_%s" % na_r])
+    win["Pb"] = so_map.read_map(d["window_pol_%s" % nb_r])
+    win["Pc"] = so_map.read_map(d["window_pol_%s" % nc_r])
+    win["Pd"] = so_map.read_map(d["window_pol_%s" % nd_r])
+
+
     coupling = so_cov.cov_coupling_spin0and2_simple(win, lmax, niter=niter, l_exact=l_exact, l_band=l_band, l_toep=l_toep)
-    
-    
     
     
     try:

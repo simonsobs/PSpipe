@@ -20,6 +20,12 @@ pspy_utils.create_directory(plot_dir)
 surveys = d["surveys"]
 lmax = d["lmax"]
 
+if d["use_toeplitz"] == True:
+    print("we will use the toeplitz approximation")
+    l_exact, l_band, l_toep = 800, 2000, 2750
+else:
+    l_exact, l_band, l_toep = None, None, None
+
 print("Computing mode coupling matrices:")
 
 for id_sv1, sv1 in enumerate(surveys):
@@ -58,6 +64,9 @@ for id_sv1, sv1 in enumerate(surveys):
                                                             niter=d["niter"],
                                                             lmax=d["lmax"],
                                                             type=d["type"],
+                                                            l_exact=l_exact,
+                                                            l_band=l_band,
+                                                            l_toep=l_toep,
                                                             save_file="%s/%s_%sx%s_%s"%(mcm_dir, sv1, ar1, sv2, ar2))
 
 

@@ -113,7 +113,7 @@ for task in subtasks:
     win["Ta"] = so_map.read_map(d["window_T_%s" % na_r])
     win["Tb"] = so_map.read_map(d["window_T_%s" % nb_r])
     win["Tc"] = so_map.read_map(d["window_T_%s" % nc_r])
-    win["Td"] = so_map.read_map(d["window_T_%s" % nd_r])`
+    win["Td"] = so_map.read_map(d["window_T_%s" % nd_r])
     win["Pa"] = so_map.read_map(d["window_pol_%s" % na_r])
     win["Pb"] = so_map.read_map(d["window_pol_%s" % nb_r])
     win["Pc"] = so_map.read_map(d["window_pol_%s" % nc_r])

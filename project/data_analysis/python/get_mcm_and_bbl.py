@@ -9,13 +9,8 @@ import sys
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-window_dir = "windows"
 mcm_dir = "mcms"
-plot_dir = "plots/windows/"
-
 pspy_utils.create_directory(mcm_dir)
-pspy_utils.create_directory(window_dir)
-pspy_utils.create_directory(plot_dir)
 
 surveys = d["surveys"]
 lmax = d["lmax"]

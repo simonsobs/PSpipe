@@ -89,7 +89,12 @@ for sid1, spec1 in enumerate(spec_name):
         nd_list += [nd]
         ncovs += 1
 
-nspecs=len(spec_name)
+
+if d["use_toeplitz"] == True:
+    print("we will use the toeplitz approximation")
+    l_exact, l_band, l_toep = 800, 2000, 2750
+else:
+    l_exact, l_band, l_toep = None, None, None
 
 print("number of covariance matrices to compute : %s" % ncovs)
 so_mpi.init(True)
@@ -101,20 +106,23 @@ for task in subtasks:
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
     print("cov element (%s x %s, %s x %s)" % (na_r, nb_r, nc_r, nd_r))
+    
+    
+    
+    
     win = {}
+    win["Ta"] = so_map.read_map("%s/window_T_%s.fits"%(windows_dir, na_r))
+    win["Tb"] = so_map.read_map("%s/window_T_%s.fits"%(windows_dir, nb_r))
+    win["Tc"] = so_map.read_map("%s/window_T_%s.fits"%(windows_dir, nc_r))
+    win["Td"] = so_map.read_map("%s/window_T_%s.fits"%(windows_dir, nd_r))
+    win["Pa"] = so_map.read_map("%s/window_pol_%s.fits"%(windows_dir, na_r))
+    win["Pb"] = so_map.read_map("%s/window_pol_%s.fits"%(windows_dir, nb_r))
+    win["Pc"] = so_map.read_map("%s/window_pol_%s.fits"%(windows_dir, nc_r))
+    win["Pd"] = so_map.read_map("%s/window_pol_%s.fits"%(windows_dir, nd_r))
+    coupling = so_cov.cov_coupling_spin0and2_simple(win, lmax, niter=niter, l_exact=l_exact, l_band=l_band, l_toep=l_toep)
     
-    win["Ta"] = so_map.read_map(d["window_T_%s" % (na_r)])
-    win["Tb"] = so_map.read_map(d["window_T_%s" % (nb_r)])
-    win["Tc"] = so_map.read_map(d["window_T_%s" % (nc_r)])
-    win["Td"] = so_map.read_map(d["window_T_%s" % (nd_r)])
     
-    win["Pa"] = so_map.read_map(d["window_pol_%s" % (na_r)])
-    win["Pb"] = so_map.read_map(d["window_pol_%s" % (nb_r)])
-    win["Pc"] = so_map.read_map(d["window_pol_%s" % (nc_r)])
-    win["Pd"] = so_map.read_map(d["window_pol_%s" % (nd_r)])
-
-
-    coupling = so_cov.cov_coupling_spin0and2_simple(win, lmax, niter=niter)
+    
     
     try:
         mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, na_r, nb_r), spin_pairs=spin_pairs)

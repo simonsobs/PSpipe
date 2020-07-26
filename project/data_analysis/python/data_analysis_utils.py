@@ -18,8 +18,6 @@ def fill_sym_mat(mat):
     """
     return mat + mat.T - np.diag(mat.diagonal())
 
-
-
 def get_nspec(dict):
 
     surveys = dict["surveys"]
@@ -438,8 +436,6 @@ def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):
     """doc not ready yet
     """
     
-    import time
-    t = time.time()
     sv_alpha, ar_alpha = alpha.split("&")
     sv_beta, ar_beta = beta.split("&")
     sv_gamma, ar_gamma = gamma.split("&")
@@ -451,9 +447,7 @@ def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):
     chi += Dl[alpha, gamma, RX] * DNl[beta, eta, SY] * f(sv_beta, sv_eta, sv_alpha, sv_gamma, ns)
     chi += Dl[beta, eta, SY] * DNl[alpha, gamma, RX] * f(sv_alpha, sv_gamma, sv_beta, sv_eta, ns)
     chi += g(sv_alpha, sv_gamma, sv_beta, sv_eta, ns) * DNl[alpha, gamma, RX] * DNl[beta, eta, SY]
-    print(time.time()-t)
     chi= symm_power(chi, mode="arithm")
-    print(time.time()-t)
 
     return chi
 

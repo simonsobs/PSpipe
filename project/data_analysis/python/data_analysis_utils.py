@@ -298,14 +298,11 @@ def fast_cov_coupling(sq_win_alms_dir,
     except:
         alm_TbTc = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, nc_r, nb_r))
 
-    print(alm_TaTc)
-    print(alm_TaTc.shape)
     wcl = {}
     wcl["TaTcTbTd"] = hp.alm2cl(alm_TaTc, alm_TbTd)
     wcl["TaTdTbTc"] = hp.alm2cl(alm_TaTd, alm_TbTc)
+    
     l = np.arange(len(wcl["TaTcTbTd"]))
-    print(wcl["TaTcTbTd"])
-    print(l)
     wcl["TaTcTbTd"] *= (2 * l + 1) / (4 * np.pi)
     wcl["TaTdTbTc"] *= (2 * l + 1) / (4 * np.pi)
 
@@ -323,7 +320,7 @@ def fast_cov_coupling(sq_win_alms_dir,
 
     list1 = ["TaTcTbTd", "PaPcPbPd", "TaTcPbPd", "PaPcTbTd",
              "TaPcTbPd", "TaTcTbPd", "TaPcTbTd", "TaPcPbTd",
-             "TaPcPbPd", "PaPcTbPd"  "TaTcPbTd", "PaTcTbTd",
+             "TaPcPbPd", "PaPcTbPd", "TaTcPbTd", "PaTcTbTd",
              "PaTcPbTd", "PaTcTbPd", "PaTcPbPd", "PaPcPbTd"]
             
     list2 = ["TaTdTbTc", "PaPdPbPc", "TaPdPbTc", "PaTdTbPc",

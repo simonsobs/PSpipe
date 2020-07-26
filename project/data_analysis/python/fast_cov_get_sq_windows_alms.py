@@ -11,11 +11,11 @@ d.read_from_file(sys.argv[1])
 surveys = d["surveys"]
 lmax = d["lmax"]
 niter = d["niter"]
-win_spec_dir = "win_spectra"
+sq_win_alms_dir = "sq_win_alms"
 
 pspy_utils.create_directory(win_spec_dir)
 
-na_list, nb_list, nc_list, nd_list, spec_name_list = [], [], [], [], []
+na_list, nb_list, nc_list, nd_list = [], [], [], []
 n_alms = 0
 for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]
@@ -31,9 +31,6 @@ for id_sv1, sv1 in enumerate(surveys):
                 nc_list += [sv2]
                 nd_list += [ar2]
                 n_alms += 1
-                
-                spec_name = "%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)
-                spec_name_list += [spec_name]
 
 print("number of sq win alms to compute : %s" % n_alms)
 so_mpi.init(True)
@@ -42,13 +39,13 @@ print(subtasks)
 for task in subtasks:
     task = int(task)
     sv1, ar1, sv2, ar2 = na_list[task], nb_list[task], nc_list[task], nd_list[task]
-    spec_name = "%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)
 
     win_T1 = so_map.read_map(d["window_T_%s_%s" % (sv1, ar1)])
     win_T2 = so_map.read_map(d["window_T_%s_%s" % (sv2, ar2)])
 
     sq_win = win_T1.copy()
     sq_win.data[:] *= win_T2.data[:]
-    alm_sqwin = sph_tools.map2alm(sq_win, niter=niter, lmax=lmax)
-    np.save("%s/alms_%s.npy" % (win_spec_dir, spec_name), alm_sqwin)
+    sqwin_alm = sph_tools.map2alm(sq_win, niter=niter, lmax=lmax)
+    
+    np.save("%s/alms_%s_%sx%s_%s.npy" % (sq_win_alms_dir, sv1, ar1, sv2, ar2), sqwin_alm)
 

@@ -4,6 +4,9 @@ Some utility functions for the data analysis project.
 import numpy as np, healpy as hp, pylab as plt
 from pixell import curvedsky
 from pspy import pspy_utils, so_cov, so_spectra
+from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
+from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
+
 
 def fill_sym_mat(mat):
     """Make a upper diagonal or lower diagonal matrix symmetric

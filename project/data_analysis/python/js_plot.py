@@ -110,7 +110,7 @@ for id_sv1, sv1 in enumerate(surveys):
                         plt.semilogy()
                         
                     if spec in ["TT", "TE", "ET", "EE"]:
-                        plt.plot(ell, Cl[spec,"%sx%s"%(f1,f2)], label="Choi wide")
+                        plt.plot(ell, Cl[spec,"%sx%s"%(f1,f2)]*ell**2/(2*np.pi), label="Choi wide")
                     plt.errorbar(lb, Db[spec], std, fmt=".", label=combin)
                     plt.legend()
                     plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)

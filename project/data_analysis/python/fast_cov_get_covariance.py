@@ -4,7 +4,7 @@ This script compute the analytical covariance matrix elements.
 from pspy import pspy_utils, so_dict, so_map, so_mpi, so_mcm, so_spectra, so_cov
 import numpy as np
 import data_analysis_utils
-import sys
+import sys, time
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -103,7 +103,7 @@ subtasks = so_mpi.taskrange(imin=0, imax=ncovs - 1)
 print(subtasks)
 for task in subtasks:
     task = int(task)
-    
+    t=time.time()
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
     print("cov element (%s x %s, %s x %s)" % (na_r, nb_r, nc_r, nd_r))
@@ -140,5 +140,5 @@ for task in subtasks:
                                                           mbb_inv_cd)
                                                           
     np.save("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, na_r, nb_r, nc_r, nd_r), analytic_cov)
-
+    print(time.time()-t)
 

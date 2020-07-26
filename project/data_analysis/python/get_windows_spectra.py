@@ -50,7 +50,7 @@ for task in subtasks:
     sq_win = win_T1.copy()
     sq_win.data[:] *= win_T2.data[:]
     alm_sqwin = sph_tools.map2alm(sq_win, niter=niter, lmax=lmax)
-    np.save("%s/alms_%s.npy" % (win_spec_dir, spec_name))
+    np.save("%s/alms_%s.npy" % (win_spec_dir, spec_name), alm_sqwin)
 
 for spec_name1 in spec_name_list:
     for spec_name2 in spec_name_list:

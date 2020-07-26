@@ -297,8 +297,8 @@ def fast_cov_coupling(sq_win_alms_dir,
 
 
     wcl = {}
-    wcl["TaTcTbTd"] = so_spectra.get_spectra_pixell(alm_TaTc, alm_TbTd)
-    wcl["TaTdTbTc"] = so_spectra.get_spectra_pixell(alm_TaTd, alm_TbTc)
+    wcl["TaTcTbTd"] = hp.alm2cl(alm_TaTc, alm_TbTd)
+    wcl["TaTdTbTc"] = hp.alm2cl(alm_TaTd, alm_TbTc)
     l = np.arange(len(wcl["TaTcTbTd"]))
     
     wcl["TaTcTbTd"] *= (2 * l + 1) / (4 * np.pi)

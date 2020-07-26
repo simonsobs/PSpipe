@@ -1,7 +1,7 @@
 """
 This script compute all power spectra of squared windows, it's a necessary step of covariance computation.
 """
-from pspy import so_dict, so_map, sph_tools, so_spectra
+from pspy import so_dict, so_map, sph_tools, so_spectra, pspy_utils
 import numpy as np
 import sys
 

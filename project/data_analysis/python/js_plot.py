@@ -45,13 +45,13 @@ _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 
 Cl = {}
 
-for spec in ["TT","TE","ET","EE"]:
+for spec in ["TT", "TE", "ET", "EE"]:
     if spec=="TT" or spec=="EE":
-        ell, Cl[spec, "090x090"], _, Cl[spec,"090x150"], _, Cl[spec,"150x150"], _ = np.loadtxt("%s/act_dr4.01_multifreq_wide_C_ell_%s.txt" % (choi_dir, spec))
+        ell, Cl[spec, "090x090"], _, Cl[spec,"090x150"], _, Cl[spec,"150x150"], _ = np.loadtxt("%s/act_dr4.01_multifreq_wide_C_ell_%s.txt" % (choi_dir, spec), unpack=True)
+        Cl[spec, "150x090"] = Cl[spec,"090x150"]
     if spec == "TE" or spec=="ET":
-        ell, Cl[spec, "090x090"], _, Cl[spec,"090x150"], _, Cl[spec,"150x090"], _,  Cl[spec,"150x150"], _ = np.loadtxt("multifreq_spectra_dr4.01/act_dr4.01_multifreq_wide_C_ell_TE.txt")
+        ell, Cl[spec, "090x090"], _, Cl[spec,"090x150"], _, Cl[spec,"150x090"], _,  Cl[spec,"150x150"], _ = np.loadtxt("multifreq_spectra_dr4.01/act_dr4.01_multifreq_wide_C_ell_TE.txt", unpack=True)
 
-    Cl[spec, "150x090"] = Cl[spec,"090x150"]
     Cl[spec, "220x220"] = ell * 0
     Cl[spec, "090x220"] = ell * 0
     Cl[spec, "220x090"] = ell * 0

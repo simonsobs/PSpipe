@@ -47,16 +47,16 @@ Cl = {}
 
 for spec in ["TT", "TE", "ET", "EE"]:
     if spec=="TT" or spec=="EE":
-        ell, Cl[spec, "090x090"], _, Cl[spec,"090x150"], _, Cl[spec,"150x150"], _ = np.loadtxt("%s/act_dr4.01_multifreq_wide_C_ell_%s.txt" % (choi_dir, spec), unpack=True)
-        Cl[spec, "150x090"] = Cl[spec,"090x150"]
+        ell, Cl[spec, "f090xf090"], _, Cl[spec,"f090xf150"], _, Cl[spec,"f150xf150"], _ = np.loadtxt("%s/act_dr4.01_multifreq_wide_C_ell_%s.txt" % (choi_dir, spec), unpack=True)
+        Cl[spec, "f150xf090"] = Cl[spec,"f090xf150"]
     if spec == "TE" or spec=="ET":
-        ell, Cl[spec, "090x090"], _, Cl[spec,"090x150"], _, Cl[spec,"150x090"], _,  Cl[spec,"150x150"], _ = np.loadtxt("multifreq_spectra_dr4.01/act_dr4.01_multifreq_wide_C_ell_TE.txt", unpack=True)
+        ell, Cl[spec, "f090xf090"], _, Cl[spec,"f090xf150"], _, Cl[spec,"f150xf090"], _,  Cl[spec,"f150xf150"], _ = np.loadtxt("multifreq_spectra_dr4.01/act_dr4.01_multifreq_wide_C_ell_TE.txt", unpack=True)
 
-    Cl[spec, "220x220"] = ell * 0
-    Cl[spec, "090x220"] = ell * 0
-    Cl[spec, "220x090"] = ell * 0
-    Cl[spec, "150x220"] = ell * 0
-    Cl[spec, "220x150"] = ell * 0
+    Cl[spec, "f220xf220"] = ell * 0
+    Cl[spec, "f090xf220"] = ell * 0
+    Cl[spec, "f220xf090"] = ell * 0
+    Cl[spec, "f150xf220"] = ell * 0
+    Cl[spec, "f220xf150"] = ell * 0
 
 
 for id_sv1, sv1 in enumerate(surveys):

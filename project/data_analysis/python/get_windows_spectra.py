@@ -15,7 +15,7 @@ win_spec_dir = "win_spectra"
 
 pspy_utils.create_directory(win_spec_dir)
 
-na_list, nb_list, nc_list, nd_list = [], [], [], []
+na_list, nb_list, nc_list, nd_list, spec_name_list = [], [], [], [], []
 n_alms = 0
 for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]

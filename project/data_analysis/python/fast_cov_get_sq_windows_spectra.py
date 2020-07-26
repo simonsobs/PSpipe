@@ -29,6 +29,7 @@ for id_sv1, sv1 in enumerate(surveys):
 for sid1, spec_name1 in enumerate(spec_name_list):
     for sid2, spec_name2 in enumerate(spec_name_list):
         if sid1 > sid2: continue
+        print(spec_name1, spec_name2)
         alm1 = np.load("%s/alms_%s.npy" % (win_spec_dir, spec_name1))
         alm2 = np.load("%s/alms_%s.npy" % (win_spec_dir, spec_name2))
         l, wcl = so_spectra.get_spectra_pixell(alm1, alm2)

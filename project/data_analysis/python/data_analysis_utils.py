@@ -346,10 +346,14 @@ def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, m
     nbins = len(bin_hi)
     analytic_cov = np.zeros((4*nbins, 4*nbins))
 
+    import time
+    t=time.time()
     # TaTbTcTd
     M_00 = coupling["TaTcTbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTTT")
     M_00 += coupling["TaTdTbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTTT")
+    print(time.time()-t)
     analytic_cov[0*nbins:1*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_00, binning_file, lmax)
+    print(time.time()-t)
 
     # TaEbTcEd
     M_11 = coupling["TaTcPbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTEE")

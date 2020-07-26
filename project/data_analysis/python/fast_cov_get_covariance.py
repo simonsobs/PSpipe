@@ -142,5 +142,6 @@ for task in subtasks:
     print(time.time()-t)
 
     np.save("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, na_r, nb_r, nc_r, nd_r), analytic_cov)
+    
     print(time.time()-t)
 

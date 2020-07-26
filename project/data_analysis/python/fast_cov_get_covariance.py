@@ -118,7 +118,7 @@ for task in subtasks:
                                                      l_band=l_band,
                                                      l_toep=l_toep)
     
-    
+    print(time.time()-t)
     try:
         mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, na_r, nb_r), spin_pairs=spin_pairs)
     except:
@@ -129,6 +129,7 @@ for task in subtasks:
     except:
         mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nd_r, nc_r), spin_pairs=spin_pairs)
 
+    print(time.time()-t)
 
     analytic_cov = data_analysis_utils.covariance_element(coupling,
                                                           [na, nb, nc, nd],
@@ -138,7 +139,8 @@ for task in subtasks:
                                                           binning_file,
                                                           mbb_inv_ab,
                                                           mbb_inv_cd)
-                                                          
+    print(time.time()-t)
+
     np.save("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, na_r, nb_r, nc_r, nd_r), analytic_cov)
     print(time.time()-t)
 

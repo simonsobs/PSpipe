@@ -15,6 +15,7 @@ spectra_dir = "spectra"
 ps_model_dir = "noise_model"
 cov_dir = "covariances"
 bestfit_dir = "best_fits"
+sq_win_alms_dir = "sq_win_alms"
 
 pspy_utils.create_directory(cov_dir)
 

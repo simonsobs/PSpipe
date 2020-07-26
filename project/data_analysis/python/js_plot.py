@@ -111,7 +111,7 @@ for id_sv1, sv1 in enumerate(surveys):
                         
                     if spec in ["TT", "TE", "ET", "EE"]:
                         plt.plot(ell, Cl[spec,"%sx%s"%(f1,f2)], label="Choi wide")
-                    plt.errorbar(l, Db[spec], std, fmt=".", label=combin)
+                    plt.errorbar(lb, Db[spec], std, fmt=".", label=combin)
                     plt.legend()
                     plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)
                     plt.xlabel(r"$\ell$", fontsize=20)

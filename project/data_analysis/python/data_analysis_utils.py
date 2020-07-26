@@ -258,6 +258,82 @@ def is_symmetric(mat, tol=1e-8):
 
 def is_pos_def(mat):
     return np.all(np.linalg.eigvals(mat) > 0)
+    
+    
+    
+def fast_cov_coupling(sq_win_alms_dir,
+                      na_r,
+                      nb_r,
+                      nc_r,
+                      nd_r,
+                      lmax,
+                      l_exact=None,
+                      l_band=None,
+                      l_toep=None):
+
+    if l_toep is None: l_toep = lmax
+    if l_band is None: l_band = lmax
+    if l_exact is None: l_exact = lmax
+    
+    try:
+        alm_TaTc = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, na_r, nc_r))
+    except:
+        alm_TaTc = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, nc_r, na_r))
+
+    try:
+        alm_TbTd = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, nb_r, nd_r))
+    except:
+        alm_TbTd = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, nd_r, nb_r))
+
+    try:
+        alm_TaTd = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, na_r, nd_r))
+    except:
+        alm_TaTd = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, nd_r, na_r))
+
+    try:
+        alm_TbTc = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, nb_r, nc_r))
+    except:
+        alm_TbTc = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, nc_r, nb_r))
+
+
+    wcl = {}
+    wcl["TaTcTbTd"] = so_spectra.get_spectra_pixell(alm_TaTc, alm_TbTd)
+    wcl["TaTdTbTc"] = so_spectra.get_spectra_pixell(alm_TaTd, alm_TbTc)
+    l = np.arange(len(wcl["TaTcTbTd"]))
+    
+    wcl["TaTcTbTd"] *= (2 * l + 1) / (4 * np.pi)
+    wcl["TaTdTbTc"] *= (2 * l + 1) / (4 * np.pi)
+
+    coupling = np.zeros((2, lmax, lmax))
+     
+    cov_fortran.calc_cov_spin0(wcl["TaTcTbTd"], wcl["TaTdTbTc"], l_exact, l_band, l_toep,  coupling.T)
+     
+    coupling_dict = {}
+
+    for id_cov, name in enumerate(["TaTcTbTd", "TaTdTbTc"]):
+        if l_toep < lmax:
+            coupling[id_cov] = so_mcm.format_toepliz_fortran(coupling[id_cov], l_toep, lmax)
+        mcm_fortran.fill_upper(coupling[id_cov].T)
+        coupling_dict[name] = coupling[id_cov]
+
+    list1 = ["TaTcTbTd", "PaPcPbPd", "TaTcPbPd", "PaPcTbTd",
+             "TaPcTbPd", "TaTcTbPd", "TaPcTbTd", "TaPcPbTd",
+             "TaPcPbPd", "PaPcTbPd"  "TaTcPbTd", "PaTcTbTd",
+             "PaTcPbTd", "PaTcTbPd", "PaTcPbPd", "PaPcPbTd"]
+            
+    list2 = ["TaTdTbTc", "PaPdPbPc", "TaPdPbTc", "PaTdTbPc",
+             "TaPdTbPc", "TaPdTbTc", "TaTdTbPc", "TaTdPbPc",
+             "TaPdPbPc", "PaPdTbPc", "TaTdPbTc", "PaTdTbTc",
+             "PaTdPbTc", "PaPdTbTc", "PaPdPbTc", "PaTdPbPc"]
+     
+    for id1 in list1:
+        coupling_dict[id1] = coupling_dict["TaTcTbTd"]
+    for id2 in list2:
+        coupling_dict[id2] = coupling_dict["TaTdTbTc"]
+            
+    return coupling_dict
+
+
 
 def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, mbb_inv_ab, mbb_inv_cd):
     
@@ -494,4 +570,5 @@ def plot_vs_choi(l, cl, error, mc_std, Db, std, plot_dir, combin, spec):
     plt.savefig("%s/frac_%s" % (plot_dir, str), bbox_inches="tight")
     plt.clf()
     plt.close()
-               
+ 
+

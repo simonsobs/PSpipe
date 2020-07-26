@@ -13,7 +13,7 @@ lmax = d["lmax"]
 niter = d["niter"]
 sq_win_alms_dir = "sq_win_alms"
 
-pspy_utils.create_directory(win_spec_dir)
+pspy_utils.create_directory(sq_win_alms_dir)
 
 sv1_list, ar1_list, sv2_list, ar2_list = [], [], [], []
 n_alms = 0

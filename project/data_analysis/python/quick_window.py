@@ -2,13 +2,30 @@ from pspy import so_map, so_window, so_dict, pspy_utils
 import numpy as np
 import sys
 
+def mask_based_on_crosslink(template, xlink_map):
+    xlink = so_map.read_map(xlink_map)
+    xlink = xlink.downgrade(32)
+    x_mask = np.sqrt(xlink.data[1]**2 + xlink.data[2]**2) / xlink.data[0]
+    x_mask[x_mask >= 0.97] = 1
+    x_mask[x_mask < 0.97] = 0
+    x_mask = 1 - x_mask
+    so_x_mask = template.copy()
+    so_x_mask.data = x_mask
+    so_x_mask.upgrade(32)
+    id = np.where(so_x_mask.data[:] > 0.9)
+    so_x_mask.data[:] = 0
+    so_x_mask.data[id] = 1
+    return so_x_mask
+
+
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
-
 
 apod_pts_degree = 0.3
 apod_survey_degree = 2
 skip_from_edges_degree = 1
+cross_link_threshold = 0.97
 
 data_dir = d["data_dir"]
 window_dir = data_dir + "windows"
@@ -29,12 +46,21 @@ for sv in surveys:
         survey_mask.data[:] = 1
         
         maps = d["maps_%s_%s" % (sv, ar)]
+        
         for k, map in enumerate(maps):
             print(map)
             map = so_map.read_map(map)
             survey_mask.data[map.data[0] == 0.] = 0.
             map.info()
-            
+        
+        
+        for k, map in enumerate(maps):
+            index = map.find("map.fits")
+            xlink_map = xlink_map[:index] + "xlink.fits"
+            print(xlink_map)
+            x_mask = mask_based_on_crosslink(mask, xlink_map, cross_link_threshold)
+            survey_mask.data *= x_mask.data
+        
         survey_mask.data *= mask_gal.data
         dist = so_window.get_distance(survey_mask, rmax = apod_survey_degree*np.pi/180)
         survey_mask.data[dist.data < skip_from_edges_degree] = 0

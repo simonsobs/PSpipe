@@ -1,6 +1,6 @@
 from pspy import so_map, so_window, so_dict, pspy_utils
 import numpy as np
-import sys
+import sys, time
 
 def mask_based_on_crosslink(xlink_map, cross_link_threshold):
 
@@ -17,7 +17,6 @@ def mask_based_on_crosslink(xlink_map, cross_link_threshold):
     id = np.where(x_mask > 0.9)
     x_mask[:] = 0
     x_mask[id] = 1
-    print(x_mask.shape)
     return x_mask
 
 
@@ -45,6 +44,7 @@ for sv in surveys:
     
     for ar in arrays:
     
+        t = time.time()
         survey_mask = mask_gal.copy()
         survey_mask.data[:] = 1
         
@@ -54,7 +54,6 @@ for sv in surveys:
             print(map)
             map = so_map.read_map(map)
             survey_mask.data[map.data[0] == 0.] = 0.
-            map.info()
         
         
         for k, map in enumerate(maps):
@@ -75,3 +74,4 @@ for sv in surveys:
         survey_mask = survey_mask.downgrade(4)
         survey_mask.plot(file_name="%s/window_%s_%s" % (window_dir, sv, ar))
 
+        print(time.time()-t)

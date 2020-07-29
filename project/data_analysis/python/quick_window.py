@@ -2,12 +2,12 @@ from pspy import so_map, so_window, so_dict, pspy_utils
 import numpy as np
 import sys
 
-def mask_based_on_crosslink(template, xlink_map):
+def mask_based_on_crosslink(template, xlink_map, cross_link_threshold):
     xlink = so_map.read_map(xlink_map)
     xlink = xlink.downgrade(32)
     x_mask = np.sqrt(xlink.data[1]**2 + xlink.data[2]**2) / xlink.data[0]
-    x_mask[x_mask >= 0.97] = 1
-    x_mask[x_mask < 0.97] = 0
+    x_mask[x_mask >= cross_link_threshold] = 1
+    x_mask[x_mask < cross_link_threshold] = 0
     x_mask = 1 - x_mask
     so_x_mask = template.copy()
     so_x_mask.data = x_mask
@@ -56,7 +56,7 @@ for sv in surveys:
         
         for k, map in enumerate(maps):
             index = map.find("map.fits")
-            xlink_map = xlink_map[:index] + "xlink.fits"
+            xlink_map = map[:index] + "xlink.fits"
             print(xlink_map)
             x_mask = mask_based_on_crosslink(mask, xlink_map, cross_link_threshold)
             survey_mask.data *= x_mask.data

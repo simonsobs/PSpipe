@@ -7,6 +7,7 @@ def mask_based_on_crosslink(xlink_map, cross_link_threshold):
     xlink = so_map.read_map(xlink_map)
     xlink_lowres = xlink.downgrade(32)
     x_mask = np.sqrt(xlink_lowres.data[1]**2 + xlink_lowres.data[2]**2) / xlink_lowres.data[0]
+    x_mask[np.isnan(x_mask)] = 1
     x_mask[x_mask >= cross_link_threshold] = 1
     x_mask[x_mask < cross_link_threshold] = 0
     x_mask = 1 - x_mask

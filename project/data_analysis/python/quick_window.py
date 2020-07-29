@@ -15,7 +15,7 @@ def mask_based_on_crosslink(xlink_map, cross_link_threshold):
     xlink = xlink.upgrade(32)
     x_mask = xlink.data[0].copy()
     id = np.where(x_mask > 0.9)
-    x_mask = 0
+    x_mask[:] = 0
     x_mask[id] = 1
     print(x_mask.shape)
     return x_mask

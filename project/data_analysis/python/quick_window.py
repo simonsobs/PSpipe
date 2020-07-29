@@ -61,7 +61,7 @@ for sv in surveys:
             index = map.find("map.fits")
             xlink_map = map[:index] + "xlink.fits"
             print(xlink_map)
-            x_mask = mask_based_on_crosslink(mask, xlink_map, cross_link_threshold)
+            x_mask = mask_based_on_crosslink(xlink_map, cross_link_threshold)
             survey_mask.data *= x_mask
         
         survey_mask.data *= mask_gal.data

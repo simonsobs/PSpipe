@@ -2,7 +2,8 @@ from pspy import so_map, so_window, so_dict, pspy_utils
 import numpy as np
 import sys
 
-def mask_based_on_crosslink(template, xlink_map, cross_link_threshold):
+def mask_based_on_crosslink(xlink_map, cross_link_threshold):
+
     xlink = so_map.read_map(xlink_map)
     xlink.info()
     xlink = xlink.downgrade(32)
@@ -10,16 +11,14 @@ def mask_based_on_crosslink(template, xlink_map, cross_link_threshold):
     x_mask[x_mask >= cross_link_threshold] = 1
     x_mask[x_mask < cross_link_threshold] = 0
     x_mask = 1 - x_mask
-    so_x_mask = template.copy()
-    so_x_mask = so_x_mask.downgrade(32)
-    so_x_mask.data[:] = x_mask
-    so_x_mask = so_x_mask.upgrade(32)
-    so_x_mask.info()
-    sys.exit()
-    id = np.where(so_x_mask.data[:] > 0.9)
-    so_x_mask.data[:] = 0
-    so_x_mask.data[id] = 1
-    return so_x_mask
+    xlink.data[0] = x_mask
+    xlink = xlink.upgrade(32)
+
+    id = np.where(xlink.data[0, :, :] > 0.9)
+    
+    so_x_mask.data[0, :, :] = 0
+    so_x_mask.data[0, id] = 1
+    return so_x_mask.data[0, :, :]
 
 
 
@@ -63,7 +62,7 @@ for sv in surveys:
             xlink_map = map[:index] + "xlink.fits"
             print(xlink_map)
             x_mask = mask_based_on_crosslink(mask, xlink_map, cross_link_threshold)
-            survey_mask.data *= x_mask.data
+            survey_mask.data *= x_mask
         
         survey_mask.data *= mask_gal.data
         dist = so_window.get_distance(survey_mask, rmax = apod_survey_degree*np.pi/180)

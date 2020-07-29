@@ -22,7 +22,7 @@ else:
     l_exact, l_band, l_toep = None, None, None
 
 
-na_list, nb_list, nc_list, nd_list = [], [], [], []
+sv1_list, ar1_list, sv2_list, ar2_list = [], [], [], []
 n_mcms = 0
 for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]
@@ -33,10 +33,10 @@ for id_sv1, sv1 in enumerate(surveys):
                 # This ensures that we do not repeat redundant computations
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
-                na_list += [sv1]
-                nb_list += [ar1]
-                nc_list += [sv2]
-                nd_list += [ar2]
+                sv1_list += [sv1]
+                ar1_list += [ar1]
+                sv2_list += [sv2]
+                ar2_list += [ar2]
                 n_mcms += 1
                 
 print("number of mcm matrices to compute : %s" % n_mcms)
@@ -45,7 +45,7 @@ subtasks = so_mpi.taskrange(imin=0, imax=n_mcms - 1)
 print(subtasks)
 for task in subtasks:
     task = int(task)
-    sv1, ar1, sv2, ar2 = na_list[task], nb_list[task], nc_list[task], nd_list[task]
+    sv1, ar1, sv2, ar2 = sv1_list[task], ar1_list[task], sv2_list[task], ar2_list[task]
     
     print("%s_%s x %s_%s" % (sv1, ar1, sv2, ar2))
     

@@ -47,7 +47,7 @@ for sv in surveys:
         ar_list += [ar]
         n_wins += 1
 
-print("number of mcm matrices to compute : %s" % n_wins)
+print("number of windows to compute : %s" % n_wins)
 so_mpi.init(True)
 
 subtasks = so_mpi.taskrange(imin=0, imax=n_wins - 1)

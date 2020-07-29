@@ -11,6 +11,7 @@ def mask_based_on_crosslink(template, xlink_map, cross_link_threshold):
     x_mask[x_mask < cross_link_threshold] = 0
     x_mask = 1 - x_mask
     so_x_mask = template.copy()
+    so_x_mask = so_x_mask.downgrade(32)
     so_x_mask.data[:] = x_mask
     so_x_mask = so_x_mask.upgrade(32)
     so_x_mask.info()

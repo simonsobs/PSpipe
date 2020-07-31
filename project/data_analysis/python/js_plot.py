@@ -89,8 +89,7 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                     if spec == "TE":
                         Db["TE"] = (Db["TE"] + Db["ET"])/2
 
-                str = "%s_%s_cross.png" % (spec, combin)
-            
+ 
                 _, f = ar.split("_")
             
                 f_choi = f
@@ -137,8 +136,6 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                     if ar1 == ar2:
                         if spec == "TE":
                             Db["TE"] = (Db["TE"] + Db["ET"])/2
-
-                    str = "%s_%s_%s_cross.png" % (spec_type, spec, combin)
         
                     _, f1 = ar1.split("_")
                     _, f2 = ar2.split("_")

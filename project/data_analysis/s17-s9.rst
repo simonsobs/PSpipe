@@ -6,7 +6,7 @@ Here are some specific instructions to compute spectra for s17-s19 at NERSC.
 Since it is a lot of spectra computation, we are going to make full use of MPI capacities.
 The current dictionnary is called ``global_s171819.dict`` and is given in the ``paramfiles`` folder.
 Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
-Here we give instructions to run the full thing on the interactive nodes, you can of course also submit it to NERSC standard nodes
+Here we give instructions to run the full thing on interactive nodes, you can of course also submit it to NERSC standard nodes
 
 
 

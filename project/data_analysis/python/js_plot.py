@@ -110,10 +110,60 @@ for spec in  ["TT", "ET", "TE", "EE"]:
         plt.clf()
         plt.close()
 
+for spec in  ["TT", "ET", "TE", "EE"]:
+    for spec_type in ["auto", "cross"]:
+        for id_sv, sv in enumerate(surveys):
+            plt.figure(figsize=(16,12))
+            for id_ar1, ar1 in enumerate(arrays_1):
+                for id_ar2, ar2 in enumerate(arrays_2):
+                    if  (id_ar1 > id_ar2) : continue
+                    combin = "%s_%sx%s_%s" % (sv, ar1, sv, ar2)
+                    print("producing plots for : ", combin)
+                    spec_name = "%s_%s_%s" % (type, combin, "cross")
+
+    
+
+                    lb, Db = so_spectra.read_ps("%s/%s.dat" % (specDir, spec_name), spectra=spectra)
+                    cov = np.load("%s/analytic_cov_%s_%s.npy"%(cov_dir, combin, combin))
+
+                    cov_select = so_cov.selectblock(cov,
+                                                    ["TT", "TE", "ET", "EE"],
+                                                    n_bins = len(lb),
+                                                    block=spec+spec)
+                    std = np.sqrt(cov_select.diagonal())
+
+                    if spec == "TE":
+                        Db["TE"] = (Db["TE"] + Db["ET"])/2
+
+                    str = "%s_%s_%s_cross.png" % (spec_type, spec, combin)
+        
+                    _, f1 = ar1.split("_")
+                    _, f2 = ar2.split("_")
+                    
+                    f1_choi = f1
+                    f2_choi = f2
+                    if f1 == "f220":
+                        f1_choi = "f150"
+                    if f2 == "f220":
+                        f2_choi = "f150"
 
 
-
-
+                
+                    if spec == "TT":
+                        plt.semilogy()
+        
+                    plt.errorbar(lb, Db[spec], std, fmt=".", label=combin)
+    
+                    plt.plot(ell, Cl[spec,"%sx%s"%(f1, f2)] * ell**2 / (2*np.pi), color="grey")
+            plt.ylim(ylim[spec][0], ylim[spec][1])
+            plt.legend(fontsize=18)
+            plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)
+            plt.xlabel(r"$\ell$", fontsize=20)
+            plt.savefig("%s/all_%s_%s_%s" % (plot_dir, sv, spec, spec_type), bbox_inches="tight")
+            plt.clf()
+            plt.close()
+    
+    
 
 
 for id_sv1, sv1 in enumerate(surveys):

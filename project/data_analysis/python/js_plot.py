@@ -114,55 +114,52 @@ for spec in  ["TT", "ET", "TE", "EE"]:
         for id_sv, sv in enumerate(surveys):
             arrays = d["arrays_%s" % sv]
             plt.figure(figsize=(16,12))
-            for id_ar1, ar1 in enumerate(arrays):
-                for id_ar2, ar2 in enumerate(arrays):
-                    if  (id_ar1 > id_ar2) : continue
-                    combin = "%s_%sx%s_%s" % (sv, ar1, sv, ar2)
-                    print("producing plots for : ", combin)
-                    spec_name = "%s_%s_%s" % (type, combin, spec_type)
+            for id_ar, ar in enumerate(arrays):
+                combin = "%s_%sx%s_%s" % (sv, ar, sv, ar)
+                print("producing plots for : ", combin)
+                spec_name = "%s_%s_%s" % (type, combin, spec_type)
 
     
 
-                    lb, Db = so_spectra.read_ps("%s/%s.dat" % (specDir, spec_name), spectra=spectra)
-                    if spec_type == "cross":
-                        cov = np.load("%s/analytic_cov_%s_%s.npy"%(cov_dir, combin, combin))
-                        cov_select = so_cov.selectblock(cov,
-                                                        ["TT", "TE", "ET", "EE"],
-                                                        n_bins = len(lb),
-                                                        block=spec+spec)
-                        std = np.sqrt(cov_select.diagonal())
-                    else:
-                        std = None
+                lb, Db = so_spectra.read_ps("%s/%s.dat" % (specDir, spec_name), spectra=spectra)
+                if spec_type == "cross":
+                    cov = np.load("%s/analytic_cov_%s_%s.npy"%(cov_dir, combin, combin))
+                    cov_select = so_cov.selectblock(cov,
+                                                    ["TT", "TE", "ET", "EE"],
+                                                    n_bins = len(lb),
+                                                    block=spec+spec)
+                    std = np.sqrt(cov_select.diagonal())
+                else:
+                    std = None
                     
-                    if ar1 == ar2:
-                        if spec == "TE":
-                            Db["TE"] = (Db["TE"] + Db["ET"])/2
-        
-                    _, f1 = ar1.split("_")
-                    _, f2 = ar2.split("_")
                     
-                    f1_choi = f1
-                    f2_choi = f2
-                    if f1 == "f220":
-                        f1_choi = "f150"
-                    if f2 == "f220":
-                        f2_choi = "f150"
-
-
-                
-                    if spec == "TT":
-                        plt.semilogy()
+                if spec == "TE":
+                    Db["TE"] = (Db["TE"] + Db["ET"])/2
         
-                    plt.errorbar(lb, Db[spec], yerr=std, fmt=".", label=combin)
+                _, f1 = ar1.split("_")
+                _, f2 = ar2.split("_")
+                    
+                f1_choi = f1
+                f2_choi = f2
+                if f1 == "f220":
+                    f1_choi = "f150"
+                if f2 == "f220":
+                    f2_choi = "f150"
+
+                if spec == "TT":
+                    plt.semilogy()
+        
+                plt.errorbar(lb, Db[spec], yerr=std, fmt=".", label=combin)
     
-                    plt.plot(ell, Cl[spec,"%sx%s"%(f1, f2)] * ell**2 / (2*np.pi), color="grey")
-            plt.ylim(ylim[spec][0], ylim[spec][1])
-            plt.legend(fontsize=18)
-            plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)
-            plt.xlabel(r"$\ell$", fontsize=20)
-            plt.savefig("%s/all_%s_%s_%s" % (plot_dir, sv, spec, spec_type), bbox_inches="tight")
-            plt.clf()
-            plt.close()
+                plt.plot(ell, Cl[spec,"%sx%s"%(f1, f2)] * ell**2 / (2*np.pi), color="grey")
+                    
+        plt.ylim(ylim[spec][0], ylim[spec][1])
+        plt.legend(fontsize=18)
+        plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)
+        plt.xlabel(r"$\ell$", fontsize=20)
+        plt.savefig("%s/all_%s_%s_%s" % (plot_dir, sv, spec, spec_type), bbox_inches="tight")
+        plt.clf()
+        plt.close()
     
     
 

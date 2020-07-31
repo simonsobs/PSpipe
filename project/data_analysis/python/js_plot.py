@@ -129,8 +129,10 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                                                     n_bins = len(lb),
                                                     block=spec+spec)
                     std = np.sqrt(cov_select.diagonal())
+                    fmt = "."
                 else:
                     std = None
+                    fmt = "-"
                     
                     
                 if spec == "TE":
@@ -149,7 +151,8 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                 if spec == "TT":
                     plt.semilogy()
         
-                plt.errorbar(lb, Db[spec], yerr=std, fmt=".", label=combin)
+                
+                plt.errorbar(lb, Db[spec], yerr=std, fmt=fmt, label=combin)
     
                 plt.plot(ell, Cl[spec,"%sx%s"%(f1, f2)] * ell**2 / (2*np.pi), color="grey")
                     

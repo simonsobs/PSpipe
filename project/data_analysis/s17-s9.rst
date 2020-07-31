@@ -28,6 +28,7 @@ The next step is to precompute the mode coupling matrices associated with these 
 Now we can compute all the power spectra, for this we won't use MPI, simply
 
 .. code:: shell
+
     salloc -N 1 -C haswell -q interactive -t 04:00:00
     python get_spectra.py global_s171819.dict
 
@@ -36,6 +37,7 @@ This step in the pipeline will also be used at some point to compute power spect
 Finally, we need to compute the associated covariances of all these spectra, for this we need some model for the signal and noise power spectra
 
 .. code:: shell
+
     salloc -N 1 -C haswell -q interactive -t 04:00:00
     python get_best_fit.py global_s171819.dict
     python get_noise_model.py global_s171819.dict
@@ -44,6 +46,7 @@ The computation of the covariance matrices is then divided into two steps, first
 
 
 .. code:: shell
+
     salloc -N 20 -C haswell -q interactive -t 01:00:00
     srun -n 20 -c 64 --cpu_bind=cores python fast_cov_get_sq_windows_alms.py global_s171819.dict
 
@@ -52,6 +55,8 @@ The computation of the covariance matrices is then divided into two steps, first
 
 
 We are done ! you can plot the spectra using
+
 .. code:: shell
+
     salloc -N 1 -C haswell -q interactive -t 01:00:00
     python js_plot.py global_s171819.dict

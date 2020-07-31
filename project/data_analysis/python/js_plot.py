@@ -157,7 +157,8 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                     plt.errorbar(lb, Db[spec], yerr=std, fmt=fmt, label=combin, alpha= alpha, color=c)
     
                     plt.plot(ell, Cl[spec,"%sx%s"%(f1, f2)] * ell**2 / (2*np.pi), color="grey")
-            if spec_type == "noise":
+            if (spec_type == "noise") & (spec[0] == spec[1]):
+                print(spec_type, spec[0], spec[1])
                 plt.ylim(ylim[spec][0], ylim[spec][1]*10)
             else:
                 plt.ylim(ylim[spec][0], ylim[spec][1])

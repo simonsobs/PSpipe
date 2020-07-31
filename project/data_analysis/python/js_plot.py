@@ -124,16 +124,19 @@ for spec in  ["TT", "ET", "TE", "EE"]:
     
 
                     lb, Db = so_spectra.read_ps("%s/%s.dat" % (specDir, spec_name), spectra=spectra)
-                    cov = np.load("%s/analytic_cov_%s_%s.npy"%(cov_dir, combin, combin))
-
-                    cov_select = so_cov.selectblock(cov,
-                                                    ["TT", "TE", "ET", "EE"],
-                                                    n_bins = len(lb),
-                                                    block=spec+spec)
-                    std = np.sqrt(cov_select.diagonal())
-
-                    if spec == "TE":
-                        Db["TE"] = (Db["TE"] + Db["ET"])/2
+                    if spec_type == "cross":
+                        cov = np.load("%s/analytic_cov_%s_%s.npy"%(cov_dir, combin, combin))
+                        cov_select = so_cov.selectblock(cov,
+                                                        ["TT", "TE", "ET", "EE"],
+                                                        n_bins = len(lb),
+                                                        block=spec+spec)
+                        std = np.sqrt(cov_select.diagonal())
+                    else:
+                        std = None
+                    
+                    if ar1 == ar2:
+                        if spec == "TE":
+                            Db["TE"] = (Db["TE"] + Db["ET"])/2
 
                     str = "%s_%s_%s_cross.png" % (spec_type, spec, combin)
         
@@ -152,7 +155,7 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                     if spec == "TT":
                         plt.semilogy()
         
-                    plt.errorbar(lb, Db[spec], std, fmt=".", label=combin)
+                    plt.errorbar(lb, Db[spec], yerr=std, fmt=".", label=combin)
     
                     plt.plot(ell, Cl[spec,"%sx%s"%(f1, f2)] * ell**2 / (2*np.pi), color="grey")
             plt.ylim(ylim[spec][0], ylim[spec][1])

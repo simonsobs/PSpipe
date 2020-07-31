@@ -25,7 +25,6 @@ pspy_utils.create_directory(plot_dir)
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 
-
 Cl = {}
 
 for spec in ["TT", "TE", "ET", "EE"]:
@@ -42,11 +41,9 @@ for spec in ["TT", "TE", "ET", "EE"]:
     Cl[spec, "f220xf150"] = Cl[spec,"f150xf150"]
 
 ylim ={}
-
 ylim["TT"] = [10,10**4]
 ylim["TE"] = [-180,180]
 ylim["ET"] = [-180,180]
-
 ylim["EE"] = [-30,100]
 
 
@@ -125,15 +122,20 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                                                         block=spec+spec)
                         std = np.sqrt(cov_select.diagonal())
                         fmt = "."
+                        if spec == "TT":
+                            plt.semilogy()
+
                     else:
                         std = None
                         if ar1 != ar2:
                             alpha = 0.3
                             fmt = "--"
+                        
                         else:
                             fmt = "-"
                             alpha = 1
-
+                        if spec=="TT" or spec =="EE":
+                            plt.semilogy()
         
                     if ar1 == ar2:
                         if spec == "TE":
@@ -149,15 +151,17 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                     if f2 == "f220":
                         f2_choi = "f150"
 
-                    if spec == "TT":
-                        plt.semilogy()
                     
                     c=next(color)
 
                     plt.errorbar(lb, Db[spec], yerr=std, fmt=fmt, label=combin, alpha= alpha, color=c)
     
                     plt.plot(ell, Cl[spec,"%sx%s"%(f1, f2)] * ell**2 / (2*np.pi), color="grey")
-            plt.ylim(ylim[spec][0], ylim[spec][1])
+            if spec_type == "noise":
+                plt.ylim(ylim[spec][0], ylim[spec][1]*10)
+            else:
+                plt.ylim(ylim[spec][0], ylim[spec][1]*10)
+    
             plt.legend(fontsize=12, bbox_to_anchor=(1.05, 1.0))
             plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)
             plt.xlabel(r"$\ell$", fontsize=20)

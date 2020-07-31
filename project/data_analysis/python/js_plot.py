@@ -160,7 +160,7 @@ for spec in  ["TT", "ET", "TE", "EE"]:
             if spec_type == "noise":
                 plt.ylim(ylim[spec][0], ylim[spec][1]*10)
             else:
-                plt.ylim(ylim[spec][0], ylim[spec][1]*10)
+                plt.ylim(ylim[spec][0], ylim[spec][1])
     
             plt.legend(fontsize=12, bbox_to_anchor=(1.05, 1.0))
             plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)

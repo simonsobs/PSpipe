@@ -115,9 +115,8 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                     print("producing plots for : ", combin)
                     spec_name = "%s_%s_%s" % (type, combin, spec_type)
 
-    
-
                     lb, Db = so_spectra.read_ps("%s/%s.dat" % (specDir, spec_name), spectra=spectra)
+                    
                     if spec_type == "cross":
                         cov = np.load("%s/analytic_cov_%s_%s.npy"%(cov_dir, combin, combin))
                         cov_select = so_cov.selectblock(cov,
@@ -128,13 +127,14 @@ for spec in  ["TT", "ET", "TE", "EE"]:
                         fmt = "."
                     else:
                         std = None
-                        fmt = "-"
-                        
-                    if ar1 != ar2:
-                        alpha = 0.4
-                    else:
-                        alpha = 1
-                    
+                        if ar1 != ar2:
+                            alpha = 0.3
+                            fmt = "--"
+                        else:
+                            fmt = "-"
+                            alpha = 1
+
+        
                     if ar1 == ar2:
                         if spec == "TE":
                             Db["TE"] = (Db["TE"] + Db["ET"])/2
@@ -158,7 +158,7 @@ for spec in  ["TT", "ET", "TE", "EE"]:
     
                     plt.plot(ell, Cl[spec,"%sx%s"%(f1, f2)] * ell**2 / (2*np.pi), color="grey")
             plt.ylim(ylim[spec][0], ylim[spec][1])
-            plt.legend(fontsize=12)
+            plt.legend(fontsize=12, bbox_to_anchor=(1.05, 1.0))
             plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)
             plt.xlabel(r"$\ell$", fontsize=20)
             plt.savefig("%s/all_%s_%s_%s" % (plot_dir, sv, spec, spec_type), bbox_inches="tight")

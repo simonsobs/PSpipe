@@ -1,5 +1,5 @@
 **************************
-S17-S19
+Computing S17-S19 spectra
 **************************
 
 Here are some specific instructions to compute spectra for s17-s19 at NERSC.

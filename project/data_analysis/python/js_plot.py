@@ -112,9 +112,10 @@ for spec in  ["TT", "ET", "TE", "EE"]:
 for spec in  ["TT", "ET", "TE", "EE"]:
     for spec_type in ["noise", "cross"]:
         for id_sv, sv in enumerate(surveys):
+            arrays = d["arrays_%s" % sv]
             plt.figure(figsize=(16,12))
-            for id_ar1, ar1 in enumerate(arrays_1):
-                for id_ar2, ar2 in enumerate(arrays_2):
+            for id_ar1, ar1 in enumerate(arrays):
+                for id_ar2, ar2 in enumerate(arrays):
                     if  (id_ar1 > id_ar2) : continue
                     combin = "%s_%sx%s_%s" % (sv, ar1, sv, ar2)
                     print("producing plots for : ", combin)

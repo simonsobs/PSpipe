@@ -1,0 +1,57 @@
+**************************
+S17-S19
+**************************
+
+Here are some specific instructions to compute spectra for s17-s19 at NERSC.
+Since it is a lot of spectra computation, we are going to make full use of MPI capacities.
+The current dictionnary is called global_s171819.dict and is given in the ``paramfiles`` folder.
+Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
+Here we give instructions to run the full thing on the interactive nodes, you can of course also submit it to NERSC standard nodes
+
+
+
+First we need to create all the window functions. In the following we will assume that the window functions  used in temperature and in polarisation are the same, we will create the window based on a the edges of the survey, a galactic mask, a pt source mask and a threshold on the amount of crosslinking in the patch of observation. For n seasons with m dichroic arrays (mx2 frequency maps), we will have N = n x m x 2  window functions.
+
+.. code:: shell
+
+    salloc -N 18 -C haswell -q interactive -t 00:30:00
+    srun -n 18 -c 64 --cpu_bind=cores python quick_window_mpi.py global_s171819.dict
+
+The next step is to precompute the mode coupling matrices associated with these window functions, we have N window function corresponding to each season X array Y data set, we will have to compute all the cross power spectra of the form
+(season X array 1)  x (season Y array 2) there are therefore Ns = N * (N+1)/2 independent spectra to compute
+
+.. code:: shell
+
+    salloc -N 20 -C haswell -q interactive -t 01:00:00
+    srun -n 20 -c 64 --cpu_bind=cores python get_mcm_and_bbl_mpi.py global_s171819.dict
+
+Now we can compute all the power spectra, for this we won't use MPI, simply
+
+.. code:: shell
+    salloc -N 1 -C haswell -q interactive -t 04:00:00
+    python get_spectra.py global_s171819.dict
+
+This step in the pipeline will also be used at some point to compute power spectra of the simulation, the MPI loop will in this case be used on simulation id.
+
+Finally, we need to compute the associated covariances of all these spectra, for this we need some model for the signal and noise power spectra
+
+.. code:: shell
+    salloc -N 1 -C haswell -q interactive -t 04:00:00
+    python get_best_fit.py global_s171819.dict
+    python get_noise_model.py global_s171819.dict
+
+The computation of the covariance matrices is then divided into two steps, first compute all (window1 x window2) alms needed for the covariance computation, then the actual computation, note that there is Ns(Ns+1)/2 covariance matrix block to compute, this is enormous and is therefore the bottleneck of the spectra computation.
+
+
+.. code:: shell
+    salloc -N 20 -C haswell -q interactive -t 01:00:00
+    srun -n 20 -c 64 --cpu_bind=cores python fast_cov_get_sq_windows_alms.py global_s171819.dict
+
+    salloc -N 40 -C haswell -q interactive -t 04:00:00
+    srun -n 40 -c 64 --cpu_bind=cores python fast_cov_get_covariance.py global_s171819.dict
+
+
+We are done ! you can plot the spectra using
+.. code:: shell
+    salloc -N 1 -C haswell -q interactive -t 01:00:00
+    python js_plot.py global_s171819.dict

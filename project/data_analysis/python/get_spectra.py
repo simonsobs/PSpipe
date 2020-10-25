@@ -140,7 +140,9 @@ for id_sv1, sv1 in enumerate(surveys):
                 for spec in spectra:
                     ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
                     spec_name_cross = "%s_%s_%sx%s_%s_cross" % (type, sv1, ar1, sv2, ar2)
-                    
+                    if ar1==ar2 and sv1==sv2:
+                        # Average TE / ET etc because we only calculate s1<s2, but want to include eg 3x2 TE = 2x3 ET in the average
+                        ps_dict_cross_mean[spec] = (np.mean(ps_dict[spec, "cross"], axis=0) + np.mean(ps_dict[spec[::-1], "cross"], axis=0)) / 2.
                     if sv1 == sv2:
                         ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
                         spec_name_auto = "%s_%s_%sx%s_%s_auto" % (type, sv1, ar1, sv2, ar2)

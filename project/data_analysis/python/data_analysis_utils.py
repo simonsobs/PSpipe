@@ -3,10 +3,37 @@ Some utility functions for the data analysis project.
 """
 import numpy as np, healpy as hp, pylab as plt
 from pixell import curvedsky
-from pspy import pspy_utils, so_cov, so_spectra, so_mcm
+from pspy import pspy_utils, so_cov, so_spectra, so_mcm, so_map_preprocessing
 from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 
+
+def get_filtered_map(orig_map, binary, vk_mask, hk_mask):
+
+    """Filter the map in Fourier space removing modes in a horizontal and vertical band
+    defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before
+    doing this operation in order to remove pathological pixels
+    
+    Parameters
+    ---------
+    orig_map: ``so_map``
+        the map to be filtered
+    binary:  ``so_map``
+        a binary mask removing pathological pixels
+    vk_mask: list with 2 elements
+        format is fourier modes [-lx,+lx]
+    hk_mask: list with 2 elements
+        format is fourier modes [-ly,+ly]
+    """
+
+    if orig_map.ncomp == 1:
+        orig_map.data *= binary.data
+    else:
+        for i in range(orig_map.ncomp):
+            orig_map.data[i] *= binary.data
+    filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
+    
+    return filtered_map
 
 def fill_sym_mat(mat):
     """Make a upper diagonal or lower diagonal matrix symmetric

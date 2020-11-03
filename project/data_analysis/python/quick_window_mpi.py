@@ -1,3 +1,9 @@
+# This script create the window functions used in the PS computation
+# They consist of a point source mask, a galactic mask and a mask based on the amount of cross linking in the data
+# The different masks are apodized.
+# We also produce a binary mask that will later be used for the kspace filtering operation, in order to remove the edges and avoid nasty pixels before
+# this not so well defined Fourier operation.
+
 import os
 import sys
 import time
@@ -6,8 +12,8 @@ import numpy as np
 from pspy import pspy_utils, so_dict, so_map, so_mpi, so_window
 
 
-def mask_based_on_crosslink(xlink_map, cross_link_threshold):
-
+def create_crosslink_mask(xlink_map, cross_link_threshold):
+    # remove pixels with very little amount of cross linking
     xlink = so_map.read_map(xlink_map)
     xlink_lowres = xlink.downgrade(32)
     x_mask = np.sqrt(xlink_lowres.data[1] ** 2 + xlink_lowres.data[2] ** 2) / xlink_lowres.data[0]
@@ -27,29 +33,29 @@ def mask_based_on_crosslink(xlink_map, cross_link_threshold):
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-apod_pts_degree = 0.3
-apod_survey_degree = 2
-skip_from_edges_degree = 1
-cross_link_threshold = 0.97
+# the apodisation lenght of the point source mask in degree
+apod_pts_source_degree = d["apod_pts_source_degree"]
+# the apodisation lenght of the survey x gal x cross linking mask
+apod_survey_degree = d["apod_survey_degree"]
+# we will skip the edges of the survey where the noise is very difficult to model
+skip_from_edges_degree = d["skip_from_edges_degree"]
+# the threshold on the amount of cross linking to keep the data in
+cross_link_threshold = d["cross_link_threshold"]
 
 data_dir = d["data_dir"]
 window_dir = os.path.join(data_dir, "windows")
 surveys = d["surveys"]
 
 pspy_utils.create_directory(window_dir)
-# mask = so_map.read_map("%s/masks/act_dr4.01_mask_s13s16_0.100mJy_8.0arcmin.fits" % data_dir)
-mask = so_map.read_map(
-    "%s/masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits" % data_dir
-)
-mask = so_window.create_apodization(mask, "C1", apod_pts_degree, use_rmax=True)
-mask_gal = so_map.read_map(
-    "%s/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits" % data_dir
-)
+ps_mask = so_map.read_map(d["ps_mask"])
+gal_mask = so_map.read_map(d["gal_mask"])
 
 patch = None
 if "patch" in d:
     patch = so_map.read_map(d["patch"])
 
+
+# here we list the different windows that need to be computed, we will then do a MPI loops over this list
 sv_list, ar_list = [], []
 n_wins = 0
 for sv in surveys:
@@ -69,7 +75,7 @@ for task in subtasks:
     task = int(task)
     sv, ar = sv_list[task], ar_list[task]
 
-    survey_mask = mask_gal.copy()
+    survey_mask = gal_mask.copy()
     survey_mask.data[:] = 1
 
     maps = d["maps_%s_%s" % (sv, ar)]
@@ -83,18 +89,35 @@ for task in subtasks:
         index = map.find("map.fits")
         xlink_map = map[:index] + "xlink.fits"
         print(xlink_map)
-        x_mask = mask_based_on_crosslink(xlink_map, cross_link_threshold)
+        x_mask = create_crosslink_mask(xlink_map, cross_link_threshold)
         survey_mask.data *= x_mask
 
-    survey_mask.data *= mask_gal.data
-    dist = so_window.get_distance(survey_mask, rmax=apod_survey_degree * np.pi / 180)
-    survey_mask.data[dist.data < skip_from_edges_degree] = 0
-
+    survey_mask.data *= gal_mask.data
+    
     if patch is not None:
         survey_mask.data *= patch.data
 
+    dist = so_window.get_distance(survey_mask, rmax=apod_survey_degree * np.pi / 180)
+
+    # so here we create a binary mask this will only be used in order to skip the edges before applying the kspace filter
+    # this step is a bit arbitrary and preliminary, more work to be done here
+    
+    binary = survey_mask.copy()
+    binary.data *= ps_mask.data
+    # Note that we don't skip the edges as much for the binary mask
+    # compared to what we will do with the final window, this should prevent some aliasing from the kspace filter to enter the data
+    # We also include the point source mask in the binary, this should not be necessary at the end since point source removal can
+    # happen at the map maker level
+    binary.data[dist.data < skip_from_edges_degree / 2] = 0
+    binary.write_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+    binary = binary.downgrade(4)
+    binary.plot(file_name="%s/binary_%s_%s" % (window_dir, sv, ar))
+
+    # Now we create the final window function that will be used in the analysis
+    survey_mask.data[dist.data < skip_from_edges_degree] = 0
     survey_mask = so_window.create_apodization(survey_mask, "C1", apod_survey_degree, use_rmax=True)
-    survey_mask.data *= mask.data
+    ps_mask = so_window.create_apodization(ps_mask, "C1", apod_pts_source_degree, use_rmax=True)
+    survey_mask.data *= ps_mask.data
 
     survey_mask.write_map("%s/window_%s_%s.fits" % (window_dir, sv, ar))
     survey_mask = survey_mask.downgrade(4)

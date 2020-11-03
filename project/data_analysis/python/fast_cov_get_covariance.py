@@ -32,6 +32,9 @@ nl_all = {}
 spec_name = []
 ns = {}
 
+_, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
+
+
 for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]
     
@@ -106,7 +109,7 @@ for task in subtasks:
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
     print("cov element (%s x %s, %s x %s)" % (na_r, nb_r, nc_r, nd_r))
-    
+        
     coupling = data_analysis_utils.fast_cov_coupling(sq_win_alms_dir,
                                                      na_r,
                                                      nb_r,
@@ -136,7 +139,24 @@ for task in subtasks:
                                                           binning_file,
                                                           mbb_inv_ab,
                                                           mbb_inv_cd)
-
+    
+    # Some heuristic correction for the number of modes lost due to the transfer function
+    # This should be tested against simulation and revisited
+    
+    sva, _ = na.split("&")
+    svb, _ = nb.split("&")
+    svc, _ = nc.split("&")
+    svd, _ = nd.split("&")
+    
+    tf = np.ones(len(lb))
+    for sv in [sva, svb, svc, svd]:
+        if d["tf_%s" % sv] is not None:
+            _, _, sv_tf, _ = np.loadtxt(d["tf_%s" % sv], unpack=True)
+            tf *= sv_tf**(1/4)
+        
+    cov_tf = np.tile(tf, 4)
+    analytic_cov /= np.outer(np.sqrt(cov_tf), np.sqrt(cov_tf))
+    
     np.save("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, na_r, nb_r, nc_r, nd_r), analytic_cov)
     
 

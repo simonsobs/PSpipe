@@ -1,6 +1,11 @@
 """
 This script compute all power spectra and write them to disk.
+It uses the window function provided in the dictionnary file.
+Optionally, it applies a calibration to the maps and a kspace filter.
+The spectra are then combined in mean auto, cross and noise power spectrum and written to disk.
+If write_all_spectra=True, each individual spectrum is written to disk.
 """
+
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra
 import numpy as np
 import sys
@@ -47,12 +52,20 @@ for sv in surveys:
         print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
         t = time.time()
         for k, map in enumerate(maps):
+        
             if win_T.pixel == "CAR":
                 split = so_map.read_map(map, geometry=win_T.data.geometry)
+                if d["use_kspace_filter"]:
+                    print("apply kspace filter on %s" %map)
+                    binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+                    split = data_analysis_utils.get_filtered_map(split,
+                                                                 binary,
+                                                                 vk_mask=d["vk_mask"],
+                                                                 hk_mask=d["hk_mask"])
 
             elif win_T.pixel == "HEALPIX":
                 split = so_map.read_map(map)
-
+                
             split.data *= cal
             if d["remove_mean"] == True:
                 split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
@@ -70,10 +83,10 @@ for id_sv1, sv1 in enumerate(surveys):
     nsplits_1 = nsplit[sv1]
     
     if d["tf_%s" % sv1] is not None:
+        print("will deconvolve tf of %s" %sv1)
         _, _, tf1, _ = np.loadtxt(d["tf_%s" % sv1], unpack=True)
     else:
         tf1 = np.ones(len(lb))
-
 
     for id_ar1, ar1 in enumerate(arrays_1):
     
@@ -82,6 +95,7 @@ for id_sv1, sv1 in enumerate(surveys):
             nsplits_2 = nsplit[sv2]
             
             if d["tf_%s" % sv2] is not None:
+                print("will deconvolve tf of %s" %sv2)
                 _, _, tf2, _ = np.loadtxt(d["tf_%s" % sv2], unpack=True)
             else:
                 tf2 = np.ones(len(lb))
@@ -96,7 +110,6 @@ for id_sv1, sv1 in enumerate(surveys):
                     ps_dict[spec, "auto"] = []
                     ps_dict[spec, "cross"] = []
                 
-                                
                 for s1 in range(nsplits_1):
                     for s2 in range(nsplits_2):
                         if (sv1 == sv2) & (ar1 == ar2) & (s1>s2) : continue
@@ -118,8 +131,10 @@ for id_sv1, sv1 in enumerate(surveys):
                                                         mbb_inv=mbb_inv,
                                                         spectra=spectra)
                                                         
+                        print(ps["TT"])
                         data_analysis_utils.deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax)
-                                                                                
+                        print(ps["TT"])
+
                         if write_all_spectra:
                             so_spectra.write_ps(specDir + "/%s.dat" % spec_name, lb, ps, type, spectra=spectra)
 
@@ -140,9 +155,11 @@ for id_sv1, sv1 in enumerate(surveys):
                 for spec in spectra:
                     ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
                     spec_name_cross = "%s_%s_%sx%s_%s_cross" % (type, sv1, ar1, sv2, ar2)
-                    if ar1==ar2 and sv1==sv2:
-                        # Average TE / ET etc because we only calculate s1<s2, but want to include eg 3x2 TE = 2x3 ET in the average
+                    
+                    if ar1 == ar2 and sv1 == sv2:
+                        # Average TE / ET so that for same array same season TE = ET
                         ps_dict_cross_mean[spec] = (np.mean(ps_dict[spec, "cross"], axis=0) + np.mean(ps_dict[spec[::-1], "cross"], axis=0)) / 2.
+
                     if sv1 == sv2:
                         ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
                         spec_name_auto = "%s_%s_%sx%s_%s_auto" % (type, sv1, ar1, sv2, ar2)

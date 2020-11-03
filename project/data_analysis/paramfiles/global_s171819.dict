@@ -156,3 +156,13 @@ range_EE = [-20, 50]
 #sim
 iStart = 0
 iStop = 99
+
+#window parameters
+
+ps_mask = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+gal_mask = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
+
+apod_pts_source_degree = 0.3
+apod_survey_degree = 2
+skip_from_edges_degree = 1
+cross_link_threshold = 0.97

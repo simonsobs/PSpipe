@@ -43,7 +43,7 @@ skip_from_edges_degree = d["skip_from_edges_degree"]
 cross_link_threshold = d["cross_link_threshold"]
 
 data_dir = d["data_dir"]
-window_dir = os.path.join(data_dir, "windows")
+window_dir = "windows"
 surveys = d["surveys"]
 
 pspy_utils.create_directory(window_dir)

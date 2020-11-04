@@ -4,15 +4,15 @@
 # We also produce a binary mask that will later be used for the kspace filtering operation, in order to remove the edges and avoid nasty pixels before
 # this not so well defined Fourier operation.
 
-import os
 import sys
-import time
 
 import numpy as np
 from pspy import pspy_utils, so_dict, so_map, so_mpi, so_window
 
 
 def create_crosslink_mask(xlink_map, cross_link_threshold):
+    # do not warn when dividing by zero
+    np.seterr(invalid="ignore")
     # remove pixels with very little amount of cross linking
     xlink = so_map.read_map(xlink_map)
     xlink_lowres = xlink.downgrade(32)
@@ -27,6 +27,7 @@ def create_crosslink_mask(xlink_map, cross_link_threshold):
     id = np.where(x_mask > 0.9)
     x_mask[:] = 0
     x_mask[id] = 1
+    np.seterr(invalid="warn")
     return x_mask
 
 
@@ -42,7 +43,6 @@ skip_from_edges_degree = d["skip_from_edges_degree"]
 # the threshold on the amount of cross linking to keep the data in
 cross_link_threshold = d["cross_link_threshold"]
 
-data_dir = d["data_dir"]
 window_dir = "windows"
 surveys = d["surveys"]
 
@@ -93,7 +93,7 @@ for task in subtasks:
         survey_mask.data *= x_mask
 
     survey_mask.data *= gal_mask.data
-    
+
     if patch is not None:
         survey_mask.data *= patch.data
 
@@ -101,7 +101,7 @@ for task in subtasks:
 
     # so here we create a binary mask this will only be used in order to skip the edges before applying the kspace filter
     # this step is a bit arbitrary and preliminary, more work to be done here
-    
+
     binary = survey_mask.copy()
     binary.data *= ps_mask.data
     # Note that we don't skip the edges as much for the binary mask

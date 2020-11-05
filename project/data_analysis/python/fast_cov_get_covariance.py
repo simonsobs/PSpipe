@@ -1,10 +1,11 @@
 """
 This script compute the analytical covariance matrix elements.
 """
-from pspy import pspy_utils, so_dict, so_map, so_mpi, so_mcm, so_spectra, so_cov
-import numpy as np
+import sys
+
 import data_analysis_utils
-import sys, time
+import numpy as np
+from pspy import pspy_utils, so_cov, so_dict, so_map, so_mcm, so_mpi, so_spectra
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -37,14 +38,14 @@ _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 
 for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]
-    
+
     for id_ar1, ar1 in enumerate(arrays_1):
         _, bl1 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv1, ar1)])
         bl1 = bl1[2:lmax + 2]
-        
+
         for id_sv2, sv2 in enumerate(surveys):
             arrays_2 = d["arrays_%s" % sv2]
-            
+
             for id_ar2, ar2 in enumerate(arrays_2):
                 _, bl2 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv2, ar2)])
                 bl2 = bl2[2:lmax + 2]
@@ -55,28 +56,28 @@ for id_sv1, sv1 in enumerate(surveys):
                 if (sv1 == sv2) & (ar1 == ar2):
                     spec_name_noise = "mean_%sx%s_%s_noise" % (ar1, ar2, sv1)
                     _, Nl = so_spectra.read_ps(ps_model_dir + "/%s.dat" % spec_name_noise, spectra=spectra)
-                
+
                 for spec in ["TT", "TE", "ET", "EE"]:
                     name = "%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)
-            
+
                     if spec == "ET":
                         _, ps_th = np.loadtxt("%s/best_fit_%s_%s.dat"%(bestfit_dir, name, "TE"), unpack=True)
                     else:
                         _, ps_th = np.loadtxt("%s/best_fit_%s_%s.dat"%(bestfit_dir, name, spec), unpack=True)
 
-            
+
                     ps_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = bl1 * bl2 * ps_th[:lmax]
-                    
+
                     if (sv1 == sv2) & (ar1 == ar2):
                         ns[sv1] = len(d["maps_%s_%s" % (sv1, ar1)])
 
                         nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = Nl[spec][:lmax] * ns[sv1]
                     else:
                         nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = np.zeros(lmax)
-                    
+
                     ps_all["%s&%s" % (sv2, ar2), "%s&%s"%(sv1, ar1), spec] = ps_all["%s&%s"%(sv1, ar1), "%s&%s"%(sv2, ar2), spec]
                     nl_all["%s&%s" % (sv2, ar2), "%s&%s"%(sv1, ar1), spec] = nl_all["%s&%s"%(sv1, ar1), "%s&%s"%(sv2, ar2), spec]
-                
+
                 spec_name += ["%s&%sx%s&%s" % (sv1, ar1, sv2, ar2)]
 
 na_list, nb_list, nc_list, nd_list = [], [], [], []
@@ -109,7 +110,7 @@ for task in subtasks:
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
     print("cov element (%s x %s, %s x %s)" % (na_r, nb_r, nc_r, nd_r))
-        
+
     coupling = data_analysis_utils.fast_cov_coupling(sq_win_alms_dir,
                                                      na_r,
                                                      nb_r,
@@ -119,7 +120,7 @@ for task in subtasks:
                                                      l_exact=l_exact,
                                                      l_band=l_band,
                                                      l_toep=l_toep)
-    
+
     try:
         mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, na_r, nb_r), spin_pairs=spin_pairs)
     except:
@@ -139,24 +140,22 @@ for task in subtasks:
                                                           binning_file,
                                                           mbb_inv_ab,
                                                           mbb_inv_cd)
-    
+
     # Some heuristic correction for the number of modes lost due to the transfer function
     # This should be tested against simulation and revisited
-    
+
     sva, _ = na.split("&")
     svb, _ = nb.split("&")
     svc, _ = nc.split("&")
     svd, _ = nd.split("&")
-    
+
     tf = np.ones(len(lb))
     for sv in [sva, svb, svc, svd]:
         if d["tf_%s" % sv] is not None:
             _, _, sv_tf, _ = np.loadtxt(d["tf_%s" % sv], unpack=True)
-            tf *= sv_tf**(1/4)
-        
+            tf *= sv_tf[np.where(lb < lmax)]**(1/4)
+
     cov_tf = np.tile(tf, 4)
     analytic_cov /= np.outer(np.sqrt(cov_tf), np.sqrt(cov_tf))
-    
-    np.save("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, na_r, nb_r, nc_r, nd_r), analytic_cov)
-    
 
+    np.save("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, na_r, nb_r, nc_r, nd_r), analytic_cov)

@@ -153,7 +153,7 @@ for task in subtasks:
     for sv in [sva, svb, svc, svd]:
         if d["tf_%s" % sv] is not None:
             _, _, sv_tf, _ = np.loadtxt(d["tf_%s" % sv], unpack=True)
-            tf *= sv_tf[np.where(lb < lmax)]**(1/4)
+            tf *= sv_tf[:len(lb)]**(1/4)
 
     cov_tf = np.tile(tf, 4)
     analytic_cov /= np.outer(np.sqrt(cov_tf), np.sqrt(cov_tf))

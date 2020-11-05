@@ -135,9 +135,6 @@ window_pol_s19_pa6_f090 =  "windows/window_s19_pa6_f090.fits"
 window_pol_s19_pa6_f150 =  "windows/window_s19_pa6_f150.fits"
 
 
-
-theoryfile = data_dir + "cosmo_spectra.dat"
-fgfile = data_dir + "wide_fg.txt"
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
 niter = 0
 remove_mean = False

@@ -14,7 +14,7 @@ surveys = d["surveys"]
 iStart = d["iStart"]
 iStop = d["iStop"]
 lmax = d["lmax"]
-clfile = d["theoryfile"]
+clfile = "./best_fits/lcdm.dat"
 multistep_path = d["multistep_path"]
 
 noise_dir = "noise_model"
@@ -75,7 +75,7 @@ for id_sv1, sv1 in enumerate(surveys):
                             nu_eff_1 = d["nu_eff_%s_%s" % (sv1, ar1)]
                             nu_eff_2 = d["nu_eff_%s_%s" % (sv2, ar2)]
                             
-                            _, flth = np.loadtxt("%s/fg_%sx%s.dat" %(bestfit_dir, nu_eff_1, nu_eff_2), unpack=True)
+                            _, flth = np.loadtxt("%s/fg_%sx%s_TT.dat" %(bestfit_dir, nu_eff_1, nu_eff_2), unpack=True)
                             
                             ps = Dlth[spec] + flth[:lmax]
                     

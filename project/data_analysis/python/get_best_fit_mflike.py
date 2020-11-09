@@ -47,6 +47,8 @@ clth["ET"] = clth["TE"]
 for spec in ["TB", "BT", "EB", "BE" ]:
     clth[spec] = clth["TT"] * 0
     
+ell = np.arange(ell_min, ell_max)
+np.savetxt("%s/lcdm.dat" % bestfit_dir, np.transpose([ell, clth["TT"], clth["EE"], clth["BB"], clth["TE"]]))
     
 # we will now use mflike (and in particular the fg module) to get the best fit foreground model
 # we will only include foreground in tt, note that for now only extragalactic foreground are present
@@ -57,38 +59,28 @@ fg_components =  d["fg_components"]
 components = {"tt": fg_components, "ee": [], "te": []}
 fg_model =  {"normalisation":  fg_norm, "components": components}
 fg_params = d["fg_params"]
-ell = np.arange(ell_min, ell_max)
 fg_dict = mfl.get_foreground_model(fg_params, fg_model, freq_list, ell)
 
-spectra = ["TT", "TE", "EE", "EB", "BE", "BB"]
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 for spec in spectra:
+    cl_th_and_fg = clth[spec]
     plt.figure(figsize=(12,12))
-    for id_sv1, sv1 in enumerate(surveys):
-        arrays_1 = d["arrays_%s" % sv1]
-        for id_ar1, ar1 in enumerate(arrays_1):
-            nu_eff1 = d["nu_eff_%s_%s" % (sv1, ar1)]
-            for id_sv2, sv2 in enumerate(surveys):
-                arrays_2 = d["arrays_%s" % sv2]
-                for id_ar2, ar2 in enumerate(arrays_2):
-                    nu_eff2 = d["nu_eff_%s_%s" % (sv2, ar2)]
-                    if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                    if  (id_sv1 > id_sv2) : continue
-                    
-                    cl_th_and_fg = clth[spec]
-                    if spec == "TT":
-                        plt.semilogy()
-                        cl_th_and_fg = cl_th_and_fg + fg_dict["tt", "all", nu_eff1, nu_eff2]
-                        
-                    name = "%s_%sx%s_%s_%s" % (sv1, ar1, sv2, ar2, spec)
-                    
-                    print(name)
-                    
-                    np.savetxt("%s/best_fit_%s.dat" % (bestfit_dir, name),
-                                np.transpose([ell, cl_th_and_fg]))
+    for freq1 in freq_list:
+        for freq2 in freq_list:
+            name = "%sx%s_%s" % (freq1, freq2, spec)
+
+            if spec == "TT":
+                plt.semilogy()
+                cl_th_and_fg = cl_th_and_fg + fg_dict["tt", "all", freq1, freq2]
+                np.savetxt("%s/fg_%s.dat" % (bestfit_dir, name),
+                                    np.transpose([ell, fg_dict["tt", "all", freq1, freq2]]))
 
                     
-                    plt.plot(ell, cl_th_and_fg, label= "%s %s x %s %s" %(sv1, ar1, sv2, ar2) )
+            np.savetxt("%s/best_fit_%s.dat" % (bestfit_dir, name),
+                                np.transpose([ell, cl_th_and_fg]))
+
+            plt.plot(ell, cl_th_and_fg, label= "%s x %s" %(freq1, freq2) )
     plt.legend()
     plt.savefig("%s/best_fit_%s.png" % (plot_dir, spec))
     plt.clf()

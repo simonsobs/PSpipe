@@ -145,7 +145,7 @@ def get_foreground_matrix(fg_dir, all_freqs, lmax):
         for c2, freq2 in enumerate(all_freqs):
             if c1 > c2 : continue
             
-            l, fl_all = np.loadtxt("%s/fg_%sx%s.dat"%(fg_dir, freq1, freq2), unpack=True)
+            l, fl_all = np.loadtxt("%s/fg_%sx%s_TT.dat"%(fg_dir, freq1, freq2), unpack=True)
             fl_all *=  2 * np.pi / (l * (l + 1))
             
             fl_array[c1, c2, 2:lmax] = fl_all[:lmax-2]

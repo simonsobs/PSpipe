@@ -1,6 +1,6 @@
 """
 This script computes the mode coupling matrices and the binning matrices Bbl
-for the different surveys and arrays
+for the different surveys and arrays.
 """
 
 from pspy import so_map, so_mcm, pspy_utils, so_dict, so_mpi

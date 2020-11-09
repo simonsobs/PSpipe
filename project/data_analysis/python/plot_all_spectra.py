@@ -25,10 +25,12 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]
     for id_ar1, ar1 in enumerate(arrays_1):
-            
+        freq1 = d["nu_eff_%s_%s" % (sv1, ar1)]
+
         for id_sv2, sv2 in enumerate(surveys):
             arrays_2 = d["arrays_%s" % sv2]
             for id_ar2, ar2 in enumerate(arrays_2):
+                freq2 = d["nu_eff_%s_%s" % (sv2, ar2)]
 
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
@@ -54,11 +56,8 @@ for id_sv1, sv1 in enumerate(surveys):
                             if scale == "log":
                                 plt.semilogy()
 
-                            if spec != "ET":
-                                lth, bfth = np.loadtxt("%s/best_fit_%s_%s.dat"%(bestfit_dir, name, spec), unpack=True)
-                            else:
-                                lth, bfth = np.loadtxt("%s/best_fit_%s_%s.dat"%(bestfit_dir, name, "TE"), unpack=True)
-                            
+                            lth, bfth = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, spec), unpack=True)
+
                             plt.plot(lth[:lmax], bfth[:lmax],color="grey")
 
 

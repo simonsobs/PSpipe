@@ -42,6 +42,7 @@ for id_sv1, sv1 in enumerate(surveys):
     for id_ar1, ar1 in enumerate(arrays_1):
         _, bl1 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv1, ar1)])
         bl1 = bl1[2:lmax + 2]
+        freq1 = d["nu_eff_%s_%s" % (sv1, ar1)]
 
         for id_sv2, sv2 in enumerate(surveys):
             arrays_2 = d["arrays_%s" % sv2]
@@ -49,6 +50,8 @@ for id_sv1, sv1 in enumerate(surveys):
             for id_ar2, ar2 in enumerate(arrays_2):
                 _, bl2 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv2, ar2)])
                 bl2 = bl2[2:lmax + 2]
+                freq2 = d["nu_eff_%s_%s" % (sv2, ar2)]
+
 
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
@@ -58,12 +61,9 @@ for id_sv1, sv1 in enumerate(surveys):
                     _, Nl = so_spectra.read_ps(ps_model_dir + "/%s.dat" % spec_name_noise, spectra=spectra)
 
                 for spec in ["TT", "TE", "ET", "EE"]:
-                    name = "%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)
-
-                    if spec == "ET":
-                        _, ps_th = np.loadtxt("%s/best_fit_%s_%s.dat"%(bestfit_dir, name, "TE"), unpack=True)
-                    else:
-                        _, ps_th = np.loadtxt("%s/best_fit_%s_%s.dat"%(bestfit_dir, name, spec), unpack=True)
+                        
+                    name = "%sx%s_%s" % (freq1, freq2, spec)
+                    _, ps_th = np.loadtxt("%s/best_fit_%s.dat"%(bestfit_dir, name), unpack=True)
 
 
                     ps_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = bl1 * bl2 * ps_th[:lmax]

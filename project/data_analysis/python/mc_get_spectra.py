@@ -162,7 +162,7 @@ for iii in subtasks:
                             data_analysis_utils.deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax)
 
                             if write_all_spectra:
-                                so_spectra.write_ps(specDir + "/%s_%03d.dat" % (spec_name,iii), lb, ps, type, spectra=spectra)
+                                so_spectra.write_ps(specDir + "/%s_%05d.dat" % (spec_name,iii), lb, ps, type, spectra=spectra)
 
                             for count, spec in enumerate(spectra):
                                 if (s1 == s2) & (sv1 == sv2):
@@ -180,7 +180,7 @@ for iii in subtasks:
 
                     for spec in spectra:
                         ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
-                        spec_name_cross = "%s_%s_%sx%s_%s_cross_%03d" % (type, sv1, ar1, sv2, ar2, iii)
+                        spec_name_cross = "%s_%s_%sx%s_%s_cross_%05d" % (type, sv1, ar1, sv2, ar2, iii)
                     
                         if ar1 == ar2 and sv1 == sv2:
                             # Average TE / ET so that for same array same season TE = ET
@@ -188,9 +188,9 @@ for iii in subtasks:
 
                         if sv1 == sv2:
                             ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
-                            spec_name_auto = "%s_%s_%sx%s_%s_auto_%03d" % (type, sv1, ar1, sv2, ar2, iii)
+                            spec_name_auto = "%s_%s_%sx%s_%s_auto_%05d" % (type, sv1, ar1, sv2, ar2, iii)
                             ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplit[sv1]
-                            spec_name_noise = "%s_%s_%sx%s_%s_noise_%03d" % (type, sv1, ar1, sv2, ar2, iii)
+                            spec_name_noise = "%s_%s_%sx%s_%s_noise_%05d" % (type, sv1, ar1, sv2, ar2, iii)
 
                     so_spectra.write_ps(specDir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
                 

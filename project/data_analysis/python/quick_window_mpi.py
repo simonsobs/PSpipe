@@ -11,12 +11,13 @@ from pspy import pspy_utils, so_dict, so_map, so_mpi, so_window
 
 
 def create_crosslink_mask(xlink_map, cross_link_threshold):
-    # do not warn when dividing by zero
-    np.seterr(invalid="ignore")
     # remove pixels with very little amount of cross linking
     xlink = so_map.read_map(xlink_map)
     xlink_lowres = xlink.downgrade(32)
-    x_mask = np.sqrt(xlink_lowres.data[1] ** 2 + xlink_lowres.data[2] ** 2) / xlink_lowres.data[0]
+    with np.errstate(invalid="ignore"):
+        x_mask = (
+            np.sqrt(xlink_lowres.data[1] ** 2 + xlink_lowres.data[2] ** 2) / xlink_lowres.data[0]
+        )
     x_mask[np.isnan(x_mask)] = 1
     x_mask[x_mask >= cross_link_threshold] = 1
     x_mask[x_mask < cross_link_threshold] = 0
@@ -27,7 +28,6 @@ def create_crosslink_mask(xlink_map, cross_link_threshold):
     id = np.where(x_mask > 0.9)
     x_mask[:] = 0
     x_mask[id] = 1
-    np.seterr(invalid="warn")
     return x_mask
 
 

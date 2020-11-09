@@ -39,7 +39,7 @@ Finally, we need to compute the associated covariances of all these spectra, for
 .. code:: shell
 
     salloc -N 1 -C haswell -q interactive -t 04:00:00
-    python get_best_fit.py global_s171819.dict
+    python get_best_fit_mflike.py global_s171819.dict
     python get_noise_model.py global_s171819.dict
 
 The computation of the covariance matrices is then divided into two steps, first compute all (window1 x window2) alms needed for the covariance computation, then the actual computation, note that there is Ns(Ns+1)/2 covariance matrix block to compute, this is enormous and is therefore the bottleneck of the spectra computation.

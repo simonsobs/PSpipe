@@ -89,7 +89,6 @@ for iii in subtasks:
             for k, map in enumerate(maps):
         
                 split = sph_tools.alm2map(alms_beamed, template)
-                del alms_beamed
                 if win_T.pixel == "CAR":
                     if d["use_kspace_filter"]:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))

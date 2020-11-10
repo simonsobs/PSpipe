@@ -54,9 +54,22 @@ The computation of the covariance matrices is then divided into two steps, first
     srun -n 40 -c 64 --cpu_bind=cores python fast_cov_get_covariance.py global_s171819.dict
 
 
-We are done ! you can plot the spectra using
+We are done !
+
+We have also implemented a simple simulation pipeline to check if the pipeline produce unbiased spectra and accurate analytical covariance matrices
+to run it
+
+.. code:: shell
+
+    salloc -N 40 -C haswell -q interactive -t 04:00:00
+    srun -n 40 -c 64 --cpu_bind=cores python mc_get_spectra.py global_s171819.dict
+
+then to analyze and plot the simulations
 
 .. code:: shell
 
     salloc -N 1 -C haswell -q interactive -t 01:00:00
-    python js_plot.py global_s171819.dict
+    python mc_analysis.py global_s171819.dict
+    python mc_plot_spectra.py global_s171819.dict
+    python mc_plot_covariances.py global_s171819.dict
+

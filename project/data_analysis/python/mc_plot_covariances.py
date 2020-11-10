@@ -1,3 +1,9 @@
+"""
+This script compare analytical covariances and monte carlo covariances 
+"""
+
+
+
 import matplotlib
 matplotlib.use("Agg")
 from pspy import pspy_utils, so_dict, so_cov

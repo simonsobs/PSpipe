@@ -26,6 +26,7 @@ window_dir = "windows"
 mcm_dir = "mcms"
 specDir = "sim_spectra"
 bestfit_dir = "best_fits"
+ps_model_dir = "noise_model"
 
 pspy_utils.create_directory(specDir)
 
@@ -87,17 +88,17 @@ for iii in subtasks:
         # since we want to allow for array x array noise correlation this is an
         # (narrays, narrays, lmax) matrix
 
-        l, nl_array_t, nl_array_pol = data_analysis_utils.get_noise_matrix_spin0and2(noise_data_dir,
+        l, nl_array_t, nl_array_pol = data_analysis_utils.get_noise_matrix_spin0and2(ps_model_dir,
                                                                                      sv,
                                                                                      arrays,
                                                                                      lmax,
-                                                                                     nsplits)
+                                                                                     nsplits[sv])
                                                                                      
         # we generate noise alms from the matrix, resulting in a (narrays, lm)
 
         nlms = data_analysis_utils.generate_noise_alms(nl_array_t,
                                                        lmax,
-                                                       nsplits,
+                                                       nsplits[sv],
                                                        ncomp,
                                                        nl_array_pol=nl_array_pol)
 

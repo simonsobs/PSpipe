@@ -24,11 +24,11 @@ write_all_spectra = d["write_splits_spectra"]
 
 window_dir = "windows"
 mcm_dir = "mcms"
-specDir = "sim_spectra"
+spec_dir = "sim_spectra"
 bestfit_dir = "best_fits"
 ps_model_dir = "noise_model"
 
-pspy_utils.create_directory(specDir)
+pspy_utils.create_directory(spec_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
@@ -201,7 +201,7 @@ for iii in subtasks:
                             data_analysis_utils.deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax)
 
                             if write_all_spectra:
-                                so_spectra.write_ps(specDir + "/%s_%05d.dat" % (spec_name,iii), lb, ps, type, spectra=spectra)
+                                so_spectra.write_ps(spec_dir + "/%s_%05d.dat" % (spec_name,iii), lb, ps, type, spectra=spectra)
 
                             for count, spec in enumerate(spectra):
                                 if (s1 == s2) & (sv1 == sv2):
@@ -231,10 +231,10 @@ for iii in subtasks:
                             ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplits[sv1]
                             spec_name_noise = "%s_%s_%sx%s_%s_noise_%05d" % (type, sv1, ar1, sv2, ar2, iii)
 
-                    so_spectra.write_ps(specDir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
+                    so_spectra.write_ps(spec_dir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
                 
                     if sv1 == sv2:
-                        so_spectra.write_ps(specDir+"/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)
-                        so_spectra.write_ps(specDir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)
+                        so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)
+                        so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)
 
     print("sim number %05d done in %.02f s" % (iii, time.time()-t0))

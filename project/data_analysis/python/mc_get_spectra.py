@@ -69,8 +69,8 @@ subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 for iii in subtasks:
     t0 = time.time()
  
-    # generate cmb alm and foreground alms
-    # cmb alm will be of shape (3, lm) 3 standing for T,E,B
+    # generate cmb alms and foreground alms
+    # cmb alms will be of shape (3, lm) 3 standing for T,E,B
     # fglms will be of shape (nfreq, lm) and is T only
     
     alms = curvedsky.rand_alm(ps_cmb, lmax=lmax)
@@ -94,8 +94,9 @@ for iii in subtasks:
                                                                                      lmax,
                                                                                      nsplits[sv])
                                                                                      
-        # we generate noise alms from the matrix, resulting in a (narrays, lm)
-
+        # we generate noise alms from the matrix, resulting in a dict with entry ["T,E,B", "0,...nspit-1"]
+        # each element of the dict is a [narrays,lm] array
+        
         nlms = data_analysis_utils.generate_noise_alms(nl_array_t,
                                                        lmax,
                                                        nsplits[sv],

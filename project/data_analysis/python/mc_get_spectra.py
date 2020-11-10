@@ -34,15 +34,13 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
 
-# let's list the differency frequency used in the code
-
+# let's list the different frequencies used in the code
 freq_list = []
 for sv in surveys:
     arrays = d["arrays_%s" % sv]
     for ar in arrays:
         freq_list += [d["nu_eff_%s_%s" % (sv, ar)]]
 freq_list = list(dict.fromkeys(freq_list)) # this list removes doublons
-
 
 id_freq = {}
 # create a list assigning an integer index to each freq (used later in the code to generate fg simulations)
@@ -56,7 +54,6 @@ for count, freq in enumerate(freq_list):
 ncomp = 3
 ps_cmb = powspec.read_spectrum("%s/lcdm.dat" % bestfit_dir)[:ncomp, :ncomp]
 l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lmax)
-
 
 # the template for the simulations
 template = d["maps_%s_%s" % (surveys[0], arrays[0])][0]
@@ -82,7 +79,6 @@ for iii in subtasks:
     for sv in surveys:
         arrays = d["arrays_%s" % sv]
         nsplits[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
-        
         
         # for each sv, we read the mesasured noise power spectrum from the data
         # since we want to allow for array x array noise correlation this is an
@@ -117,7 +113,7 @@ for iii in subtasks:
             l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
             alms_beamed = data_analysis_utils.multiply_alms(alms_beamed, bl, ncomp)
 
-            print("%s split of survey: %s, array %s"%(nsplits[sv], sv, ar))
+            print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
 
             for k in range(nsplits[sv]):
             
@@ -127,12 +123,11 @@ for iii in subtasks:
                 noisy_alms[1] +=  nlms["E",k][ar_id]
                 noisy_alms[2] +=  nlms["B",k][ar_id]
 
-        
                 split = sph_tools.alm2map(noisy_alms, template)
+                
                 # from now on the simulation pipeline is done
                 # and we are back to the get_spectra algorithm
-                
-                
+                                
                 if win_T.pixel == "CAR":
                     if d["use_kspace_filter"]:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
@@ -144,7 +139,6 @@ for iii in subtasks:
                 if d["remove_mean"] == True:
                     split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
-
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
 
     ps_dict = {}

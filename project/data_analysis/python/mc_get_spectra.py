@@ -106,17 +106,15 @@ for iii in subtasks:
 
         for ar_id, ar in enumerate(arrays):
         
-            l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
-
             win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
             win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
-
             window_tuple = (win_T, win_pol)
         
             alms_beamed = alms.copy()
             alms_beamed[0] += fglms[id_freq[d["nu_eff_%s_%s" % (sv, ar)]]]
             
             # we convolve signal + foreground with the beam of the array
+            l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
             alms_beamed = data_analysis_utils.multiply_alms(alms_beamed, bl, ncomp)
 
             print("%s split of survey: %s, array %s"%(nsplits[sv], sv, ar))

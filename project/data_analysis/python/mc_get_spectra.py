@@ -1,7 +1,7 @@
 """
 This script generate simplistic simulations of the actpol data
-it generate gaussian simulations of cmb, fg and noise
-the fg is based on fgspectra, and the noise is the 1d noise power spectra measured on the data
+it generates gaussian simulations of cmb, fg and noise
+the fg is based on fgspectra, and the noise is based on the 1d noise power spectra measured on the data
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
@@ -123,9 +123,9 @@ for iii in subtasks:
             
                 # finally we add the noise alms for each split
                 noisy_alms = alms_beamed.copy()
-                noisy_alms[0] +=  nlms["T",k][fid]
-                noisy_alms[1] +=  nlms["E",k][fid]
-                noisy_alms[2] +=  nlms["B",k][fid]
+                noisy_alms[0] +=  nlms["T",k][ar_id]
+                noisy_alms[1] +=  nlms["E",k][ar_id]
+                noisy_alms[2] +=  nlms["B",k][ar_id]
 
         
                 split = sph_tools.alm2map(noisy_alms, template)

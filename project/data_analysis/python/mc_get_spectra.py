@@ -1,4 +1,7 @@
 """
+This script generate simplistic simulations of the actpol data
+it generate gaussian simulations of cmb, fg and noise
+the fg is based on fgspectra, and the noise is the 1d noise power spectra measured on the data
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
@@ -29,66 +32,107 @@ pspy_utils.create_directory(specDir)
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
+
+# let's list the differency frequency used in the code
+
 freq_list = []
 for sv in surveys:
     arrays = d["arrays_%s" % sv]
     for ar in arrays:
         freq_list += [d["nu_eff_%s_%s" % (sv, ar)]]
+freq_list = list(dict.fromkeys(freq_list)) # this list removes doublons
 
-# remove doublons
-freq_list = list(dict.fromkeys(freq_list))
+
 id_freq = {}
-# create a list assigning an integer index to each freq (used later in the code)
+# create a list assigning an integer index to each freq (used later in the code to generate fg simulations)
 for count, freq in enumerate(freq_list):
     id_freq[freq] = count
     
-
-
-# change ps to read in bestfit dir, left to do is simulate instead of reading maps
+# we read cmb and fg best fit power spectrum
+# we put the best fit power spectrum in a matrix [nfreqs, nfreqs, lmax]
+# taking into account the correlation of the fg between different frequencies
 
 ncomp = 3
 ps_cmb = powspec.read_spectrum("%s/lcdm.dat" % bestfit_dir)[:ncomp, :ncomp]
 l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lmax)
 
-so_mpi.init(True)
-subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 
 # the template for the simulations
 template = d["maps_%s_%s" % (surveys[0], arrays[0])][0]
 template = so_map.read_map(template)
 
+# we will use mpi over the number of simulations
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
+
 for iii in subtasks:
     t0 = time.time()
-
+ 
+    # generate cmb alm and foreground alms
+    # cmb alm will be of shape (3, lm) 3 standing for T,E,B
+    # fglms will be of shape (nfreq, lm) and is T only
+    
     alms = curvedsky.rand_alm(ps_cmb, lmax=lmax)
     fglms = curvedsky.rand_alm(ps_fg, lmax=lmax)
+    
     master_alms = {}
     nsplit = {}
     
     for sv in surveys:
         arrays = d["arrays_%s" % sv]
-        for ar in arrays:
+        nsplit[sv] = len(maps)
+        
+        
+        # for each sv, we read the mesasured noise power spectrum from the data
+        # since we want to allow for array x array noise correlation this is an
+        # (narrays, narrays, lmax) matrix
+
+        l, nl_array_t, nl_array_pol = data_analysis_utils.get_noise_matrix_spin0and2(noise_data_dir,
+                                                                                     sv,
+                                                                                     arrays,
+                                                                                     lmax,
+                                                                                     nsplits)
+                                                                                     
+        # we generate noise alms from the matrix, resulting in a (narrays, lm)
+
+        nlms = data_analysis_utils.generate_noise_alms(nl_array_t,
+                                                       lmax,
+                                                       nsplits,
+                                                       ncomp,
+                                                       nl_array_pol=nl_array_pol)
+
+        for ar_id, ar in enumerate(arrays):
+        
+            l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
+
             win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
             win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
 
             window_tuple = (win_T, win_pol)
         
-            maps = d["maps_%s_%s" % (sv, ar)]
-            nsplit[sv] = len(maps)
-            
-            freq = d["nu_eff_%s_%s" % (sv, ar)]
-
-            l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
-
             alms_beamed = alms.copy()
+            freq = d["nu_eff_%s_%s" % (sv, ar)]
             alms_beamed[0] += fglms[id_freq[freq]]
+            
+            # we convolve signal + foreground with the beam of the array
             alms_beamed = data_analysis_utils.multiply_alms(alms_beamed, bl, ncomp)
 
             print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
-                        
-            for k, map in enumerate(maps):
+
+            for k in range(nsplit[sv]):
+            
+                # finally we add the noise alms for each split
+                noisy_alms = alms_beamed.copy()
+                noisy_alms[0] +=  nlms["T",k][fid]
+                noisy_alms[1] +=  nlms["E",k][fid]
+                noisy_alms[2] +=  nlms["B",k][fid]
+
         
-                split = sph_tools.alm2map(alms_beamed, template)
+                split = sph_tools.alm2map(noisy_alms, template)
+                # from now on the simulation pipeline is done
+                # and we are back to the get_spectra algorithm
+                
+                
                 if win_T.pixel == "CAR":
                     if d["use_kspace_filter"]:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))

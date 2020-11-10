@@ -40,7 +40,7 @@ for sv in surveys:
     arrays = d["arrays_%s" % sv]
     for ar in arrays:
         freq_list += [d["nu_eff_%s_%s" % (sv, ar)]]
-freq_list = list(dict.fromkeys(freq_list)) # this list removes doublons
+freq_list = list(dict.fromkeys(freq_list)) # this bit removes doublons
 
 id_freq = {}
 # create a list assigning an integer index to each freq (used later in the code to generate fg simulations)

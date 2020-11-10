@@ -121,9 +121,9 @@ for iii in subtasks:
             
                 # finally we add the noise alms for each split
                 noisy_alms = alms_beamed.copy()
-                noisy_alms[0] +=  nlms["T",k][ar_id]
-                noisy_alms[1] +=  nlms["E",k][ar_id]
-                noisy_alms[2] +=  nlms["B",k][ar_id]
+                noisy_alms[0] +=  nlms["T", k][ar_id]
+                noisy_alms[1] +=  nlms["E", k][ar_id]
+                noisy_alms[2] +=  nlms["B", k][ar_id]
 
                 split = sph_tools.alm2map(noisy_alms, template)
                 

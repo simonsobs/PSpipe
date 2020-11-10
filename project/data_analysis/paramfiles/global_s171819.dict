@@ -150,9 +150,7 @@ range_TE = [-150, 150]
 range_ET = [-150, 150]
 range_EE = [-20, 50]
 
-#sim
-iStart = 0
-iStop = 99
+
 
 #window parameters
 
@@ -183,3 +181,6 @@ fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components =  ["cibc", "cibp", "kSZ", "radio", "tSZ"]
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "n_CIBC": 1.20,"a_s": 3.10, "T_d": 9.60}
 
+#sim
+iStart = 0
+iStop = 99

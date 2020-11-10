@@ -77,10 +77,11 @@ for iii in subtasks:
     nsplits = {}
     
     for sv in surveys:
+    
         arrays = d["arrays_%s" % sv]
         nsplits[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
         
-        # for each sv, we read the mesasured noise power spectrum from the data
+        # for each survey, we read the mesasured noise power spectrum from the data
         # since we want to allow for array x array noise correlation this is an
         # (narrays, narrays, lmax) matrix
         # the pol noise is taken as the arithmetic mean of E and B noise
@@ -167,7 +168,6 @@ for iii in subtasks:
                     tf2 = np.ones(len(lb))
 
                 for id_ar2, ar2 in enumerate(arrays_2):
-
 
                     if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                     if  (id_sv1 > id_sv2) : continue

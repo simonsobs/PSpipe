@@ -77,11 +77,11 @@ for iii in subtasks:
     fglms = curvedsky.rand_alm(ps_fg, lmax=lmax)
     
     master_alms = {}
-    nsplit = {}
+    nsplits = {}
     
     for sv in surveys:
         arrays = d["arrays_%s" % sv]
-        nsplit[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
+        nsplits[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
         
         
         # for each sv, we read the mesasured noise power spectrum from the data
@@ -117,9 +117,9 @@ for iii in subtasks:
             # we convolve signal + foreground with the beam of the array
             alms_beamed = data_analysis_utils.multiply_alms(alms_beamed, bl, ncomp)
 
-            print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
+            print("%s split of survey: %s, array %s"%(nsplits[sv], sv, ar))
 
-            for k in range(nsplit[sv]):
+            for k in range(nsplits[sv]):
             
                 # finally we add the noise alms for each split
                 noisy_alms = alms_beamed.copy()
@@ -152,7 +152,7 @@ for iii in subtasks:
 
     for id_sv1, sv1 in enumerate(surveys):
         arrays_1 = d["arrays_%s" % sv1]
-        nsplits_1 = nsplit[sv1]
+        nsplits_1 = nsplits[sv1]
     
         if d["tf_%s" % sv1] is not None:
             print("will deconvolve tf of %s" %sv1)
@@ -164,7 +164,7 @@ for iii in subtasks:
     
             for id_sv2, sv2 in enumerate(surveys):
                 arrays_2 = d["arrays_%s" % sv2]
-                nsplits_2 = nsplit[sv2]
+                nsplits_2 = nsplits[sv2]
             
                 if d["tf_%s" % sv2] is not None:
                     print("will deconvolve tf of %s" %sv2)
@@ -233,7 +233,7 @@ for iii in subtasks:
                         if sv1 == sv2:
                             ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
                             spec_name_auto = "%s_%s_%sx%s_%s_auto_%05d" % (type, sv1, ar1, sv2, ar2, iii)
-                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplit[sv1]
+                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplits[sv1]
                             spec_name_noise = "%s_%s_%sx%s_%s_noise_%05d" % (type, sv1, ar1, sv2, ar2, iii)
 
                     so_spectra.write_ps(specDir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)

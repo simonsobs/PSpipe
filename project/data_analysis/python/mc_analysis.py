@@ -30,7 +30,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 # we compute the full covariance matrix of the data
 # for each sim we create two list, vec_list that include all power spectra and vec_list_restricted
 # that includes only the TT,TE,EE spectra (also ET for cases where it is relevant)
-# the mean and covariances of these vectors is written to disc
+# the mean and covariances of these vectors is computed and written to disc
 
 for kind in ["cross", "noise", "auto"]:
     

@@ -1,7 +1,7 @@
 surveys = ["s19"]
 arrays_s19 = ["pa6_f090"]
 
-data_dir = './'
+data_dir = '../data/s171819_product/'
 
 maps_s19_pa6_f090 = [data_dir + 'maps/s19_cmb_pa6_f090_nohwp_night_1pass_4way_set%d_map.fits' % i for i in range(4)]
 

@@ -1,3 +1,9 @@
+"""
+This script plot the mean of the simulation spectra with respect to the input theory
+It is there to catch bias from the pipeline
+"""
+
+
 import matplotlib
 matplotlib.use("Agg")
 from pspy import pspy_utils, so_dict, so_mcm, so_spectra
@@ -14,7 +20,6 @@ surveys = d["surveys"]
 iStart = d["iStart"]
 iStop = d["iStop"]
 lmax = d["lmax"]
-clfile = "./best_fits/lcdm.dat"
 multistep_path = d["multistep_path"]
 
 noise_dir = "noise_model"
@@ -22,6 +27,9 @@ mcm_dir = "mcms"
 plot_dir = "plots/mc_spectra/"
 mc_dir = "montecarlo"
 bestfit_dir = "best_fits"
+
+
+clfile = "%s/lcdm.dat" % bestfit_dir
 
 
 pspy_utils.create_directory(plot_dir)

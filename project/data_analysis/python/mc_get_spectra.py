@@ -107,6 +107,7 @@ for iii in subtasks:
             win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
             window_tuple = (win_T, win_pol)
         
+            # we add fg alms to cmb alms in temperature
             alms_beamed = alms.copy()
             alms_beamed[0] += fglms[id_freq[d["nu_eff_%s_%s" % (sv, ar)]]]
             

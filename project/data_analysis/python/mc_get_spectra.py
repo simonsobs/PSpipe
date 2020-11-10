@@ -80,7 +80,7 @@ for iii in subtasks:
     
     for sv in surveys:
         arrays = d["arrays_%s" % sv]
-        nsplit[sv] = len(maps)
+        nsplit[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
         
         
         # for each sv, we read the mesasured noise power spectrum from the data

@@ -95,7 +95,7 @@ for iii in subtasks:
                                                                                      lmax,
                                                                                      nsplits[sv])
                                                                                      
-        # we generate noise alms from the matrix, resulting in a dict with entry ["T,E,B", "0,...nspit-1"]
+        # we generate noise alms from the matrix, resulting in a dict with entry ["T,E,B", "0,...nsplit-1"]
         # each element of the dict is a [narrays,lm] array
         
         nlms = data_analysis_utils.generate_noise_alms(nl_array_t,

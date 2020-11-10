@@ -111,8 +111,7 @@ for iii in subtasks:
             window_tuple = (win_T, win_pol)
         
             alms_beamed = alms.copy()
-            freq = d["nu_eff_%s_%s" % (sv, ar)]
-            alms_beamed[0] += fglms[id_freq[freq]]
+            alms_beamed[0] += fglms[id_freq[d["nu_eff_%s_%s" % (sv, ar)]]]
             
             # we convolve signal + foreground with the beam of the array
             alms_beamed = data_analysis_utils.multiply_alms(alms_beamed, bl, ncomp)

@@ -87,6 +87,7 @@ for iii in subtasks:
         # for each sv, we read the mesasured noise power spectrum from the data
         # since we want to allow for array x array noise correlation this is an
         # (narrays, narrays, lmax) matrix
+        # the pol noise is taken as the arithmetic mean of E and B noise
 
         l, nl_array_t, nl_array_pol = data_analysis_utils.get_noise_matrix_spin0and2(ps_model_dir,
                                                                                      sv,

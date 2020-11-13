@@ -8,7 +8,7 @@ The current dictionnary is called ``global_s171819.dict`` and is given in the ``
 Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
 Here we give instructions to run the full thing on interactive nodes, you can of course also submit it to NERSC standard nodes
 Note that the instructions are given for running the full data analysis of s17 to s19, if you want to test the pipeline, we recommend starting
-with a subset of the data for example: global_pa6_s19.dict (this will be way faster).
+with a subset of the data for example: ``global_pa6_s19.dict`` (this will be way faster).
 
 
 First we need to create all the window functions. In the following we will assume that the window functions  used in temperature and in polarisation are the same, we will create the windows based on a the edges of the survey, a galactic mask, a pt source mask and a threshold on the amount of crosslinking in the patch of observation. For n seasons with m dichroic arrays (mx2 frequency maps), we will have N = n x m x 2  window functions.

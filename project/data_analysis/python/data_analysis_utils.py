@@ -6,6 +6,36 @@ from pixell import curvedsky
 from pspy import pspy_utils, so_cov, so_spectra, so_mcm, so_map_preprocessing
 from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
+import enmap
+
+def kspace_filter_fast(map, vk_mask=None, hk_mask=None):
+
+    lymap, lxmap = so_map.data.lmap()
+    ly, lx = lymap[:,0], lxmap[0,:]
+
+   # filtered_map = map.copy()
+    ft = enmap.fft(map.data, normalize=False)
+    
+    if vk_mask is not None:
+        id_vk = np.where((lx > vk_mask[0]) & (lx < vk_mask[1]))
+    if hk_mask is not None:
+        id_hk = np.where((ly > hk_mask[0]) & (ly < hk_mask[1]))
+
+    if map.ncomp == 1:
+        if vk_mask is not None:
+            ft.kmap[: , id_vk] = 0.
+        if hk_mask is not None:
+            ft.kmap[id_hk , :] = 0.
+    
+    if map.ncomp == 3:
+        for i in range(3):
+            if vk_mask is not None:
+                ft.kmap[i, : , id_vk] = 0.
+            if hk_mask is not None:
+                ft.kmap[i, id_hk , :] = 0.
+
+    map.data[:] = enmap.ifft(ft, normalize=False)
+    return filtered_map
 
 
 def get_filtered_map(orig_map, binary, vk_mask, hk_mask):
@@ -185,12 +215,12 @@ def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None):
     """This function generates the alms corresponding to the noise power spectra matrices
     nl_array_t, nl_array_pol. The function returns a dictionnary nlms["T", i].
     The entry of the dictionnary are for example nlms["T", i] where i is the index of the split.
-    note that nlms["T", i] is a (nfreqs, size(alm)) array, it is the harmonic transform of
+    note that nlms["T", i] is a (narrays, size(alm)) array, it is the harmonic transform of
     the noise realisation for the different frequencies.
     
     Parameters
     ----------
-    nl_array_t : 3d array [nfreq, nfreq, lmax]
+    nl_array_t : 3d array [narrays, narrays, lmax]
       noise power spectra matrix for temperature data
     
     lmax : integer
@@ -201,7 +231,7 @@ def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None):
       the number of components
       ncomp = 3 if T,Q,U
       ncomp = 1 if T only
-    nl_array_pol : 3d array [nfreq, nfreq, lmax]
+    nl_array_pol : 3d array [narrays, narrays, lmax]
       noise power spectra matrix for polarisation data
       (in use if ncomp==3)
     """

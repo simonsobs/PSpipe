@@ -35,7 +35,7 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None):
                 ft[i, id_hk , :] = 0.
 
     map.data[:] = enmap.ifft(ft, normalize=False)
-    return filtered_map
+    return map
 
 
 def get_filtered_map(orig_map, binary, vk_mask, hk_mask):

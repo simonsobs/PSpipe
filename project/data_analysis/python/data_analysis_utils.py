@@ -6,7 +6,7 @@ from pixell import curvedsky
 from pspy import pspy_utils, so_cov, so_spectra, so_mcm, so_map_preprocessing
 from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
-import enmap
+from pixell import enmap
 
 def kspace_filter_fast(map, vk_mask=None, hk_mask=None):
 
@@ -23,16 +23,16 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None):
 
     if map.ncomp == 1:
         if vk_mask is not None:
-            ft.kmap[: , id_vk] = 0.
+            ft[: , id_vk] = 0.
         if hk_mask is not None:
-            ft.kmap[id_hk , :] = 0.
+            ft[id_hk , :] = 0.
     
     if map.ncomp == 3:
         for i in range(3):
             if vk_mask is not None:
-                ft.kmap[i, : , id_vk] = 0.
+                ft[i, : , id_vk] = 0.
             if hk_mask is not None:
-                ft.kmap[i, id_hk , :] = 0.
+                ft[i, id_hk , :] = 0.
 
     map.data[:] = enmap.ifft(ft, normalize=False)
     return filtered_map
@@ -61,8 +61,9 @@ def get_filtered_map(orig_map, binary, vk_mask, hk_mask):
     else:
         for i in range(orig_map.ncomp):
             orig_map.data[i] *= binary.data
-    filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
-    
+    filtered_map = kspace_filter_fast(orig_map, vk_mask, hk_mask)
+    #filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
+
     return filtered_map
 
 def fill_sym_mat(mat):

@@ -10,7 +10,7 @@ import enmap
 
 def kspace_filter_fast(map, vk_mask=None, hk_mask=None):
 
-    lymap, lxmap = so_map.data.lmap()
+    lymap, lxmap = map.data.lmap()
     ly, lx = lymap[:,0], lxmap[0,:]
 
    # filtered_map = map.copy()

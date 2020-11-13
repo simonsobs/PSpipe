@@ -9,6 +9,18 @@ from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 from pixell import enmap
 
 def kspace_filter_fast(map, vk_mask=None, hk_mask=None):
+    """Filter the map in Fourier space removing modes in a horizontal and vertical band
+    defined by hk_mask and vk_mask. This is a faster version that what is implemented in pspy
+    
+    Parameters
+    ---------
+    map: ``so_map``
+        the map to be filtered
+    vk_mask: list with 2 elements
+        format is fourier modes [-lx,+lx]
+    hk_mask: list with 2 elements
+        format is fourier modes [-ly,+ly]
+    """
 
     lymap, lxmap = map.data.lmap()
     ly, lx = lymap[:,0], lxmap[0,:]

@@ -8,7 +8,7 @@ from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 from pixell import enmap
 
-def kspace_filter_fast(map, vk_mask=None, hk_mask=None):
+def kspace_filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys"):
     """Filter the map in Fourier space removing modes in a horizontal and vertical band
     defined by hk_mask and vk_mask. This is a faster version that what is implemented in pspy
     
@@ -26,7 +26,7 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None):
     ly, lx = lymap[:,0], lxmap[0,:]
 
    # filtered_map = map.copy()
-    ft = enmap.fft(map.data, normalize=False)
+    ft = enmap.fft(map.data, normalize=normalize)
     
     if vk_mask is not None:
         id_vk = np.where((lx > vk_mask[0]) & (lx < vk_mask[1]))
@@ -46,7 +46,7 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None):
             if hk_mask is not None:
                 ft[i, id_hk , :] = 0.
 
-    map.data[:] = enmap.ifft(ft, normalize=False)
+    map.data[:] = enmap.ifft(ft, normalize=normalize)
     return map
 
 

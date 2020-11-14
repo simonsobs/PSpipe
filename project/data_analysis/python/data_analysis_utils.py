@@ -50,7 +50,7 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys"):
     return map
 
 
-def get_filtered_map(orig_map, binary, vk_mask, hk_mask):
+def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys"):
 
     """Filter the map in Fourier space removing modes in a horizontal and vertical band
     defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before
@@ -73,7 +73,7 @@ def get_filtered_map(orig_map, binary, vk_mask, hk_mask):
     else:
         for i in range(orig_map.ncomp):
             orig_map.data[i] *= binary.data
-    filtered_map = kspace_filter_fast(orig_map, vk_mask, hk_mask)
+    filtered_map = kspace_filter_fast(orig_map, vk_mask, hk_mask, normalize=normalize)
     #filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
 
     return filtered_map

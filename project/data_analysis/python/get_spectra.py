@@ -61,7 +61,8 @@ for sv in surveys:
                     split = data_analysis_utils.get_filtered_map(split,
                                                                  binary,
                                                                  vk_mask=d["vk_mask"],
-                                                                 hk_mask=d["hk_mask"])
+                                                                 hk_mask=d["hk_mask"],
+                                                                 normalize=False)
 
             elif win_T.pixel == "HEALPIX":
                 split = so_map.read_map(map)
@@ -73,6 +74,10 @@ for sv in surveys:
             #split.plot(file_name="%s/split_%d_%s_%s" % (plot_dir, k, sv, ar), color_range=[250, 100, 100])
 
             master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
+            if d["use_kspace_filter"]:
+                #  there is an extra normalisation for the FFT/IFFT bit
+                master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2])
+                
         print(time.time()- t)
 
 ps_dict = {}

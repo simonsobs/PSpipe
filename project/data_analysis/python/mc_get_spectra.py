@@ -33,7 +33,6 @@ pspy_utils.create_directory(spec_dir)
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
-
 # let's list the different frequencies used in the code
 freq_list = []
 for sv in surveys:
@@ -136,12 +135,18 @@ for iii in subtasks:
                         split = data_analysis_utils.get_filtered_map(split,
                                                                      binary,
                                                                      vk_mask=d["vk_mask"],
-                                                                     hk_mask=d["hk_mask"])
+                                                                     hk_mask=d["hk_mask"],
+                                                                     normalize=False)
                 
                 if d["remove_mean"] == True:
                     split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
+                if d["use_kspace_filter"]:
+                    # there is an extra normalisation for the FFT/IFFT bit
+                    # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
+                    master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2])
+
 
     ps_dict = {}
     _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)

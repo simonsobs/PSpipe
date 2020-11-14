@@ -46,7 +46,7 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys"):
             if hk_mask is not None:
                 ft[i, id_hk , :] = 0.
 
-    map.data[:] = enmap.ifft(ft, normalize=normalize)
+    map.data[:] = np.real(enmap.ifft(ft, normalize=normalize))
     return map
 
 

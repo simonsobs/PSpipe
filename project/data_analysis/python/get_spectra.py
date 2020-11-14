@@ -75,7 +75,8 @@ for sv in surveys:
 
             master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
             if d["use_kspace_filter"]:
-                #  there is an extra normalisation for the FFT/IFFT bit
+                # there is an extra normalisation for the FFT/IFFT bit
+                # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
                 master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2])
                 
         print(time.time()- t)

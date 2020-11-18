@@ -71,16 +71,37 @@ def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys"):
     if orig_map.ncomp == 1:
         orig_map.data *= binary.data
     else:
-        for i in range(orig_map.ncomp):
-            orig_map.data[i] *= binary.data
+        orig_map.data[:] *= binary.data
     filtered_map = kspace_filter_fast(orig_map, vk_mask, hk_mask, normalize=normalize)
-    #filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
+    # filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
 
     return filtered_map
 
+
+def get_coadded_map(orig_map, coadd_map, coadd_mask):
+    """Co-add a map with another map given its associated mask.
+
+    Parameters
+    ---------
+    orig_map: ``so_map``
+        the original map without point sources
+    coadd_map: ``so_map``
+        the map to be co-added
+    coadd_mask: ``so_map``
+        the mask associated to the coadd_map
+    """
+    if coadd_map.ncomp == 1:
+        coadd_map.data *= coadd_mask.data
+    else:
+        coadd_map.data[:] *= coadd_mask.data
+    orig_map.data += coadd_map.data
+
+    return orig_map
+
+
 def fill_sym_mat(mat):
     """Make a upper diagonal or lower diagonal matrix symmetric
-        
+
     Parameters
     ----------
     mat : 2d array

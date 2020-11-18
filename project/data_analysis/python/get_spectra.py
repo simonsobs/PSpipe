@@ -57,12 +57,18 @@ for sv in surveys:
                 split = so_map.read_map(map, geometry=win_T.data.geometry)
                 if d["use_kspace_filter"]:
                     print("apply kspace filter on %s" %map)
+                    print("apply kspace filter on %s" % map)
+                    point_source_map = so_map.read_map(
+                        map.replace(".fits", "_model.fits"), geometry=win_T.data.geometry
+                    )
+                    point_source_mask = so_map.read_map(d["ps_mask"], geometry=win_T.data.geometry)
+                    split = data_analysis_utils.get_coadded_map(
+                        split, point_source_map, point_source_mask
+                    )
                     binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                    split = data_analysis_utils.get_filtered_map(split,
-                                                                 binary,
-                                                                 vk_mask=d["vk_mask"],
-                                                                 hk_mask=d["hk_mask"],
-                                                                 normalize=False)
+                    split = data_analysis_utils.get_filtered_map(
+                        split, binary, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], normalize=False
+                    )
 
             elif win_T.pixel == "HEALPIX":
                 split = so_map.read_map(map)

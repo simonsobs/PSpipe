@@ -56,7 +56,7 @@ for sv in surveys:
             if win_T.pixel == "CAR":
                 split = so_map.read_map(map, geometry=win_T.data.geometry)
                 
-                if d["include_residual_sources"] == True:
+                if d["src_free_map"] == True:
                     point_source_map = so_map.read_map(map.replace(".fits", "_model.fits"))
                     point_source_mask = so_map.read_map(d["ps_mask"])
                     split = data_analysis_utils.get_coadded_map(split, point_source_map, point_source_mask)

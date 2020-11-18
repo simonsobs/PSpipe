@@ -103,7 +103,8 @@ for task in subtasks:
     # this step is a bit arbitrary and preliminary, more work to be done here
 
     binary = survey_mask.copy()
-    binary.data *= ps_mask.data
+    if d["src_free_map"] == False:
+        binary.data *= ps_mask.data
     # Note that we don't skip the edges as much for the binary mask
     # compared to what we will do with the final window, this should prevent some aliasing from the kspace filter to enter the data
     # We also include the point source mask in the binary, this should not be necessary at the end since point source removal can

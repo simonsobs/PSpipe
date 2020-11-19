@@ -2,6 +2,8 @@
 This script compute best fit from theory and fg power spectra.
 It uses camb and the foreground model of mflike based on fgspectra
 """
+import matplotlib
+matplotlib.use("Agg")
 import sys
 
 import numpy as np

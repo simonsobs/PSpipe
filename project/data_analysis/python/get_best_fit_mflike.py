@@ -64,11 +64,11 @@ fg_dict = mfl.get_foreground_model(fg_params, fg_model, freq_list, ell)
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 for spec in spectra:
-    cl_th_and_fg = clth[spec]
     plt.figure(figsize=(12,12))
     for freq1 in freq_list:
         for freq2 in freq_list:
             name = "%sx%s_%s" % (freq1, freq2, spec)
+            cl_th_and_fg = clth[spec]
 
             if spec == "TT":
                 plt.semilogy()

@@ -82,7 +82,7 @@ for scale in ["log", "linear"]:
                             else:
                                 plt.errorbar(lb + count*10, Db[spec], fmt=".", label="%s_%s" % (spec, combin), color=c)
                                 
-                            plt.plot(lth[:lmax], bfth[:lmax])
+                            plt.plot(lth[:lmax], bfth[:lmax], color=c)
 
 
                             count +=1

@@ -43,26 +43,24 @@ for kind in ["cross", "noise", "auto"]:
         vec_restricted = []
         vec_EB = []
 
-        for id_sv1, sv1 in enumerate(surveys):
-            arrays_1 = d["arrays_%s" % sv1]
-            for id_ar1, ar1 in enumerate(arrays_1):
-                for id_sv2, sv2 in enumerate(surveys):
-                    arrays_2 = d["arrays_%s" % sv2]
-                    for id_ar2, ar2 in enumerate(arrays_2):
+        for spec in spectra:
+            for id_sv1, sv1 in enumerate(surveys):
+                arrays_1 = d["arrays_%s" % sv1]
+                for id_ar1, ar1 in enumerate(arrays_1):
+                    for id_sv2, sv2 in enumerate(surveys):
+                        arrays_2 = d["arrays_%s" % sv2]
+                        for id_ar2, ar2 in enumerate(arrays_2):
 
-                        if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                        if  (id_sv1 > id_sv2) : continue
-                        if (sv1 != sv2) & (kind == "noise"): continue
-                        if (sv1 != sv2) & (kind == "auto"): continue
+                            if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
+                            if  (id_sv1 > id_sv2) : continue
+                            if (sv1 != sv2) & (kind == "noise"): continue
+                            if (sv1 != sv2) & (kind == "auto"): continue
 
-                        spec_name = "%s_%s_%sx%s_%s_%s_%05d" % (type, sv1, ar1, sv2, ar2, kind, iii)
+                            spec_name = "%s_%s_%sx%s_%s_%s_%05d" % (type, sv1, ar1, sv2, ar2, kind, iii)
                             
-                        lb, Db = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name, spectra=spectra)
+                            lb, Db = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name, spectra=spectra)
 
-                        n_bins = len(lb)
-                        
-                        for spec in spectra:
-
+                            n_bins = len(lb)
                             vec = np.append(vec, Db[spec])
                             
                             if (sv1 == sv2) & (ar1 == ar2):
@@ -103,20 +101,19 @@ for kind in ["cross", "noise", "auto"]:
     np.save("%s/cov_EB_all_%s.npy" % (mc_dir, kind), cov_EB)
 
     id_spec = 0
-    for id_sv1, sv1 in enumerate(surveys):
-        arrays_1 = d["arrays_%s" % sv1]
-        for id_ar1, ar1 in enumerate(arrays_1):
-            for id_sv2, sv2 in enumerate(surveys):
-                arrays_2 = d["arrays_%s" % sv2]
-                for id_ar2, ar2 in enumerate(arrays_2):
+    for spec in spectra:
+        for id_sv1, sv1 in enumerate(surveys):
+            arrays_1 = d["arrays_%s" % sv1]
+            for id_ar1, ar1 in enumerate(arrays_1):
+                for id_sv2, sv2 in enumerate(surveys):
+                    arrays_2 = d["arrays_%s" % sv2]
+                    for id_ar2, ar2 in enumerate(arrays_2):
                     
                     
-                    if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                    if  (id_sv1 > id_sv2) : continue
-                    if (sv1 != sv2) & (kind == "noise"): continue
-                    if (sv1 != sv2) & (kind == "auto"): continue
-                    
-                    for spec in spectra:
+                        if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
+                        if  (id_sv1 > id_sv2) : continue
+                        if (sv1 != sv2) & (kind == "noise"): continue
+                        if (sv1 != sv2) & (kind == "auto"): continue
 
                         mean = mean_vec[id_spec * n_bins:(id_spec + 1) * n_bins]
                         std = np.sqrt(cov[id_spec * n_bins:(id_spec + 1) * n_bins, id_spec * n_bins:(id_spec + 1) * n_bins].diagonal())

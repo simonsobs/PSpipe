@@ -71,7 +71,7 @@ for kind in ["cross", "noise", "auto"]:
                             else:
                                 if spec == "TT" or spec == "EE" or spec == "TE" or spec == "ET":
                                     vec_restricted = np.append(vec_restricted, Db[spec])
-                                if spec == "EB" or spec =="BE":
+                                if spec == "EB" or spec == "BE":
                                     vec_EB = np.append(vec_EB, Db[spec])
 
         vec_list += [vec]
@@ -81,7 +81,7 @@ for kind in ["cross", "noise", "auto"]:
 
     mean_vec = np.mean(vec_list, axis=0)
     mean_vec_restricted = np.mean(vec_list_restricted, axis=0)
-    mean_vec_EB = np.mean(vec_EB, axis=0)
+    mean_vec_EB = np.mean(vec_list_EB, axis=0)
 
     cov = 0
     cov_restricted = 0

@@ -71,7 +71,7 @@ for kind in ["cross", "noise", "auto"]:
                             else:
                                 if spec == "TT" or spec == "EE" or spec == "TE" or spec == "ET":
                                     vec_restricted = np.append(vec_restricted, Db[spec])
-                                is spec == "EB" or spec =="BE":
+                                if spec == "EB" or spec =="BE":
                                     vec_EB = np.append(vec_EB, Db[spec])
 
         vec_list += [vec]

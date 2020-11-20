@@ -36,10 +36,13 @@ for kind in ["cross", "noise", "auto"]:
     
     vec_list = []
     vec_list_restricted = []
+    vec_list_EB = []
 
     for iii in range(iStart, iStop):
         vec = []
         vec_restricted = []
+        vec_EB = []
+
         for spec in spectra:
             for id_sv1, sv1 in enumerate(surveys):
                 arrays_1 = d["arrays_%s" % sv1]
@@ -63,29 +66,39 @@ for kind in ["cross", "noise", "auto"]:
                             if (sv1 == sv2) & (ar1 == ar2):
                                 if spec == "TT" or spec == "EE" or spec == "TE" :
                                     vec_restricted = np.append(vec_restricted, Db[spec])
+                                if spec == "EB":
+                                    vec_EB = np.append(vec_EB, Db[spec])
                             else:
                                 if spec == "TT" or spec == "EE" or spec == "TE" or spec == "ET":
                                     vec_restricted = np.append(vec_restricted, Db[spec])
+                                is spec == "EB" or spec =="BE":
+                                    vec_EB = np.append(vec_EB, Db[spec])
 
-                                
         vec_list += [vec]
         vec_list_restricted += [vec_restricted]
+        vec_list_EB += [vec_EB]
+
 
     mean_vec = np.mean(vec_list, axis=0)
     mean_vec_restricted = np.mean(vec_list_restricted, axis=0)
+    mean_vec_EB = np.mean(vec_EB, axis=0)
 
     cov = 0
     cov_restricted = 0
+    cov_EB = 0
 
     for iii in range(iStart, iStop):
         cov += np.outer(vec_list[iii], vec_list[iii])
         cov_restricted += np.outer(vec_list_restricted[iii], vec_list_restricted[iii])
+        cov_EB += np.outer(vec_list_EB[iii], vec_list_EB[iii])
 
     cov = cov / (iStop-iStart) - np.outer(mean_vec, mean_vec)
     cov_restricted = cov_restricted / (iStop-iStart) - np.outer(mean_vec_restricted, mean_vec_restricted)
+    cov_EB = cov_EB / (iStop-iStart) - np.outer(mean_vec_EB, mean_vec_EB)
 
     np.save("%s/cov_all_%s.npy" % (mc_dir, kind), cov)
     np.save("%s/cov_restricted_all_%s.npy" % (mc_dir, kind), cov_restricted)
+    np.save("%s/cov_EB_all_%s.npy" % (mc_dir, kind), cov_EB)
 
     id_spec = 0
     for spec in spectra:
@@ -155,4 +168,6 @@ for sid1, spec1 in enumerate(spec_list):
         cov_mc = cov_mc / (iStop-iStart) - np.outer(np.mean(ps_list_ab, axis=0), np.mean(ps_list_cd, axis=0))
 
         np.save("%s/mc_cov_%sx%s_%sx%s.npy"%(cov_dir, na, nb, nc, nd), cov_mc)
+
+
 

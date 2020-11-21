@@ -63,16 +63,17 @@ for kind in ["cross", "noise", "auto"]:
                             n_bins = len(lb)
                             vec = np.append(vec, Db[spec])
                             
+                            
                             if (sv1 == sv2) & (ar1 == ar2):
                                 if spec == "TT" or spec == "EE" or spec == "TE" :
                                     vec_restricted = np.append(vec_restricted, Db[spec])
-                                if spec == "EB":
-                                    vec_EB = np.append(vec_EB, Db[spec])
                             else:
                                 if spec == "TT" or spec == "EE" or spec == "TE" or spec == "ET":
                                     vec_restricted = np.append(vec_restricted, Db[spec])
-                                if spec == "EB" or spec == "BE":
-                                    vec_EB = np.append(vec_EB, Db[spec])
+                            
+                            if spec == "EB":
+                                vec_EB = np.append(vec_EB, (Db["EB"] + Db["BE"])/2 )
+
 
         vec_list += [vec]
         vec_list_restricted += [vec_restricted]
@@ -168,6 +169,5 @@ for sid1, spec1 in enumerate(spec_list):
         cov_mc = cov_mc / (iStop-iStart) - np.outer(np.mean(ps_list_ab, axis=0), np.mean(ps_list_cd, axis=0))
 
         np.save("%s/mc_cov_%sx%s_%sx%s.npy"%(cov_dir, na, nb, nc, nd), cov_mc)
-
 
 

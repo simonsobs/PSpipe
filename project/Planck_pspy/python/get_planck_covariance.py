@@ -138,83 +138,83 @@ for task in subtasks:
     analytic_cov = np.zeros((4*nbins, 4*nbins))
 
     # TaTbTcTd
-    M_00 = coupling["TaTcTbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TTTT")
-    M_00 += coupling["TaTdTbTc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TTTT")
+    M_00 = coupling["TaTcTbTd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTTT")
+    M_00 += coupling["TaTdTbTc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTTT")
     analytic_cov[0*nbins:1*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_00, binning_file, lmax)
     
     # TaEbTcEd
-    M_11 = coupling["TaTcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TTEE")
-    M_11 += coupling["TaPdPbTc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TEET")
+    M_11 = coupling["TaTcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTEE")
+    M_11 += coupling["TaPdPbTc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "TEET")
     analytic_cov[1*nbins:2*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_11, binning_file, lmax)
     
     # EaTbEcTd
-    M_22 = coupling["PaPcTbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EETT")
-    M_22 += coupling["PaTdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "ETTE")
+    M_22 = coupling["PaPcTbTd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EETT")
+    M_22 += coupling["PaTdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETTE")
     analytic_cov[2*nbins:3*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_22, binning_file, lmax)
     
     # EaEbEcEd
-    M_33 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EEEE")
-    M_33 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "EEEE")
+    M_33 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEEE")
+    M_33 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEEE")
     analytic_cov[3*nbins:4*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_33, binning_file, lmax)
     
     # TaTbTcEd
-    M_01 = coupling["TaTcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TTTE")
-    M_01 += coupling["TaPdTbTc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TETT")
+    M_01 = coupling["TaTcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTTE")
+    M_01 += coupling["TaPdTbTc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "TETT")
     analytic_cov[0*nbins:1*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_01, binning_file, lmax)
     
     # TaTbEcTd
-    M_02 = coupling["TaPcTbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TETT")
-    M_02 += coupling["TaTdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TTTE")
+    M_02 = coupling["TaPcTbTd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "TETT")
+    M_02 += coupling["TaTdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTTE")
     analytic_cov[0*nbins:1*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_02, binning_file, lmax)
     
     # TaTbEcEd
-    M_03 = coupling["TaPcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TETE")
-    M_03 += coupling["TaPdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TETE")
+    M_03 = coupling["TaPcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "TETE")
+    M_03 += coupling["TaPdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "TETE")
     analytic_cov[0*nbins:1*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_03, binning_file, lmax)
     
     # TaEbEcTd
-    M_12 = coupling["TaPcPbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TEET")
-    M_12 += coupling["TaTdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TTEE")
+    M_12 = coupling["TaPcPbTd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "TEET")
+    M_12 += coupling["TaTdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTEE")
     analytic_cov[1*nbins:2*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_12, binning_file, lmax)
     
     # TaEbEcEd
-    M_13 = coupling["TaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TEEE")
-    M_13 += coupling["TaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TEEE")
+    M_13 = coupling["TaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "TEEE")
+    M_13 += coupling["TaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "TEEE")
     analytic_cov[1*nbins:2*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_13, binning_file, lmax)
     
     # EaTbEcEd
-    M_23 = coupling["PaPcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EETE")
-    M_23 += coupling["PaPdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "EETE")
+    M_23 = coupling["PaPcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EETE")
+    M_23 += coupling["PaPdTbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EETE")
     analytic_cov[2*nbins:3*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_23, binning_file, lmax)
     
     # TaEbTcTd
-    M_10 = coupling["TaTcPbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "TTET")
-    M_10 += coupling["TaTdPbTc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "TTET")
+    M_10 = coupling["TaTcPbTd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTET")
+    M_10 += coupling["TaTdPbTc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTET")
     analytic_cov[1*nbins:2*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_10, binning_file, lmax)
     
     # EaTbTcTd
-    M_20 = coupling["PaTcTbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "ETTT")
-    M_20 += coupling["PaTdTbTc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "ETTT")
+    M_20 = coupling["PaTcTbTd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETTT")
+    M_20 += coupling["PaTdTbTc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETTT")
     analytic_cov[2*nbins:3*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_20, binning_file, lmax)
     
     # EaEbTcTd
-    M_30 = coupling["PaTcPbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "ETET")
-    M_30 += coupling["PaTdPbTc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "ETET")
+    M_30 = coupling["PaTcPbTd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETET")
+    M_30 += coupling["PaTdPbTc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETET")
     analytic_cov[3*nbins:4*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_30, binning_file, lmax)
     
     # EaTbTcEd
-    M_21 = coupling["PaTcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "ETTE")
-    M_21 += coupling["PaPdTbTc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "EETT")
+    M_21 = coupling["PaTcTbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETTE")
+    M_21 += coupling["PaPdTbTc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EETT")
     analytic_cov[2*nbins:3*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_21, binning_file, lmax)
     
     # EaEbTcEd
-    M_31 = coupling["PaTcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "ETEE")
-    M_31 += coupling["PaPdPbTc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "EEET")
+    M_31 = coupling["PaTcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETEE")
+    M_31 += coupling["PaPdPbTc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEET")
     analytic_cov[3*nbins:4*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_31, binning_file, lmax)
     
     # EaEbEcTd
-    M_32 = coupling["PaPcPbTd"] * so_cov.chi(na, nc, nb, nd, ns, l, ps_all, nl_all, "EEET")
-    M_32 += coupling["PaTdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, l, ps_all, nl_all, "ETEE")
+    M_32 = coupling["PaPcPbTd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEET")
+    M_32 += coupling["PaTdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETEE")
     analytic_cov[3*nbins:4*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_32, binning_file, lmax)
     
     mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s-hm1xhm2" % (mcms_dir, na, nb), spin_pairs=spin_pairs)

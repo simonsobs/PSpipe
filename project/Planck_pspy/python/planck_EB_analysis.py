@@ -88,7 +88,6 @@ std = np.sqrt(cov.diagonal())
 
 lb = lb[id]
 n_bins = len(lb)
-n_spec = 6
 plt.figure(figsize=(20, 15))
 for i, fpair in enumerate(freq_pairs):
     f0, f1 = fpair

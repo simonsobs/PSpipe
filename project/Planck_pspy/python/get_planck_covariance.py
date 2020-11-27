@@ -71,8 +71,15 @@ for c1,freq1 in enumerate(freqs):
         bl1["ET"] = bl1["TE"]
         bl2["ET"] = bl2["TE"]
 
+        if d["use_noise_from_sim"]:
+            if d["use_ffp10"] == True:
+                spec_name_noise = "mean_simffp10_%s_%sx%s_%s_noise" % (exp, freq1, exp, freq2)
+            else:
+                spec_name_noise = "mean_sim_%s_%sx%s_%s_noise" % (exp, freq1, exp, freq2)
+        else:
+            spec_name_noise = "mean_%s_%sx%s_%s_noise" % (exp, freq1, exp, freq2)
 
-        spec_name_noise = "mean_%s_%sx%s_%s_noise" % (exp, freq1, exp, freq2)
+        
         l, Nl = so_spectra.read_ps(ps_model_dir + "/%s.dat" % spec_name_noise, spectra=spectra)
                 
         for spec in ["TT", "TE", "ET", "EE"]:

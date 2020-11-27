@@ -44,6 +44,8 @@ remove_mono_dipo_T = True
 remove_mono_dipo_pol = False
 
 noise_binning_size = 30
+use_noise_from_sim = False
+
 
 #Simulation
 
@@ -53,7 +55,6 @@ iStart = 0
 iStop = 299
 use_ffp10 = True
 ffp10_dir = "/global/cscratch1/sd/tlouis/ffp10/"
-
 lrange = {"TT_100x100": [30, 1197], "TT_143x143": [30, 1996], "TT_143x217": [30, 2508], "TT_217x217":  [30, 2508], "TE_100x100": [30, 999], "TE_100x143": [30, 999], "TE_100x217": [505, 1197], "TE_143x143": [30, 1996], "TE_143x217":[505, 1996], "TE_217x217": [505, 1996], "EE_100x100": [30, 999], "EE_100x143": [30, 999], "EE_100x217": [505, 1197], "EE_143x143": [30, 1996], "EE_143x217":[505, 1996], "EE_217x217": [505, 1996]}
 
 

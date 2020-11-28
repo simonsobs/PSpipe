@@ -2,7 +2,8 @@
 This script analyze the result of the spectra simulation.
 It compares the dispersion of monte-carlo simulation with planck analytical covariance matrix
 '''
-
+import matplotlib
+matplotlib.use("Agg")
 import numpy as np
 import pylab as plt
 from pspy import so_dict, so_spectra, pspy_utils

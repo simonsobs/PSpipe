@@ -137,6 +137,11 @@ def generate_noise_alms(nl_array_t, nl_array_pol, lmax, n_splits):
 def symmetrize(a):
     return a + a.T - np.diag(a.diagonal())
 
+def is_symmetric(mat, tol=1e-8):
+    return np.all(np.abs(mat-mat.T) < tol)
+
+def is_pos_def(mat):
+    return np.all(np.linalg.eigvals(mat) > 0)
 
 
 

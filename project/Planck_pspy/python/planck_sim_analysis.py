@@ -24,6 +24,7 @@ bestfit_dir = "best_fits"
 
 
 plot_dir = "plots/sim_analysis/"
+cov_dir = "covariances"
 
 if d["use_ffp10"] == True:
     sim_spectra_dir = "sim_spectra_ffp10"
@@ -99,6 +100,12 @@ inv_cov_planck = np.load("data/planck_data/covmat.npy")
 cov_planck = np.linalg.inv(inv_cov_planck)
 variance_planck = cov_planck.diagonal()
 
+inv_cov_analytic = np.load("%s/inv_covmat.npy" % cov_dir)
+cov_analytic = np.linalg.inv(inv_cov_analytic)
+variance_analytic = cov_analytic.diagonal()
+
+
+
 color_array = ["red", "blue", "orange", "green", "grey", "darkblue"]
 
 id_low_planck = 0
@@ -115,6 +122,7 @@ for spec in ["TT", "EE", "TE"]:
         l_planck, _, _ = np.loadtxt("data/planck_data/spectrum_%s_%sx%s.dat"%(spec, f0, f1), unpack=True)
         id_high_planck += len(l_planck)
         std_planck = np.sqrt(variance_planck)[id_low_planck:id_high_planck]
+        std_analytic = np.sqrt(variance_analytic)[id_low_planck:id_high_planck]
 
         lth, cl_th_and_fg = np.loadtxt("%s/best_fit_%sx%s_%s.dat" % (bestfit_dir, f0, f1, spec), unpack=True)
         lb, cb = planck_utils.binning(lth, cl_th_and_fg, lmax, binning_file=binning_file)
@@ -141,6 +149,7 @@ for spec in ["TT", "EE", "TE"]:
         plt.figure(figsize=(12, 8))
         plt.semilogy()
         plt.errorbar(l_planck, std_planck, color="grey", label = "std planck")
+        plt.errorbar(l_planck, std_analytic, color="blue", label = "std std_analytic")
         plt.errorbar(lb, std_sim, color="red", fmt = ".", label = "std sim %s %s GHzx %s GHz"%(spec, f0, f1), alpha=0.4)
         plt.xlabel(r"$\ell$", fontsize=20)
         plt.ylabel(r"$\sigma_\ell$", fontsize=20)

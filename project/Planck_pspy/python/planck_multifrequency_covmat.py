@@ -18,7 +18,7 @@ def cut_off_diag_at_delta_l(mat, lb, delta_l):
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-cov_dir = "covariances_old"
+cov_dir = "covariances"
 mc_dir = "montecarlo"
 exp = "Planck"
 lmax = d["lmax"]

@@ -1,0 +1,75 @@
+freqs = ["100", "143", "217"]
+splits = ["hm1", "hm2"]
+
+data_dir = 'planck_data/'
+
+map_100 = [data_dir + "maps/HFI_SkyMap_100_2048_R3.01_halfmission-%d.fits" % i for i in [1, 2]]
+map_143 = [data_dir + "maps/HFI_SkyMap_143_2048_R3.01_halfmission-%d.fits" % i for i in [1, 2]]
+map_217 = [data_dir + "maps/HFI_SkyMap_217_2048_R3.01_halfmission-%d.fits" % i for i in [1, 2]]
+
+window_T_100 = [data_dir + "EB_masks/window_100.fits", data_dir + "EB_masks/window_100.fits"]
+window_pol_100 = [data_dir + "EB_masks/window_100.fits", data_dir + "EB_masks/window_100.fits"]
+window_T_143 = [data_dir + "EB_masks/window_143.fits", data_dir + "EB_masks/window_143.fits"]
+window_pol_143 = [data_dir + "EB_masks/window_143.fits", data_dir + "EB_masks/window_143.fits"]
+window_T_217 = [data_dir + "EB_masks/window_217.fits", data_dir + "EB_masks/window_217.fits"]
+window_pol_217 = [data_dir + "EB_masks/window_217.fits", data_dir + "EB_masks/window_217.fits"]
+
+beam_100_hm1_T = data_dir + "beams/beam_T_100_hm1.dat"
+beam_100_hm2_T = data_dir + "beams/beam_T_100_hm2.dat"
+
+beam_100_hm1_pol = data_dir + "beams/beam_pol_100_hm1.dat"
+beam_100_hm2_pol = data_dir + "beams/beam_pol_100_hm2.dat"
+
+beam_143_hm1_T = data_dir + "beams/beam_T_143_hm1.dat"
+beam_143_hm2_T = data_dir + "beams/beam_T_143_hm2.dat"
+
+beam_143_hm1_pol = data_dir + "beams/beam_pol_143_hm1.dat"
+beam_143_hm2_pol = data_dir + "beams/beam_pol_143_hm2.dat"
+
+beam_217_hm1_T = data_dir + "beams/beam_T_217_hm1.dat"
+beam_217_hm2_T = data_dir + "beams/beam_T_217_hm2.dat"
+
+beam_217_hm1_pol = data_dir + "beams/beam_pol_217_hm1.dat"
+beam_217_hm2_pol = data_dir + "beams/beam_pol_217_hm2.dat"
+
+binning_file = "data/binning_30.dat"
+
+niter = 3
+lmax = 3000
+lmax_pad = 3500
+
+type = "Cl"
+pixwin = True
+remove_mono_dipo_T = True
+remove_mono_dipo_pol = False
+
+noise_binning_size = 30
+use_noise_from_sim = False
+
+
+#Simulation
+
+theoryfile = "data/cosmo2017_10K_acc3_lensedCls.dat"
+fg_and_syst = "data/base_plikHM_TTTEEE_lowl_lowE_lensing.minimum.plik_foregrounds"
+iStart = 0
+iStop = 299
+use_ffp10 = True
+ffp10_dir = "/global/cscratch1/sd/tlouis/ffp10/"
+lrange = {"TT_100x100": [30, 1197], "TT_143x143": [30, 1996], "TT_143x217": [30, 2508], "TT_217x217":  [30, 2508], "TE_100x100": [30, 999], "TE_100x143": [30, 999], "TE_100x217": [505, 1197], "TE_143x143": [30, 1996], "TE_143x217":[505, 1996], "TE_217x217": [505, 1996], "EE_100x100": [30, 999], "EE_100x143": [30, 999], "EE_100x217": [505, 1197], "EE_143x143": [30, 1996], "EE_143x217":[505, 1996], "EE_217x217": [505, 1996]}
+
+
+# theoretical nl_Th
+
+beam_th_100 = 9.66
+beam_th_143 = 7.22
+beam_th_217 = 4.90
+
+sigma_th_100 = 77.4
+sigma_th_143 = 33.0
+sigma_th_217 = 46.8
+
+sigma_pol_th_100 = 117.6
+sigma_pol_th_143 = 70.2
+sigma_pol_th_217 = 105.0
+
+multistep_path='./js'

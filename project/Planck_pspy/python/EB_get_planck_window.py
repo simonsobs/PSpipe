@@ -6,6 +6,8 @@ import healpy as hp
 from astropy.io import fits
 import numpy as np
 from pspy import so_window, so_map, so_dict
+import sys
+
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -31,7 +33,7 @@ for freq in freqs:
     CO_mask = np.ones(12 * nside**2)
     
     if freq is not 143:
-        log10_CO_noise_ratio = so_map.read_map("HFI_BiasMap_%s-CO-noiseRatio_2048_R3.00_full.fits" % (freq), fields_healpix = 0)
+        log10_CO_noise_ratio = so_map.read_map("%s/HFI_BiasMap_%s-CO-noiseRatio_2048_R3.00_full.fits" % (EB_mask_dir, freq), fields_healpix = 0)
         id = np.where(log10_CO_noise_ratio.data > -2)
         CO_mask[id] = 0
 

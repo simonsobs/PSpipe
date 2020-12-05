@@ -32,7 +32,7 @@ for freq in freqs:
 
     CO_mask = np.ones(12 * nside**2)
     
-    if freq is not 143:
+    if freq is not "143":
         log10_CO_noise_ratio = so_map.read_map("%s/HFI_BiasMap_%s-CO-noiseRatio_2048_R3.00_full.fits" % (EB_mask_dir, freq), fields_healpix = 0)
         id = np.where(log10_CO_noise_ratio.data > -2)
         CO_mask[id] = 0

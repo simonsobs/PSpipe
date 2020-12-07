@@ -85,7 +85,6 @@ def compute_loglike(alpha100, alpha143, alpha217, beta):
         vec_res = np.append(vec_res, res)
 
     chi2 = np.dot(vec_res, np.dot(inv_cov, vec_res))
-    print(chi2, len(vec_res))
     return -0.5 * chi2
 
 

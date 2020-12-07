@@ -24,6 +24,10 @@ exp = "Planck"
 lmax = d["lmax"]
 binning_file = d["binning_file"]
 freqs = d["freqs"]
+min_planck = d["EB_lmin"]
+max_planck = d["EB_lmax"]
+
+
 
 bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 nbins = len(bin_hi)
@@ -131,9 +135,6 @@ for sid, name in enumerate(spec_name):
         id_start = sid * nbins + s * nspec * nbins
         id_stop = (sid + 1) * nbins + s * nspec * nbins
         
-        # Remove bin
-        min_planck = d["EB_lmin"]
-        max_planck = d["EB_lmax"]
             
         id = np.where(bin_c < min_planck)
         id_start_cut = id_start + len(id[0])

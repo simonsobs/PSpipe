@@ -18,14 +18,7 @@ freqs = d["freqs"]
 lmax = d["lmax"]
 clfile = d["theoryfile"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-
-lth, Clth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type="Cl", lmax=lmax, start_at_zero=False)
-
-Cb_th = {}
-lb, Cb_th["EE"] = planck_utils.binning(lth, Clth["EE"], lmax, binning_file)
-lb, Cb_th["BB"]  = planck_utils.binning(lth, Clth["BB"], lmax, binning_file)
-
-
+EB_lmin, EB_lmax = d["EB_lmin"], d["EB_lmax"]
 
 spectra_dir = "spectra"
 cov_dir = "covariances"
@@ -33,11 +26,15 @@ chain_dir = "chains"
 pspy_utils.create_directory(chain_dir)
 
 
-lmin, lmax = d["EB_lmin"], d["EB_lmax"]
 
 
 # First create theory array
-id = np.where((lb >= lmin) & (lb <= lmax))
+lth, Clth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type="Cl", lmax=lmax, start_at_zero=False)
+Cb_th = {}
+lb, Cb_th["EE"] = planck_utils.binning(lth, Clth["EE"], lmax, binning_file)
+lb, Cb_th["BB"]  = planck_utils.binning(lth, Clth["BB"], lmax, binning_file)
+
+id = np.where((lb >= EB_lmin) & (lb <= EB_lmax))
 lb, Cb_th["EE"], Cb_th["BB"] = lb[id], Cb_th["EE"][id], Cb_th["BB"][id]
 nbins = len(lb)
 Cb_th_array = np.zeros((2, nbins))
@@ -71,6 +68,7 @@ for id_f, fpair in enumerate(freq_pairs):
     Cb_data_array[1, id_f, :] = Cb["BB"][id]
 
 
+# Then run the chains
 def compute_loglike(alpha100, alpha143, alpha217, beta):
     alpha = {"100": alpha100, "143": alpha143, "217": alpha217}
     vec_res = []

@@ -44,6 +44,8 @@ if download_likelihood_mask == True:
     splits = ["hm1", "hm2"]
     for hm in splits:
         for f in freqs:
+            if f == "353": continue
+
             url = "http://pla.esac.esa.int/pla/aio/product-action?MAP.MAP_ID=COM_Mask_Likelihood-temperature-%s-%s_2048_R3.00.fits" % (f, hm)
             wget.download(url, "%s/COM_Mask_Likelihood-temperature-%s-%s_2048_R3.00.fits" % (likelihood_mask_dir, f, hm))
             url = "http://pla.esac.esa.int/pla/aio/product-action?MAP.MAP_ID=COM_Mask_Likelihood-polarization-%s-%s_2048_R3.00.fits" % (f, hm)

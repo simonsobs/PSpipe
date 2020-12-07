@@ -2,9 +2,9 @@
 import sys
 from itertools import combinations_with_replacement as cwr
 
-import numpy as np
+import numpy as np, pylab as plt
 from cobaya.run import run
-from pspy import pspy_utils, so_dict, so_spectra
+from pspy import pspy_utils, so_dict, so_spectra, so_cov
 
 import EB_birefringence_tools
 import planck_utils
@@ -46,6 +46,9 @@ Cb_th_array[1,:] = Cb_th["BB"]
 cov = np.load("%s/covmat_EB.npy" % cov_dir)
 size_cov = cov.shape[0]
 cov_EB = cov[np.int(2*size_cov/3):, np.int(2*size_cov/3): ]
+plt.matshow(so_cov.cov2corr(cov_EB))
+plt.show()
+sys.exit()
 inv_cov = np.linalg.inv(cov_EB)
 
 freq_pairs = list(cwr(freqs, 2))
@@ -66,7 +69,7 @@ for id_f, fpair in enumerate(freq_pairs):
     Cb_data["EB", "%sx%s" % (f0, f1)] = (Cb["EB"][id] + Cb["BE"][id]) / 2
     Cb_data_array[0, id_f,  :] = Cb["EE"][id]
     Cb_data_array[1, id_f, :] = Cb["BB"][id]
-
+    
 
 # Then run the chains
 def compute_loglike(alpha100, alpha143, alpha217, beta):

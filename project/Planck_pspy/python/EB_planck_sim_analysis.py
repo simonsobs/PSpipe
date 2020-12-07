@@ -41,7 +41,7 @@ freq_pairs = []
 for cross in cwr(freqs, 2):
     freq_pairs += [[cross[0], cross[1]]]
 
-lmin, lmax = 100, 1500
+lmin, lmax = d["EB_lmin"], d["EB_lmax"]
 
 # Create sim cov mat
 vec_list_sim = []

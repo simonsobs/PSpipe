@@ -47,7 +47,7 @@ for spec in ["EE", "BB", "EB"]:
             
             #ps[spec] = ps[spec][:lmax]
             if spec is not "EB":
-                fg = ps[spec] - clth[:len(ps[spec])]
+                fg = ps[spec] - clth[spec][:len(ps[spec])]
                 fg_th = np.zeros(len(lth))
                 pivot = 75
                 power1 = -1.9

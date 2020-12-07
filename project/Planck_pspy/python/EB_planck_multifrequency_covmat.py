@@ -132,8 +132,8 @@ for sid, name in enumerate(spec_name):
         id_stop = (sid + 1) * nbins + s * nspec * nbins
         
         # Remove bin
-        min_planck = 100
-        max_planck = 1500
+        min_planck = d["EB_lmin"]
+        max_planck = d["EB_lmax"]
             
         id = np.where(bin_c < min_planck)
         id_start_cut = id_start + len(id[0])

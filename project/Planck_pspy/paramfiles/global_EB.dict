@@ -19,23 +19,26 @@ window_pol_353 = [data_dir + "EB_masks/HFI_freq353_hm1_PSwithMasked_CO10p0_apo0p
 
 beam_100_hm1_T = data_dir + "beams/beam_T_100_hm1.dat"
 beam_100_hm2_T = data_dir + "beams/beam_T_100_hm2.dat"
-
 beam_100_hm1_pol = data_dir + "beams/beam_pol_100_hm1.dat"
 beam_100_hm2_pol = data_dir + "beams/beam_pol_100_hm2.dat"
 
 beam_143_hm1_T = data_dir + "beams/beam_T_143_hm1.dat"
 beam_143_hm2_T = data_dir + "beams/beam_T_143_hm2.dat"
-
 beam_143_hm1_pol = data_dir + "beams/beam_pol_143_hm1.dat"
 beam_143_hm2_pol = data_dir + "beams/beam_pol_143_hm2.dat"
 
 beam_217_hm1_T = data_dir + "beams/beam_T_217_hm1.dat"
 beam_217_hm2_T = data_dir + "beams/beam_T_217_hm2.dat"
-
+beam_217_hm1_pol = data_dir + "beams/beam_pol_217_hm1.dat"
+beam_217_hm2_pol = data_dir + "beams/beam_pol_217_hm2.dat"
 
 # We need to grab the real 353 beam at some point
+beam_353_hm1_T = data_dir + "beams/beam_T_217_hm1.dat"
+beam_353_hm2_T = data_dir + "beams/beam_T_217_hm2.dat"
 beam_353_hm1_pol = data_dir + "beams/beam_pol_217_hm1.dat"
 beam_353_hm2_pol = data_dir + "beams/beam_pol_217_hm2.dat"
+
+
 
 binning_file = "data/binning_30.dat"
 

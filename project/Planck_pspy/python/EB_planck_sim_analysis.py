@@ -1,6 +1,5 @@
 '''
 This script analyze the result of the spectra simulation.
-It compares the dispersion of monte-carlo simulation with planck analytical covariance matrix
 '''
 
 import numpy as np

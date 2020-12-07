@@ -45,9 +45,8 @@ for spec in ["EE", "BB", "EB"]:
             spec_name = "%s_%sx%s_%s-%sx%s" % (exp, freq1, exp, freq2, "hm1", "hm2")
             l, ps = so_spectra.read_ps("%s/spectra_unbin_%s.dat" % (spectra_dir, spec_name), spectra=spectra)
             
-            id = np.where(l<lmax)
-            clth_c = clth[spec][id]
-            lc = l[id]
+            clth_c = clth[spec][:lmax - 2]
+            lc = l[:lmax - 2]
             #ps[spec] = ps[spec][:lmax]
             if spec is not "EB":
                 fg = ps[spec] - clth_c

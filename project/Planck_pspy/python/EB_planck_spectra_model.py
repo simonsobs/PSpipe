@@ -58,8 +58,8 @@ for spec in ["EE", "BB", "EB"]:
                 A_amplitude = np.linspace(0.1, 100, 1000)
                 chi2 = np.zeros(1000)
                 for c, A in enumerate(A_amplitude):
-                    fg_th[lmin_fit:pivot] = (lc[lmin_fit:pivot]/A)**(power1)*(lc[pivot]/A)**(power2-power1)
-                    fg_th[pivot:] = (lc[pivot:]/A)**(power2)
+                    fg_th[lmin_fit:pivot] = (lth[lmin_fit:pivot]/A)**(power1)*(lth[pivot]/A)**(power2-power1)
+                    fg_th[pivot:] = (lth[pivot:]/A)**(power2)
                     chi2[c] = np.sum((fg_th[lmin_fit:lmax_fit]-fg[lmin_fit:lmax_fit])**2)
             
                 id = np.where(chi2 == np.min(chi2))

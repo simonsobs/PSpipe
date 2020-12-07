@@ -77,7 +77,7 @@ for spec in ["EE", "BB", "EB"]:
             
             np.savetxt("%s/best_fit_%s_%s.dat" % (bestfit_dir, fname, spec), np.transpose([lth_padded, best_fit]))
 
-            model = (clth[spec] + fg_th) * l * (l +1) / (2 * np.pi)
+            model = (clth[spec][:len(ps[spec])] + fg_th[:len(ps[spec])]) * l * (l +1) / (2 * np.pi)
             ps[spec] *= (l * (l +1) / (2 * np.pi))
             if spec != "EB":
                 plt.semilogy()

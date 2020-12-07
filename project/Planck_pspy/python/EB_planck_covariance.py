@@ -59,17 +59,16 @@ for c1,freq1 in enumerate(freqs):
         bl1_hm1_T, bl1_hm2_T, bl2_hm1_T, bl2_hm2_T = bl1_hm1_T[2: lmax + 2], bl1_hm2_T[2: lmax + 2], bl2_hm1_T[2: lmax + 2], bl2_hm2_T[2: lmax + 2]
         bl1_hm1_pol, bl1_hm2_pol, bl2_hm1_pol, bl2_hm2_pol = bl1_hm1_pol[2: lmax + 2], bl1_hm2_pol[2: lmax + 2], bl2_hm1_pol[2: lmax + 2], bl2_hm2_pol[2: lmax + 2]
 
-        bl1["TT"] = np.sqrt(bl1_hm1_T * bl1_hm2_T)
-        bl2["TT"] = np.sqrt(bl2_hm1_T * bl2_hm2_T)
 
         bl1["EE"] = np.sqrt(bl1_hm1_pol * bl1_hm2_pol)
         bl2["EE"] = np.sqrt(bl2_hm1_pol * bl2_hm2_pol)
+        bl1["EB"] = np.sqrt(bl1_hm1_pol * bl1_hm2_pol)
+        bl2["EB"] = np.sqrt(bl2_hm1_pol * bl2_hm2_pol)
+        bl1["BE"] = np.sqrt(bl1_hm1_pol * bl1_hm2_pol)
+        bl2["BE"] = np.sqrt(bl2_hm1_pol * bl2_hm2_pol)
+        bl1["BB"] = np.sqrt(bl1_hm1_pol * bl1_hm2_pol)
+        bl2["BB"] = np.sqrt(bl2_hm1_pol * bl2_hm2_pol)
 
-        bl1["TE"] = np.sqrt(bl1["EE"] * bl1["TT"])
-        bl2["TE"] = np.sqrt(bl2["EE"] * bl2["TT"])
-        
-        bl1["ET"] = bl1["TE"]
-        bl2["ET"] = bl2["TE"]
 
         if d["use_noise_from_sim"]:
             if d["use_ffp10"] == True:
@@ -82,10 +81,10 @@ for c1,freq1 in enumerate(freqs):
         
         l, Nl = so_spectra.read_ps(ps_model_dir + "/%s.dat" % spec_name_noise, spectra=spectra)
                 
-        for spec in ["TT", "TE", "ET", "EE"]:
+        for spec in ["EE", "EB", "BE", "BB"]:
             
-            if spec == "ET":
-                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, "TE"), unpack=True)
+            if spec == "BE":
+                lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, "EB"), unpack=True)
             else:
                 lth, ps_th = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, spec), unpack=True)
 

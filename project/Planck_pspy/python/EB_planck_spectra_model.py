@@ -30,7 +30,7 @@ exp = "Planck"
 color_array = ["blue", "red", "green", "orange", "purple", "pink"]
 
 clth = {}
-lth2, clth["TT"], clth["EE"], clth["BB"], clth["TE"] =np.loadtxt("cosmo2017_10K_acc3_lensedCls.dat", unpack=True)
+lth2, clth["TT"], clth["EE"], clth["BB"], clth["TE"] =np.loadtxt("data/cosmo2017_10K_acc3_lensedCls.dat", unpack=True)
 clth["EB"] = 0
 
 for spec in ["EE", "BB", "EB"]:

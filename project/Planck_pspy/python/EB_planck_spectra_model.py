@@ -21,7 +21,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 type = d["type"]
 freqs = d["freqs"]
 binning_file = d["binning_file"]
-lmax = d["lmax"] - 2
+lmax = d["lmax"]
 splits = ["hm1", "hm2"]
 size = 1
 exp = "Planck"
@@ -30,11 +30,11 @@ exp = "Planck"
 color_array = ["blue", "red", "green", "orange", "purple", "pink"]
 
 clth = {}
-lth2, clth["TT"], clth["EE"], clth["BB"], clth["TE"] =np.loadtxt("data/cosmo2017_10K_acc3_lensedCls.dat", unpack=True)
+lth, clth["TT"], clth["EE"], clth["BB"], clth["TE"] =np.loadtxt("data/cosmo2017_10K_acc3_lensedCls.dat", unpack=True)
 clth["EB"] = 0
 
 for spec in ["EE", "BB", "EB"]:
-    clth[spec] *= 2 * np.pi/(lth2 * (lth2 + 1))
+    clth[spec] *= 2 * np.pi/(lth * (lth + 1))
 
     id_color = 0
     for f1, freq1 in enumerate(freqs):
@@ -45,11 +45,11 @@ for spec in ["EE", "BB", "EB"]:
             spec_name = "%s_%sx%s_%s-%sx%s" % (exp, freq1, exp, freq2, "hm1", "hm2")
             l, ps = so_spectra.read_ps("%s/spectra_unbin_%s.dat" % (spectra_dir, spec_name), spectra=spectra)
             
-            clth[spec] = clth[spec][:lmax]
-            l = l[:lmax]
-            ps[spec] = ps[spec][:lmax]
+            clth_c = clth[spec][:lmax]
+            lc = l[:lmax]
+            #ps[spec] = ps[spec][:lmax]
             if spec is not "EB":
-                fg = ps[spec] - clth[spec]
+                fg = ps[spec] - clth_c
                 fg_th = np.zeros(lmax)
                 pivot = 75
                 power1 = -1.9
@@ -60,20 +60,24 @@ for spec in ["EE", "BB", "EB"]:
                 A_amplitude = np.linspace(0.1, 100, 1000)
                 chi2 = np.zeros(1000)
                 for c, A in enumerate(A_amplitude):
-                    fg_th[lmin_fit:pivot] = (l[lmin_fit:pivot]/A)**(power1)*(l[pivot]/A)**(power2-power1)
-                    fg_th[pivot:] = (l[pivot:]/A)**(power2)
+                    fg_th[lmin_fit:pivot] = (lc[lmin_fit:pivot]/A)**(power1)*(lc[pivot]/A)**(power2-power1)
+                    fg_th[pivot:] = (lc[pivot:]/A)**(power2)
                     chi2[c] = np.sum((fg_th[lmin_fit:lmax_fit]-fg[lmin_fit:lmax_fit])**2)
             
                 id = np.where(chi2 == np.min(chi2))
                 A_bestfit = A_amplitude[id]
                 print(f1,f2,A_bestfit)
             
-                fg_th[:pivot] = (l[:pivot]/A_bestfit)**(power1)*(l[pivot]/A_bestfit)**(power2-power1)
-                fg_th[pivot:] = (l[pivot:]/A_bestfit)**(power2)
+                fg_th[:pivot] = (lth[:pivot]/A_bestfit)**(power1)*(lth[pivot]/A_bestfit)**(power2-power1)
+                fg_th[pivot:] = (lth[pivot:]/A_bestfit)**(power2)
             else:
-                fg_th = np.zeros(len(l))
+                fg_th = np.zeros(len(lth))
             
-            np.savetxt("%s/best_fit_%s_%s.dat" % (bestfit_dir, fname, spec), np.transpose([l, (clth[spec] + fg_th)]))
+            lth_padded = np.arange(len(lth))
+            best_fit = np.zeros(len(lth))
+            best_fit[2:] = clth[spec][:-2] + fg_th[:-2]
+            
+            np.savetxt("%s/best_fit_%s_%s.dat" % (bestfit_dir, fname, spec), np.transpose([lth_padded, best_fit]))
 
             model = (clth[spec] + fg_th) * l * (l +1) / (2 * np.pi)
             ps[spec] *= (l * (l +1) / (2 * np.pi))

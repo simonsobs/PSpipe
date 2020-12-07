@@ -145,82 +145,82 @@ for task in subtasks:
     analytic_cov = np.zeros((4*nbins, 4*nbins))
 
     # EaEbEcEd
-    M_00 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEEE")
+    M_00 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEEE")
     M_00 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEEE")
     analytic_cov[0*nbins:1*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_00, binning_file, lmax)
     
     # EaBbEcBd
-    M_11 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEBB")
+    M_11 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEBB")
     M_11 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EBBE")
     analytic_cov[1*nbins:2*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_11, binning_file, lmax)
     
     # BaEbBcEd
-    M_22 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BBEE")
+    M_22 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BBEE")
     M_22 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "BEEB")
     analytic_cov[2*nbins:3*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_22, binning_file, lmax)
     
     # BaBbBcBd
-    M_33 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BBBB")
+    M_33 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BBBB")
     M_33 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "BBBB")
     analytic_cov[3*nbins:4*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_33, binning_file, lmax)
     
     # EaEbEcBd
-    M_01 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEEB")
+    M_01 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEEB")
     M_01 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EBEE")
     analytic_cov[0*nbins:1*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_01, binning_file, lmax)
     
     # EaEbBcEd
-    M_02 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EBEE")
+    M_02 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EBEE")
     M_02 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEEB")
     analytic_cov[0*nbins:1*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_02, binning_file, lmax)
     
     # EaEbBcBd
-    M_03 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EBEB")
+    M_03 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EBEB")
     M_03 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EBEB")
     analytic_cov[0*nbins:1*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_03, binning_file, lmax)
     
     # EaBbBcEd
-    M_12 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EBBE")
+    M_12 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EBBE")
     M_12 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEBB")
     analytic_cov[1*nbins:2*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_12, binning_file, lmax)
     
     # EaBbBcBd
-    M_13 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EBBB")
+    M_13 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EBBB")
     M_13 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EBBB")
     analytic_cov[1*nbins:2*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_13, binning_file, lmax)
     
     # BaEbBcBd
-    M_23 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BBEB")
+    M_23 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BBEB")
     M_23 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "BBEB")
     analytic_cov[2*nbins:3*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_23, binning_file, lmax)
     
     # EaBbEcEd
-    M_10 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEBE")
+    M_10 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEBE")
     M_10 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEBE")
     analytic_cov[1*nbins:2*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_10, binning_file, lmax)
     
     # BaEbEcEd
-    M_20 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BEEE")
+    M_20 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BEEE")
     M_20 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "BEEE")
     analytic_cov[2*nbins:3*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_20, binning_file, lmax)
     
     # BaBbEcEd
-    M_30 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BEBE")
+    M_30 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BEBE")
     M_30 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "BEBE")
     analytic_cov[3*nbins:4*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_30, binning_file, lmax)
     
     # BaEbEcBd
-    M_21 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BEEB")
+    M_21 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BEEB")
     M_21 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "BBEE")
     analytic_cov[2*nbins:3*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_21, binning_file, lmax)
     
     # BaBbEcBd
-    M_31 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BEBB")
+    M_31 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BEBB")
     M_31 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "BBBE")
     analytic_cov[3*nbins:4*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_31, binning_file, lmax)
     
     # BaBbBcEd
-    M_32 = coupling["PaPcPbTP"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BBBE")
+    M_32 = coupling["PaPcPbPd"] * so_cov.chi(na, nc, nb, nd, ns, ps_all, nl_all, "BBBE")
     M_32 += coupling["PaPdPbPc"] * so_cov.chi(na, nd, nb, nc, ns, ps_all, nl_all, "BEBB")
     analytic_cov[3*nbins:4*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_32, binning_file, lmax)
     

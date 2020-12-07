@@ -76,6 +76,7 @@ if download_beams == True:
     my_lmax = 6000
     for hm in splits:
         for f in freqs:
+            if f == "353": continue
             Wl = fits.open("%s/BeamWf_HFI_R3.01/Wl_R3.01_plikmask_%s%sx%s%s.fits" % (beam_dir, f, hm, f, hm))
             Wl_dict = {}
             num = 1

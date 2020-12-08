@@ -56,8 +56,8 @@ for spec in ["EE", "BB", "EB"]:
                 lmin_fit = 30
                 lmax_fit = 800
             
-                A_amplitude = np.linspace(0.1, 100, 1000)
-                chi2 = np.zeros(1000)
+                A_amplitude = np.linspace(0.1, 300, 10000)
+                chi2 = np.zeros(10000)
                 for c, A in enumerate(A_amplitude):
                     fg_th[lmin_fit:pivot] = (lth[lmin_fit:pivot]/A)**(power1)*(lth[pivot]/A)**(power2-power1)
                     fg_th[pivot:] = (lth[pivot:]/A)**(power2)

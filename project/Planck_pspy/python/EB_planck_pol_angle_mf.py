@@ -46,9 +46,9 @@ Cb_th_array[1,:] = Cb_th["BB"]
 cov = np.load("%s/covmat_EB.npy" % cov_dir)
 size_cov = cov.shape[0]
 cov_EB = cov[np.int(2*size_cov/3):, np.int(2*size_cov/3): ]
-plt.matshow(so_cov.cov2corr(cov_EB))
-plt.show()
-sys.exit()
+#plt.matshow(so_cov.cov2corr(cov_EB))
+#plt.show()
+#sys.exit()
 inv_cov = np.linalg.inv(cov_EB)
 
 freq_pairs = list(cwr(freqs, 2))
@@ -72,8 +72,8 @@ for id_f, fpair in enumerate(freq_pairs):
     
 
 # Then run the chains
-def compute_loglike(alpha100, alpha143, alpha217, beta):
-    alpha = {"100": alpha100, "143": alpha143, "217": alpha217}
+def compute_loglike(alpha100, alpha143, alpha217, alpha353, beta):
+    alpha = {"100": alpha100, "143": alpha143, "217": alpha217, "353": alpha353}
     vec_res = []
     for id_f, (f0, f1) in enumerate(freq_pairs):
         A = EB_birefringence_tools.get_my_A_vector(alpha[f0], alpha[f1])
@@ -89,7 +89,7 @@ def compute_loglike(alpha100, alpha143, alpha217, beta):
     return -0.5 * chi2
 
 
-print("logp(alpha=beta=0) =", compute_loglike(alpha100=0.0, alpha143=0.0, alpha217=0.0, beta=0.0))
+print("logp(alpha=beta=0) =", compute_loglike(alpha100=0.0, alpha143=0.0, alpha217=0.0, alpha353=0.0, beta=0.0))
 
 info = {
     "likelihood": {"my_like": compute_loglike},
@@ -97,6 +97,7 @@ info = {
         "alpha100": {"prior": {"min": -5, "max": 5}, "latex": r"\alpha_{100}"},
         "alpha143": {"prior": {"min": -5, "max": 5}, "latex": r"\alpha_{143}"},
         "alpha217": {"prior": {"min": -5, "max": 5}, "latex": r"\alpha_{217}"},
+        "alpha353": {"prior": {"min": -5, "max": 5}, "latex": r"\alpha_{353}"},
         "beta": {"prior": {"min": -5, "max": 5}, "latex": r"\beta"},
     },
     "sampler": {
@@ -110,4 +111,4 @@ info = {
     "force": True,
 }
 
-#updated_info, sampler = run(info)
+updated_info, sampler = run(info)

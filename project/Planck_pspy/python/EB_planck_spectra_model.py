@@ -27,7 +27,7 @@ size = 1
 exp = "Planck"
 
 
-color_array = ["blue", "red", "green", "orange", "purple", "pink"]
+#color_array = ["blue", "red", "green", "orange", "purple", "pink"]
 
 clth = {}
 lth, clth["TT"], clth["EE"], clth["BB"], clth["TE"] =np.loadtxt("data/cosmo2017_10K_acc3_lensedCls.dat", unpack=True)
@@ -82,15 +82,14 @@ for spec in ["EE", "BB", "EB"]:
             ps[spec] *= (l * (l +1) / (2 * np.pi))
             if spec != "EB":
                 plt.semilogy()
-            plt.plot(l[lmin_fit:],  model[lmin_fit:], color=color_array[id_color])
-            plt.errorbar(l[lmin_fit:], ps[spec][lmin_fit:], label = "%s_%sx%s" % (spec, freq1, freq2), fmt=".", color=color_array[id_color], alpha=0.2)
+            plt.plot(l[lmin_fit:],  model[lmin_fit:])
+            plt.errorbar(l[lmin_fit:], ps[spec][lmin_fit:], label = "%s_%sx%s" % (spec, freq1, freq2), fmt=".", alpha=0.2)
 
-            id_color += 1
+            plt.legend()
+            plt.savefig("%s/best_fit_%s_%s.png" % (plot_dir,spec,fname))
+            plt.clf()
+            plt.close()
 
-    plt.legend()
-    plt.savefig("%s/best_fit_%s.png" % (plot_dir,spec))
-    plt.clf()
-    plt.close()
 
 
 

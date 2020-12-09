@@ -1,5 +1,13 @@
-#import matplotlib
-#matplotlib.use("Agg")
+"""
+This script take the EE-EB-BE-BB covariance elements
+and form a multifrequency covariance matrix with form
+EE-BB-EB-BE, note that the EB block contain both auto-freq and cross-freq elements
+while the BE block only contains cross frequency element (in order to avoid redundancy).
+The cov mat is cut at EB_lmin and EB_lmax provided in the global_EB.dict
+"""
+
+
+
 from pspy import so_dict, pspy_utils, so_cov
 import planck_utils
 import numpy as np
@@ -28,7 +36,6 @@ min_planck = d["EB_lmin"]
 max_planck = d["EB_lmax"]
 
 
-
 bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 nbins = len(bin_hi)
 
@@ -40,7 +47,7 @@ for c1,freq1 in enumerate(freqs):
         spec_name += ["%s_%sx%s_%s" % (exp, freq1, exp, freq2)]
 
 # pspy produced EE-EB-BE-BB block covariance matrix, in this step of the code we read them and plug them in
-# a multifrequency covariance matrix of size  4 (EE-EB-BE-BB) * nbins * nspec (100x100, 100x143, ..., 217x217)
+# a multifrequency covariance matrix of size  4 (EE-EB-BE-BB) * nbins * nspec (100x100, 100x143, ..., 353x353)
 # we also create a projection matrix that will be used for combining EB and BE in the futur
 
 analytic_dict= {}
@@ -59,7 +66,7 @@ for sid1, name1 in enumerate(spec_name):
                 analytic_dict[sid1, sid2, spec1, spec2] = cut_off_diag_at_delta_l(sub_cov, bin_c, delta_l)
 
 
-# the order of planck cov mat is EE-BB-EB
+# the order of planck cov mat is EE-BB-EB-BE
 spectra = ["EE", "BB", "EB", "BE"]
 
 full_analytic_cov = np.zeros((4 * nspec * nbins, 4 * nspec * nbins))
@@ -113,12 +120,9 @@ for sid, name in enumerate(spec_name):
         nbins_rm =  (id_stop - id_stop_cut) + (id_start_cut - id_start)
         print("for %s %sx%s remove %d bin of %d" % (spec, f0, f1, nbins_rm, nbins))
         
-        
 block_to_delete = block_to_delete.astype(int)
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=1)
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=0)
-
-
 
 print ("is matrix positive definite:", planck_utils.is_pos_def(full_analytic_cov))
 print ("is matrix symmetric :", planck_utils.is_symmetric(full_analytic_cov))

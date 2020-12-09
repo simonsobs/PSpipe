@@ -1,3 +1,10 @@
+"""
+This script is used to model the EE and BB power spectra of planck in
+the Minami & Komatsu mask, the model is used later to create the covariance matrix
+We use a broken power law, this is not super accurate, we will revisit it later.
+"""
+
+
 import numpy as np
 import pylab as plt
 from pspy import so_dict, so_spectra, pspy_utils

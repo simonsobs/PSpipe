@@ -1,3 +1,8 @@
+"""
+This script is used to compute all EE-EB-BE-BB covariance elements
+"""
+
+
 from pspy import pspy_utils, so_dict, so_map, so_mpi, so_mcm, so_spectra, so_cov
 import numpy as np
 import healpy as hp
@@ -44,31 +49,18 @@ for c1,freq1 in enumerate(freqs):
         if c1>c2: continue
         
         
-        l, bl1_hm1_T = np.loadtxt(d["beam_%s_hm1_T" % freq1], unpack=True)
-        l, bl1_hm2_T = np.loadtxt(d["beam_%s_hm2_T" % freq1], unpack=True)
         l, bl1_hm1_pol = np.loadtxt(d["beam_%s_hm1_pol" % freq1], unpack=True)
         l, bl1_hm2_pol = np.loadtxt(d["beam_%s_hm2_pol" % freq1], unpack=True)
-
-
-        l, bl2_hm1_T = np.loadtxt(d["beam_%s_hm1_T" % freq2], unpack=True)
-        l, bl2_hm2_T = np.loadtxt(d["beam_%s_hm2_T" % freq2], unpack=True)
         l, bl2_hm1_pol = np.loadtxt(d["beam_%s_hm1_pol" % freq2], unpack=True)
         l, bl2_hm2_pol = np.loadtxt(d["beam_%s_hm2_pol" % freq2], unpack=True)
 
 
-        bl1_hm1_T, bl1_hm2_T, bl2_hm1_T, bl2_hm2_T = bl1_hm1_T[2: lmax + 2], bl1_hm2_T[2: lmax + 2], bl2_hm1_T[2: lmax + 2], bl2_hm2_T[2: lmax + 2]
-        bl1_hm1_pol, bl1_hm2_pol, bl2_hm1_pol, bl2_hm2_pol = bl1_hm1_pol[2: lmax + 2], bl1_hm2_pol[2: lmax + 2], bl2_hm1_pol[2: lmax + 2], bl2_hm2_pol[2: lmax + 2]
+        bl1_hm1_pol, bl1_hm2_pol = bl1_hm1_pol[2: lmax + 2], bl1_hm2_pol[2: lmax + 2]
+        bl2_hm1_pol, bl2_hm2_pol = bl2_hm1_pol[2: lmax + 2], bl2_hm2_pol[2: lmax + 2]
 
-
-        bl1["EE"] = np.sqrt(bl1_hm1_pol * bl1_hm2_pol)
-        bl2["EE"] = np.sqrt(bl2_hm1_pol * bl2_hm2_pol)
-        bl1["EB"] = np.sqrt(bl1_hm1_pol * bl1_hm2_pol)
-        bl2["EB"] = np.sqrt(bl2_hm1_pol * bl2_hm2_pol)
-        bl1["BE"] = np.sqrt(bl1_hm1_pol * bl1_hm2_pol)
-        bl2["BE"] = np.sqrt(bl2_hm1_pol * bl2_hm2_pol)
-        bl1["BB"] = np.sqrt(bl1_hm1_pol * bl1_hm2_pol)
-        bl2["BB"] = np.sqrt(bl2_hm1_pol * bl2_hm2_pol)
-
+        for spec in ["EE", "EB", "BE", "BB"]:
+            bl1[spec] = np.sqrt(bl1_hm1_pol * bl1_hm2_pol)
+            bl2[spec] = np.sqrt(bl2_hm1_pol * bl2_hm2_pol)
 
         if d["use_noise_from_sim"]:
             if d["use_ffp10"] == True:

@@ -1,3 +1,7 @@
+"""
+Implementation of the Minami & Komatsu birefringence likelihood
+We run chain using cobaya.
+"""
 
 import sys
 from itertools import combinations_with_replacement as cwr

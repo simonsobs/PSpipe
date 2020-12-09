@@ -113,7 +113,7 @@ for sid, name in enumerate(spec_name):
         id_stop_cut = id_stop - (len(id[0]))
         block_to_delete = np.append(block_to_delete, np.arange(id_stop_cut,id_stop))
         nbins_rm =  (id_stop - id_stop_cut) + (id_start_cut - id_start)
-        print("for %sx%s remove %d bin of %d" % (f0,f1, nbins_rm, nbins))
+        print("for %s %sx%s remove %d bin of %d" % (spec, f0, f1, nbins_rm, nbins))
         
         
 block_to_delete = block_to_delete.astype(int)

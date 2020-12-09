@@ -33,13 +33,11 @@ beam_217_hm2_T = data_dir + "beams/beam_T_217_hm2.dat"
 beam_217_hm1_pol = data_dir + "beams/beam_pol_217_hm1.dat"
 beam_217_hm2_pol = data_dir + "beams/beam_pol_217_hm2.dat"
 
-# We need to grab the real 353 beam at some point
+# We need to grab the real 353 beam at some point (using 217 for now)
 beam_353_hm1_T = data_dir + "beams/beam_T_217_hm1.dat"
 beam_353_hm2_T = data_dir + "beams/beam_T_217_hm2.dat"
 beam_353_hm1_pol = data_dir + "beams/beam_pol_217_hm1.dat"
 beam_353_hm2_pol = data_dir + "beams/beam_pol_217_hm2.dat"
-
-
 
 binning_file = "data/binning_30.dat"
 
@@ -55,8 +53,7 @@ remove_mono_dipo_pol = False
 noise_binning_size = 30
 use_noise_from_sim = False
 
-
-#Simulation
+# Simulation
 
 theoryfile = "data/cosmo2017_10K_acc3_lensedCls.dat"
 fg_and_syst = "data/base_plikHM_TTTEEE_lowl_lowE_lensing.minimum.plik_foregrounds"
@@ -69,8 +66,7 @@ ffp10_dir = "/global/cscratch1/sd/tlouis/ffp10/"
 EB_lmin = 50
 EB_lmax = 1500
 
-
-# theoretical nl_Th
+# Theoretical nl_Th
 
 beam_th_100 = 9.66
 beam_th_143 = 7.22

@@ -31,6 +31,9 @@ This can be done simply by running
 .. code:: shell
 
     python get_planck_data.py global_EB.dict
+    
+Note that you will also need to copy the ``data`` folder of the ``Planck_pspy`` project at the location 
+where you plan to run your scripts (it contains theory Cl and binning file).
 
 Then we read the Minami & Komatsu window functions and compute the associated mode coupling matrices
 

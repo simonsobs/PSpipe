@@ -52,7 +52,8 @@ cov = np.load("%s/covmat_EB.npy" % cov_dir)
 cov_EB = cov[EE_BB_block_size:, EE_BB_block_size: ]
 inv_cov = np.linalg.inv(cov_EB)
 
-# Then we read the EB-BE spectra
+# Then we read the data spectra, note that we do not
+# combien Ei Bj and Ej Bi (where i,j stand for freq)
 
 Cb_data = {}
 Cb_data_array = np.zeros((2, nfreq_pairs, nbins))
@@ -76,7 +77,8 @@ for id_f, fpair in enumerate(freq_pairs):
     Cb_data_array[1, id_f, :] = Cb["BB"][id]
     
 
-# Then run the chains
+# Then we define a chi2 and run the chains
+
 def compute_loglike(alpha100, alpha143, alpha217, alpha353, beta):
     alpha = {"100": alpha100, "143": alpha143, "217": alpha217, "353": alpha353}
     vec_res = []

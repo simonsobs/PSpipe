@@ -56,7 +56,7 @@ Now we can generate individual analytical covariances matrices (note that for th
 
 .. code:: shell
 
-    salloc -N 28 -C haswell -q interactive -t 04:00:00
+    salloc -N 28 -C haswell -q interactive -t 01:00:00
     
     srun -n 28 -c 64 --cpu_bind=cores python EB_planck_covariance.py global_EB.dict
 

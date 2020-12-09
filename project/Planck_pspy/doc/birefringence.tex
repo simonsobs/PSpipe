@@ -1,0 +1,281 @@
+\documentclass[a4paper, 11pt]{article}
+\usepackage{graphicx,wrapfig,subfigure,amsmath,amssymb,epsfig,bm}
+\usepackage{listings,textcomp,color,geometry}
+\geometry{hmargin=2cm, vmargin=2cm}
+
+\def\Box{\mathord{\dalemb{7.9}{8}\hbox{\hskip1pt}}}
+\def\dalemb#1#2{{\vbox{\hrule height.#2pt
+        \hbox{\vrule width.#2pt height#1pt \kern#1pt \vrule width.#2pt}
+        \hrule height.#2pt}}}
+
+\def\eop{\mathcal{E}}
+\def\bop{\mathcal{B}}
+\def\ba{\begin{eqnarray}}
+\def\ea{\end{eqnarray}}
+\def\be{\begin{equation}}
+\def\ee{\end{equation}}
+\def\tr{{\rm tr}}
+\def\Var{{\rm Var}}
+\def\gtorder{\mathrel{\raise.3ex\hbox{$>$}\mkern-14mu
+             \lower0.6ex\hbox{$\sim$}}}
+\def\ltorder{\mathrel{\raise.3ex\hbox{$<$}\mkern-14mu
+             \lower0.6ex\hbox{$\sim$}}}
+
+\def\bb{{\mathfrak b}}
+\newcommand{\ellb }{\boldsymbol{\ell }}
+
+% Personal colors defined here
+\newcommand{\skn}[1]{{\color{red}#1}}
+\newcommand{\TIB}[1]{{\color{blue}#1}}
+\newcommand{\assume}[1]{{\bf#1}}
+
+\begin{document}
+
+\title{Birefringence with ACTPol data}
+\maketitle
+
+\section{Why Birefringence}
+
+From WMAP Komatsu paper:
+Since the temperature and E-mode polarization are
+parity-even and the B-mode polarization is parity-odd, the TB and EB correlations should vanish in a universe that conserves parity. For this reason the TB and EB correlations are usually used to check for systematics, and not widely used as a cosmological probe.
+Polarization of photons offers a powerful way of probing the cosmological parity violation, or the “cosmological birefringence”. Let us consider a parity-violating interaction term in the Lagrangian such as the Chern-Simons term ${\cal L}_{CS}= -\frac{1}{2}p_{\alpha}A_{\beta}{\tilde F}^{\alpha \beta}$ where $F^{\alpha \beta}$ and $A_{\beta}$ are the usual electromagnetic tensor and vector potential, ${\tilde F}^{\alpha \beta}$ is the dual tensor and $p_{\alpha}$ is an arbitrary timelike vector. This Chern-Simons term makes two polarization states of photons propagate with different group velocities, causing the polarization plane to rotate by an angle $\alpha$ (Carroll 1990). $p_{\alpha}$ can be sources by a scalar field. Such a field might have something to do with dark energy, for example. We are therefore looking at a potential parity-violating interaction between the visible section (i.e., photons) and dark sector (i.e., dark energy)
+
+\section{Effects of Birefringence on the Power Spectra}
+
+(from 1904.12440)
+When polarisation angles are rotated uniformly over the sky by an angle $\alpha$, spherical harmonics coefficients of the observed E- and B-mode polarisation, denoted by "o", are related
+to the intrinsic ones by
+\ba
+a_{\ell m}^{E, o} &=& a_{\ell m}^{E} \cos 2\alpha - a_{\ell m}^{B} \sin 2\alpha  \nonumber \\
+a_{\ell m}^{B, o} &=& a_{\ell m}^{E} \sin 2\alpha + a_{\ell m}^{B} \cos 2\alpha
+\ea
+For the power spectra, we obtained
+\ba
+C^{EE,o}_{\ell} &=&  C^{EE}_{\ell} \cos^{2} 2\alpha + C^{BB}_{\ell} \sin^{2} 2\alpha -  C^{EB}_{\ell} \sin 4\alpha \nonumber \\
+C^{BB,o}_{\ell} &=&  C^{EE}_{\ell} \sin^{2} 2\alpha + C^{BB}_{\ell} \cos^{2} 2\alpha + C^{EB}_{\ell} \sin 4\alpha \nonumber \\
+C^{EB,o}_{\ell} &=&  C^{EE}_{\ell} \sin 2\alpha  \cos 2\alpha. - C^{BB}_{\ell} \sin 2\alpha  \cos 2\alpha + C^{EB}_{\ell}(\cos^{2} 2\alpha - \sin^{2} 2\alpha) \nonumber \\
+C^{EB,o}_{\ell} &=&  \frac{\sin 4 \alpha}{2} (C^{EE}_{\ell} . - C^{BB}_{\ell} ) + \cos 4\alpha \ C^{EB}_{\ell}
+\ea
+We can relate the observed EB power spectrum to the observed EE and BB power spectrum
+\ba
+C^{EB,o}_{\ell} &=&  \frac{1}{2} ( C^{EE,o}_{\ell} - C^{BB,o}_{\ell} ) \tan 4\alpha  + \frac{ C^{EB}_{\ell}}{\cos 4 \alpha}
+\ea
+indeed
+\ba
+C^{EB,o}_{\ell} &=&  \frac{1}{2} ( C^{EE}_{\ell} \cos^{2} 2\alpha + C^{BB}_{\ell} \sin^{2} 2\alpha -  C^{EB}_{\ell} \sin 4\alpha - C^{EE}_{\ell} \sin^{2} 2\alpha - C^{BB}_{\ell} \cos^{2} 2\alpha - C^{EB}_{\ell} \sin 4\alpha \nonumber) \tan 4\alpha  \nonumber \\
+ &+& \frac{ C^{EB}_{\ell}}{\cos 4 \alpha} \nonumber \\
+&=&   \frac{1}{2} ( C^{EE}_{\ell}  - C^{BB}_{\ell} ) \sin 4\alpha + C^{EB}_{\ell}  (\frac{1 - \sin^{2}  4 \alpha}{\cos 4 \alpha} ) = \frac{1}{2} ( C^{EE}_{\ell}  - C^{BB}_{\ell} ) \sin 4\alpha + C^{EB}_{\ell}  \cos 4 \alpha  
+\ea 
+
+
+\section{Likelihood}
+
+
+Assuming the intrinsic EB is equal to zero, we can therefore form two different $\chi^{2}$ 
+\ba
+\chi^{2} (\alpha)_{\rm data} &=& \sum_{bb'} \left[C^{EB,o}_{b} -  \frac{1}{2} ( C^{EE,o}_{b} - C^{BB,o}_{b} ) \tan 4\alpha \right] \Xi^{-1}_{bb'} \left[ C^{EB,o}_{b'} -  \frac{1}{2} ( C^{EE,o}_{b'} - C^{BB,o}_{b'} ) \tan 4\alpha \right] \\
+\chi^{2} (\alpha)_{\rm th} &=& \sum_{bb'} \left[C^{EB, o}_{b} -  \frac{1}{2} ( C^{EE}_{b} - C^{BB}_{b} ) \sin 4\alpha \right] \Xi^{-1}_{bb'} \left[C^{EB, o}_{b} -  \frac{1}{2} ( C^{EE}_{b} - C^{BB}_{b} ) \sin 4\alpha \right]
+\ea
+
+\section{Fisher}
+\ba
+F_{\alpha \alpha} &=& \left \langle \frac{ \partial^{2} {\cal L} }{ \partial^{2}{\alpha} }\right \rangle \Bigr\rvert_{\alpha=0} = 4 \sum_{bb'}( C^{EE,o}_{b} - C^{BB,o}_{b} ) \Xi^{-1}_{bb'} ( C^{EE,o}_{b'} - C^{BB,o}_{b'} ) \\
+\sigma_{\alpha} &=& \frac{1}{2} ( \sum_{bb'}( C^{EE,o}_{b} - C^{BB,o}_{b} ) \Xi^{-1}_{bb'} ( C^{EE,o}_{b'} - C^{BB,o}_{b'} ))^{-1/2}
+\ea
+
+\section{Separating CMB and foregrounds}
+
+The foregrounds are sensitive to the instrumental miscalibrated angle but is not sensitive to the cosmic birefringence (because fg is at redshift zero) we can therefore separate CMB and fg.
+Now let's call $\alpha$ the instrumental miscalibrated angle and $\beta$ the birefringence angle
+\ba
+a_{\ell m}^{E, o} &=& a^{\rm fg, E}_{\ell m} \cos (2\alpha) - a^{\rm fg, B}_{\ell m} \sin (2\alpha)  + a^{\rm CMB, E}_{\ell m} \cos (2\alpha + 2\beta) - a^{\rm CMB, B}_{\ell m} \sin (2\alpha + 2\beta) + a_{\ell m}^{E, N} \nonumber \\
+a_{\ell m}^{B, o} &=& a^{\rm fg, E}_{\ell m} \sin (2\alpha) + a^{\rm fg, B}_{\ell m} \cos (2\alpha) + a^{\rm CMB, E}_{\ell m} \sin (2\alpha + 2\beta ) + a^{\rm CMB, B}_{\ell m} \cos (2\alpha + 2\beta) + a_{\ell m}^{B, N}
+\ea
+Assuming we form cross spectra
+\ba
+C^{EE,o}_{\ell} &=& \langle( a^{\rm fg, E}_{\ell m} \cos (2\alpha) - a^{\rm fg, B}_{\ell m} \sin (2\alpha)  + a^{\rm CMB, E}_{\ell m} \cos (2\alpha + 2\beta) - a^{\rm CMB, B}_{\ell m} \sin (2\alpha + 2\beta)) \nonumber \\
+&\times& (a^{\rm fg, E}_{\ell m} \cos (2\alpha) - a^{\rm fg, B}_{\ell m} \sin (2\alpha)  + a^{\rm CMB, E}_{\ell m} \cos (2\alpha + 2\beta) - a^{\rm CMB, B}_{\ell m} \sin (2\alpha + 2\beta)) \rangle \nonumber \\
+&=& C^{\rm EE, fg}_{\ell} \cos^{2} (2\alpha) + C^{\rm BB, fg}_{\ell} \sin^{2} (2\alpha) + C^{\rm EE, CMB}_{\ell} \cos^{2} (2\alpha + 2\beta)   + C^{\rm BB, CMB}_{\ell} \sin^{2} (2\alpha + 2\beta)  \nonumber \\
+&-& 2 C^{\rm EB, fg}_{\ell} \cos (2\alpha)\sin (2\alpha) -  2 C^{\rm EB, CMB}_{\ell} \cos (2\alpha + 2\beta)\sin (2\alpha + 2\beta)  \nonumber \\
+C^{BB,o}_{\ell}  &=& C^{\rm EE, fg}_{\ell} \sin^{2} (2\alpha) + C^{\rm BB, fg}_{\ell} \cos^{2} (2\alpha) + C^{\rm EE, CMB}_{\ell} \sin^{2} (2\alpha + 2\beta)   + C^{\rm BB, CMB}_{\ell} \cos^{2} (2\alpha + 2\beta)  \nonumber \\
+&+& 2 C^{\rm EB, fg}_{\ell} \cos (2\alpha)\sin (2\alpha) +  2 C^{\rm EB, CMB}_{\ell} \cos (2\alpha + 2\beta)\sin (2\alpha + 2\beta)  \nonumber \\
+\ea
+And
+\ba
+C^{EB,o}_{\ell} &=&  \langle( a^{\rm fg, E}_{\ell m} \cos (2\alpha) - a^{\rm fg, B}_{\ell m} \sin (2\alpha)  + a^{\rm CMB, E}_{\ell m} \cos (2\alpha + 2\beta) - a^{\rm CMB, B}_{\ell m} \sin (2\alpha + 2\beta)) \nonumber \\
+&\times& (a^{\rm fg, E}_{\ell m} \sin (2\alpha) + a^{\rm fg, B}_{\ell m} \cos (2\alpha)  + a^{\rm CMB, E}_{\ell m} \sin (2\alpha + 2\beta) + a^{\rm CMB, B}_{\ell m} \cos (2\alpha + 2\beta)) \rangle \nonumber \\
+&=&  C^{\rm EE, fg}_{\ell} \cos (2\alpha) \sin (2\alpha)  - C^{\rm BB, fg}_{\ell} \sin (2\alpha) \cos (2\alpha) + C^{\rm EE, CMB}_{\ell} \cos (2\alpha +2 \beta) \sin (2\alpha +2 \beta)  \nonumber \\
+&-& C^{\rm BB, CMB}_{\ell} \sin (2\alpha + 2\beta) \cos (2\alpha + 2\beta)  +  C^{\rm EB, fg}_{\ell} ( \cos^{2} (2\alpha) - \sin^{2} (2\alpha) )  \nonumber \\
+&+&  C^{\rm EB, CMB}_{\ell} ( \cos^{2} (2\alpha + 2\beta) - \sin^{2} (2\alpha + 2 \beta)) \nonumber \\
+C^{EB,o}_{\ell} &=& \frac{\sin(4\alpha)}{2}(C^{\rm EE, fg}_{\ell}  - C^{\rm BB, fg}_{\ell} ) + \frac{\sin(4\alpha + 4\beta)}{2}(C^{\rm EE, CMB}_{\ell}  - C^{\rm BB, CMB}_{\ell} )  \nonumber \\
+&+& \cos(4\alpha) C^{\rm EB, fg}_{\ell} + \cos(4\alpha + 4\beta) C^{\rm EB, CMB}_{\ell} 
+\ea
+Let's demonstrate that we can refactorize $C^{EB,o}_{\ell}$ as 
+\ba
+C^{EB,o}_{\ell} &=& \frac{\tan(4\alpha)}{2} \left( C^{EB,o}_{\ell} - C^{BB,o}_{\ell} \right) + \frac{ \sin(4\beta)}{2 \cos(4\alpha)}( C^{\rm EE, CMB}_{\ell} - C^{\rm BB, CMB}_{\ell}) \nonumber \\
+&+& \frac{1}{\cos(4\alpha)} C^{\rm EB, fg}_{\ell}  + \frac{ \cos(4\beta)}{ \cos(4\alpha)} C^{\rm EB, CMB}_{\ell} 
+\ea
+We can expand 
+\ba
+ \left( C^{EE,o}_{\ell} - C^{BB,o}_{\ell} \right) &=&   C^{\rm EE, fg}_{\ell} \cos^{2} (2\alpha) + C^{\rm BB, fg}_{\ell} \sin^{2} (2\alpha) + C^{\rm EE, CMB}_{\ell} \cos^{2} (2\alpha + 2\beta)   \nonumber \\
+ &+& C^{\rm BB, CMB}_{\ell} \sin^{2} (2\alpha + 2\beta)  - 2 C^{\rm EB, fg}_{\ell} \cos (2\alpha)\sin (2\alpha) -  2 C^{\rm EB, CMB}_{\ell} \cos (2\alpha + 2\beta)\sin (2\alpha + 2\beta)  \nonumber \\
+&-& C^{\rm EE, fg}_{\ell} \sin^{2} (2\alpha) - C^{\rm BB, fg}_{\ell} \cos^{2} (2\alpha) - C^{\rm EE, CMB}_{\ell} \sin^{2} (2\alpha + 2\beta)   - C^{\rm BB, CMB}_{\ell} \cos^{2} (2\alpha + 2\beta)  \nonumber \\
+&-& 2 C^{\rm EB, fg}_{\ell} \cos (2\alpha)\sin (2\alpha) -  2 C^{\rm EB, CMB}_{\ell} \cos (2\alpha + 2\beta)\sin (2\alpha + 2\beta) \nonumber \\
+&=&   \cos (4\alpha) (C^{\rm EE, fg}_{\ell}  - C^{\rm BB, fg}_{\ell} ) + \cos (4\alpha + 4\beta) (C^{\rm EE, CMB}_{\ell}  - C^{\rm BB, CMB}_{\ell} ) \nonumber \\
+&-& 2 C^{\rm EB, fg}_{\ell} \sin (4\alpha) - 2 C^{\rm EB, CMB}_{\ell} \sin (4\alpha + 4\beta)
+\ea
+so that
+\ba
+C^{EB,o}_{\ell} &=& \frac{\sin(4\alpha)}{2}  (C^{\rm EE, fg}_{\ell}  - C^{\rm BB, fg}_{\ell} ) +  \frac{\tan(4\alpha)}{2} \cos (4\alpha + 4\beta) (C^{\rm EE, CMB}_{\ell}  - C^{\rm BB, CMB}_{\ell} ) \nonumber \\
+&-& C^{\rm EB, fg}_{\ell} \sin (4\alpha )\tan(4\alpha)  - C^{\rm EB, CMB}_{\ell} \sin (4\alpha + 4\beta)\tan(4\alpha)  + \frac{ \sin(4\beta)}{2 \cos(4\alpha)}( C^{\rm EE, CMB}_{\ell} - C^{\rm BB, CMB}_{\ell}) \nonumber \\
+&+& \frac{1}{\cos(4\alpha)} C^{\rm EB, fg}_{\ell}  + \frac{ \cos(4\beta)}{ \cos(4\alpha)} C^{\rm EB, CMB}_{\ell}  \nonumber \\
+&=& \frac{\sin(4\alpha)}{2}  (C^{\rm EE, fg}_{\ell}  - C^{\rm BB, fg}_{\ell} )  +  (C^{\rm EE, CMB}_{\ell}  - C^{\rm BB, CMB}_{\ell} )\left( \frac{\tan(4\alpha)}{2} \cos (4\alpha + 4\beta) + \frac{ \sin(4\beta)}{2 \cos(4\alpha)}\right) \nonumber \\
+&+& \left( \frac{1}{\cos(4\alpha)} - \sin (4\alpha )\tan(4\alpha) \right) C^{\rm EB, fg}_{\ell} + \left(\frac{ \cos(4\beta)}{ \cos(4\alpha)} - \sin (4\alpha + 4\beta)\tan(4\alpha) \right) C^{\rm EB, CMB}_{\ell}
+\ea
+Let's do some trigometry
+\ba
+ \frac{1}{\cos(4\alpha)} - \sin (4\alpha )\tan(4\alpha)  &=& \cos(4\alpha) \nonumber \\
+ \frac{ \cos(4\beta)}{ \cos(4\alpha)} - \sin (4\alpha + 4\beta)\tan(4\alpha)   &=&  \frac{ \cos(4\beta)}{ \cos(4\alpha)}  - (\sin (4\alpha) \cos(4\beta)+ \sin (4\beta) \cos(4\alpha) )\tan(4\alpha) \nonumber \\
+ &=&  \frac{ \cos(4\beta)}{ \cos(4\alpha)}   - \left(\sin^{2} (4\alpha)\frac{ \cos(4\beta)}{ \cos(4\alpha)}+ \sin (4\beta) \sin(4\alpha) \right) \nonumber \\
+ &=&  \frac{ \cos(4\beta)}{ \cos(4\alpha)}(1 - \sin^{2} (4\alpha)) - \sin (4\beta) \sin(4\alpha) )  \nonumber \\
+ &=&  \cos(4\beta) \cos(4\alpha) -  \sin (4\beta) \sin(4\alpha)  = \cos(4\beta + 4\alpha) \nonumber \\
+  \frac{\tan(4\alpha)}{2} \cos (4\alpha + 4\beta) + \frac{ \sin(4\beta)}{2 \cos(4\alpha)} &=&    \frac{\tan(4\alpha)}{2} [\cos (4\alpha) \cos( 4\beta)- \sin(4\alpha) \sin( 4\beta) ]+ \frac{ \sin(4\beta)}{2 \cos(4\alpha)} \nonumber \\
+ &=& \frac{\sin (4\alpha) \cos( 4\beta)}{2} - \frac{ \sin^{2}(4\alpha) \sin( 4\beta) }{2 \cos(4 \alpha)} + \frac{ \sin(4\beta)}{2 \cos(4\alpha)} \nonumber \\
+ &=& \frac{\sin (4\alpha) \cos( 4\beta)}{2}  -  \frac{ \sin(4\beta)}{2 \cos(4\alpha)}  ( \sin^{2}(4\alpha)-1)  \nonumber \\
+ &=& \frac{\sin (4\alpha) \cos( 4\beta)}{2}  + \frac{\cos (4\alpha) \sin( 4\beta)}{2} = \frac{ \sin(4\alpha + 4\beta)}{2}
+\ea 
+With this, we demonstrate that 
+\ba
+C^{EB,o}_{\ell} &=& \frac{\tan(4\alpha)}{2} \left( C^{EB,o}_{\ell} - C^{BB,o}_{\ell} \right) + \frac{ \sin(4\beta)}{2 \cos(4\alpha)}( C^{\rm EE, CMB}_{\ell} - C^{\rm BB, CMB}_{\ell}) \nonumber \\
+&+& \frac{1}{\cos(4\alpha)} C^{\rm EB, fg}_{\ell}  + \frac{ \cos(4\beta)}{ \cos(4\alpha)} C^{\rm EB, CMB}_{\ell} 
+\ea
+is indeed equal to
+\ba
+C^{EB,o}_{\ell} &=& \frac{\sin(4\alpha)}{2}(C^{\rm EE, fg}_{\ell}  - C^{\rm BB, fg}_{\ell} ) + \frac{\sin(4\alpha + 4\beta)}{2}(C^{\rm EE, CMB}_{\ell}  - C^{\rm BB, CMB}_{\ell} )  \nonumber \\
+&+& \cos(4\alpha) C^{\rm EB, fg}_{\ell} + \cos(4\alpha + 4\beta) C^{\rm EB, CMB}_{\ell} 
+\ea
+which complete the proof.
+
+
+\section{A Multifrequency likelihood}
+We can rewrite 
+\ba
+C^{EE,o}_{\ell} &=& C^{\rm EE, fg}_{\ell} \cos^{2} (2\alpha) + C^{\rm BB, fg}_{\ell} \sin^{2} (2\alpha) + C^{\rm EE, CMB}_{\ell} \cos^{2} (2\alpha + 2\beta)   + C^{\rm BB, CMB}_{\ell} \sin^{2} (2\alpha + 2\beta)  \nonumber \\
+&-& 2 C^{\rm EB, fg}_{\ell} \cos (2\alpha)\sin (2\alpha) -  2 C^{\rm EB, CMB}_{\ell} \cos (2\alpha + 2\beta)\sin (2\alpha + 2\beta)  \nonumber \\
+C^{BB,o}_{\ell}  &=& C^{\rm EE, fg}_{\ell} \sin^{2} (2\alpha) + C^{\rm BB, fg}_{\ell} \cos^{2} (2\alpha) + C^{\rm EE, CMB}_{\ell} \sin^{2} (2\alpha + 2\beta)   + C^{\rm BB, CMB}_{\ell} \cos^{2} (2\alpha + 2\beta)  \nonumber \\
+&+& 2 C^{\rm EB, fg}_{\ell} \cos (2\alpha)\sin (2\alpha) +  2 C^{\rm EB, CMB}_{\ell} \cos (2\alpha + 2\beta)\sin (2\alpha + 2\beta)  \nonumber \\
+C^{EB,o}_{\ell} &=& \frac{\sin(4\alpha)}{2}(C^{\rm EE, fg}_{\ell}  - C^{\rm BB, fg}_{\ell} ) + \frac{\sin(4\alpha + 4\beta)}{2}(C^{\rm EE, CMB}_{\ell}  - C^{\rm BB, CMB}_{\ell} )  \nonumber \\
+&+& \cos(4\alpha) C^{\rm EB, fg}_{\ell} + \cos(4\alpha + 4\beta) C^{\rm EB, CMB}_{\ell} 
+\ea
+In a matricial form, let's neglect intrinsic EB correlation
+\ba
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},o}_{\ell} \cr
+C^{\rm B_{i}B_{j},o}_{\ell}
+\end{pmatrix}
+&=&
+{\bm R}(\alpha_{i}, \alpha_{j}) 
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},fg}_{\ell} \cr
+C^{\rm B_{i}B_{j},fg}_{\ell}
+\end{pmatrix}
++
+{\bm R}(\alpha_{i} + \beta, \alpha_{j}+ \beta) 
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},CMB}_{\ell} \cr
+C^{\rm B_{i}B_{j},CMB}_{\ell}
+\end{pmatrix} \nonumber \\
+C^{\rm E_{i}B_{j},o}_{\ell} &=& \vec{R}^{T} (\alpha_{i}, \alpha_{j}) 
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},fg}_{\ell} \cr
+C^{\rm B_{i}B_{j},fg}_{\ell}
+\end{pmatrix}
++ 
+\vec{R}^{T} (\alpha_{i} + \beta, \alpha_{j}+ \beta ) 
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},CMB}_{\ell} \cr
+C^{\rm B_{i}B_{j},CMB}_{\ell}
+\end{pmatrix}
+\ea
+With  ${\bm R}$ a rotation matrix and $\vec{R}$ a rotation vector 
+\ba
+{\bm R}(\alpha_{i}, \alpha_{j})  =
+\begin{pmatrix} 
+\cos(2\alpha_{i}) \cos(2\alpha_{j}) &
+\sin(2\alpha_{i}) \sin(2\alpha_{j}) \cr
+\sin(2\alpha_{i}) \sin(2\alpha_{j}) &
+\cos(2\alpha_{i}) \cos(2\alpha_{j}) 
+\end{pmatrix}
+\ea
+\ba
+\vec{R} (\alpha_{i}, \alpha_{j}) =
+\begin{pmatrix} 
+\cos(2\alpha_{i}) \sin(2\alpha_{j}) \cr
+-\sin(2\alpha_{i}) \cos(2\alpha_{j}) 
+\end{pmatrix}
+\ea
+We can simply re-express $C^{EB,o}_{\ell} $ as a function of $C^{EE,o}_{\ell} $ and $C^{BB,o}_{\ell} $ using the equation above
+\ba
+C^{\rm E_{i}B_{j},o}_{\ell} &=& \vec{R}^{T} (\alpha_{i}, \alpha_{j}) \left[ {\bm R}^{-1}(\alpha_{i}, \alpha_{j})  
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},o}_{\ell} \cr
+C^{\rm B_{i}B_{j},o}_{\ell}
+\end{pmatrix} 
+- {\bm R}^{-1}(\alpha_{i}, \alpha_{j}) 
+{\bm R}(\alpha_{i} + \beta, \alpha_{j}+ \beta) 
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},CMB}_{\ell} \cr
+C^{\rm B_{i}B_{j},CMB}_{\ell}
+\end{pmatrix}  \right] \nonumber \\
+&+& 
+\vec{R}^{T} (\alpha_{i} + \beta, \alpha_{j}+ \beta ) 
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},CMB}_{\ell} \cr
+C^{\rm B_{i}B_{j},CMB}_{\ell}
+\end{pmatrix} \nonumber \\
+&=& \vec{R}^{T} (\alpha_{i}, \alpha_{j})  {\bm R}^{-1}(\alpha_{i}, \alpha_{j})  
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},o}_{\ell} \cr
+C^{\rm B_{i}B_{j},o}_{\ell}
+\end{pmatrix}  \nonumber \\
+&+& \left[  \vec{R}^{T} (\alpha_{i} + \beta, \alpha_{j}+ \beta ) -  \vec{R}^{T} (\alpha_{i}, \alpha_{j})  {\bm R}^{-1}(\alpha_{i}, \alpha_{j})  {\bm R}(\alpha_{i} + \beta, \alpha_{j}+ \beta) \right]
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},CMB}_{\ell} \cr
+C^{\rm B_{i}B_{j},CMB}_{\ell}
+\end{pmatrix}
+\ea
+This can finally be rewritten
+\ba
+C^{\rm E_{i}B_{j},o}_{\ell} - {\bm A}  
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},o}_{\ell} \cr
+C^{\rm B_{i}B_{j},o}_{\ell}
+\end{pmatrix}
+-   {\bm B} 
+\begin{pmatrix} 
+C^{\rm E_{i}E_{j},CMB}_{\ell} \cr
+C^{\rm B_{i}B_{j},CMB}_{\ell}
+\end{pmatrix}
+= 0
+\ea
+with 
+\ba
+{\bm A} =  
+\begin{pmatrix} 
+ \vec{R}^{T} (\alpha_{i}, \alpha_{j})  {\bm R}^{-1}(\alpha_{i}, \alpha_{j}) 
+\end{pmatrix}  
+\ea
+and 
+\ba
+{\bm B} = \vec{R}^{T} (\alpha_{i} + \beta, \alpha_{j}+ \beta ) -  \vec{R}^{T} (\alpha_{i}, \alpha_{j})  {\bm R}^{-1}(\alpha_{i}, \alpha_{j})  {\bm R}(\alpha_{i} + \beta, \alpha_{j}+ \beta)
+\ea
+%A multifrequency likelihood can be written
+%\ba
+%-2\ln {\cal L} &=& \sum_{\ell}  ({\bm A}  \vec{C_{\ell}}^{\rm o}  - {\bm B}\vec{C_{\ell}}^{\rm CMB} )^{T} {\bm C}^{-1}({\bm A}  \vec{C_{\ell}}^{\rm o}  - {\bm B}\vec{C_{\ell}}^{\rm CMB} ) \nonumber \\
+%{\bm C} &=& {\bm A} {\rm Cov}( \vec{C_{\ell}}^{\rm o}, \vec{C_{\ell}}^{\rm o}) {\bm A}^{T}
+%\ea
+
+\end{document}
+
+

@@ -53,7 +53,7 @@ cov_EB = cov[EE_BB_block_size:, EE_BB_block_size: ]
 inv_cov = np.linalg.inv(cov_EB)
 
 # Then we read the data spectra, note that we do not
-# combien Ei Bj and Ej Bi (where i,j stand for freq)
+# combine Ei Bj and Ej Bi (where i,j stand for freq) since they experience different birefringence
 
 Cb_data = {}
 Cb_data_array = np.zeros((2, nfreq_pairs, nbins))

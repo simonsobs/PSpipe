@@ -63,7 +63,6 @@ for sid1, name1 in enumerate(spec_name):
 spectra = ["EE", "BB", "EB", "BE"]
 
 full_analytic_cov = np.zeros((4 * nspec * nbins, 4 * nspec * nbins))
-Pmat = np.zeros((4 * nspec * nbins, 4 * nspec * nbins))
 
 for sid1, name1 in enumerate(spec_name):
     for sid2, name2 in enumerate(spec_name):
@@ -80,16 +79,6 @@ for sid1, name1 in enumerate(spec_name):
                 id_stop_2 = (sid2 + 1) * nbins + s2 * nspec * nbins
                 full_analytic_cov[id_start_1:id_stop_1, id_start_2: id_stop_2] = analytic_dict[sid1, sid2,  spec1, spec2]
 
-                if name1 == name2:
-                    _, f0 = na.split("_")
-                    _, f1 = nb.split("_")
-
-                    if spec1 == spec2:
-                        Pmat[id_start_1:id_stop_1, id_start_2: id_stop_2] = np.eye(nbins)
-                    if f0 != f1:
-                        if spec1 == "BE" or spec1 == "EB":
-                            if spec2 == "BE" or spec2 == "EB":
-                                Pmat[id_start_1:id_stop_1, id_start_2: id_stop_2] = np.eye(nbins)/2
 
 # we make the matrix symmetric
 transpose = full_analytic_cov.copy().T
@@ -106,49 +95,35 @@ for sid, name in enumerate(spec_name):
         _, f1 = nb.split("_")
         id_start = sid * nbins + s * nspec * nbins
         id_stop = (sid + 1) * nbins + s * nspec * nbins
+        
+        
         if (spec == "BE") & (f0 == f1):
-            block_to_delete = np.append(block_to_delete, np.arange(id_start, id_stop))
+            min_planck = 0
+            max_planck = 0
+        else:
+            min_planck = d["EB_lmin"]
+            max_planck = d["EB_lmax"]
 
+        print(f0,f1)
 
-block_to_delete = block_to_delete.astype(int)
-full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=1)
-full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=0)
-Pmat = np.delete(Pmat, block_to_delete, axis=1)
-Pmat = np.delete(Pmat, block_to_delete, axis=0)
-Pmat = Pmat[0: Pmat.shape[0], 0: 3 * nspec * nbins]
-
-full_analytic_cov = (np.dot(np.dot(Pmat.T, full_analytic_cov), Pmat))
-
-
-spectra = ["EE", "BB", "EB"]
-
-block_to_delete = []
-
-for sid, name in enumerate(spec_name):
-    na, nb = name.split("x")
-    for s, spec in enumerate(spectra):
-        
-        _, f0 = na.split("_")
-        _, f1 = nb.split("_")
-        
-        print (f0, f1, spec)
-        id_start = sid * nbins + s * nspec * nbins
-        id_stop = (sid + 1) * nbins + s * nspec * nbins
-        
-            
         id = np.where(bin_c < min_planck)
         id_start_cut = id_start + len(id[0])
         block_to_delete = np.append(block_to_delete, np.arange(id_start, id_start_cut))
-            
+        print(len(id[0]))
+
         id = np.where(bin_c > max_planck)
         id_stop_cut = id_stop - (len(id[0]))
         block_to_delete = np.append(block_to_delete, np.arange(id_stop_cut,id_stop))
+        print(len(id[0]))
+
 
 block_to_delete = block_to_delete.astype(int)
-
-
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=1)
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=0)
+
+
+
+
 
 print ("is matrix positive definite:", planck_utils.is_pos_def(full_analytic_cov))
 print ("is matrix symmetric :", planck_utils.is_symmetric(full_analytic_cov))

@@ -1,5 +1,6 @@
 """
 This script is used to create window function for the EB analysis
+(not in used if we use directly Minami&Komatsu window)
 """
 
 import healpy as hp

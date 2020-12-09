@@ -1,5 +1,6 @@
 """
 This script is used to download complementary data for the EB analysis
+(not in used if we use directly Minami&Komatsu window)
 """
 
 import numpy as np

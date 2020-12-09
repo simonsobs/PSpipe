@@ -1,4 +1,5 @@
 freqs = ["100", "143", "217", "353"]
+
 splits = ["hm1", "hm2"]
 
 data_dir = 'planck_data/'
@@ -14,8 +15,8 @@ window_T_143 = [data_dir + "EB_masks/HFI_freq143_hm1_PSwithMasked_CO10p0_apo0p5d
 window_pol_143 = [data_dir + "EB_masks/HFI_freq143_hm1_PSwithMasked_CO10p0_apo0p5deg.fits", data_dir + "EB_masks/HFI_freq143_hm2_PSwithMasked_CO10p0_apo0p5deg.fits"]
 window_T_217 = [data_dir + "EB_masks/HFI_freq217_hm1_PSwithMasked_CO10p0_apo0p5deg.fits", data_dir + "EB_masks/HFI_freq217_hm2_PSwithMasked_CO10p0_apo0p5deg.fits"]
 window_pol_217 = [data_dir + "EB_masks/HFI_freq217_hm1_PSwithMasked_CO10p0_apo0p5deg.fits", data_dir + "EB_masks/HFI_freq217_hm2_PSwithMasked_CO10p0_apo0p5deg.fits"]
-window_T_353 = [data_dir + "EB_masks/HFI_freq353_hm1_PSwithMasked_CO10p0_apo0p5deg.fits", data_dir + "EB_masks/HFI_freq353_hm2_PSwithMasked_CO10p0_apo0p5deg.fits"]
-window_pol_353 = [data_dir + "EB_masks/HFI_freq353_hm1_PSwithMasked_CO10p0_apo0p5deg.fits", data_dir + "EB_masks/HFI_freq353_hm2_PSwithMasked_CO10p0_apo0p5deg.fits"]
+window_T_353 = [data_dir + "EB_masks/HFI_freq353_hm1_PSwithMasked_CO10p0_apo0p5deg_missingpix.fits", data_dir + "EB_masks/HFI_freq353_hm2_PSwithMasked_CO10p0_apo0p5deg_missingpix.fits"]
+window_pol_353 = [data_dir + "EB_masks/HFI_freq353_hm1_PSwithMasked_CO10p0_apo0p5deg_missingpix.fits", data_dir + "EB_masks/HFI_freq353_hm2_PSwithMasked_CO10p0_apo0p5deg_missingpix.fits"]
 
 beam_100_hm1_T = data_dir + "beams/beam_T_100_hm1.dat"
 beam_100_hm2_T = data_dir + "beams/beam_T_100_hm2.dat"
@@ -65,7 +66,7 @@ use_ffp10 = True
 ffp10_dir = "/global/cscratch1/sd/tlouis/ffp10/"
 
 #Birefringence_fit_range
-EB_lmin = 100
+EB_lmin = 50
 EB_lmax = 1500
 
 

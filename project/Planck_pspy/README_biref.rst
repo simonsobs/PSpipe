@@ -76,4 +76,4 @@ Finally let's plot the result
 
 .. code:: shell
 
-    python EB_plot_chain_results.py global_EB.dict
+    python EB_plot_chain_results.py 

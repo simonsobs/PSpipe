@@ -32,7 +32,7 @@ This can be done simply by running
 
     python get_planck_data.py global_EB.dict
 
-then we read the Minami & Komatsu window functions and compute the associated mode coupling matrices
+Then we read the Minami & Komatsu window functions and compute the associated mode coupling matrices
 
 .. code:: shell
 

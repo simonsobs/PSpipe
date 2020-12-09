@@ -2,7 +2,7 @@
 Planck birefringence
 **************************
 
-The goal of this pipeline is to reproduce the Minami & Komatsu results (https://arxiv.org/pdf/2011.11254.pdf)
+The goal of this pipeline is to reproduce the Minami & Komatsu `results  <https://arxiv.org/pdf/2011.11254.pdf>`_
 Some scientific doc (extracted from their paper) can be found `Here <https://github.com/simonsobs/PSpipe/blob/master/project/Planck_pspy/doc/birefringence.pdf>`_
 
 Requirements

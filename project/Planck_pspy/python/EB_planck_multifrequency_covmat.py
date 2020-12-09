@@ -86,7 +86,7 @@ transpose[full_analytic_cov != 0] = 0
 full_analytic_cov += transpose
 
 
-# we remove auto frequency ET
+# we remove auto frequency BE
 block_to_delete = []
 for sid, name in enumerate(spec_name):
     na, nb = name.split("x")
@@ -104,24 +104,21 @@ for sid, name in enumerate(spec_name):
             min_planck = d["EB_lmin"]
             max_planck = d["EB_lmax"]
 
-        print(f0,f1)
 
         id = np.where(bin_c < min_planck)
         id_start_cut = id_start + len(id[0])
         block_to_delete = np.append(block_to_delete, np.arange(id_start, id_start_cut))
-        print(len(id[0]))
 
         id = np.where(bin_c > max_planck)
         id_stop_cut = id_stop - (len(id[0]))
         block_to_delete = np.append(block_to_delete, np.arange(id_stop_cut,id_stop))
-        print(len(id[0]))
-
-
+        nbins_rm =  (id_stop-id_stop_cut) + (id_start_cut-id_start)
+        print("for %sx%s remove %d bin of %d" % (f0,f1, nbins_rm, nbins))
+        
+        
 block_to_delete = block_to_delete.astype(int)
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=1)
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=0)
-
-
 
 
 

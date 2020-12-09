@@ -60,7 +60,7 @@ Now we can generate individual analytical covariances matrices (note that for th
     
     srun -n 28 -c 64 --cpu_bind=cores python EB_planck_covariance.py global_EB.dict
 
-Then, we can rearrange the covariance elements into a multifrequency covariance matrix (keeping EB and BE separeted for freq1 != freq2)
+Then, we can rearrange the covariance elements into a multifrequency covariance matrix (keeping EB and BE separated for freq1 != freq2)
 
 .. code:: shell
 

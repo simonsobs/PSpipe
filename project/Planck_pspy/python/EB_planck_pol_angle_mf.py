@@ -26,8 +26,6 @@ chain_dir = "chains"
 pspy_utils.create_directory(chain_dir)
 
 
-
-
 # First create theory array
 lth, Clth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type="Cl", lmax=lmax, start_at_zero=False)
 Cb_th = {}
@@ -42,17 +40,17 @@ Cb_th_array[0,:] = Cb_th["EE"]
 Cb_th_array[1,:] = Cb_th["BB"]
 
 
-# Then read the data
-cov = np.load("%s/covmat_EB.npy" % cov_dir)
-size_cov = cov.shape[0]
-cov_EB = cov[np.int(2*size_cov/3):, np.int(2*size_cov/3): ]
-#plt.matshow(so_cov.cov2corr(cov_EB))
-#plt.show()
-#sys.exit()
-inv_cov = np.linalg.inv(cov_EB)
-
+# Then read the data, we first select the EB-BE part of the cov mat and inverse it
 freq_pairs = list(cwr(freqs, 2))
 nfreq_pairs= len(freq_pairs)
+
+EE_BB_block_size = 2 * nbins * nfreq_pairs
+cov = np.load("%s/covmat_EB.npy" % cov_dir)
+cov_EB = cov[EE_BB_block_size:, EE_BB_block_size: ]
+inv_cov = np.linalg.inv(cov_EB)
+
+# Then we read the EB-BE spectra
+
 Cb_data = {}
 Cb_data_array = np.zeros((2, nfreq_pairs, nbins))
 
@@ -65,8 +63,14 @@ for id_f, fpair in enumerate(freq_pairs):
         lb, Cb2 = so_spectra.read_ps("%s/spectra_%s.dat" % (spectra_dir, spec_name2), spectra=spectra)
         for spec in ["EE", "EB", "BE", "BB"]:
             Cb[spec] = (Cb[spec] +  Cb2[spec]) / 2
-            
-    Cb_data["EB", "%sx%s" % (f0, f1)] = (Cb["EB"][id] + Cb["BE"][id]) / 2
+    
+    
+    if f0 == f1:
+        Cb_data["EB", "%sx%s" % (f0, f1)] = (Cb["EB"][id]+Cb["BE"][id])/2
+    else:
+        Cb_data["EB", "%sx%s" % (f0, f1)] = Cb["EB"][id]
+        Cb_data["EB", "%sx%s" % (f1, f0)] = Cb["BE"][id]
+
     Cb_data_array[0, id_f,  :] = Cb["EE"][id]
     Cb_data_array[1, id_f, :] = Cb["BB"][id]
     
@@ -75,11 +79,25 @@ for id_f, fpair in enumerate(freq_pairs):
 def compute_loglike(alpha100, alpha143, alpha217, alpha353, beta):
     alpha = {"100": alpha100, "143": alpha143, "217": alpha217, "353": alpha353}
     vec_res = []
+    
+    # First the EB part
     for id_f, (f0, f1) in enumerate(freq_pairs):
         A = EB_birefringence_tools.get_my_A_vector(alpha[f0], alpha[f1])
         B = EB_birefringence_tools.get_B_vector(alpha[f0], alpha[f1], beta)
         res = (
             Cb_data["EB", "%sx%s" % (f0, f1)]
+            - np.dot(A, Cb_data_array[:, id_f, :])
+            - np.dot(B, Cb_th_array[:, :])
+        )
+        vec_res = np.append(vec_res, res)
+        
+    # Then the BE part
+    for id_f, (f0, f1) in enumerate(freq_pairs):
+        if f0 == f1: continue
+        A = EB_birefringence_tools.get_my_A_vector(alpha[f1], alpha[f0])
+        B = EB_birefringence_tools.get_B_vector(alpha[f1], alpha[f0], beta)
+        res = (
+            Cb_data["EB", "%sx%s" % (f1, f0)]
             - np.dot(A, Cb_data_array[:, id_f, :])
             - np.dot(B, Cb_th_array[:, :])
         )

@@ -3,6 +3,7 @@ Planck pspy
 **************************
 
 In this ``project`` we compute the power spectra and covariances matrices of the Planck data.
+
 As a bonus, you can have a look at `README_biref  <https://github.com/simonsobs/PSpipe/edit/master/project/Planck_pspy/README_biref.rst>`_ for a preliminary reproduction of the Minami & Komatsu `results  <https://arxiv.org/pdf/2011.11254.pdf>`_.
 
 Requirements

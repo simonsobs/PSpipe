@@ -31,8 +31,11 @@ This can be done simply by running
 .. code:: shell
 
     python get_planck_data.py global_EB.dict
+    
+Note that you will also need to copy the ``data`` folder of the ``Planck_pspy`` project at the location 
+where you plan to run your scripts (it contains theory Cl and binning file).
 
-then we read the Minami & Komatsu window functions and compute the associated mode coupling matrices
+Then we read the Minami & Komatsu window functions and compute the associated mode coupling matrices
 
 .. code:: shell
 
@@ -60,7 +63,7 @@ Now we can generate individual analytical covariances matrices (note that for th
     
     srun -n 28 -c 64 --cpu_bind=cores python EB_planck_covariance.py global_EB.dict
 
-Then, we can rearrange the covariance elements into a multifrequency covariance matrix (keeping EB and BE separeted for freq1 != freq2)
+Then, we can rearrange the covariance elements into a multifrequency covariance matrix (keeping EB and BE separated for freq1 != freq2)
 
 .. code:: shell
 
@@ -76,4 +79,4 @@ Finally let's plot the result
 
 .. code:: shell
 
-    python EB_planck_pol_angle_mf.py global_EB.dict
+    python EB_plot_chain_results.py 

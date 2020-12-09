@@ -96,14 +96,12 @@ for sid, name in enumerate(spec_name):
         id_start = sid * nbins + s * nspec * nbins
         id_stop = (sid + 1) * nbins + s * nspec * nbins
         
-        
         if (spec == "BE") & (f0 == f1):
             min_planck = 0
             max_planck = 0
         else:
             min_planck = d["EB_lmin"]
             max_planck = d["EB_lmax"]
-
 
         id = np.where(bin_c < min_planck)
         id_start_cut = id_start + len(id[0])

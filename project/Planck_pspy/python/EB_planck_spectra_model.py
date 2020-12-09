@@ -27,7 +27,6 @@ size = 1
 exp = "Planck"
 
 
-#color_array = ["blue", "red", "green", "orange", "purple", "pink"]
 
 clth = {}
 lth, clth["TT"], clth["EE"], clth["BB"], clth["TE"] =np.loadtxt("data/cosmo2017_10K_acc3_lensedCls.dat", unpack=True)
@@ -46,7 +45,6 @@ for spec in ["EE", "BB", "EB"]:
             l, ps = so_spectra.read_ps("%s/spectra_unbin_%s.dat" % (spectra_dir, spec_name), spectra=spectra)
             data_size =  len(ps[spec])
             
-            #ps[spec] = ps[spec][:lmax]
             if spec is not "EB":
                 fg = ps[spec] - clth[spec][:data_size]
                 fg_th = np.zeros(len(lth))

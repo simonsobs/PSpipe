@@ -38,7 +38,6 @@ def get_my_A_vector(alpha_i, alpha_j):
     return A
 
 
-
 def get_B_vector(alpha_i, alpha_j, beta):
     R_vec = get_R_vec(alpha_i, alpha_j)
     R_matrix = get_R_matrix(alpha_i, alpha_j)

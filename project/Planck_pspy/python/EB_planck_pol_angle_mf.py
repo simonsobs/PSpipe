@@ -25,7 +25,6 @@ cov_dir = "covariances"
 chain_dir = "chains"
 pspy_utils.create_directory(chain_dir)
 
-
 # First create theory array
 lth, Clth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type="Cl", lmax=lmax, start_at_zero=False)
 Cb_th = {}
@@ -58,16 +57,14 @@ for id_f, fpair in enumerate(freq_pairs):
     f0, f1 = fpair
     spec_name = "Planck_%sxPlanck_%s-hm1xhm2" % (f0, f1)
     lb, Cb = so_spectra.read_ps("%s/spectra_%s.dat" % (spectra_dir, spec_name), spectra=spectra)
-    if f0 != f1:
+    
+    if f0 == f1:
+        Cb_data["EB", "%sx%s" % (f0, f1)] = (Cb["EB"][id] + Cb["BE"][id]) / 2
+    else:
         spec_name2 = "Planck_%sxPlanck_%s-hm2xhm1" % (f0, f1)
         lb, Cb2 = so_spectra.read_ps("%s/spectra_%s.dat" % (spectra_dir, spec_name2), spectra=spectra)
         for spec in ["EE", "EB", "BE", "BB"]:
             Cb[spec] = (Cb[spec] +  Cb2[spec]) / 2
-    
-    
-    if f0 == f1:
-        Cb_data["EB", "%sx%s" % (f0, f1)] = (Cb["EB"][id]+Cb["BE"][id])/2
-    else:
         Cb_data["EB", "%sx%s" % (f0, f1)] = Cb["EB"][id]
         Cb_data["EB", "%sx%s" % (f1, f0)] = Cb["BE"][id]
 

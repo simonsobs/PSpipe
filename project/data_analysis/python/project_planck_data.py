@@ -7,7 +7,6 @@ import sys
 
 import healpy as hp
 import numpy as np
-from astropy.io import fits
 from pspy import so_dict, so_map, so_mpi
 
 

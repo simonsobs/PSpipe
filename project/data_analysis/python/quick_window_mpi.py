@@ -40,6 +40,8 @@ apod_pts_source_degree = d["apod_pts_source_degree"]
 apod_survey_degree = d["apod_survey_degree"]
 # we will skip the edges of the survey where the noise is very difficult to model
 skip_from_edges_degree = d["skip_from_edges_degree"]
+# use cross link information
+use_cross_link = d.get("use_cross_link", True)
 # the threshold on the amount of cross linking to keep the data in
 cross_link_threshold = d["cross_link_threshold"]
 
@@ -47,7 +49,6 @@ window_dir = "windows"
 surveys = d["surveys"]
 
 pspy_utils.create_directory(window_dir)
-ps_mask = so_map.read_map(d["ps_mask"])
 gal_mask = so_map.read_map(d["gal_mask"])
 
 patch = None
@@ -75,22 +76,26 @@ for task in subtasks:
     task = int(task)
     sv, ar = sv_list[task], ar_list[task]
 
-    survey_mask = gal_mask.copy()
-    survey_mask.data[:] = 1
+    survey_mask_file = d.get("survey_{}".format(sv))
+    if survey_mask_file is not None:
+        survey_mask = so_map.read_map(survey_mask_file)
+    else:
+        survey_mask = gal_mask.copy()
+        survey_mask.data[:] = 1
 
-    maps = d["maps_%s_%s" % (sv, ar)]
+        maps = d["maps_%s_%s" % (sv, ar)]
+        for k, map in enumerate(maps):
+            print(map)
+            map = so_map.read_map(map)
+            survey_mask.data[map.data[0] == 0.0] = 0.0
 
-    for k, map in enumerate(maps):
-        print(map)
-        map = so_map.read_map(map)
-        survey_mask.data[map.data[0] == 0.0] = 0.0
-
-    for k, map in enumerate(maps):
-        index = map.find("map.fits")
-        xlink_map = map[:index] + "xlink.fits"
-        print(xlink_map)
-        x_mask = create_crosslink_mask(xlink_map, cross_link_threshold)
-        survey_mask.data *= x_mask
+        if use_cross_link:
+            for k, map in enumerate(maps):
+                index = map.find("map.fits")
+                xlink_map = map[:index] + "xlink.fits"
+                print(xlink_map)
+                x_mask = create_crosslink_mask(xlink_map, cross_link_threshold)
+                survey_mask.data *= x_mask
 
     survey_mask.data *= gal_mask.data
 
@@ -98,6 +103,9 @@ for task in subtasks:
         survey_mask.data *= patch.data
 
     dist = so_window.get_distance(survey_mask, rmax=apod_survey_degree * np.pi / 180)
+
+    # Get associated point source mask given survey name
+    ps_mask = so_map.read_map(d.get("ps_mask_{}".format(sv), raise_error=True))
 
     # so here we create a binary mask this will only be used in order to skip the edges before applying the kspace filter
     # this step is a bit arbitrary and preliminary, more work to be done here

@@ -1,0 +1,217 @@
+surveys = ["s17", "s18", "s19", "planck"]
+
+arrays_s17 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+arrays_s18 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+arrays_s19 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+arrays_planck = ["f100", "f143", "f217", "f353"]
+
+data_dir = "../data/s171819_product/"
+
+maps_s17_pa4_f150 = [data_dir + "maps/s17_cmb_pa4_f150_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s17_pa4_f220 = [data_dir + "maps/s17_cmb_pa4_f220_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s17_pa5_f090 = [data_dir + "maps/s17_cmb_pa5_f090_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s17_pa5_f150 = [data_dir + "maps/s17_cmb_pa5_f150_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s17_pa6_f090 = [data_dir + "maps/s17_cmb_pa6_f090_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s17_pa6_f150 = [data_dir + "maps/s17_cmb_pa6_f150_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+
+maps_s18_pa4_f150 = [data_dir + "maps/s18_cmb_pa4_f150_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s18_pa4_f220 = [data_dir + "maps/s18_cmb_pa4_f220_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s18_pa5_f090 = [data_dir + "maps/s18_cmb_pa5_f090_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s18_pa5_f150 = [data_dir + "maps/s18_cmb_pa5_f150_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s18_pa6_f090 = [data_dir + "maps/s18_cmb_pa6_f090_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+maps_s18_pa6_f150 = [data_dir + "maps/s18_cmb_pa6_f150_nohwp_night_1pass_2way_set%d_map.fits" % i for i in range(2)]
+
+maps_s19_pa4_f150 = [data_dir + "maps/s19_cmb_pa4_f150_nohwp_night_1pass_4way_set%d_map.fits" % i for i in range(4)]
+maps_s19_pa4_f220 = [data_dir + "maps/s19_cmb_pa4_f220_nohwp_night_1pass_4way_set%d_map.fits" % i for i in range(4)]
+maps_s19_pa5_f090 = [data_dir + "maps/s19_cmb_pa5_f090_nohwp_night_1pass_4way_set%d_map.fits" % i for i in range(4)]
+maps_s19_pa5_f150 = [data_dir + "maps/s19_cmb_pa5_f150_nohwp_night_1pass_4way_set%d_map.fits" % i for i in range(4)]
+maps_s19_pa6_f090 = [data_dir + "maps/s19_cmb_pa6_f090_nohwp_night_1pass_4way_set%d_map.fits" % i for i in range(4)]
+maps_s19_pa6_f150 = [data_dir + "maps/s19_cmb_pa6_f150_nohwp_night_1pass_4way_set%d_map.fits" % i for i in range(4)]
+
+maps_planck_f100 = [data_dir + "maps/HFI_SkyMap_100_split%s_2048_R4.00_full_car.fits" % i for i in "AB"]
+maps_planck_f143 = [data_dir + "maps/HFI_SkyMap_143_split%s_2048_R4.00_full_car.fits" % i for i in "AB"]
+maps_planck_f217 = [data_dir + "maps/HFI_SkyMap_217_split%s_2048_R4.00_full_car.fits" % i for i in "AB"]
+maps_planck_f353 = [data_dir + "maps/HFI_SkyMap_353_split%s_2048_R4.00_full_car.fits" % i for i in "AB"]
+
+cal_s17_pa4_f150 = 1.0
+cal_s17_pa4_f220 = 1.0
+cal_s17_pa5_f090 = 1.0
+cal_s17_pa5_f150 = 1.0
+cal_s17_pa6_f090 = 1.0
+cal_s17_pa6_f150 = 1.0
+
+cal_s18_pa4_f150 = 1.0
+cal_s18_pa4_f220 = 1.0
+cal_s18_pa5_f090 = 1.0
+cal_s18_pa5_f150 = 1.0
+cal_s18_pa6_f090 = 1.0
+cal_s18_pa6_f150 = 1.0
+
+cal_s19_pa4_f150 = 1.0
+cal_s19_pa4_f220 = 1.0
+cal_s19_pa5_f090 = 1.0
+cal_s19_pa5_f150 = 1.0
+cal_s19_pa6_f090 = 1.0
+cal_s19_pa6_f150 = 1.0
+
+cal_planck_f100 = 1.0
+cal_planck_f143 = 1.0
+cal_planck_f217 = 1.0
+cal_planck_f353 = 1.0
+
+nu_eff_s17_pa4_f150 = 150
+nu_eff_s17_pa4_f220 = 220
+nu_eff_s17_pa5_f090 = 90
+nu_eff_s17_pa5_f150 = 150
+nu_eff_s17_pa6_f090 = 90
+nu_eff_s17_pa6_f150 = 150
+
+nu_eff_s18_pa4_f150 = 150
+nu_eff_s18_pa4_f220 = 220
+nu_eff_s18_pa5_f090 = 90
+nu_eff_s18_pa5_f150 = 150
+nu_eff_s18_pa6_f090 = 90
+nu_eff_s18_pa6_f150 = 150
+
+nu_eff_s19_pa4_f150 = 150
+nu_eff_s19_pa4_f220 = 220
+nu_eff_s19_pa5_f090 = 90
+nu_eff_s19_pa5_f150 = 150
+nu_eff_s19_pa6_f090 = 90
+nu_eff_s19_pa6_f150 = 150
+
+nu_eff_planck_f100 = 100
+nu_eff_planck_f143 = 143
+nu_eff_planck_f217 = 217
+nu_eff_planck_f353 = 353
+
+beam_s17_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
+
+beam_s18_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
+
+beam_s19_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
+
+
+window_T_s17_pa4_f150 = "windows/window_s17_pa4_f150.fits"
+window_T_s17_pa4_f220 = "windows/window_s17_pa4_f150.fits"
+window_T_s17_pa5_f090 = "windows/window_s17_pa5_f090.fits"
+window_T_s17_pa5_f150 = "windows/window_s17_pa5_f150.fits"
+window_T_s17_pa6_f090 = "windows/window_s17_pa6_f090.fits"
+window_T_s17_pa6_f150 = "windows/window_s17_pa6_f150.fits"
+
+window_pol_s17_pa4_f150 = "windows/window_s17_pa4_f150.fits"
+window_pol_s17_pa4_f220 = "windows/window_s17_pa4_f150.fits"
+window_pol_s17_pa5_f090 = "windows/window_s17_pa5_f090.fits"
+window_pol_s17_pa5_f150 = "windows/window_s17_pa5_f150.fits"
+window_pol_s17_pa6_f090 = "windows/window_s17_pa6_f090.fits"
+window_pol_s17_pa6_f150 = "windows/window_s17_pa6_f150.fits"
+
+window_T_s18_pa4_f150 = "windows/window_s18_pa4_f150.fits"
+window_T_s18_pa4_f220 = "windows/window_s18_pa4_f150.fits"
+window_T_s18_pa5_f090 = "windows/window_s18_pa5_f090.fits"
+window_T_s18_pa5_f150 = "windows/window_s18_pa5_f150.fits"
+window_T_s18_pa6_f090 = "windows/window_s18_pa6_f090.fits"
+window_T_s18_pa6_f150 = "windows/window_s18_pa6_f150.fits"
+
+window_pol_s18_pa4_f150 = "windows/window_s18_pa4_f150.fits"
+window_pol_s18_pa4_f220 = "windows/window_s18_pa4_f150.fits"
+window_pol_s18_pa5_f090 = "windows/window_s18_pa5_f090.fits"
+window_pol_s18_pa5_f150 = "windows/window_s18_pa5_f150.fits"
+window_pol_s18_pa6_f090 = "windows/window_s18_pa6_f090.fits"
+window_pol_s18_pa6_f150 = "windows/window_s18_pa6_f150.fits"
+
+window_T_s19_pa4_f150 = "windows/window_s19_pa4_f150.fits"
+window_T_s19_pa4_f220 = "windows/window_s19_pa4_f150.fits"
+window_T_s19_pa5_f090 = "windows/window_s19_pa5_f090.fits"
+window_T_s19_pa5_f150 = "windows/window_s19_pa5_f150.fits"
+window_T_s19_pa6_f090 = "windows/window_s19_pa6_f090.fits"
+window_T_s19_pa6_f150 = "windows/window_s19_pa6_f150.fits"
+
+window_pol_s19_pa4_f150 = "windows/window_s19_pa4_f150.fits"
+window_pol_s19_pa4_f220 = "windows/window_s19_pa4_f150.fits"
+window_pol_s19_pa5_f090 = "windows/window_s19_pa5_f090.fits"
+window_pol_s19_pa5_f150 = "windows/window_s19_pa5_f150.fits"
+window_pol_s19_pa6_f090 = "windows/window_s19_pa6_f090.fits"
+window_pol_s19_pa6_f150 = "windows/window_s19_pa6_f150.fits"
+
+window_T_planck_f100 = "windows/window_planck_f100.fits"
+window_T_planck_f143 = "windows/window_planck_f143.fits"
+window_T_planck_f217 = "windows/window_planck_f217.fits"
+window_T_planck_f353 = "windows/window_planck_f353.fits"
+
+window_pol_planck_f100 = "windows/window_planck_f100.fits"
+window_pol_planck_f143 = "windows/window_planck_f143.fits"
+window_pol_planck_f217 = "windows/window_planck_f217.fits"
+window_pol_planck_f353 = "windows/window_planck_f353.fits"
+
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
+niter = 0
+remove_mean = False
+lmax = 3000
+type = "Dl"
+write_splits_spectra = True
+multistep_path = data_dir
+use_toeplitz  = True
+
+#plot
+range_TT = [100, 8000]
+range_TE = [-150, 150]
+range_ET = [-150, 150]
+range_EE = [-20, 50]
+
+#window parameters
+
+survey_planck = data_dir + "masks/act_survey.fits"
+
+ps_mask_s17 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+ps_mask_s18 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+ps_mask_s19 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+ps_mask_planck = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+
+gal_mask = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
+
+src_free_maps = True
+apod_pts_source_degree = 0.3
+apod_survey_degree = 2
+skip_from_edges_degree = 1
+use_cross_link = False
+cross_link_threshold = 0.97
+
+# kspace filter parameters
+
+use_kspace_filter = True
+vk_mask = [-90, 90]
+hk_mask = [-50, 50]
+
+# transfer functions
+
+tf_s17 = data_dir + "transfer_fcns/tf.dat"
+tf_s18 = data_dir + "transfer_fcns/tf.dat"
+tf_s19 = data_dir + "transfer_fcns/tf.dat"
+tf_planck = data_dir + "transfer_fcns/tf.dat"
+
+# best fit params (only used for sim generation and covariances computation)
+
+cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+fg_components =  ["cibc", "cibp", "kSZ", "radio", "tSZ"]
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "n_CIBC": 1.20,"a_s": 3.10, "T_d": 9.60}
+
+#sim
+iStart = 0
+iStop = 99

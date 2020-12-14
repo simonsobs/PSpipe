@@ -61,7 +61,7 @@ for id_sv1, sv1 in enumerate(surveys):
                     _, Nl = so_spectra.read_ps(ps_model_dir + "/%s.dat" % spec_name_noise, spectra=spectra)
 
                 for spec in ["TT", "TE", "ET", "EE"]:
-                        
+
                     name = "%sx%s_%s" % (freq1, freq2, spec)
                     _, ps_th = np.loadtxt("%s/best_fit_%s.dat"%(bestfit_dir, name), unpack=True)
 
@@ -151,7 +151,7 @@ for task in subtasks:
 
     tf = np.ones(len(lb))
     for sv in [sva, svb, svc, svd]:
-        if d["tf_%s" % sv] is not None:
+        if d.get("tf_%s" % sv) is not None:
             _, _, sv_tf, _ = np.loadtxt(d["tf_%s" % sv], unpack=True)
             tf *= sv_tf[:len(lb)]**(1/4)
 

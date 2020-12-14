@@ -92,7 +92,7 @@ for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]
     nsplits_1 = nsplit[sv1]
 
-    if d["tf_%s" % sv1] is not None:
+    if d.get("tf_%s" % sv1) is not None:
         print("will deconvolve tf of %s" %sv1)
         _, _, tf1, _ = np.loadtxt(d["tf_%s" % sv1], unpack=True)
     else:
@@ -104,7 +104,7 @@ for id_sv1, sv1 in enumerate(surveys):
             arrays_2 = d["arrays_%s" % sv2]
             nsplits_2 = nsplit[sv2]
 
-            if d["tf_%s" % sv2] is not None:
+            if d.get("tf_%s" % sv2) is not None:
                 print("will deconvolve tf of %s" %sv2)
                 _, _, tf2, _ = np.loadtxt(d["tf_%s" % sv2], unpack=True)
             else:

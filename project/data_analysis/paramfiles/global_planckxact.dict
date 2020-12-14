@@ -209,7 +209,6 @@ hk_mask = [-50, 50]
 tf_s17 = data_dir + "transfer_fcns/tf.dat"
 tf_s18 = data_dir + "transfer_fcns/tf.dat"
 tf_s19 = data_dir + "transfer_fcns/tf.dat"
-tf_planck = data_dir + "transfer_fcns/tf.dat"
 
 # best fit params (only used for sim generation and covariances computation)
 

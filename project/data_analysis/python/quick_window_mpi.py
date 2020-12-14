@@ -49,6 +49,7 @@ window_dir = "windows"
 surveys = d["surveys"]
 
 pspy_utils.create_directory(window_dir)
+ps_mask = so_map.read_map(d["ps_mask"])
 gal_mask = so_map.read_map(d["gal_mask"])
 
 patch = None
@@ -103,9 +104,6 @@ for task in subtasks:
         survey_mask.data *= patch.data
 
     dist = so_window.get_distance(survey_mask, rmax=apod_survey_degree * np.pi / 180)
-
-    # Get associated point source mask given survey name
-    ps_mask = so_map.read_map(d["ps_mask_%s" % sv])
 
     # so here we create a binary mask this will only be used in order to skip the edges before applying the kspace filter
     # this step is a bit arbitrary and preliminary, more work to be done here

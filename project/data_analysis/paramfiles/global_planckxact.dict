@@ -85,57 +85,31 @@ nu_eff_planck_f143 = 143
 nu_eff_planck_f217 = 217
 nu_eff_planck_f353 = 353
 
-beam_T_s17_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
-beam_T_s17_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
-beam_T_s17_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
-beam_T_s17_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
-beam_T_s17_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
-beam_T_s17_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s17_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
 
-beam_T_s18_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
-beam_T_s18_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
-beam_T_s18_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
-beam_T_s18_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
-beam_T_s18_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
-beam_T_s18_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s18_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
 
-beam_T_s19_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
-beam_T_s19_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
-beam_T_s19_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
-beam_T_s19_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
-beam_T_s19_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
-beam_T_s19_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
+beam_s19_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
 
-beam_T_planck_f100 = data_dir + "beams/beam_T_100_mean.dat"
-beam_T_planck_f143 = data_dir + "beams/beam_T_143_mean.dat"
-beam_T_planck_f217 = data_dir + "beams/beam_T_217_mean.dat"
-beam_T_planck_f353 = data_dir + "beams/beam_T_217_mean.dat"
-
-beam_pol_s17_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s17_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s17_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s17_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s17_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s17_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
-
-beam_pol_s18_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s18_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s18_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s18_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s18_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s18_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
-
-beam_pol_s19_pa4_f150 = data_dir + "beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s19_pa4_f220 = data_dir + "beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s19_pa5_f090 = data_dir + "beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s19_pa5_f150 = data_dir + "beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s19_pa6_f090 = data_dir + "beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt"
-beam_pol_s19_pa6_f150 = data_dir + "beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt"
-
-beam_pol_planck_f100 = data_dir + "beams/beam_pol_100_mean.dat"
-beam_pol_planck_f143 = data_dir + "beams/beam_pol_143_mean.dat"
-beam_pol_planck_f217 = data_dir + "beams/beam_pol_217_mean.dat"
-beam_pol_planck_f353 = data_dir + "beams/beam_pol_217_mean.dat"
+beam_planck_f100 = data_dir + "beams/beam_T_100_mean.dat"
+beam_planck_f143 = data_dir + "beams/beam_T_143_mean.dat"
+beam_planck_f217 = data_dir + "beams/beam_T_217_mean.dat"
+beam_planck_f353 = data_dir + "beams/beam_T_217_mean.dat"
 
 window_T_s17_pa4_f150 = "windows/window_s17_pa4_f150.fits"
 window_T_s17_pa4_f220 = "windows/window_s17_pa4_f150.fits"
@@ -189,7 +163,7 @@ window_pol_planck_f143 = "windows/window_planck_f143.fits"
 window_pol_planck_f217 = "windows/window_planck_f217.fits"
 window_pol_planck_f353 = "windows/window_planck_f353.fits"
 
-binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
 niter = 0
 remove_mean = False
 lmax = 3000
@@ -208,11 +182,7 @@ range_EE = [-20, 50]
 
 survey_planck = data_dir + "masks/act_survey.fits"
 
-ps_mask_s17 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
-ps_mask_s18 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
-ps_mask_s19 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
-ps_mask_planck = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
-
+ps_mask = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_8.0arcmin_dust_monster.fits"
 gal_mask = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
 
 src_free_maps_s17 = True

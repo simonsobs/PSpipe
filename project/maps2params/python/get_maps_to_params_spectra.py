@@ -26,12 +26,12 @@ fg_components = d["fg_components"]
 map_dir = d["map_dir"]
 use_so_sim = d["use_official_so_sim"]
 
-freq2chan = {"27": "LF1",
-             "39": "LF2",
-             "93": "MFF1",
-             "145": "MFF2",
-             "225": "UHF1",
-             "280": "UHF2"}
+freq2chan = {27: "LF1",
+             39: "LF2",
+             93: "MFF1",
+             145: "MFF2",
+             225: "UHF1",
+             280: "UHF2"}
 
 window_dir = "windows"
 mcm_dir = "mcms"
@@ -116,7 +116,7 @@ for iii in subtasks:
             if use_so_sim:
                 map = so_map.read_map(
                         "%s/%04d/simonsobs_cmb_uKCMB_la%s_nside4096_%04d.fits" % (
-                        map_dir, iii, freq2chan[str(freq)], iii))
+                        map_dir, iii, freq2chan[freq], iii))
 
             for k in range(nsplits):
                 noisy_alms = alms_beamed.copy()

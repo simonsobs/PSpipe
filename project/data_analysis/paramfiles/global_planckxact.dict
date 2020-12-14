@@ -185,7 +185,10 @@ ps_mask_planck = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dus
 
 gal_mask = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
 
-src_free_maps = True
+src_free_maps_s17 = True
+src_free_maps_s18 = True
+src_free_maps_s19 = True
+src_free_maps_planck = False
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
 skip_from_edges_degree = 1
@@ -194,7 +197,10 @@ cross_link_threshold = 0.97
 
 # kspace filter parameters
 
-use_kspace_filter = True
+use_kspace_filter_s17 = True
+use_kspace_filter_s18 = True
+use_kspace_filter_s19 = True
+use_kspace_filter_planck = False
 vk_mask = [-90, 90]
 hk_mask = [-50, 50]
 

@@ -105,13 +105,13 @@ for task in subtasks:
     dist = so_window.get_distance(survey_mask, rmax=apod_survey_degree * np.pi / 180)
 
     # Get associated point source mask given survey name
-    ps_mask = so_map.read_map(d.get("ps_mask_{}".format(sv), raise_error=True))
+    ps_mask = so_map.read_map(d["ps_mask_%s" % sv])
 
     # so here we create a binary mask this will only be used in order to skip the edges before applying the kspace filter
     # this step is a bit arbitrary and preliminary, more work to be done here
 
     binary = survey_mask.copy()
-    if d["src_free_maps"] == False:
+    if not d["src_free_maps_%s" % sv]:
         binary.data *= ps_mask.data
     # Note that we don't skip the edges as much for the binary mask
     # compared to what we will do with the final window, this should prevent some aliasing from the kspace filter to enter the data

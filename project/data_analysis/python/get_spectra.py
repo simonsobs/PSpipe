@@ -57,13 +57,13 @@ for sv in surveys:
             if win_T.pixel == "CAR":
                 split = so_map.read_map(map, geometry=win_T.data.geometry)
 
-                if d["src_free_maps_%s" % sv] == True:
+                if d["src_free_maps_%s" % sv]:
                     point_source_map = so_map.read_map(map.replace(".fits", "_model.fits"))
                     point_source_mask = so_map.read_map(d["ps_mask"])
                     split = data_analysis_utils.get_coadded_map(split, point_source_map, point_source_mask)
 
                 if d["use_kspace_filter_%s" % sv]:
-                    print("apply kspace filter on %s" %map)
+                    print("apply kspace filter on %s" % map)
                     binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                     split = data_analysis_utils.get_filtered_map(
                         split, binary, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], normalize=False)
@@ -81,7 +81,7 @@ for sv in surveys:
             if d["use_kspace_filter_%s" % sv]:
                 # there is an extra normalisation for the FFT/IFFT bit
                 # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
-                master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2])
+                master_alms[sv, ar, k] /= (split.data.shape[1] * split.data.shape[2])
 
         print(time.time()- t)
 

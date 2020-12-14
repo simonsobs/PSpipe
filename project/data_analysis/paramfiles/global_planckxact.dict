@@ -28,10 +28,10 @@ maps_s19_pa5_f150 = [data_dir + "maps/s19_cmb_pa5_f150_nohwp_night_1pass_4way_se
 maps_s19_pa6_f090 = [data_dir + "maps/s19_cmb_pa6_f090_nohwp_night_1pass_4way_set%d_map.fits" % i for i in range(4)]
 maps_s19_pa6_f150 = [data_dir + "maps/s19_cmb_pa6_f150_nohwp_night_1pass_4way_set%d_map.fits" % i for i in range(4)]
 
-maps_planck_f100 = [data_dir + "maps/HFI_SkyMap_100_split%s_2048_R4.00_full_car.fits" % i for i in "AB"]
-maps_planck_f143 = [data_dir + "maps/HFI_SkyMap_143_split%s_2048_R4.00_full_car.fits" % i for i in "AB"]
-maps_planck_f217 = [data_dir + "maps/HFI_SkyMap_217_split%s_2048_R4.00_full_car.fits" % i for i in "AB"]
-maps_planck_f353 = [data_dir + "maps/HFI_SkyMap_353_split%s_2048_R4.00_full_car.fits" % i for i in "AB"]
+maps_planck_f100 = [data_dir + "maps/HFI_SkyMap_100_split%s_2048_R4.00_full.fits" % i for i in "AB"]
+maps_planck_f143 = [data_dir + "maps/HFI_SkyMap_143_split%s_2048_R4.00_full.fits" % i for i in "AB"]
+maps_planck_f217 = [data_dir + "maps/HFI_SkyMap_217_split%s_2048_R4.00_full.fits" % i for i in "AB"]
+maps_planck_f353 = [data_dir + "maps/HFI_SkyMap_353_split%s_2048_R4.00_full.fits" % i for i in "AB"]
 
 cal_s17_pa4_f150 = 1.0
 cal_s17_pa4_f220 = 1.0

@@ -122,7 +122,7 @@ for id_sv1, sv1 in enumerate(surveys):
 
                 for s1 in range(nsplits_1):
                     for s2 in range(nsplits_2):
-                        if (sv1 == sv2) & (ar1 == ar2) & (s1>s2) : continue
+                        if (sv1 == sv2) & (ar1 == ar2) & (s1 > s2) : continue
 
                         mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%sx%s_%s" % (mcm_dir, sv1, ar1, sv2, ar2),
                                                             spin_pairs=spin_pairs)

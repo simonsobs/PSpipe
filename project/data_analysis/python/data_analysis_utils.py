@@ -1,17 +1,19 @@
 """
 Some utility functions for the data analysis project.
 """
-import numpy as np, healpy as hp, pylab as plt
-from pixell import curvedsky
-from pspy import pspy_utils, so_cov, so_spectra, so_mcm, so_map_preprocessing
+import healpy as hp
+import numpy as np
+import pylab as plt
+from pixell import curvedsky, enmap
+from pspy import pspy_utils, so_cov, so_map_preprocessing, so_mcm, so_spectra
 from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
-from pixell import enmap
+
 
 def kspace_filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys"):
     """Filter the map in Fourier space removing modes in a horizontal and vertical band
     defined by hk_mask and vk_mask. This is a faster version that what is implemented in pspy
-    
+
     Parameters
     ---------
     map: ``so_map``
@@ -27,7 +29,7 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys"):
 
    # filtered_map = map.copy()
     ft = enmap.fft(map.data, normalize=normalize)
-    
+
     if vk_mask is not None:
         id_vk = np.where((lx > vk_mask[0]) & (lx < vk_mask[1]))
     if hk_mask is not None:
@@ -38,7 +40,7 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys"):
             ft[: , id_vk] = 0.
         if hk_mask is not None:
             ft[id_hk , :] = 0.
-    
+
     if map.ncomp == 3:
         for i in range(3):
             if vk_mask is not None:
@@ -55,7 +57,7 @@ def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys"):
     """Filter the map in Fourier space removing modes in a horizontal and vertical band
     defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before
     doing this operation in order to remove pathological pixels
-    
+
     Parameters
     ---------
     orig_map: ``so_map``
@@ -128,11 +130,11 @@ def get_nspec(dict):
                         if (sv1 != sv2) & (kind == "noise"): continue
                         if (sv1 != sv2) & (kind == "auto"): continue
                         nspec[kind] += 1
-                    
+
     return nspec
 
 def get_noise_matrix_spin0and2(noise_dir, survey, arrays, lmax, nsplits):
-    
+
     """This function uses the measured noise power spectra
     and generate a three dimensional array of noise power spectra [n_arrays, n_arrays, lmax] for temperature
     and polarisation.
@@ -140,7 +142,7 @@ def get_noise_matrix_spin0and2(noise_dir, survey, arrays, lmax, nsplits):
     for the different array pairs.
     for example nl_array_t[0,0,:] =>  nl^{TT}_{ar_{0},ar_{0}),  nl_array_t[0,1,:] =>  nl^{TT}_{ar_{0},ar_{1})
     this allows to consider correlated noise between different arrays.
-    
+
     Parameters
     ----------
     noise_data_dir : string
@@ -155,22 +157,22 @@ def get_noise_matrix_spin0and2(noise_dir, survey, arrays, lmax, nsplits):
       the number of data splits we want to simulate
       nl_per_split= nl * n_{splits}
     """
-    
+
     spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
     n_arrays = len(arrays)
     nl_array_t = np.zeros((n_arrays, n_arrays, lmax))
     nl_array_pol = np.zeros((n_arrays, n_arrays, lmax))
-    
+
     for c1, ar1 in enumerate(arrays):
         for c2, ar2 in enumerate(arrays):
             if c1>c2 : continue
-            
+
             l, nl = so_spectra.read_ps("%s/mean_%sx%s_%s_noise.dat" % (noise_dir, ar1, ar2, survey), spectra=spectra)
             nl_t = nl["TT"][:lmax]
             nl_pol = (nl["EE"][:lmax] + nl["BB"][:lmax])/2
 
-            
+
             nl_array_t[c1, c2, :] = nl_t * nsplits *  2 * np.pi / (l * (l + 1))
             nl_array_pol[c1, c2, :] = nl_pol * nsplits *  2 * np.pi / (l * (l + 1))
 
@@ -183,7 +185,7 @@ def get_noise_matrix_spin0and2(noise_dir, survey, arrays, lmax, nsplits):
 
 
 def get_foreground_matrix(fg_dir, all_freqs, lmax):
-    
+
     """This function uses the best fit foreground power spectra
     and generate a three dimensional array of foregroung power spectra [nfreqs, nfreqs, lmax].
     The different entries ([i,j,:]) of the array contains the fg power spectra for the different
@@ -191,7 +193,7 @@ def get_foreground_matrix(fg_dir, all_freqs, lmax):
     for example fl_array_T[0,0,:] =>  fl_{f_{0},f_{0}),  fl_array_T[0,1,:] =>  fl_{f_{0},f_{1})
     this allows to have correlated fg between different frequency channels.
     (Not that for now, no fg are including in pol)
-        
+
     Parameters
     ----------
     fg_dir : string
@@ -204,14 +206,14 @@ def get_foreground_matrix(fg_dir, all_freqs, lmax):
 
     nfreqs = len(all_freqs)
     fl_array = np.zeros((nfreqs, nfreqs, lmax))
-    
+
     for c1, freq1 in enumerate(all_freqs):
         for c2, freq2 in enumerate(all_freqs):
             if c1 > c2 : continue
-            
+
             l, fl_all = np.loadtxt("%s/fg_%sx%s_TT.dat"%(fg_dir, freq1, freq2), unpack=True)
             fl_all *=  2 * np.pi / (l * (l + 1))
-            
+
             fl_array[c1, c2, 2:lmax] = fl_all[:lmax-2]
 
     for i in range(lmax):
@@ -220,9 +222,9 @@ def get_foreground_matrix(fg_dir, all_freqs, lmax):
     return l, fl_array
 
 def multiply_alms(alms, bl, ncomp):
-    
+
     """This routine mutliply the alms by a function bl
-        
+
     Parameters
     ----------
     alms : 1d array
@@ -234,7 +236,7 @@ def multiply_alms(alms, bl, ncomp):
       ncomp = 3 if T,Q,U
       ncomp = 1 if T only
     """
-    
+
     alms_mult = alms.copy()
     if ncomp == 1:
         alms_mult = hp.sphtfunc.almxfl(alms_mult, bl)
@@ -245,18 +247,18 @@ def multiply_alms(alms, bl, ncomp):
 
 
 def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None):
-    
+
     """This function generates the alms corresponding to the noise power spectra matrices
     nl_array_t, nl_array_pol. The function returns a dictionnary nlms["T", i].
     The entry of the dictionnary are for example nlms["T", i] where i is the index of the split.
     note that nlms["T", i] is a (narrays, size(alm)) array, it is the harmonic transform of
     the noise realisation for the different frequencies.
-    
+
     Parameters
     ----------
     nl_array_t : 3d array [narrays, narrays, lmax]
       noise power spectra matrix for temperature data
-    
+
     lmax : integer
       the maximum multipole for the noise power spectra
     n_splits: integer
@@ -269,7 +271,7 @@ def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None):
       noise power spectra matrix for polarisation data
       (in use if ncomp==3)
     """
-    
+
     nlms = {}
     if ncomp == 1:
         for k in range(n_splits):
@@ -279,11 +281,11 @@ def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None):
             nlms["T", k] = curvedsky.rand_alm(nl_array_t, lmax=lmax)
             nlms["E", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax)
             nlms["B", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax)
-    
+
     return nlms
 
 def remove_mean(so_map, window, ncomp):
-    
+
     """This function removes the mean value of the map after having applied the
     window function
     Parameters
@@ -297,9 +299,9 @@ def remove_mean(so_map, window, ncomp):
       the number of components
       ncomp = 3 if T,Q,U
       ncomp = 1 if T only
-      
+
      """
-    
+
     if ncomp == 1:
         so_map.data -= np.mean(so_map.data * window.data)
     else:
@@ -326,22 +328,23 @@ def deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax=None):
         ncomp = 1 if T only
 
     """
+    if lmax is not None:
+        id = np.where(lb < lmax)
+        tf1 = tf1[id]
+        tf2 = tf2[id]
+
     if np.array_equal(tf1, tf2):
         tf = tf1
     else:
         tf = np.sqrt(tf1*tf2)
-        
-    if lmax is not None:
-        id = np.where(lb < lmax)
-        tf = tf[id]
-        
+
     if ncomp == 1:
         ps /= tf
     else:
         spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
         for spec in spectra:
             ps[spec] /= tf
-            
+
     return ps
 
 
@@ -350,9 +353,9 @@ def is_symmetric(mat, tol=1e-8):
 
 def is_pos_def(mat):
     return np.all(np.linalg.eigvals(mat) > 0)
-    
-    
-    
+
+
+
 def fast_cov_coupling(sq_win_alms_dir,
                       na_r,
                       nb_r,
@@ -366,7 +369,7 @@ def fast_cov_coupling(sq_win_alms_dir,
     if l_toep is None: l_toep = lmax
     if l_band is None: l_band = lmax
     if l_exact is None: l_exact = lmax
-    
+
     try:
         alm_TaTc = np.load("%s/alms_%sx%s.npy"  % (sq_win_alms_dir, na_r, nc_r))
     except:
@@ -390,15 +393,15 @@ def fast_cov_coupling(sq_win_alms_dir,
     wcl = {}
     wcl["TaTcTbTd"] = hp.alm2cl(alm_TaTc, alm_TbTd)
     wcl["TaTdTbTc"] = hp.alm2cl(alm_TaTd, alm_TbTc)
-    
+
     l = np.arange(len(wcl["TaTcTbTd"]))
     wcl["TaTcTbTd"] *= (2 * l + 1) / (4 * np.pi)
     wcl["TaTdTbTc"] *= (2 * l + 1) / (4 * np.pi)
 
     coupling = np.zeros((2, lmax, lmax))
-     
+
     cov_fortran.calc_cov_spin0(wcl["TaTcTbTd"], wcl["TaTdTbTc"], l_exact, l_band, l_toep,  coupling.T)
-     
+
     coupling_dict = {}
 
     for id_cov, name in enumerate(["TaTcTbTd", "TaTdTbTc"]):
@@ -411,25 +414,25 @@ def fast_cov_coupling(sq_win_alms_dir,
              "TaPcTbPd", "TaTcTbPd", "TaPcTbTd", "TaPcPbTd",
              "TaPcPbPd", "PaPcTbPd", "TaTcPbTd", "PaTcTbTd",
              "PaTcPbTd", "PaTcTbPd", "PaTcPbPd", "PaPcPbTd"]
-            
+
     list2 = ["TaTdTbTc", "PaPdPbPc", "TaPdPbTc", "PaTdTbPc",
              "TaPdTbPc", "TaPdTbTc", "TaTdTbPc", "TaTdPbPc",
              "TaPdPbPc", "PaPdTbPc", "TaTdPbTc", "PaTdTbTc",
              "PaTdPbTc", "PaPdTbTc", "PaPdPbTc", "PaTdPbPc"]
-     
+
     for id1 in list1:
         coupling_dict[id1] = coupling_dict["TaTcTbTd"]
     for id2 in list2:
         coupling_dict[id2] = coupling_dict["TaTdTbTc"]
-            
+
     return coupling_dict
 
 
 
 def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, mbb_inv_ab, mbb_inv_cd):
-    
+
     na, nb, nc, nd = id_element
-    
+
     lmax = coupling["TaTcTbTd"].shape[0]
     bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
     nbins = len(bin_hi)
@@ -519,19 +522,19 @@ def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, m
     mbb_inv_cd = so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
 
     analytic_cov = np.dot(np.dot(mbb_inv_ab, analytic_cov), mbb_inv_cd.T)
-    
+
     return analytic_cov
 
 
 def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):
     """doc not ready yet
     """
-    
+
     sv_alpha, ar_alpha = alpha.split("&")
     sv_beta, ar_beta = beta.split("&")
     sv_gamma, ar_gamma = gamma.split("&")
     sv_eta, ar_eta = eta.split("&")
-    
+
     RX = id[0] + id[1]
     SY = id[2] + id[3]
     chi = Dl[alpha, gamma, RX] * Dl[beta, eta, SY]
@@ -606,7 +609,7 @@ def symm_power(Clth, mode="arithm"):
 
 
 def plot_vs_choi(l, cl, error, mc_std, Db, std, plot_dir, combin, spec):
-               
+
     str = "%s_%s_cross.png" % (spec, combin)
 
     plt.figure(figsize=(12,12))
@@ -620,8 +623,8 @@ def plot_vs_choi(l, cl, error, mc_std, Db, std, plot_dir, combin, spec):
     plt.savefig("%s/%s" % (plot_dir,str), bbox_inches="tight")
     plt.clf()
     plt.close()
-               
-               
+
+
     plt.figure(figsize=(12,12))
     plt.semilogy()
     plt.errorbar(l, std, label="master %s" % combin, color= "blue")
@@ -633,7 +636,7 @@ def plot_vs_choi(l, cl, error, mc_std, Db, std, plot_dir, combin, spec):
     plt.savefig("%s/error_%s" % (plot_dir,str), bbox_inches="tight")
     plt.clf()
     plt.close()
-                         
+
     plt.figure(figsize=(12,12))
     plt.plot(l, l * 0 + 1, color="grey")
     if std is not None:
@@ -645,7 +648,7 @@ def plot_vs_choi(l, cl, error, mc_std, Db, std, plot_dir, combin, spec):
     plt.savefig("%s/error_divided_%s" % (plot_dir,str), bbox_inches="tight")
     plt.clf()
     plt.close()
-               
+
     plt.figure(figsize=(12,12))
     plt.plot(l,(cl-Db[spec])/mc_std, ".")
     plt.title(r"$\Delta D^{%s}_{\ell}/\sigma^{MC}_{\ell}$" % (spec), fontsize=20)
@@ -661,5 +664,3 @@ def plot_vs_choi(l, cl, error, mc_std, Db, std, plot_dir, combin, spec):
     plt.savefig("%s/frac_%s" % (plot_dir, str), bbox_inches="tight")
     plt.clf()
     plt.close()
- 
-

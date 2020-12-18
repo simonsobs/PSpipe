@@ -23,5 +23,6 @@ setup(
         "pspy>=1.2.1",
         "pymaster>=1.0.2",
         "mflike @ git+https://github.com/simonsobs/LAT_MFLike@master#egg=mflike",
+        "wget",
     ],
 )

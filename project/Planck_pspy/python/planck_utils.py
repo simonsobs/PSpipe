@@ -11,13 +11,14 @@ def process_planck_spectra(l, cl, binning_file, lmax, spectra, mcm_inv):
     
     bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
     n_bins = len(bin_hi)
-    fac = (l * (l + 1) / (2 * np.pi))
+#    fac = (l * (l + 1) / (2 * np.pi))
     unbin_vec = []
     mcm_inv = so_mcm.coupling_dict_to_array(mcm_inv)
     for spec in spectra:
         unbin_vec = np.append(unbin_vec, cl[spec][2:lmax])
     cl = so_spectra.vec2spec_dict(lmax-2, np.dot(mcm_inv, unbin_vec), spectra)
     l = np.arange(2, lmax)
+    fac = (l * (l + 1) / (2 * np.pi))
     vec = []
     for spec in spectra:
         binnedPower = np.zeros(len(bin_c))

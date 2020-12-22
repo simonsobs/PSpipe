@@ -32,11 +32,25 @@ print("Compute Planck 2018 mode coupling matrices")
 freq1_list, hm1_list, freq2_list, hm2_list = [], [], [], []
 n_mcms = 0
 for f1, freq1 in enumerate(freqs):
+
+    window_t_1 = d["window_T_%s" % freq1]
+    window_pol_1 = d["window_pol_%s" % freq1]
+
     for count1, hm1 in enumerate(splits):
+    
+        win_t1 = so_map.read_map(window_t_1[count1])
+        win_pol1 = so_map.read_map(window_pol_1[count1])
+            
+        win_t1.write_map("%s/window_T_%s_%s-%s.fits" % (windows_dir, experiment, freq1, hm1))
+        win_pol1.write_map("%s/window_P_%s_%s-%s.fits" % (windows_dir, experiment, freq1, hm1))
+
         for f2, freq2 in enumerate(freqs):
+        
             if f1 > f2: continue
             for count2, hm2 in enumerate(splits):
                 if (count1 > count2) & (f1 == f2): continue
+                
+                
                 freq1_list += [freq1]
                 freq2_list += [freq2]
                 hm1_list += [hm1]
@@ -63,16 +77,19 @@ for task in subtasks:
         count2 = 1
     
 
-    window_t_1 = d["window_T_%s" % freq1]
-    window_pol_1 = d["window_pol_%s" % freq1]
-        
-    win_t1 = so_map.read_map(window_t_1[count1])
-    win_pol1 = so_map.read_map(window_pol_1[count1])
-        
-    win_t1.write_map("%s/window_T_%s_%s-%s.fits" % (windows_dir, experiment, freq1, hm1))
-    win_pol1.write_map("%s/window_P_%s_%s-%s.fits" % (windows_dir, experiment, freq1, hm1))
+    window_t_1 = so_map.read_map("%s/window_T_%s_%s-%s.fits" % (windows_dir, experiment, freq1, hm1))
+    window_pol_1 = so_map.read_map("%s/window_pol_%s_%s-%s.fits" % (windows_dir, experiment, freq1, hm1))
 
     window_tuple1 = (win_t1, win_pol1)
+    
+    window_t_2 = d["window_T_%s" % freq2]
+    window_pol_2 = d["window_pol_%s" % freq2]
+
+    window_t_1 = so_map.read_map("%s/window_T_%s_%s-%s.fits" % (windows_dir, experiment, freq2, hm2))
+    window_pol_1 = so_map.read_map("%s/window_pol_%s_%s-%s.fits" % (windows_dir, experiment, freq2, hm2))
+
+    window_tuple2 = (win_t2, win_pol2)
+
         
     del win_t1, win_pol1
     
@@ -85,14 +102,6 @@ for task in subtasks:
         
     bl_tuple1 = (bl1_t, bl1_pol)
 
-    window_t_2 = d["window_T_%s" % freq2]
-    window_pol_2 = d["window_pol_%s" % freq2]
-    print(freq1, freq2)
-
-    win_t2 = so_map.read_map(window_t_2[count2])
-    win_pol2 = so_map.read_map(window_pol_2[count2])
-
-    window_tuple2 = (win_t2, win_pol2)
 
     del win_t2, win_pol2
                 

@@ -82,11 +82,9 @@ for task in subtasks:
 
     window_tuple1 = (win_t1, win_pol1)
     
-    window_t_2 = d["window_T_%s" % freq2]
-    window_pol_2 = d["window_pol_%s" % freq2]
 
-    window_t_1 = so_map.read_map("%s/window_T_%s_%s-%s.fits" % (windows_dir, experiment, freq2, hm2))
-    window_pol_1 = so_map.read_map("%s/window_pol_%s_%s-%s.fits" % (windows_dir, experiment, freq2, hm2))
+    window_t_2 = so_map.read_map("%s/window_T_%s_%s-%s.fits" % (windows_dir, experiment, freq2, hm2))
+    window_pol_2 = so_map.read_map("%s/window_pol_%s_%s-%s.fits" % (windows_dir, experiment, freq2, hm2))
 
     window_tuple2 = (win_t2, win_pol2)
 

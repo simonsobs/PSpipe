@@ -52,15 +52,15 @@ for task in subtasks:
     freq1, hm1, freq2, hm2 = freq1_list[task], hm1_list[task], freq2_list[task], hm2_list[task]
     
     
-    if hm1 =="hm1":
-        count1 == 0
+    if hm1 == "hm1":
+        count1 = 0
     else:
-        count1 ==1
+        count1 = 1
         
     if hm2 == "hm1":
-        count2 == 0
+        count2 = 0
     else:
-        count2 == 1
+        count2 = 1
     
 
     window_t_1 = d["window_T_%s" % freq1]

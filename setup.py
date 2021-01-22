@@ -1,6 +1,5 @@
-from setuptools import find_packages, setup
-
 import versioneer
+from setuptools import find_packages, setup
 
 with open("README.rst") as readme_file:
     readme = readme_file.read()
@@ -23,5 +22,6 @@ setup(
         "pspy>=1.2.1",
         "pymaster>=1.0.2",
         "mflike @ git+https://github.com/simonsobs/LAT_MFLike@master#egg=mflike",
+        "wget",
     ],
 )

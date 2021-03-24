@@ -5,29 +5,8 @@ import os
 import re
 import sys
 
-import healpy as hp
 import numpy as np
 from pspy import so_dict, so_map, so_mpi
-
-
-def subtract_mono_di(map_in, mask_in, nside):
-    map_masked = hp.ma(map_in)
-    map_masked.mask = mask_in < 1
-    mono, dipole = hp.pixelfunc.fit_dipole(map_masked)
-    print(mono, dipole)
-    m = map_in.copy()
-    npix = hp.nside2npix(nside)
-    bunchsize = npix // 24
-    for ibunch in range(npix // bunchsize):
-        ipix = np.arange(ibunch * bunchsize, (ibunch + 1) * bunchsize)
-        ipix = ipix[(np.isfinite(m.flat[ipix]))]
-        x, y, z = hp.pix2vec(nside, ipix, False)
-        m.flat[ipix] -= dipole[0] * x
-        m.flat[ipix] -= dipole[1] * y
-        m.flat[ipix] -= dipole[2] * z
-        m.flat[ipix] -= mono
-    return m
-
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -49,7 +28,7 @@ masks_dir = os.path.join(d["data_dir"], "masks")
 mask_tmpl = os.path.join(masks_dir, "COM_Mask_Likelihood-{}-{}-{}_2048_R3.00.fits")
 
 nmaps = len(map_files)
-print("number of map to project : {}".format(nmaps))
+print(f"number of map to project : {nmaps}")
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=nmaps - 1)
 print(subtasks)
@@ -57,7 +36,7 @@ print(subtasks)
 for task in subtasks:
     task = int(task)
     map_file = map_files[task]
-    print("Reading {}...".format(map_file))
+    print(f"Reading {map_file}...")
     npipe_map = so_map.read_map(map_file, fields_healpix=(0, 1, 2), coordinate="gal")
     npipe_map.data *= 10 ** 6
 
@@ -66,14 +45,14 @@ for task in subtasks:
         mask_hm2 = so_map.read_map(mask_tmpl.format("temperature", freqs[task], "hm2"))
         mask = mask_hm1.copy()
         mask.data *= mask_hm2.data
-        npipe_map.data[0] = subtract_mono_di(npipe_map.data[0], mask.data, nside=npipe_map.nside)
+        npipe_map.data[0] = so_map.subtract_mono_dipole(npipe_map.data[0], mask.data)
     if d.get("remove_mono_dipo_pol", True):
         mask_hm1 = so_map.read_map(mask_tmpl.format("polarization", freqs[task], "hm1"))
         mask_hm2 = so_map.read_map(mask_tmpl.format("polarization", freqs[task], "hm2"))
         mask = mask_hm1.copy()
         mask.data *= mask_hm2.data
-        npipe_map.data[1] = subtract_mono_di(npipe_map.data[1], mask.data, nside=npipe_map.nside)
-        npipe_map.data[2] = subtract_mono_di(npipe_map.data[2], mask.data, nside=npipe_map.nside)
+        npipe_map.data[1] = so_map.subtract_mono_dipole(npipe_map.data[1], mask.data)
+        npipe_map.data[2] = so_map.subtract_mono_dipole(npipe_map.data[2], mask.data)
 
     print("Projecting in CAR pixellisation...")
     car_project = so_map.healpix2car(npipe_map, survey)
@@ -84,5 +63,5 @@ for task in subtasks:
     split_name = "splitA" if "-1" in basename else "splitB"
     car_file = re.sub("(-.*)_2048", "_" + split_name + "_2048", basename)
     car_file = os.path.join(d["data_dir"], "maps", car_file)
-    print("Storing {}...".format(car_file))
+    print(f"Storing {car_file}...")
     car_project.write_map(car_file)

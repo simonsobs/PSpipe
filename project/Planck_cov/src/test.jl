@@ -18,8 +18,8 @@ y1 = sin.(x)
 y2 = cos.(x)
 
 clf()
-plt.plot(x, y1)
-plt.plot(x, y2)
+plt.plot(x, y1, "-")
+plt.plot(x, y2, "-")
 gcf()
 
 # Testing math

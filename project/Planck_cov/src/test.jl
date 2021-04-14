@@ -21,3 +21,8 @@ clf()
 plt.plot(x, y1)
 plt.plot(x, y2)
 gcf()
+
+# Testing math
+```math
+\int f dx
+```

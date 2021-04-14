@@ -30,3 +30,8 @@ plt.plot(x, y2)
 gcf()
 ```
 
+Testing math
+```math
+\int f dx
+```
+

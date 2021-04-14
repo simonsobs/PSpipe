@@ -17,4 +17,12 @@ When adding `x` and `y` together we obtain a new rational number:
 
 ```@example test
 z = x + y
+
+# Let's plot something
+using Plots
+x = range(0, stop=6π, length=1000)
+y1 = sin.(x)
+y2 = cos.(x)
+plot(x, [y1, y2])
 ```
+

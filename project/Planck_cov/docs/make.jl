@@ -1,5 +1,6 @@
 using Documenter, Literate
 using PyPlot
+pygui(false)
 PyPlot.svg(true)
 
 src = joinpath(@__DIR__, "src")
@@ -7,7 +8,7 @@ lit = joinpath(@__DIR__, "lit")
 
 config = Dict(
     "credit" => false,  # credit is configured to render in Documenter instead
-    "repo_root_url"=> "https://github.com/simonsobs/PSpipe/tree/planckcov/project/Planck_cov/",
+    "repo_root_url"=> "https://github.com/simonsobs/PSpipe/tree/planckcov/project/Planck_cov",
 )
 
 for (root, _, files) ∈ walkdir(lit), file ∈ files
@@ -20,8 +21,15 @@ end
 makedocs(
     sitename = "PSPipe Planck",
     modules = Module[],
+    
+    format=Documenter.HTML(
+        prettyurls=get(ENV, "CI", nothing) == "true",
+        assets=["assets/so.css"],
+    ),
     pages = [
         "Introduction" => "index.md",
+        "Setup" => "setup.md",
+        "Raw Spectra" => "rawspectra.md",
         "Test" => "test.md"
         ]
     )

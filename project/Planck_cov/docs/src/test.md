@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "https://github.com/simonsobs/PSpipe/tree/planckcov/project/Planck_cov//src/test.jl"
+EditURL = "https://github.com/simonsobs/PSpipe/tree/planckcov/project/Planck_cov/src/test.jl"
 ```
 
 # Rational numbers

@@ -28,7 +28,7 @@ type = d["type"]
 freqs = d["freqs"]
 binning_file = d["binning_file"]
 lmax = d["lmax"]
-splits = ["hm1", "hm2"]
+splits = d["splits"]
 size = d["noise_binning_size"]
 exp = "Planck"
 

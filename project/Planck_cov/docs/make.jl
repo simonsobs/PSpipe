@@ -45,7 +45,6 @@ makedocs(
     pages = [
         "Introduction" => "index.md",
         "Setup" => "setup.md",
-        "Raw Spectra" => "rawspectra.md",
-        "Test" => "test.md"
+        "Raw Spectra" => "rawspectra.md"
         ]
     )

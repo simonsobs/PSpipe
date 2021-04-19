@@ -1,7 +1,7 @@
 #
 # ```@setup rawspectra
 # # the example command line input for this script
-# ARGS = ["global.toml", "P143hm1", "P143hm2"] 
+# ARGS = ["example.toml", "P143hm1", "P143hm2"] 
 # ``` 
 
 
@@ -18,7 +18,7 @@
 # sky. This coupling is described by a linear operator ``\mathbf{M}``, the mode-coupling 
 # matrix. 
 # For more details on spectra and mode-coupling, please refer to the [documentation for 
-# AngularPowerSpectra.jl](https://xzackli.github.io/AngularPowerSpectra.jl/dev/spectra/).
+# PowerSpectra.jl](https://xzackli.github.io/PowerSpectra.jl/dev/spectra/).
 # If this matrix is known, then one can perform a linear solve to obtain an unbiased
 # estimate of the underlying power spectrum ``C_{\ell}``,
 # ```math
@@ -43,34 +43,28 @@
 # page shows the results of running the command
 # ```@raw html
 # <pre class="shell">
-# <code class="language-shell hljs">$ julia rawspectra.jl global.toml P143hm1 P143hm2</code></pre>
+# <code class="language-shell hljs">$ julia rawspectra.jl example.toml P143hm1 P143hm2</code></pre>
 # ```
 
 # We start by loading the necessary packages.
 
 using TOML
 using Healpix
-using AngularPowerSpectra
+using PowerSpectra
+using Plots
 
 # The first step is just to unpack the command-line arguments, which consist of the 
 # TOML config file and the map names, which we term channels 1 and 2.
 
-configfile, ch1, ch2 = ARGS[1], ARGS[2], ARGS[3]
+configfile, mapid1, mapid2 = ARGS[1], ARGS[2], ARGS[3]
 #
 config = TOML.parsefile(configfile)
 
-# Before we start, we define a utility function for masking maps.
+# Next, we check to see if we need to render plots for the Documentation.
 
-"""mask a map in-place"""
-function mask!(m::Map, mask)
-    m .*= mask
-end
-
-"""mask an IQU map in-place with a maskT and a maskP"""
-function mask!(m::PolarizedMap, maskT, maskP)
-    m.i .*= maskT
-    m.q .*= maskP
-    m.u .*= maskP
+if config["general"]["plot"] == false
+    Plots.plot(args...; kwargs...) = nothing
+    Plots.plot!(args...; kwargs...) = nothing
 end
 
 # For both input channels, we need to do some pre-processing steps.
@@ -90,34 +84,37 @@ end
 
 
 """Return (polarized map, maskT, maskP) given a config and map identifier"""
-function load_maps_and_masks(config, ch)
+function load_maps_and_masks(config, mapid, maptype=Float64)
     ## read map file 
-    mapfile = joinpath(config["dir"]["map"], config["map"][ch1])
-    polmap = PolarizedMap{Float64, RingOrder}(
-        nest2ring(readMapFromFITS(mapfile, 1, Float64)),  # I
-        nest2ring(readMapFromFITS(mapfile, 2, Float64)),  # Q
-        nest2ring(readMapFromFITS(mapfile, 3, Float64)))  # U
+    mapfile = joinpath(config["dir"]["map"], config["map"][mapid])
+    polmap = PolarizedMap(
+        nest2ring(readMapFromFITS(mapfile, 1, maptype)),  # I
+        nest2ring(readMapFromFITS(mapfile, 2, maptype)),  # Q
+        nest2ring(readMapFromFITS(mapfile, 3, maptype)))  # U
 
     ## read maskT and maskP
-    maskfileT = joinpath(config["dir"]["map"], config["maskT"][ch])
-    maskfileP = joinpath(config["dir"]["map"], config["maskP"][ch])
+    maskfileT = joinpath(config["dir"]["mask"], config["maskT"][mapid])
+    maskfileP = joinpath(config["dir"]["mask"], config["maskP"][mapid])
+    maskT = readMapFromFITS(maskfileT, 1, maptype)
+    maskP = readMapFromFITS(maskfileP, 1, maptype)
 
     ## read Q and U pixel variances, and convert to μK
-    covQQ = nest2ring(readMapFromFITS(mapfile, 8, Float64)) .* 1e12
-    covUU = nest2ring(readMapFromFITS(mapfile, 10, Float64)) .* 1e12
+    covQQ = nest2ring(readMapFromFITS(mapfile, 8, maptype)) .* 1e12
+    covUU = nest2ring(readMapFromFITS(mapfile, 10, maptype)) .* 1e12
 
     ## go from KCMB to μKCMB, and apply polarization factor
-    poleff = config["poleff"][ch]
-    mask!(polmap, 1e6, 1e6 * poleff)  # apply 1e6 to (I) and 1e6 * poleff to (Q,U)
+    poleff = config["poleff"][mapid]
+    scale!(polmap, 1e6, 1e6 * poleff)  # apply 1e6 to (I) and 1e6 * poleff to (Q,U)
 
     ## identify missing pixels and also pixels with crazy variances
     missing_pix = (polmap.i .< -1.6e30)
     missing_pix .*= (covQQ .> 1e6) .| (covUU .> 1e6) .| (covQQ .< 0.0) .| (covUU .< 0.0)
+    allowed = (~).(missing_pix)
 
     ## apply the missing pixels to the map and mask for T/P
-    mask!(polmap, missing_pix, missing_pix)
-    mask!(maskT, missing_pix)
-    mask!(maskP, missing_pix)
+    mask!(polmap, allowed, allowed)
+    mask!(maskT, allowed)
+    mask!(maskP, allowed)
 
     ## fit and remove monopole/dipole in I
     monopole, dipole = fitdipole(polmap.i, maskT)
@@ -126,62 +123,53 @@ function load_maps_and_masks(config, ch)
     return polmap, maskT, maskP
 end
 
+# We'll use this function for the half-missions involved here.
+
+m₁, maskT₁, maskP₁ = load_maps_and_masks(config, mapid1)
+m₂, maskT₂, maskP₂ = load_maps_and_masks(config, mapid2)
+plot(m₁.i, clim=(-200,200))  # plot the intensity map
+
+#  
+plot(maskT₁)  # show the temperature mask
+
 #
 # # Computing Spectra and Saving
 #
-# Once you have cleaned up maps and masks, you can compute mode-coupling matrices. The 
-# calculation is described in [AngularPowerSpectra - Mode Coupling](
-# https://xzackli.github.io/AngularPowerSpectra.jl/dev/spectra/#Mode-Coupling-for-EE,-EB,-BB).
+# Once you have cleaned up maps and masks, you compute the 
+# calculation is described in [PowerSpectra - Mode Coupling](https://xzackli.github.io/PowerSpectra.jl/dev/spectra/#Mode-Coupling-for-EE,-EB,-BB).
+# That package has a utility function [`master`](https://xzackli.github.io/PowerSpectra.jl/dev/module_index/#PowerSpectra.master-Tuple{Healpix.PolarizedMap,%20Healpix.Map,%20Healpix.Map,%20Healpix.PolarizedMap,%20Healpix.Map,%20Healpix.Map})
+# that performs the full MASTER calculation on two ``IQU`` maps with associated masks.
 #
 
-"""Construct a NamedTuple with T,E,B names for the alms."""
-function name_alms(alms::Vector)
-    return (T=alms[1], E=alms[2], B=alms[3])
+Cl = master(m₁, maskT₁, maskP₁,
+            m₂, maskT₂, maskP₂)
+nside = maskT₁.resolution.nside  # get the resolution from any of the maps
+lmax = nside2lmax(nside)
+print(keys(Cl))  # check what spectra were computed 
+
+# The PowerSpectra.jl package has the Planck bestfit theory and beams as utility functions,  
+# for demo and testing purposes. We can use it that for plotting here.
+
+spec = :TE
+bl = PowerSpectra.planck_beam_bl("100", "hm1", "100", "hm2", spec, spec; lmax=lmax)
+ell = eachindex(bl)
+prefactor = ell .* (ell .+ 1) ./ (2π)
+plot( prefactor .*  Cl[spec] ./ bl.^2, label="\$D_{\\ell}\$", xlim=(0,2nside) )
+theory = PowerSpectra.planck_theory_Dl()
+plot!(theory[spec], label="theory $(spec)", ylim=(-200,300))
+
+# Now we save our spectra. 
+
+using CSV, DataFrames
+run_name = config["general"]["name"]
+spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
+mkpath(spectrapath)
+
+## assemble a table with the ells and spectra
+df = DataFrame()
+df[!,:ell] = ell
+for spec in keys(Cl)
+    df[!,spec] = parent(Cl[spec])
 end
 
-
-"""Compute spectra from alms of masked maps and alms of the masks themselves."""
-function compute_spectra(maskedmap₁vec::Vector{Alm}, maskT₁::Alm, maskP₁::Alm,
-                         maskedmap₂vec::Vector{Alm}, maskT₂::Alm, maskP₂::Alm)
-    ## add TEB names
-    maskedmap₁ = name_alms(maskedmap₁vec)
-    maskedmap₂ = name_alms(maskedmap₂vec)
-    spectra = Dict()
-
-    ## spectra that are independent
-    for (X, Y) in ((:T,:T), (:T,:E), (:E,:T), (:E,:E))
-        spec = Symbol(X, Y)  # join X and Y 
-
-        ## select temp or pol mask
-        maskX = (X == :T) ? maskT₁ : maskP₁
-        maskY = (Y == :T) ? maskT₂ : maskP₂
-
-        ## compute mcm
-        M = mcm(spec, maskX, maskY)
-        pCl = SpectralVector(alm2cl(maskedmap₁[X], maskedmap₂[Y]))
-        Cl = M \ pCl
-        spectra[spec] = Cl  # store the result
-    end
-
-    M_EE_BB, M_EB_BE = mcm((:EE_BB, :EB_BE), maskP₁, maskP₂)
-
-    ## EE and BB have to be decoupled together
-    pCl_EE = SpectralVector(alm2cl(maskedmap₁[:E], maskedmap₂[:E]))
-    pCl_BB = SpectralVector(alm2cl(maskedmap₁[:B], maskedmap₂[:B]))
-    ## apply the 2×2 block mode-coupling matrix to the stacked EE and BB spectra
-    @spectra Cl_EE, Cl_BB = M_EE_BB \ [pCl_EE; pCl_BB]
-    spectra[:EE] = Cl_EE
-    spectra[:BB] = Cl_BB
-
-    ## EB and BE have to be decoupled together
-    pCl_EB = SpectralVector(alm2cl(maskedmap₁[:E], maskedmap₂[:B]))
-    pCl_BE = SpectralVector(alm2cl(maskedmap₁[:B], maskedmap₂[:E]))
-    ## apply the 2×2 block mode-coupling matrix to the stacked EB and BE spectra
-    @spectra Cl_EB, Cl_BE = M_EB_BE \ [pCl_EB; pCl_BE]
-    spectra[:EB] = Cl_EB
-    spectra[:BE] = Cl_BE
-
-    return spectra
-end
-
-#
+CSV.write(joinpath(spectrapath, "$(run_name)_$(mapid1)x$(mapid2).csv"), df)

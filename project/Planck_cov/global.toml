@@ -1,7 +1,13 @@
+[debug]
+[general]
+name = "pr3"
+plot = false
+
 [dir]
-scratch = "/home/zequnl/scratch/"
-map = "/tigress/zequnl/cmb/data/planck2018/maps/PR3/frequencyMaps/"
-mask = "/tigress/zequnl/cmb/data/planck2018/maps/PR3/maskMaps/"
+scratch = "/tigress/zequnl/planck"
+map = "/tigress/zequnl/planck/maps"
+mask = "/tigress/zequnl/planck/masks"
+beam = "/tigress/zequnl/planck/beams"
 
 [map]
 "P100hm1" = "HFI_SkyMap_100_2048_R3.01_halfmission-1.fits"

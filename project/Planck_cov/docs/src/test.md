@@ -19,15 +19,13 @@ When adding `x` and `y` together we obtain a new rational number:
 z = x + y
 
 # Let's plot something
-using PyPlot
+using Plots
 x = range(0, stop=6π, length=1000)
 y1 = sin.(x)
 y2 = cos.(x)
 
-clf()
-plt.plot(x, y1, "-")
-plt.plot(x, y2, "-")
-gcf()
+plot(x, y1)
+plot!(x, y2)
 ```
 
 Testing math

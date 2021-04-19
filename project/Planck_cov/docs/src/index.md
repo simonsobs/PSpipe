@@ -27,3 +27,21 @@ the [Healpix.jl](https://ziotom78.github.io/Healpix.jl/dev/) package, and the
 mode-coupling and covariance matrix calculations were made into
 [AngularPowerSpectra.jl](https://xzackli.github.io/AngularPowerSpectra.jl/dev/).
 This pipeline mostly wrangles data and calls the routines from those packages.
+
+
+## Package Installation
+We use the package manager in the Julia interpeter
+install the latest versions of Healpix and AngularPowerSpectra. This will be simpler in
+the future, when we tag a stable version of these packages for the General Registry. 
+For now, we add the latest versions of these packages from GitHub. Note that package 
+installation requires an internet connection, so unlike the other parts of the pipeline,
+`setup.jl` requires an internet connection. If you're on a cluster, that means you need 
+to run this file on the head node in order to install packages.
+
+```@raw html 
+<pre class="shell">
+<code class="language-julia hljs">using Pkg  
+Pkg.add(PackageSpec(name="Healpix", rev="master")) 
+Pkg.add(PackageSpec(name="AngularPowerSpectra", rev="main"))
+</code></pre>
+```

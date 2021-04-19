@@ -4,10 +4,10 @@ name = "example"
 plot = true
 
 [dir]
-scratch = "/tigress/zequnl/planck256"
-map = "/tigress/zequnl/planck256/maps"
-mask = "/tigress/zequnl/planck256/masks"
-beam = "/tigress/zequnl/planck256/beams"
+scratch = "/tmp/planck256"
+map = "/tmp/planck256/maps"
+mask = "/tmp/planck256/masks"
+beam = "/tmp/planck256/beams"
 
 [map]
 "P100hm1" = "nside256_HFI_SkyMap_100_2048_R3.01_halfmission-1.fits"

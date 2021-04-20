@@ -44,7 +44,10 @@ makedocs(
     ),
     pages = [
         "Introduction" => "index.md",
-        "Setup" => "setup.md",
-        "Raw Spectra" => "rawspectra.md"
+        "setup.jl" => "setup.md",
+        "rawspectra.jl" => "rawspectra.md",
+        "likelihoodspectra.jl" => "likelihoodspectra.md",
+
+        "Pipeline" => "pipeline.md"
         ]
     )

@@ -40,3 +40,8 @@ beam = "/tigress/zequnl/planck/beams"
 "P100hm2" = 0.9995 
 "P143hm2" = 0.999
 "P217hm2" = 0.999
+
+[url]
+maps = "https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/"
+masks = "https://irsa.ipac.caltech.edu/data/Planck/release_3/ancillary-data/masks/"
+beams = "https://irsa.ipac.caltech.edu/data/Planck/release_3/ancillary-data/"

@@ -46,7 +46,7 @@ using TOML                                                                  #src
 configfile = ARGS[1]  # read in the first command line argument             #src
 println("config filename: ", configfile, "\n")                              #src
 config = TOML.parsefile(configfile)                                         #src
-TOML.print(Dict("dir"=>config["dir"]))  # print just the "dir" TOML entry   #src
+TOML.print(config)  # print just the "dir" TOML entry   #src
 
 # * The `scratch` space is where intermediary files are deposited. 
 # * Note that each map file has an identifier. This shortens the long names, but more 

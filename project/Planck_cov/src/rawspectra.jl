@@ -86,6 +86,7 @@ end
 """Return (polarized map, maskT, maskP) given a config and map identifier"""
 function load_maps_and_masks(config, mapid, maptype=Float64)
     ## read map file 
+    println("Reading", config["map"][mapid])
     mapfile = joinpath(config["dir"]["map"], config["map"][mapid])
     polmap = PolarizedMap(
         nest2ring(readMapFromFITS(mapfile, 1, maptype)),  # I
@@ -145,7 +146,7 @@ Cl = master(m₁, maskT₁, maskP₁,
             m₂, maskT₂, maskP₂)
 nside = maskT₁.resolution.nside  # get the resolution from any of the maps
 lmax = nside2lmax(nside)
-print(keys(Cl))  # check what spectra were computed 
+println(keys(Cl))  # check what spectra were computed 
 
 # The PowerSpectra.jl package has the Planck bestfit theory and beams as utility functions,  
 # for demo and testing purposes. We can use it that for plotting here.

@@ -42,6 +42,6 @@ to run this file on the head node in order to install packages.
 <pre class="shell">
 <code class="language-julia hljs">using Pkg  
 Pkg.add(PackageSpec(name="Healpix", rev="master")) 
-Pkg.add(PackageSpec(name="AngularPowerSpectra", rev="main"))
+Pkg.add(url="git@github.com:xzackli/PowerSpectra.jl.git")
 </code></pre>
 ```

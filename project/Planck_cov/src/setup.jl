@@ -99,7 +99,10 @@ end
 
 ## just download beamfile to the target directory base.
 beamfile = "HFI_RIMO_BEAMS_R3.01.tar.gz"
-download_if_necessary(joinpath(config["url"]["beams"], beamfile), joinpath(beamdest, beamfile))
-run(`gzip -f -d --keep $(joinpath(beamdest, beamfile))`)
+fullbeamfile = joinpath(beamdest, beamfile)
+download_if_necessary(joinpath(config["url"]["beams"], beamfile), fullbeamfile)
+run(`cp $(fullbeamfile) $(joinpath(beamdest, "tempbeamgz"))`)
+run(`gzip -f -d $(joinpath(beamdest, beamfile))`)
+run(`mv $(joinpath(beamdest, "tempbeamgz")) $(fullbeamfile)`)
 beamfiletar = replace(beamfile, ".tar.gz"=>".tar")
 run(`tar -xf $(joinpath(beamdest, beamfiletar)) --overwrite -C $(beamdest)`);

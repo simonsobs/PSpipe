@@ -18,6 +18,7 @@ pspy_utils.create_directory(cov_plot_dir)
 surveys = d["surveys"]
 lmax = d["lmax"]
 binning_file = d["binning_file"]
+multistep_path = d["multistep_path"]
 
 bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 nbins = len(bin_hi)
@@ -96,4 +97,60 @@ np.save("%s/truncated_analytic_cov.npy"%cov_dir, full_analytic_cov)
 
 print ("is matrix positive definite:", data_analysis_utils.is_pos_def(full_analytic_cov))
 print ("is matrix symmetric :", data_analysis_utils.is_symmetric(full_analytic_cov))
+
+size=int(full_analytic_cov.shape[0]/nbins)
+
+
+full_mc_cov = np.load("%s/cov_restricted_all_cross.npy"%mc_dir)
+
+
+os.system("cp %s/multistep2.js %s/multistep2.js" % (multistep_path, cov_plot_dir))
+file = "%s/covariance.html" % (cov_plot_dir)
+g = open(file, mode="w")
+g.write('<html>\n')
+g.write('<head>\n')
+g.write('<title> covariance </title>\n')
+g.write('<script src="multistep2.js"></script>\n')
+g.write('<script> add_step("sub",  ["c","v"]) </script> \n')
+g.write('<style> \n')
+g.write('body { text-align: center; } \n')
+g.write('img { width: 100%; max-width: 1200px; } \n')
+g.write('</style> \n')
+g.write('</head> \n')
+g.write('<body> \n')
+g.write('<div class=sub>\n')
+
+
+count=0
+for ispec in range(-size+1, size):
+    
+    rows, cols = np.indices(full_mc_cov.shape)
+    row_vals = np.diag(rows, k=ispec*nbins)
+    col_vals = np.diag(cols, k=ispec*nbins)
+    mat = np.ones(full_mc_cov.shape)
+    mat[row_vals, col_vals] = 0
+    
+    str = "cov_diagonal_%03d.png" % (count)
+
+    plt.figure(figsize=(12,8))
+    plt.subplot(1,2,1)
+    plt.plot(np.log(np.abs(full_analytic_cov.diagonal(ispec*nbins))))
+    plt.plot(np.log(np.abs(full_mc_cov.diagonal(ispec*nbins))), '.')
+    plt.legend()
+    plt.subplot(1,2,2)
+    plt.imshow(np.log(np.abs(full_analytic_cov*mat)))
+    plt.savefig("%s/%s"%(cov_plot_dir,str))
+    plt.clf()
+    plt.close()
+    
+    g.write('<div class=sub>\n')
+    g.write('<img src="'+str+'"  /> \n')
+    g.write('</div>\n')
+    
+    count+=1
+
+g.write('</body> \n')
+g.write('</html> \n')
+g.close()
+
 

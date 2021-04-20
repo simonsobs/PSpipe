@@ -2,6 +2,8 @@
 export JULIA_NUM_THREADS=8
 export OMP_NUM_THREADS=8
 
+git clone --branch planckcov https://github.com/simonsobs/PSpipe.git /tmp/PSpipe
+
 julia src/setup.jl example.toml
 
 julia src/rawspectra.jl example.toml P100hm1 P100hm1

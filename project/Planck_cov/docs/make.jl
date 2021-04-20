@@ -22,6 +22,8 @@ nonexecute_config = copy(config)
 nonexecute_config["codefence"] = "```julia" => "```"
 execution_exclusion = []
 
+cp(joinpath(@__DIR__, "..", "src", "util.jl"), joinpath(@__DIR__, "build", "util.jl"); force=true)
+
 for (root, _, files) ∈ walkdir(lit), file ∈ files
     splitext(file)[2] == ".jl" || continue
     ipath = joinpath(root, file)
@@ -34,9 +36,11 @@ for (root, _, files) ∈ walkdir(lit), file ∈ files
     end
 end
 
+
 makedocs(
     sitename = "PSPipe Planck",
     modules = Module[],
+    clean=false,
     
     format=Documenter.HTML(
         prettyurls=get(ENV, "CI", nothing) == "true",
@@ -45,6 +49,7 @@ makedocs(
     pages = [
         "Introduction" => "index.md",
         "setup.jl" => "setup.md",
+        "util.jl" => "util.md",
         "rawspectra.jl" => "rawspectra.md",
         "spectra_slurmgen.jl" => "spectra_slurmgen.md",
 

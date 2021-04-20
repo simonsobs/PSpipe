@@ -31,8 +31,8 @@ end
 
 
 # # Plotting Some Examples
-# The resulting spectra are written to `[scratch]/rawspectra/`. The example spectra for 
-# documentation rendering (what you're seeing now) have been precomputed and downloaded,
+# The resulting spectra are written to `[scratch]/rawspectra/`. When the documentation 
+# is rendered via GitHub actions, the example spectra are precomputed and downloaded,
 # cooking-show style. Let's plot a spectrum.
 
 using CSV, DataFrames
@@ -41,7 +41,7 @@ run_name = config["general"]["name"]
 mapids = [k for k in keys(config["map"])]
 spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
 
-## if allowed to plot, read a plot 
+## if allowed to plot, read a spectrum csv file and plot the EE spectrum
 if config["general"]["plot"] 
     using Plots
     mapid1 = mapids[1]

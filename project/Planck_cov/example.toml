@@ -2,8 +2,10 @@
 [general]
 name = "example"
 plot = true
+nside = 256
 
 [dir]
+pspipe_project = "/tmp/PSpipe/project/Planck_cov"
 scratch = "/tmp/planck256"
 map = "/tmp/planck256/maps"
 mask = "/tmp/planck256/masks"

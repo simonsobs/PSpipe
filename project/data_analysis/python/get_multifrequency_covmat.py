@@ -54,6 +54,8 @@ for sid1, name1 in enumerate(spec_name):
                 analytic_dict[sid1, sid2, s1, s2] = sub_cov
 
 # We fill the full covariance matrix with our elements
+# The cov mat format is [block TT, block TE, block ET, block EE]
+# the block contain all cross array and season spectra
 
 full_analytic_cov = np.zeros((4 * nspec * nbins, 4 * nspec * nbins))
 for sid1, name1 in enumerate(spec_name):

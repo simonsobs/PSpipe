@@ -43,5 +43,6 @@ to run this file on the head node in order to install packages.
 <code class="language-julia hljs">using Pkg  
 Pkg.add(PackageSpec(name="Healpix", rev="master")) 
 Pkg.add(url="git@github.com:xzackli/PowerSpectra.jl.git")
+Pkg.add(["CSV", "DataFrames", "TOML"])
 </code></pre>
 ```

@@ -43,9 +43,8 @@
 # page shows the results of running the command
 # ```@raw html
 # <pre class="shell">
-# <code class="language-shell hljs">$ julia rawspectra.jl example.toml P143hm1 P143hm2</code></pre>
+# <code class="language-shell hljs">$ julia src/rawspectra.jl docs/src/example.toml  P143hm1 P143hm2</code></pre>
 # ```
-
 # We start by loading the necessary packages.
 
 using TOML
@@ -86,7 +85,7 @@ end
 """Return (polarized map, maskT, maskP) given a config and map identifier"""
 function load_maps_and_masks(config, mapid, maptype=Float64)
     ## read map file 
-    println("Reading", config["map"][mapid])
+    println("Reading ", config["map"][mapid])
     mapfile = joinpath(config["dir"]["map"], config["map"][mapid])
     polmap = PolarizedMap(
         nest2ring(readMapFromFITS(mapfile, 1, maptype)),  # I

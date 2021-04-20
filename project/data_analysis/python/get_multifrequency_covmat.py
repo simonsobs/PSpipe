@@ -37,7 +37,8 @@ for id_sv1, sv1 in enumerate(surveys):
                 spec_name += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
 
 
-# We read each of the covariance matrix element and store then in a dictionnary file
+# We read each of the covariance matrix element associated to each spectra pair
+#  and store then in a dictionnary file
 
 nspec = len(spec_name)
 analytic_dict= {}
@@ -46,9 +47,7 @@ for sid1, name1 in enumerate(spec_name):
     for sid2, name2 in enumerate(spec_name):
         if sid1 > sid2: continue
         print (name1, name2)
-        na, nb = name1.split("x")
-        nc, nd = name2.split("x")
-        analytic_cov = np.load("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, na, nb, nc, nd))
+        analytic_cov = np.load("%s/analytic_cov_%s_%s.npy" % (cov_dir, name1, name2))
         for s1, spec1 in enumerate(spectra):
             for s2, spec2 in enumerate(spectra):
                 sub_cov = analytic_cov[s1 * nbins:(s1 + 1) * nbins, s2 * nbins:(s2 + 1) * nbins]
@@ -60,8 +59,6 @@ full_analytic_cov = np.zeros((4 * nspec * nbins, 4 * nspec * nbins))
 for sid1, name1 in enumerate(spec_name):
     for sid2, name2 in enumerate(spec_name):
         if sid1 > sid2: continue
-        na, nb = name1.split("x")
-        nc, nd = name2.split("x")
         for s1, spec1 in enumerate(spectra):
             for s2, spec2 in enumerate(spectra):
                 id_start_1 = sid1 * nbins + s1 * nspec * nbins

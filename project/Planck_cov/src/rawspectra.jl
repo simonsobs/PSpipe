@@ -5,7 +5,7 @@
 # ``` 
 
 
-# # Raw Spectra (rawspectra.jl)
+# # [Raw Spectra (rawspectra.jl)](@id rawspectra)
 # The first step in the pipeline is simply to compute the pseudo-spectrum between the 
 # maps ``X`` and ``Y``. 
 # We define the pseudo-spectrum ``\widetilde{C}_{\ell}`` as the 

@@ -46,7 +46,7 @@ makedocs(
         "Introduction" => "index.md",
         "setup.jl" => "setup.md",
         "rawspectra.jl" => "rawspectra.md",
-        "likelihoodspectra.jl" => "likelihoodspectra.md",
+        "spectra_slurmgen.jl" => "spectra_slurmgen.md",
 
         "Pipeline" => "pipeline.md"
         ]

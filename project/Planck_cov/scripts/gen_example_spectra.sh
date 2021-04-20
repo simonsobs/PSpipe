@@ -2,6 +2,8 @@
 export JULIA_NUM_THREADS=8
 export OMP_NUM_THREADS=8
 
+julia src/setup.jl example.toml
+
 julia src/rawspectra.jl example.toml P100hm1 P100hm1
 julia src/rawspectra.jl example.toml P100hm1 P143hm1
 julia src/rawspectra.jl example.toml P100hm1 P143hm2

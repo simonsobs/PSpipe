@@ -5,7 +5,7 @@ plot = false
 nside = 2048
 
 [dir]
-pspipe_project = "/home/zequnl/src/PSpipe/project/Planck_cov"
+pspipe_project = "/home/zequnl/Projects/PSpipe/project/Planck_cov"
 scratch = "/tigress/zequnl/planck"
 map = "/tigress/zequnl/planck/maps"
 mask = "/tigress/zequnl/planck/masks"

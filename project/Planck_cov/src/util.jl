@@ -17,7 +17,7 @@ function util_planck_binning(binfile; lmax=6143)
 end
 
 
-function util_planck_beam_bl(T::Type, freq1, split1, freq2, split2, spec1_, spec2_; 
+function util_planck_beam_Wl(T::Type, freq1, split1, freq2, split2, spec1_, spec2_; 
                         lmax=4000, beamdir=nothing)
     if isnothing(beamdir)
         @warn "beam directory not specified. switching to PowerSpectra.jl fallback"
@@ -36,18 +36,18 @@ function util_planck_beam_bl(T::Type, freq1, split1, freq2, split2, spec1_, spec
 
     fname = "Wl_R3.01_plikmask_$(freq1)$(split1)x$(freq2)$(split2).fits"
     f = PowerSpectra.FITS(joinpath(beamdir, "BeamWf_HFI_R3.01", fname))
-    bl = convert(Vector{T}, read(f[spec1], "$(spec1)_2_$(spec2)")[:,1])
+    Wl = convert(Vector{T}, read(f[spec1], "$(spec1)_2_$(spec2)")[:,1])
     if lmax < 4000
-        bl = bl[1:lmax+1]
+        Wl = Wl[1:lmax+1]
     else
-        bl = vcat(bl, last(bl) * ones(T, lmax - 4000))
+        Wl = vcat(Wl, last(Wl) * ones(T, lmax - 4000))
     end
-    return SpectralVector(bl)
+    return SpectralVector(Wl)
 end
-util_planck_beam_bl(T::Type, freq1, split1, freq2, split2, spec1; kwargs...) = 
-    util_planck_beam_bl(T, freq1, split1, freq2, split2, spec1, spec1; kwargs...)
-util_planck_beam_bl(freq1::String, split1, freq2, split2, spec1, spec2; kwargs...) = 
-    util_planck_beam_bl(Float64, freq1, split1, freq2, split2, spec1, spec2; kwargs...)
+util_planck_beam_Wl(T::Type, freq1, split1, freq2, split2, spec1; kwargs...) = 
+    util_planck_beam_Wl(T, freq1, split1, freq2, split2, spec1, spec1; kwargs...)
+util_planck_beam_Wl(freq1::String, split1, freq2, split2, spec1, spec2; kwargs...) = 
+    util_planck_beam_Wl(Float64, freq1, split1, freq2, split2, spec1, spec2; kwargs...)
 
 
 struct PlanckReferenceCov{T}

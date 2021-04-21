@@ -25,9 +25,9 @@ P, lb = util_planck_binning(binfile; lmax=lmax);
 
 ##
 freq1, freq2 = "100", "100"
-bl = util_planck_beam_bl(freq1, "hm1", freq2, "hm2", :EE, :EE; 
+Wl = util_planck_beam_Wl(freq1, "hm1", freq2, "hm2", :EE, :EE; 
     lmax=lmax, beamdir=config["dir"]["beam"])
-plot(bl, yaxis=:log10, label="\$B_{\\ell}\$")
+plot(Wl, yaxis=:log10, label="\$B_{\\ell}\$")
 
 ##
 run_name = config["general"]["name"]
@@ -45,9 +45,9 @@ lbref, cbref, err_ref, _ = extract_spec_and_cov(pl, "EE_$(freq1)x$(freq2)")
 
 ##
 cl = SpectralVector(copy(spec.EE))
-this_lmax = max(lastindex(cl), lastindex(bl))
+this_lmax = max(lastindex(cl), lastindex(Wl))
 pixwinT, pixwinP = pixwin(nside; pol=true)
-cl[0:this_lmax] ./= bl[0:this_lmax] .* pixwinP[1:(this_lmax+1)].^2
+cl[0:this_lmax] ./= Wl[0:this_lmax] .* pixwinP[1:(this_lmax+1)].^2
 cl[0:1] .= 0.0
 cb = P * parent(cl)
 planck_bin_choice = findfirst(lb .≥ lbref[1]):findlast(lb .≤ lbref[end])

@@ -1,2 +1,3 @@
 docs/src/*.md
 docs/build
+docs/Manifest.toml

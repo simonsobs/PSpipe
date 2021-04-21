@@ -26,12 +26,22 @@ end
 # I just paste these in and wait a few hours. The resulting spectra are deposited in the 
 # `scratch` dir in the config.
 
+# ## Fit Noise Model
+# These SLURM commands fit the raw spectra with the camspec noise model.
+## loop over freqs and noise channels
+for freq in ("100", "143", "217")
+    for spec in ("TT", "EE")
+        println("$(run) \"julia src/fitnoisemodel.jl global.toml $(freq) $(spec)\"")
+    end
+end
+
 
 # # Plotting Some Examples
 # The resulting spectra are written to `[scratch]/rawspectra/`. When the documentation 
 # is rendered via GitHub actions, the example spectra are precomputed and downloaded,
 # cooking-show style. Let's plot a spectrum.
 
+## load spectra from disk
 using CSV, DataFrames
 
 run_name = config["general"]["name"]

@@ -150,11 +150,13 @@ println(keys(Cl))  # check what spectra were computed
 # The PowerSpectra.jl package has the Planck bestfit theory and beams as utility functions,  
 # for demo and testing purposes. We can use it that for plotting here.
 
-spec = :TE
-bl = PowerSpectra.planck_beam_bl("100", "hm1", "100", "hm2", spec, spec; lmax=lmax)
-ell = eachindex(bl)
+spec = :TT
+Wl = PowerSpectra.planck_beam_Wl("100", "hm1", "100", "hm2", spec, spec; lmax=lmax)
+pixwinT = SpectralVector(pixwin(nside)[1:(lmax+1)])
+ell = eachindex(Wl)
 prefactor = ell .* (ell .+ 1) ./ (2π)
-plot( prefactor .*  Cl[spec] ./ bl.^2, label="\$D_{\\ell}\$", xlim=(0,2nside) )
+plot( prefactor .*  Cl[spec] ./ (Wl .* pixwinT.^2), 
+    label="\$D_{\\ell}\$", xlim=(0,2nside))
 theory = PowerSpectra.planck_theory_Dl()
 plot!(theory[spec], label="theory $(spec)", ylim=(-200,300))
 

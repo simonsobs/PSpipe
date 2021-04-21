@@ -106,3 +106,12 @@ run(`gzip -f -d $(joinpath(beamdest, beamfile))`)
 run(`mv $(joinpath(beamdest, "tempbeamgz")) $(fullbeamfile)`)
 beamfiletar = replace(beamfile, ".tar.gz"=>".tar")
 run(`tar -xf $(joinpath(beamdest, beamfiletar)) --overwrite -C $(beamdest)`);
+
+# 
+## We also want to retrieve the plic templates. 
+plicrefdir = joinpath(config["dir"]["scratch"])
+plicreffile = joinpath(config["dir"]["scratch"], "plicref.tar.gz")
+download_if_necessary(
+    "https://github.com/xzackli/PSPipePlanckRender.jl/releases/download/0.1.2/plicref.tar.gz", 
+    plicreffile)
+run(`tar -xzvf $(plicreffile) --overwrite -C $(plicrefdir)`);

@@ -11,9 +11,6 @@
 ## this file just prints out the SLURM commands required to compute the spectra
 using TOML
 
-# The first step is just to unpack the command-line arguments, which consist of the 
-# TOML config file and the map names, which we term channels 1 and 2.
-
 configfile = ARGS[1]
 config = TOML.parsefile(configfile)
 

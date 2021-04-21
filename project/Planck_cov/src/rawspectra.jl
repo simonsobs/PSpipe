@@ -141,6 +141,7 @@ plot(maskT₁)  # show the temperature mask
 # that performs the full MASTER calculation on two ``IQU`` maps with associated masks.
 #
 
+## do the mode coupling on all T, E, and B spectra
 Cl = master(m₁, maskT₁, maskP₁,
             m₂, maskT₂, maskP₂)
 nside = maskT₁.resolution.nside  # get the resolution from any of the maps
@@ -151,17 +152,17 @@ println(keys(Cl))  # check what spectra were computed
 # for demo and testing purposes. We can use it that for plotting here.
 
 spec = :TT
-Wl = PowerSpectra.planck_beam_Wl("100", "hm1", "100", "hm2", spec, spec; lmax=lmax)
+Wl = PowerSpectra.planck_beam_Wl("143", "hm1", "143", "hm2", spec, spec; lmax=lmax)
 pixwinT = SpectralVector(pixwin(nside)[1:(lmax+1)])
 ell = eachindex(Wl)
 prefactor = ell .* (ell .+ 1) ./ (2π)
 plot( prefactor .*  Cl[spec] ./ (Wl .* pixwinT.^2), 
     label="\$D_{\\ell}\$", xlim=(0,2nside))
 theory = PowerSpectra.planck_theory_Dl()
-plot!(theory[spec], label="theory $(spec)", ylim=(-200,300))
+plot!(theory[spec], label="theory $(spec)")
 
 # Now we save our spectra. 
-
+## set up spectra path
 using CSV, DataFrames
 run_name = config["general"]["name"]
 spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")

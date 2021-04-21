@@ -52,7 +52,7 @@ makedocs(
         "util.jl" => "util.md",
         "rawspectra.jl" => "rawspectra.md",
         "fitnoisemodel.jl" => "fitnoisemodel.md",
-        "spectra_slurmgen.jl" => "spectra_slurmgen.md",
+        "slurmgen.jl" => "slurmgen.md",
 
         "Pipeline" => "pipeline.md"
         ]

@@ -35,16 +35,19 @@
 # <code class="language-shell hljs">$ julia rawspectra.jl global.toml [map1] [map2]</code></pre>
 # ```
 # `[map1]` and `[map2]` must be names of maps described in global.toml. 
-#
-#
-# ## File Loading and Cleanup
-
-# This 
-# page shows the results of running the command
+# 
+# This page shows the results of running the command
 # ```@raw html
 # <pre class="shell">
 # <code class="language-shell hljs">$ julia src/rawspectra.jl docs/src/example.toml  P143hm1 P143hm2</code></pre>
 # ```
+# The first step is just to unpack the command-line arguments, which consist of the 
+# TOML config file and the map names, which we term channels 1 and 2.
+
+configfile, mapid1, mapid2 = ARGS[1], ARGS[2], ARGS[3]
+
+#
+# ## File Loading and Cleanup
 # We start by loading the necessary packages.
 
 using TOML
@@ -52,10 +55,6 @@ using Healpix
 using PowerSpectra
 using Plots
 
-# The first step is just to unpack the command-line arguments, which consist of the 
-# TOML config file and the map names, which we term channels 1 and 2.
-
-configfile, mapid1, mapid2 = ARGS[1], ARGS[2], ARGS[3]
 #
 config = TOML.parsefile(configfile)
 

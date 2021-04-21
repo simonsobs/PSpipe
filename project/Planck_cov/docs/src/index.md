@@ -25,13 +25,13 @@ file can be located on the [PSPipe GitHub](https://github.com/simonsobs/PSpipe) 
 The map/alm handling routines for this project were contributed into
 the [Healpix.jl](https://ziotom78.github.io/Healpix.jl/dev/) package, and the
 mode-coupling and covariance matrix calculations were made into
-[AngularPowerSpectra.jl](https://xzackli.github.io/AngularPowerSpectra.jl/dev/).
+[PowerSpectra.jl](https://xzackli.github.io/PowerSpectra.jl/dev/).
 This pipeline mostly wrangles data and calls the routines from those packages.
 
 
 ## Package Installation
 We use the package manager in the Julia interpeter
-install the latest versions of Healpix and AngularPowerSpectra. This will be simpler in
+install the latest versions of Healpix and PowerSpectra. This will be simpler in
 the future, when we tag a stable version of these packages for the General Registry. 
 For now, we add the latest versions of these packages from GitHub. Note that package 
 installation requires an internet connection, so unlike the other parts of the pipeline,

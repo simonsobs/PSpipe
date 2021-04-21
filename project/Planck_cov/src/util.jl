@@ -1,13 +1,33 @@
 
 # # Utilities 
 # Unlike every other file in the pipeline, this file is not intended to be run directly.
-# Instead, include this in other files.
+# Instead, include this in other files. These utilities provide an interface to the Planck
+# data products, namely 
+# 1. binning matrix
+# 2. beam ``W_{\ell}^{XY} = B_{\ell}^X B_{\ell}^{Y}``
+# 3. ``\texttt{plic}`` reference covariance matrix and reference spectra, for comparison plots
+
 
 using PowerSpectra
 using DataFrames, CSV
 using DelimitedFiles
 using LinearAlgebra
 
+
+"""
+    util_planck_binning(binfile; lmax=6143)
+
+Obtain the Planck binning scheme.
+
+### Arguments:
+- `binfile::String`: filename of the Planck binning, containing left/right bin edges
+
+### Keywords
+- `lmax::Int=6143`: maximum multipole for one dimension of the binning matrix
+
+### Returns: 
+- `Tuple{Matrix{Float64}, Vector{Float64}`: returns (binning matrix, bin centers)
+"""
 function util_planck_binning(binfile; lmax=6143)
     bin_df = DataFrame(CSV.File(binfile; 
         header=false, delim=" ", ignorerepeated=true))
@@ -17,6 +37,34 @@ function util_planck_binning(binfile; lmax=6143)
 end
 
 
+"""
+    util_planck_beam_Wl([T::Type=Float64], freq1, split1, freq2, split2, spec1_, spec2_; 
+        lmax=4000, beamdir=nothing)
+
+Returns the Planck beam transfer of [spec1]_to_[spec2], in Wl form.
+
+### Arguments:
+- `T::Type=Float64`: optional first parameter specifying numerical type
+- `freq1::String`: frequency of first field 
+- `split1::String`: split of first field (i.e. hm1)
+- `freq2::String`: frequency of first field 
+- `split2::String`: split of second field (i.e. hm2)
+- `spec1_`: converted to string, source spectrum like TT 
+- `spec2_`: converted to string, destination spectrum
+
+### Keywords
+- `lmax=4000`: maximum multipole
+- `beamdir=nothing`: directory containing beam FITS files. if nothing, will fall back to 
+        the PowerSpectra.jl beam files.
+
+### Returns: 
+- `SpectralVector`: the beam Wl, indexed 0:lmax
+
+### Examples
+```julia-repl
+julia> Wl = PowerSpectra.planck_beam_Wl("143", "hm1", "143", "hm2", :TT, :TT; lmax=6143)
+```
+"""
 function util_planck_beam_Wl(T::Type, freq1, split1, freq2, split2, spec1_, spec2_; 
                         lmax=4000, beamdir=nothing)
     if isnothing(beamdir)
@@ -50,6 +98,14 @@ util_planck_beam_Wl(freq1::String, split1, freq2, split2, spec1, spec2; kwargs..
     util_planck_beam_Wl(Float64, freq1, split1, freq2, split2, spec1, spec2; kwargs...)
 
 
+
+"""
+    PlanckReferenceCov(plicrefpath::String)
+
+Stores the spectra and covariances of the reference plic analysis.
+"""
+PlanckReferenceCov
+
 struct PlanckReferenceCov{T}
     cov::Array{T,2}
     ells::Vector{Int}
@@ -78,6 +134,20 @@ function PlanckReferenceCov(plicrefpath)
     return PlanckReferenceCov{Float64}(cov, ells, cls, keys, sub_indices, key_index_dict)
 end
 
+
+"""
+    get_subcov(pl::PlanckReferenceCov, spec1, spec2)
+
+Extract the sub-covariance matrix corresponding to spec1 × spec2.
+
+### Arguments:
+- `pl::PlanckReferenceCov`: data structure storing reference covmat and spectra
+- `spec1::String`: spectrum of form i.e. "TT_100x100"
+- `spec2::String`: spectrum of form i.e. "TT_100x100"
+
+### Returns: 
+- `Matrix{Float64}`: subcovariance matrix
+"""
 function get_subcov(pl::PlanckReferenceCov, spec1, spec2)
     i = pl.key_index_dict[spec1]
     j = pl.key_index_dict[spec2]
@@ -86,6 +156,19 @@ function get_subcov(pl::PlanckReferenceCov, spec1, spec2)
         pl.sub_indices[j] : (pl.sub_indices[j + 1] - 1),
     ]
 end
+
+"""
+    extract_spec_and_cov(pl::PlanckReferenceCov, spec1)
+
+Extract the reference ells, cl, errorbar, and sub-covariance block for a spectrum × itself.
+
+### Arguments:
+- `pl::PlanckReferenceCov`: data structure storing reference covmat and spectra
+- `spec1::String`: spectrum of form i.e. "TT_100x100"
+
+### Returns: 
+- `(ells, cl, err, this_subcov)`
+"""
 function extract_spec_and_cov(pl::PlanckReferenceCov, spec1)
     i = pl.key_index_dict[spec1]
     this_subcov = get_subcov(pl, spec1, spec1)

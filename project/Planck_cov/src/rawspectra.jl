@@ -39,7 +39,7 @@
 # This page shows the results of running the command
 # ```@raw html
 # <pre class="shell">
-# <code class="language-shell hljs">$ julia src/rawspectra.jl docs/src/example.toml  P143hm1 P143hm2</code></pre>
+# <code class="language-shell hljs">$ julia src/rawspectra.jl example.toml P143hm1 P143hm2</code></pre>
 # ```
 # The first step is just to unpack the command-line arguments, which consist of the 
 # TOML config file and the map names, which we term channels 1 and 2.

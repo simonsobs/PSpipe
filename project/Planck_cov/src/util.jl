@@ -11,11 +11,9 @@ using LinearAlgebra
 function util_planck_binning(binfile; lmax=6143)
     bin_df = DataFrame(CSV.File(binfile; 
         header=false, delim=" ", ignorerepeated=true))
-
-    ## bin centers and binning matrix
     lb = (bin_df[:,1] .+ bin_df[:,2]) ./ 2
     P = binning_matrix(bin_df[:,1], bin_df[:,2], ℓ -> ℓ*(ℓ+1) / (2π); lmax=lmax)
-    return P, lb
+    return P, lb[1:size(P,1)]
 end
 
 
@@ -52,8 +50,6 @@ util_planck_beam_bl(freq1::String, split1, freq2, split2, spec1, spec2; kwargs..
     util_planck_beam_bl(Float64, freq1, split1, freq2, split2, spec1, spec2; kwargs...)
 
 
-
-
 struct PlanckReferenceCov{T}
     cov::Array{T,2}
     ells::Vector{Int}
@@ -70,7 +66,6 @@ function PlanckReferenceCov(plicrefpath)
     keys = ["TT_100x100", "TT_143x143", "TT_143x217", "TT_217x217", "EE_100x100",
         "EE_100x143", "EE_100x217", "EE_143x143", "EE_143x217", "EE_217x217", "TE_100x100",
         "TE_100x143", "TE_100x217", "TE_143x143", "TE_143x217", "TE_217x217"]
-    # subarray_indices = collect(0:size(
     cov = inv(readdlm(covpath))
     ells = readdlm(ellspath)[:,1]
     cls = readdlm(clpath)[:,2]

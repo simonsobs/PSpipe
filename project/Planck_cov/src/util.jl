@@ -5,7 +5,9 @@
 # data products, namely 
 # 1. binning matrix
 # 2. beam ``W_{\ell}^{XY} = B_{\ell}^X B_{\ell}^{Y}``
-# 3. ``\texttt{plic}`` reference covariance matrix and reference spectra, for comparison plots
+# 3. foreground model cross-spectra
+# 4. ``\texttt{plic}`` reference covariance matrix and reference spectra, for comparison plots
+
 
 
 using PowerSpectra
@@ -13,6 +15,11 @@ using DataFrames, CSV
 using DelimitedFiles
 using LinearAlgebra
 
+# ## Planck Binning 
+# Planck bins the spectra at the very end, and applies an ``\ell (\ell+1)`` relative 
+# weighting inside the bin. This utility function generates the binning operator 
+# ``P_{b\ell}`` such that ``C_b = P_{b \ell} C_{\ell}``. It also returns the mean of the 
+# left and right bin edges, which is what is used when plotting the Planck spectra.
 
 """
     util_planck_binning(binfile; lmax=6143)
@@ -36,6 +43,16 @@ function util_planck_binning(binfile; lmax=6143)
     return P, lb[1:size(P,1)]
 end
 
+
+# ## Planck Beam 
+# The Planck effective beams are azimuthally-averaged window functions induced by the 
+# instrumental optics. This utility function reads the Planck beams from the RIMO, which 
+# are of the form `TT_2_TT`, `TT_2_EE` etc. Conventionally, the Planck spectra are stored 
+# with the diagonal of the beam-mixing matrix applied. 
+#
+# ```math
+# C_{\ell} = W^{-1}_{\ell} \hat{C}_{\ell} 
+# ```
 
 """
     util_planck_beam_Wl([T::Type=Float64], freq1, split1, freq2, split2, spec1_, spec2_; 
@@ -92,6 +109,102 @@ util_planck_beam_Wl(T::Type, freq1, split1, freq2, split2, spec1; kwargs...) =
 util_planck_beam_Wl(freq1::String, split1, freq2, split2, spec1, spec2; kwargs...) = 
     util_planck_beam_Wl(Float64, freq1, split1, freq2, split2, spec1, spec2; kwargs...)
 
+
+# ## Planck Likelihood Specifics
+# The Planck likelihood uses a specific choice of spectra and multipole ranges for those 
+# spectra. We provide some utility functions to retrieve a copy of the spectra order and 
+# the multipole minimum and maximum for those spectra.
+
+plic_order() = (
+    (:TT,"100","100"), (:TT,"143","143"), (:TT,"143","217"), (:TT,"217","217"), 
+    (:EE,"100","100"), (:EE,"100","143"), (:EE,"100","217"), (:EE,"143","143"), 
+    (:EE,"143","217"), (:EE,"217","217"), 
+    (:TE,"100","100"), (:TE,"100","143"), (:TE,"100","217"), (:TE,"143","143"), 
+    (:TE,"143","217"), (:TE,"217","217"))
+
+plic_ellranges() = Dict(
+    (:TT, "100", "100") => (30, 1197),
+    (:TT, "143", "143") => (30, 1996),
+    (:TT, "143", "217") => (30, 2508),
+    (:TT, "217", "217") => (30, 2508),
+    (:EE, "100", "100") => (30, 999),
+    (:EE, "100", "143") => (30, 999),
+    (:EE, "100", "217") => (505, 999),
+    (:EE, "143", "143") => (30, 1996),
+    (:EE, "143", "217") => (505, 1996),
+    (:EE, "217", "217") => (505, 1996),
+    (:TE, "100", "100") => (30, 999),
+    (:TE, "100", "143") => (30, 999),
+    (:TE, "100", "217") => (505, 999),
+    (:TE, "143", "143") => (30, 1996),
+    (:TE, "143", "217") => (505, 1996),
+    (:TE, "217", "217") => (505, 1996))
+
+
+# ## Signal Spectra 
+# The covariance matrix calculation and and signal simulations require an assumed signal 
+# spectra. We use the same foreground spectra as used in the ``\text{plic}`` likelihood.
+# This returns dictionaries for signal and theory ``C_{\ell}`` in ``\mu\mathrm{K}`` 
+# between two frequencies. The data is stored in the `plicref` directory in the config.
+
+function signal_and_theory(freq1, freq2, config::Dict)
+    likelihood_data_dir = joinpath(config["dir"]["scratch"], "plicref")
+    th = read_commented_header(joinpath(likelihood_data_dir,"theory_cl.txt"))
+    fg = read_commented_header(joinpath(likelihood_data_dir,
+        "base_plikHM_TTTEEE_lowl_lowE_lensing.minimum.plik_foregrounds"))
+        
+    ranges = plic_ellranges()
+    for (spec, f1, f2) in plic_order()
+        lmin, lmax = ranges[spec, f1, f2]
+        const_val = fg[lmax-1,"$(spec)$(f1)X$(f2)"]
+        # constant foreground level after lmax -- there are fitting artifacts otherwise
+        fg[(lmax-1):end, "$(spec)$(f1)X$(f2)"] .= const_val
+    end
+
+    ## loop over spectra and also fill in the flipped name
+    freqs = ("100", "143", "217")
+    specs = ("TT", "TE", "ET", "EE")
+    for f1 in freqs, f2 in freqs, spec in specs
+        if "$(spec)$(f1)X$(f2)" ∉ names(fg)
+            if "$(reverse(spec))$(f2)X$(f1)" ∈ names(fg)
+                fg[!, "$(spec)$(f1)X$(f2)"] = fg[!, "$(reverse(spec))$(f2)X$(f1)"]
+            else
+                fg[!, "$(spec)$(f1)X$(f2)"] = zeros(nrow(fg))
+            end
+        end
+    end
+
+    ap(v) = vcat([0., 0.], v)
+    ell_fac = fg[!, "l"] .* (fg[!, "l"] .+ 1) ./ (2π);
+    signal_dict = Dict{String,Vector{Float64}}()
+    theory_dict = Dict{String,Vector{Float64}}()
+
+    for XY₀ in specs  # XY₀ is the spectrum to store
+        f₁, f₂ = parse(Int, freq1), parse(Int, freq2)
+        if f₁ <= f₂
+            XY = XY₀
+        else  ## swap what we're looking for, as fg data only has those cross-spectra
+            XY = XY₀[2] * XY₀[1]
+            f₁, f₂ = f₂, f₁
+        end
+        if XY == "ET"
+            theory_cl_XY = th[!, "TE"] ./ (th[!, "L"] .* (th[!, "L"] .+ 1) ./ (2π))
+        else
+            theory_cl_XY = th[!, XY] ./ (th[!, "L"] .* (th[!, "L"] .+ 1) ./ (2π))
+        end
+        fg_cl_XY = fg[!, "$(XY)$(f₁)X$(f₂)"] ./ (fg[!, "l"] .* (fg[!, "l"] .+ 1) ./ (2π))
+        
+        signal_dict[XY₀] =  ap(theory_cl_XY .+ fg_cl_XY[1:2507])
+        theory_dict[XY₀] =  ap(theory_cl_XY)
+    end
+    return signal_dict, theory_dict
+end
+
+
+# ## Planck ``\texttt{plic}`` Reference
+# In various parts of the pipeline, we want to compare our results to the official 2018 
+# data release. These routines load them from disk. They're automatically downloaded to the 
+# `plicref` directory specified in the configuration TOML. 
 
 
 """

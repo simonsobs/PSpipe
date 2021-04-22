@@ -160,6 +160,12 @@ plot( prefactor .*  Cl[spec] ./ (Wl .* pixwinT.^2),
 theory = PowerSpectra.planck_theory_Dl()
 plot!(theory[spec], label="theory $(spec)")
 
+#
+saveToFITS(maskT₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskT.fits"))
+saveToFITS(maskP₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskP.fits"))
+saveToFITS(maskT₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskT.fits"))
+saveToFITS(maskP₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskP.fits"))
+
 # Now we save our spectra. 
 ## set up spectra path
 using CSV, DataFrames

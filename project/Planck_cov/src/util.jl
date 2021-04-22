@@ -157,7 +157,7 @@ function signal_and_theory(freq1, freq2, config::Dict)
     for (spec, f1, f2) in plic_order()
         lmin, lmax = ranges[spec, f1, f2]
         const_val = fg[lmax-1,"$(spec)$(f1)X$(f2)"]
-        # constant foreground level after lmax -- there are fitting artifacts otherwise
+        ## constant foreground level after lmax -- there are fitting artifacts otherwise
         fg[(lmax-1):end, "$(spec)$(f1)X$(f2)"] .= const_val
     end
 
@@ -179,7 +179,7 @@ function signal_and_theory(freq1, freq2, config::Dict)
     signal_dict = Dict{String,Vector{Float64}}()
     theory_dict = Dict{String,Vector{Float64}}()
 
-    for XY₀ in specs  # XY₀ is the spectrum to store
+    for XY₀ in specs  ## XY₀ is the spectrum to store
         f₁, f₂ = parse(Int, freq1), parse(Int, freq2)
         if f₁ <= f₂
             XY = XY₀

@@ -1,7 +1,7 @@
 #
 # ```@setup rawspectra
 # # the example command line input for this script
-# ARGS = ["example.toml", "P143hm1", "P143hm2"] 
+# ARGS = ["example.toml", "P143hm1", "P143hm2", "--plot"] 
 # ``` 
 
 
@@ -60,7 +60,7 @@ config = TOML.parsefile(configfile)
 
 # Next, we check to see if we need to render plots for the Documentation.
 
-if config["general"]["plot"] == false
+if "--plot" ∉ ARGS
     Plots.plot(args...; kwargs...) = nothing
     Plots.plot!(args...; kwargs...) = nothing
 end

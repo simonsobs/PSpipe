@@ -1,7 +1,6 @@
 # example files
 [general]
 name = "example"
-plot = true
 nside = 256
 
 [dir]

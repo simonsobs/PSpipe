@@ -1,7 +1,7 @@
 #
 # ```@setup fitnoisemodel
 # # the example command line input for this script
-# ARGS = ["example.toml", "100", "EE"] 
+# ARGS = ["example.toml", "100", "EE", "--plot"] 
 # ``` 
 
 configfile, freq, spec = ARGS
@@ -20,6 +20,16 @@ run_name = config["general"]["name"]
 spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
 XY = Symbol(spec)
 lmax = min(2508,nside2lmax(nside))
+
+
+# Next, we check to see if we need to render plots for the Documentation.
+
+if "--plot" ∉ ARGS
+    Plots.plot(args...; kwargs...) = nothing
+    Plots.plot!(args...; kwargs...) = nothing
+end
+
+# We read in the raw spectra generated from rawspectra.jl.
 
 Cl11 = DataFrame(CSV.File(joinpath(spectrapath,"$(run_name)_P$(freq)hm1xP$(freq)hm1.csv")));
 Cl12 = DataFrame(CSV.File(joinpath(spectrapath,"$(run_name)_P$(freq)hm1xP$(freq)hm2.csv")));

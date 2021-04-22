@@ -1,7 +1,6 @@
 [debug]
 [general]
 name = "pr3"
-plot = false
 nside = 2048
 
 [dir]

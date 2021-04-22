@@ -132,6 +132,12 @@ plot(m₁.i, clim=(-200,200))  # plot the intensity map
 plot(maskT₁)  # show the temperature mask
 
 #
+saveToFITS(maskT₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskT.fits"))
+saveToFITS(maskP₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskP.fits"))
+saveToFITS(maskT₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskT.fits"))
+saveToFITS(maskP₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskP.fits"))
+
+#
 # # Computing Spectra and Saving
 #
 # Once you have cleaned up maps and masks, you compute the 
@@ -159,12 +165,6 @@ plot( prefactor .*  Cl[spec] ./ (Wl .* pixwinT.^2),
     label="\$D_{\\ell}\$", xlim=(0,2nside))
 theory = PowerSpectra.planck_theory_Dl()
 plot!(theory[spec], label="theory $(spec)")
-
-#
-saveToFITS(maskT₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskT.fits"))
-saveToFITS(maskP₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskP.fits"))
-saveToFITS(maskT₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskT.fits"))
-saveToFITS(maskP₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskP.fits"))
 
 # Now we save our spectra. 
 ## set up spectra path

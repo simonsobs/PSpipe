@@ -132,6 +132,7 @@ plot(m₁.i, clim=(-200,200))  # plot the intensity map
 plot(maskT₁)  # show the temperature mask
 
 #
+run_name = config["general"]["name"]
 saveToFITS(maskT₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskT.fits"))
 saveToFITS(maskP₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskP.fits"))
 saveToFITS(maskT₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskT.fits"))
@@ -169,7 +170,6 @@ plot!(theory[spec], label="theory $(spec)")
 # Now we save our spectra. 
 ## set up spectra path
 using CSV, DataFrames
-run_name = config["general"]["name"]
 spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
 mkpath(spectrapath)
 

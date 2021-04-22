@@ -133,10 +133,16 @@ plot(maskT₁)  # show the temperature mask
 
 #
 run_name = config["general"]["name"]
-saveToFITS(maskT₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskT.fits"))
-saveToFITS(maskP₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskP.fits"))
-saveToFITS(maskT₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskT.fits"))
-saveToFITS(maskP₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskP.fits"))
+function save_if_needed(mapobj, mapfile)
+    if isfile(mapfile) == false
+        saveToFITS(mapobj, mapfile)
+    end
+end
+
+save_if_needed(maskT₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskT.fits"))
+save_if_needed(maskP₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskP.fits"))
+save_if_needed(maskT₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskT.fits"))
+save_if_needed(maskP₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskP.fits"))
 
 #
 # # Computing Spectra and Saving

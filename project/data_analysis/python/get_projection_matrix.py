@@ -122,10 +122,11 @@ shape_y = Pmat.shape[1]
 shape_TE_x = Pmat_TE.shape[0]
 shape_TE_y = Pmat_TE.shape[1]
 
-Pmat_tot = np.zeros((2 * shape_x + shape_TE_x, 2 * shape_y + shape_TE_y))
-Pmat_tot[:shape_x,:shape_y] = Pmat
-Pmat_tot[shape_x: shape_x + shape_TE_x, shape_y: shape_y + shape_TE_y] = Pmat_TE
-Pmat_tot[shape_x + shape_TE_x: 2 * shape_x + shape_TE_x, shape_y + shape_TE_y: 2 * shape_y + shape_TE_y] = Pmat
+full_Pmat = np.zeros((2 * shape_x + shape_TE_x, 2 * shape_y + shape_TE_y))
+full_Pmat[:shape_x,:shape_y] = Pmat
+full_Pmat[shape_x: shape_x + shape_TE_x, shape_y: shape_y + shape_TE_y] = Pmat_TE
+full_Pmat[shape_x + shape_TE_x: 2 * shape_x + shape_TE_x, shape_y + shape_TE_y: 2 * shape_y + shape_TE_y] = Pmat
 
-so_cov.plot_cov_matrix(Pmat_tot, file_name="%s/P_mat" % cov_plot_dir)
+so_cov.plot_cov_matrix(full_Pmat, file_name="%s/P_mat" % cov_plot_dir)
 
+np.save("%s/projection_matrix.npy" % cov_dir, full_Pmat)

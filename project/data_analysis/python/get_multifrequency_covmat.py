@@ -1,3 +1,8 @@
+# This script use the covariance matrix elements to form a multifrequency covariance matrix
+# with block TT - TE - ET - EE
+# Note that for the ET block, we do not include any same array, same survey spectra, since for
+# these guys TE = ET
+
 import matplotlib
 matplotlib.use("Agg")
 from pspy import so_dict, pspy_utils
@@ -38,7 +43,7 @@ for id_sv1, sv1 in enumerate(surveys):
 
 
 # We read each of the covariance matrix element associated to each spectra pair
-#  and store then in a dictionnary file
+# and store then in a dictionnary file
 
 nspec = len(spec_name)
 analytic_dict= {}
@@ -76,7 +81,8 @@ transpose[full_analytic_cov != 0] = 0
 full_analytic_cov += transpose
 np.save("%s/full_analytic_cov.npy"%cov_dir, full_analytic_cov)
 
-# for spectra with the same survey and the same array ( sv1 = sv2 and ar1 = ar2) TE=ET
+
+# for spectra with the same survey and the same array (sv1 = sv2 and ar1 = ar2) TE = ET
 # therefore we remove the ET block in order for the covariance not to be redondant
 
 block_to_delete = []
@@ -92,13 +98,15 @@ block_to_delete = block_to_delete.astype(int)
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=1)
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=0)
 
-np.save("%s/truncated_analytic_cov.npy"%cov_dir, full_analytic_cov)
+np.save("%s/truncated_analytic_cov.npy" % cov_dir, full_analytic_cov)
 
 print ("is matrix positive definite:", data_analysis_utils.is_pos_def(full_analytic_cov))
 print ("is matrix symmetric :", data_analysis_utils.is_symmetric(full_analytic_cov))
 
-size=int(full_analytic_cov.shape[0]/nbins)
 
+# This part compare the analytic covariance with the montecarlo covariance
+# In particular it produce plot of all diagonals of the matrix with MC vs analytics
+# We use our usual javascript visualisation tools
 
 full_mc_cov = np.load("%s/cov_restricted_all_cross.npy"%mc_dir)
 
@@ -119,7 +127,7 @@ g.write('</head> \n')
 g.write('<body> \n')
 g.write('<div class=sub>\n')
 
-
+size=int(full_analytic_cov.shape[0]/nbins)
 count=0
 for ispec in range(-size+1, size):
     

@@ -59,11 +59,6 @@ Returns the Planck beam transfer of [spec1]_to_[spec2], in Wl form.
 
 ### Returns: 
 - `SpectralVector`: the beam Wl, indexed 0:lmax
-
-### Examples
-```julia-repl
-julia> Wl = PowerSpectra.planck_beam_Wl("143", "hm1", "143", "hm2", :TT, :TT; lmax=6143)
-```
 """
 function util_planck_beam_Wl(T::Type, freq1, split1, freq2, split2, spec1_, spec2_; 
                         lmax=4000, beamdir=nothing)

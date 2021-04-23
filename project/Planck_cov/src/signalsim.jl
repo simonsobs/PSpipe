@@ -63,22 +63,8 @@ end
 
 #
 
-"""
-    channelindex(s)
-
-Convert string/char T,E,B => 1,2,3
-"""
-function channelindex(s)
-    s = string(s)
-    if s == "T"
-        return 1
-    elseif s == "E"
-        return 2
-    elseif s == "B"
-        return 3
-    end
-    throw(ArgumentError("unknown spectrum"))
-end
+## map T,E,B => 1,2,3
+channelindex(X) = findfirst(first(X), "TEB")
 
 function sim_iteration(𝐂, m1, m2, a1, a2, M, spec::String)
     ## get indices of the spectrum

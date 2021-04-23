@@ -86,7 +86,7 @@ for task in subtasks:
         survey_mask.data[map.data[0] == 0.0] = 0.0
 
     for k, map in enumerate(maps):
-        index = map.find("map.fits")
+        index = map.find("map_srcfree.fits")
         xlink_map = map[:index] + "xlink.fits"
         print(xlink_map)
         x_mask = create_crosslink_mask(xlink_map, cross_link_threshold)

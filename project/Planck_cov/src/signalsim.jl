@@ -4,7 +4,7 @@
 # ARGS = ["example.toml",  "143", "143", "EE", "--plot"]
 # ``` 
 
-configfile, freq1, freq2, spec = ARGS[1], ARGS[2], ARGS[3], ARGS[4]
+configfile, freq1, freq2, spec = ARGS
 
 # # Signal Sims (signalsim.jl)
 # This script runs signal simulations.
@@ -67,11 +67,6 @@ end
     channelindex(s)
 
 Convert string/char T,E,B => 1,2,3
-
-# Examples
-```julia-repl
-julia> channelindex("E")
-2
 ```
 """
 function channelindex(s)
@@ -87,25 +82,33 @@ function channelindex(s)
 end
 
 function sim_iteration(𝐂, m1, m2, a1, a2, M, spec::String)
-    # get indices of the spectrum
+    ## get indices of the spectrum
     c₁, c₂ = channelindex(spec[1]), channelindex(spec[2])
 
-    # zero out alms
+    ## zero out alms
     for i in 1:3
         fill!(a1[i].alm, 0.0)
         fill!(a2[i].alm, 0.0)
     end
 
-    # synthesize polarized spectrum into m1
+    ## synthesize polarized spectrum into m1
     synalm!(𝐂, [a1[c₁], a2[c₂]])
     alm2map!(a1, m1)
     alm2map!(a2, m2)
 
-    # same signal, but different masks
+    ## same signal, but different masks
     mask!(m1, mask1, mask1)
     mask!(m2, mask2, mask2)
 
-    # apply pixel weights and then map2alm
+    ## subtract monopole if TT
+    if spec == "TT"
+        monopole, dipole = fitdipole(m1.i * mask1)
+        subtract_monopole_dipole!(m1.i, monopole, dipole)
+        monopole, dipole = fitdipole(m2.i * mask2)
+        subtract_monopole_dipole!(m2.i, monopole, dipole)
+    end
+
+    ## apply pixel weights and then map2alm
     Healpix.applyfullweights!(m1)
     Healpix.applyfullweights!(m2)
     map2alm!(m1, a1; niter=0)
@@ -118,8 +121,8 @@ function sim_iteration(𝐂, m1, m2, a1, a2, M, spec::String)
         return Cl_EE
     end
 
-    # otherwise easy mode coupling
-    pCl_XY = SpectralVector(alm2cl(a1, a2))
+    ## otherwise easy mode coupling
+    pCl_XY = SpectralVector(alm2cl(a1[c₁], a2[c₂]))
     return M \ pCl_XY
 end
 
@@ -135,7 +138,7 @@ simpath = joinpath(config["dir"]["scratch"], "signalsims",
     "$(freq1)_$(freq2)_$(spec)")
 mkpath(simpath)
 
-nsims = 2000
+nsims = 5000
 for sim_index in 1:nsims
     @time cl = sim_iteration(𝐂, m1, m2, a1, a2, M, spec)
     @save "$(simpath)/$(uuid4()).jld2" cl=cl

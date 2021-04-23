@@ -44,7 +44,7 @@
 # The first step is just to unpack the command-line arguments, which consist of the 
 # TOML config file and the map names, which we term channels 1 and 2.
 
-configfile, mapid1, mapid2 = ARGS[1], ARGS[2], ARGS[3]
+configfile, mapid1, mapid2 = ARGS
 
 #
 # ## File Loading and Cleanup
@@ -115,8 +115,8 @@ function load_maps_and_masks(config, mapid, maptype=Float64)
     mask!(maskT, allowed)
     mask!(maskP, allowed)
 
-    ## fit and remove monopole/dipole in I
-    monopole, dipole = fitdipole(polmap.i, maskT)
+    ## fit and remove pseudo-monopole/dipole in I
+    monopole, dipole = fitdipole(polmap.i * maskT)
     subtract_monopole_dipole!(polmap.i, monopole, dipole)
     
     return polmap, maskT, maskP

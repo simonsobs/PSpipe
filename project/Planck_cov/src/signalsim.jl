@@ -1,10 +1,10 @@
 #
 # ```@setup signalsim
 # # the example command line input for this script
-# ARGS = ["example.toml",  "143", "143", "EE", "--plot"]
+# ARGS = ["example.toml",  "143", "143", "EE", "10", "--plot"]
 # ``` 
 
-configfile, freq1, freq2, spec = ARGS
+configfile, freq1, freq2, spec, nsims = ARGS
 
 # # Signal Sims (signalsim.jl)
 # This script runs signal simulations.
@@ -67,7 +67,6 @@ end
     channelindex(s)
 
 Convert string/char T,E,B => 1,2,3
-```
 """
 function channelindex(s)
     s = string(s)
@@ -126,20 +125,20 @@ function sim_iteration(𝐂, m1, m2, a1, a2, M, spec::String)
     return M \ pCl_XY
 end
 
-#
 if "--plot" in ARGS
     @time simEE = sim_iteration(𝐂, m1, m2, a1, a2, M, "EE")
     plot(simEE .* eachindex(simEE).^2, label="sim")
     plot!(signal12["EE"] .* eachindex(0:lmax_planck).^2, xlim=(0,lmax_planck), label="input")
 end
 
-# 
+# This script generates many simulations.
+
 simpath = joinpath(config["dir"]["scratch"], "signalsims", 
     "$(freq1)_$(freq2)_$(spec)")
 mkpath(simpath)
 
-nsims = 5000
-for sim_index in 1:nsims
+
+for sim_index in 1:parse(Int,nsims)
     @time cl = sim_iteration(𝐂, m1, m2, a1, a2, M, spec)
     @save "$(simpath)/$(uuid4()).jld2" cl=cl
 end

@@ -114,7 +114,8 @@ end
 if "--plot" in ARGS
     @time simEE = sim_iteration(𝐂, m1, m2, a1, a2, M, "EE")
     plot(simEE .* eachindex(simEE).^2, label="sim")
-    plot!(signal12["EE"] .* eachindex(0:lmax_planck).^2, xlim=(0,lmax_planck), label="input")
+    plot!(signal12["EE"][1:(lmax_planck+1)] .* eachindex(0:lmax_planck).^2, 
+        xlim=(0,lmax_planck), label="input")
 end
 
 # This script generates many simulations.

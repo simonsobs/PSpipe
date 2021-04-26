@@ -25,11 +25,9 @@ binning_file = d["binning_file"]
 bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(bin_hi)
 
-
 # we will need the covariance matrix and the projection matrix
 cov_mat = np.load("%s/truncated_analytic_cov.npy" % cov_dir)
 P_mat = np.load("%s/projection_matrix.npy" % cov_dir)
-
 
 # let's get a list of all frequencies we plan to study
 freq_list = []
@@ -38,7 +36,6 @@ for sv in surveys:
     for ar in arrays:
         freq_list += [int(d["nu_eff_%s_%s" % (sv, ar)])]
 freq_list = np.sort(list(dict.fromkeys(freq_list)))
-
 
 # Lets read the data vector corresponding to the covariance matrix
  
@@ -97,7 +94,7 @@ for s1, spec in enumerate(my_spectra):
         Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
         sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
 
-        np.save("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
+        np.savetxt("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
         
         plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".")
 

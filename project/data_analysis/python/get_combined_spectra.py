@@ -15,6 +15,8 @@ cov_dir = "covariances"
 spec_dir = "spectra"
 like_product_dir = "like_product"
 
+pspy_utils.create_directory(like_product_dir)
+
 surveys = d["surveys"]
 type = d["type"]
 lmax = d["lmax"]

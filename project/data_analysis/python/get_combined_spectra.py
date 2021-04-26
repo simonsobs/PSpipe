@@ -82,12 +82,12 @@ colors["90x90"] = "blue"
 colors["90x150"] = "red"
 colors["150x90"] = "orange"
 colors["150x150"] = "green"
-plt.figure()
-plt.suptitle("season 19")
+#plt.suptitle("season 19")
 count = 0
 for s1, spec in enumerate(my_spectra):
+    plt.figure(figsize=(15,10))
 
-    plt.subplot(3, 1, s1 + 1)
+    #plt.subplot(3, 1, s1 + 1)
     if spec == "TT":
         plt.semilogy()
         
@@ -109,4 +109,4 @@ for s1, spec in enumerate(my_spectra):
         plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".", color= colors[cross_freq] )
     
     plt.legend()
-plt.show()
+    plt.show()

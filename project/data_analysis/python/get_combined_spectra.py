@@ -1,5 +1,5 @@
-#import matplotlib
-#matplotlib.use("Agg")
+import matplotlib
+matplotlib.use("Agg")
 from pspy import so_dict, pspy_utils, so_spectra, so_cov
 from itertools import combinations_with_replacement as cwr
 from itertools import product
@@ -13,6 +13,7 @@ d.read_from_file(sys.argv[1])
 
 cov_dir = "covariances"
 spec_dir = "spectra"
+like_product_dir = "like_product"
 
 surveys = d["surveys"]
 type = d["type"]
@@ -40,7 +41,7 @@ freq_list = np.sort(list(dict.fromkeys(freq_list)))
 # Lets read the data vector corresponding to the covariance matrix
  
 data_vec = []
- 
+print("read data vec") 
 my_spectra = ["TT", "TE", "ET", "EE"]
 for spec in my_spectra:
     for id_sv1, sv1 in enumerate(surveys):
@@ -62,51 +63,44 @@ for spec in my_spectra:
                     
                     data_vec = np.append(data_vec, Db[spec])
 
-
 # Lets combine the data (following the doc)
 
+print("invert cov mat")
 inv_cov_mat = np.linalg.inv(cov_mat)
 
 proj_cov_mat = np.linalg.inv(np.dot(np.dot(P_mat, inv_cov_mat), P_mat.T))
-proj_data_vec =   np.dot(proj_cov_mat, np.dot(P_mat, np.dot(inv_cov_mat, data_vec)))
+proj_data_vec = np.dot(proj_cov_mat, np.dot(P_mat, np.dot(inv_cov_mat, data_vec)))
 
 print ("is matrix positive definite:", data_analysis_utils.is_pos_def(proj_cov_mat))
 print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat))
 #so_cov.plot_cov_matrix(np.log(proj_cov_mat))
 
+np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
+np.save("%s/data_vec.dat" % like_product_dir, proj_data_vec)
+
+
 my_spectra = ["TT", "TE", "EE"]
-
-
-colors = {}
-colors["90x90"] = "blue"
-colors["90x150"] = "red"
-colors["150x90"] = "orange"
-colors["150x150"] = "green"
-#plt.suptitle("season 19")
 count = 0
 for s1, spec in enumerate(my_spectra):
-    plt.figure(figsize=(15,10))
+    
+    plt.figure(figsize=(12, 6))
 
-    #plt.subplot(3, 1, s1 + 1)
-    if spec == "TT":
-        plt.semilogy()
-        
     if spec == "TE":
         cross_freq_list = ["%sx%s" % (f0,f1) for f0, f1 in product(freq_list, freq_list)]
     else:
-        cross_freq_list = [ "%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
+        cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
 
-    print(cross_freq_list)
     for cross_freq in cross_freq_list:
         
         Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
         sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
 
+        np.save("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
+        
+        plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".")
+
         count += 1
         
-        # 220 is totally bad for now let's remove it
-        if "220" in cross_freq: continue
-        plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".", color= colors[cross_freq] )
-    
     plt.legend()
-    plt.show()
+    plt.clf()
+    plt.close()

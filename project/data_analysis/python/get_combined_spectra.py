@@ -75,7 +75,7 @@ print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat))
 #so_cov.plot_cov_matrix(np.log(proj_cov_mat))
 
 np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
-np.save("%s/data_vec.dat" % like_product_dir, proj_data_vec)
+np.savetxt("%s/data_vec.dat" % like_product_dir, proj_data_vec)
 
 
 my_spectra = ["TT", "TE", "EE"]
@@ -99,7 +99,8 @@ for s1, spec in enumerate(my_spectra):
         plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".")
 
         count += 1
-        
+    
     plt.legend()
+    plt.savefig("%s/spectra_%s.png" % (like_product_dir, spec))
     plt.clf()
     plt.close()

@@ -54,6 +54,15 @@ The computation of the covariance matrices is then divided into two steps, first
     salloc -N 40 -C haswell -q interactive -t 04:00:00
     srun -n 40 -c 64 --cpu_bind=cores python fast_cov_get_covariance.py global_s171819.dict
 
+We can now combine the data together, for this we run
+
+.. code:: shell
+
+    salloc -N 1 -C haswell -q interactive -t 04:00:00
+    python get_multifrequency_covmat.py global_s171819.dict
+    python get_projection_matrix.py global_s171819.dict
+    python get_combined_spectra.py global_s171819.dict
+
 
 We are done !
 

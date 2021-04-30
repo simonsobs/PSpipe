@@ -4,28 +4,31 @@ arrays_s17 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f
 arrays_s18 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 arrays_s19 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 
-data_dir = '../data/s171819_product/'
+data_dir = '/global/cscratch1/sd/tlouis/data_analysis/data/s171819_product/'
 
-maps_s17_pa4_f150 = [data_dir + 'maps/s17_cmb_pa4_f150_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s17_pa4_f220 = [data_dir + 'maps/s17_cmb_pa4_f220_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s17_pa5_f090 = [data_dir + 'maps/s17_cmb_pa5_f090_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s17_pa5_f150 = [data_dir + 'maps/s17_cmb_pa5_f150_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s17_pa6_f090 = [data_dir + 'maps/s17_cmb_pa6_f090_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s17_pa6_f150 = [data_dir + 'maps/s17_cmb_pa6_f150_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
+src_free_maps = True
+maps_s17_pa4_f150 = [data_dir + 'maps/srcfree_s1718/s17_cmb_pa4_f150_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s17_pa4_f220 = [data_dir + 'maps/srcfree_s1718/s17_cmb_pa4_f220_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s17_pa5_f090 = [data_dir + 'maps/srcfree_s1718/s17_cmb_pa5_f090_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s17_pa5_f150 = [data_dir + 'maps/srcfree_s1718/s17_cmb_pa5_f150_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s17_pa6_f090 = [data_dir + 'maps/srcfree_s1718/s17_cmb_pa6_f090_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s17_pa6_f150 = [data_dir + 'maps/srcfree_s1718/s17_cmb_pa6_f150_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
 
-maps_s18_pa4_f150 = [data_dir + 'maps/s18_cmb_pa4_f150_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s18_pa4_f220 = [data_dir + 'maps/s18_cmb_pa4_f220_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s18_pa5_f090 = [data_dir + 'maps/s18_cmb_pa5_f090_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s18_pa5_f150 = [data_dir + 'maps/s18_cmb_pa5_f150_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s18_pa6_f090 = [data_dir + 'maps/s18_cmb_pa6_f090_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
-maps_s18_pa6_f150 = [data_dir + 'maps/s18_cmb_pa6_f150_nohwp_night_1pass_2way_set%d_map.fits' % i for i in range(2)]
+maps_s18_pa4_f150 = [data_dir + 'maps/srcfree_s1718/s18_cmb_pa4_f150_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s18_pa4_f220 = [data_dir + 'maps/srcfree_s1718/s18_cmb_pa4_f220_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s18_pa5_f090 = [data_dir + 'maps/srcfree_s1718/s18_cmb_pa5_f090_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s18_pa5_f150 = [data_dir + 'maps/srcfree_s1718/s18_cmb_pa5_f150_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s18_pa6_f090 = [data_dir + 'maps/srcfree_s1718/s18_cmb_pa6_f090_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
+maps_s18_pa6_f150 = [data_dir + 'maps/srcfree_s1718/s18_cmb_pa6_f150_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
 
-maps_s19_pa4_f150 = [data_dir + 'maps/s19_cmb_pa4_f150_nohwp_night_1pass_4way_set%d_map.fits' % i for i in range(4)]
-maps_s19_pa4_f220 = [data_dir + 'maps/s19_cmb_pa4_f220_nohwp_night_1pass_4way_set%d_map.fits' % i for i in range(4)]
-maps_s19_pa5_f090 = [data_dir + 'maps/s19_cmb_pa5_f090_nohwp_night_1pass_4way_set%d_map.fits' % i for i in range(4)]
-maps_s19_pa5_f150 = [data_dir + 'maps/s19_cmb_pa5_f150_nohwp_night_1pass_4way_set%d_map.fits' % i for i in range(4)]
-maps_s19_pa6_f090 = [data_dir + 'maps/s19_cmb_pa6_f090_nohwp_night_1pass_4way_set%d_map.fits' % i for i in range(4)]
-maps_s19_pa6_f150 = [data_dir + 'maps/s19_cmb_pa6_f150_nohwp_night_1pass_4way_set%d_map.fits' % i for i in range(4)]
+
+maps_s19_pa4_f150 = [data_dir + 'maps/srcfree_s19/s19_cmb_pa4_f150_nohwp_night_1pass_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_s19_pa4_f220 = [data_dir + 'maps/srcfree_s19/s19_cmb_pa4_f220_nohwp_night_1pass_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_s19_pa5_f090 = [data_dir + 'maps/srcfree_s19/s19_cmb_pa5_f090_nohwp_night_1pass_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_s19_pa5_f150 = [data_dir + 'maps/srcfree_s19/s19_cmb_pa5_f150_nohwp_night_1pass_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_s19_pa6_f090 = [data_dir + 'maps/srcfree_s19/s19_cmb_pa6_f090_nohwp_night_1pass_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_s19_pa6_f150 = [data_dir + 'maps/srcfree_s19/s19_cmb_pa6_f150_nohwp_night_1pass_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+
 
 cal_s17_pa4_f150 = 1.0
 cal_s17_pa4_f220 = 1.0
@@ -68,7 +71,6 @@ nu_eff_s19_pa5_f090 = 90
 nu_eff_s19_pa5_f150 = 150
 nu_eff_s19_pa6_f090 = 90
 nu_eff_s19_pa6_f150 = 150
-
 
 beam_s17_pa4_f150 = data_dir + 'beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt'
 beam_s17_pa4_f220 = data_dir + 'beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt'
@@ -135,7 +137,7 @@ window_pol_s19_pa6_f090 =  "windows/window_s19_pa6_f090.fits"
 window_pol_s19_pa6_f150 =  "windows/window_s19_pa6_f150.fits"
 
 
-binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_low_ell"
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
 niter = 0
 remove_mean = False
 lmax = 7930
@@ -145,7 +147,7 @@ multistep_path = data_dir
 use_toeplitz  = True
 
 #plot
-range_TT = [100, 8000]
+range_TT = [10, 8000]
 range_TE = [-150, 150]
 range_ET = [-150, 150]
 range_EE = [-20, 50]
@@ -183,4 +185,4 @@ fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4
 
 #sim
 iStart = 0
-iStop = 99
+iStop = 119

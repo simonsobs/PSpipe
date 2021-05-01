@@ -245,7 +245,7 @@ def multiply_alms(alms, bl, ncomp):
     return alms_mult
 
 
-def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None):
+def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None, dtype=np.complex128):
     
     """This function generates the alms corresponding to the noise power spectra matrices
     nl_array_t, nl_array_pol. The function returns a dictionnary nlms["T", i].
@@ -274,12 +274,12 @@ def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None):
     nlms = {}
     if ncomp == 1:
         for k in range(n_splits):
-            nlms[k] = curvedsky.rand_alm(nl_array_t,lmax=lmax)
+            nlms[k] = curvedsky.rand_alm(nl_array_t,lmax=lmax, dtype=dtype)
     else:
         for k in range(n_splits):
-            nlms["T", k] = curvedsky.rand_alm(nl_array_t, lmax=lmax)
-            nlms["E", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax)
-            nlms["B", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax)
+            nlms["T", k] = curvedsky.rand_alm(nl_array_t, lmax=lmax, dtype=dtype)
+            nlms["E", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax, dtype=dtype)
+            nlms["B", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax, dtype=dtype)
     
     return nlms
 

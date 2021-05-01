@@ -21,6 +21,8 @@ niter = d["niter"]
 type = d["type"]
 binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]
+sim_alm_dtype = np.complex64
+
 
 window_dir = "windows"
 mcm_dir = "mcms"
@@ -69,10 +71,8 @@ for iii in subtasks:
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
     # fglms will be of shape (nfreq, lm) and is T only
     
-    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax)
-    print(alms.shape)
-    template.info()
-    fglms = curvedsky.rand_alm(ps_fg, lmax=lmax)
+    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, dtype=sim_alm_dtype)
+    fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, dtype=sim_alm_dtype)
     
     master_alms = {}
     nsplits = {}
@@ -100,7 +100,8 @@ for iii in subtasks:
                                                        lmax,
                                                        nsplits[sv],
                                                        ncomp,
-                                                       nl_array_pol=nl_array_pol)
+                                                       nl_array_pol=nl_array_pol,
+                                                       dtype=sim_alm_dtype)
         print(nl_array_t.shape)
         del nl_array_t, nl_array_pol
 
@@ -119,7 +120,7 @@ for iii in subtasks:
             
             # we convolve signal + foreground with the beam of the array
             l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
-            alms_beamed = data_analysis_utils.multiply_alms(alms_beamed, bl, ncomp)
+            alms_beamed = curvedsky.almxfl(alms_beamed, bl)
 
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
 
@@ -152,6 +153,7 @@ for iii in subtasks:
                     split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
+                print("m_alms_dtype", master_alms[sv, ar, k].dtype)
                 if d["use_kspace_filter"]:
                     # there is an extra normalisation for the FFT/IFFT bit
                     # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps

@@ -14,9 +14,11 @@ from pixell import curvedsky, powspec
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+# Here enter the folder where the actual run is
+run_dir = ""
+bestfit_dir = "%s/best_fits" % run_dir
+ps_model_dir = "%s/noise_model" % run_dir
 
-bestfit_dir = "best_fits"
-ps_model_dir = "noise_model"
 dummy_data_dir = "dummy_data"
 
 lmax = 2000

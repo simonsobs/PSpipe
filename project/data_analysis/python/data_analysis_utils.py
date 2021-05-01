@@ -169,6 +169,7 @@ def get_noise_matrix_spin0and2(noise_dir, survey, arrays, lmax, nsplits):
             l, nl = so_spectra.read_ps("%s/mean_%sx%s_%s_noise.dat" % (noise_dir, ar1, ar2, survey), spectra=spectra)
             nl_t = nl["TT"][:lmax]
             nl_pol = (nl["EE"][:lmax] + nl["BB"][:lmax])/2
+            l = l[:lmax]
 
             
             nl_array_t[c1, c2, :] = nl_t * nsplits *  2 * np.pi / (l * (l + 1))

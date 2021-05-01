@@ -54,6 +54,10 @@ l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lma
 # the template for the simulations
 template = so_map.car_template(ncomp, ra0, ra1, dec0, dec1, res)
 
+# we will use mpi over the number of simulations
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
+
 for iii in subtasks:
     t0 = time.time()
  

@@ -63,12 +63,13 @@ n_ps_same = len(same_spec)
 # and we need to keep T_\nu_1 E_\nu_2 and T_\nu_2 E_\nu_1 separated
 
 
+
 # We start with a projector for the TT and EE block
 
 n_cross_freq =  int(n_freq * (n_freq + 1) / 2)
 Pmat = np.zeros((n_cross_freq * n_bins, n_ps * n_bins))
 
-cross_freq_list = [ "%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
+cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
 
 for c_id, cross_freq in enumerate(cross_freq_list):
     id_start_cf = n_bins * (c_id)

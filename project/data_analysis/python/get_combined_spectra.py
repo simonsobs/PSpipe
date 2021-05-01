@@ -56,10 +56,8 @@ for spec in my_spectra:
                     
                     spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
                     lb, Db = so_spectra.read_ps(spec_dir + "/%s_%s_cross.dat" % (type, spec_name), spectra=spectra)
-                    
                     # remove same array, same season ET
                     if (spec == "ET") & (ar1 == ar2) & (sv1 == sv2): continue
-                    
                     data_vec = np.append(data_vec, Db[spec])
 
 # Lets combine the data (following the doc)

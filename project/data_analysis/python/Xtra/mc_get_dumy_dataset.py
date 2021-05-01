@@ -14,6 +14,9 @@ from pixell import curvedsky, powspec
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+surveys = d["surveys"]
+
+
 # Here enter the folder where the actual run is
 run_dir = ""
 bestfit_dir = "%s/best_fits" % run_dir

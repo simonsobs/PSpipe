@@ -152,7 +152,7 @@ for iii in subtasks:
                 if d["remove_mean"] == True:
                     split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
-                master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
+                master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
                 print("m_alms_dtype", master_alms[sv, ar, k].dtype)
                 if d["use_kspace_filter"]:
                     # there is an extra normalisation for the FFT/IFFT bit

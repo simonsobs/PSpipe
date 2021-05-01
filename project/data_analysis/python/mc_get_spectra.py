@@ -101,7 +101,7 @@ for iii in subtasks:
                                                        nsplits[sv],
                                                        ncomp,
                                                        nl_array_pol=nl_array_pol)
-                                                       
+        print(nl_array_t.shape)
         del nl_array_t, nl_array_pol
 
         for ar_id, ar in enumerate(arrays):
@@ -138,7 +138,7 @@ for iii in subtasks:
                 # from now on the simulation pipeline is done
                 # and we are back to the get_spectra algorithm
                                 
-                if win_T.pixel == "CAR":
+                if window_tuple[0].pixel == "CAR":
                     if d["use_kspace_filter"]:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                         split = data_analysis_utils.get_filtered_map(split,

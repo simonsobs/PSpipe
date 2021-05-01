@@ -70,6 +70,8 @@ for iii in subtasks:
     # fglms will be of shape (nfreq, lm) and is T only
     
     alms = curvedsky.rand_alm(ps_cmb, lmax=lmax)
+    print(alms.shape)
+    template.info()
     fglms = curvedsky.rand_alm(ps_fg, lmax=lmax)
     
     master_alms = {}
@@ -99,12 +101,17 @@ for iii in subtasks:
                                                        nsplits[sv],
                                                        ncomp,
                                                        nl_array_pol=nl_array_pol)
+                                                       
+        del nl_array_t, nl_array_pol
 
         for ar_id, ar in enumerate(arrays):
         
             win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
             win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+            
             window_tuple = (win_T, win_pol)
+            
+            del win_T, win_pol
         
             # we add fg alms to cmb alms in temperature
             alms_beamed = alms.copy()
@@ -115,6 +122,8 @@ for iii in subtasks:
             alms_beamed = data_analysis_utils.multiply_alms(alms_beamed, bl, ncomp)
 
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
+
+            t1 = time.time()
 
             for k in range(nsplits[sv]):
             
@@ -137,6 +146,7 @@ for iii in subtasks:
                                                                      vk_mask=d["vk_mask"],
                                                                      hk_mask=d["hk_mask"],
                                                                      normalize=False)
+                        del binary
                 
                 if d["remove_mean"] == True:
                     split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
@@ -147,6 +157,7 @@ for iii in subtasks:
                     # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
                     master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2])
 
+            print(time.time()-t1)
 
     ps_dict = {}
     _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)

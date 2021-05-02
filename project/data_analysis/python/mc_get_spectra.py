@@ -23,6 +23,10 @@ binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]
 sim_alm_dtype = d["sim_alm_dtype"]
 
+if sim_alm_dtype == "complex64":
+    sim_alm_dtype = np.complex64
+elif sim_alm_dtype == "complex128":
+    sim_alm_dtype = np.complex128
 
 window_dir = "windows"
 mcm_dir = "mcms"

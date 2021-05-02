@@ -142,7 +142,7 @@ niter = 0
 remove_mean = False
 lmax = 7930
 type = 'Dl'
-write_splits_spectra = True
+write_splits_spectra = False
 multistep_path = data_dir
 use_toeplitz  = True
 
@@ -185,4 +185,5 @@ fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4
 
 #sim
 iStart = 0
-iStop = 119
+iStop = 39
+sim_alm_dtype = "complex64"

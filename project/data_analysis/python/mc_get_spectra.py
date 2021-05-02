@@ -21,7 +21,7 @@ niter = d["niter"]
 type = d["type"]
 binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]
-sim_alm_dtype = np.complex64
+sim_alm_dtype = d["sim_alm_dtype"]
 
 
 window_dir = "windows"

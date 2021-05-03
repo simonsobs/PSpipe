@@ -16,6 +16,12 @@ surveys = d["surveys"]
 iStart = d["iStart"]
 iStop = d["iStop"]
 lmax = d["lmax"]
+sim_alm_dtype = d["sim_alm_dtype"]
+
+if sim_alm_dtype == "complex64":
+    spec_dtype = np.float32
+elif sim_alm_dtype == "complex128":
+    spec_dtype = np.float64
 
 spec_dir = "sim_spectra"
 mcm_dir = "mcms"
@@ -75,9 +81,9 @@ for kind in ["cross", "noise", "auto"]:
                                 vec_EB = np.append(vec_EB, (Db["EB"] + Db["BE"])/2 )
 
 
-        vec_list += [vec]
-        vec_list_restricted += [vec_restricted]
-        vec_list_EB += [vec_EB]
+        vec_list += [vec.astype(spec_dtype)]
+        vec_list_restricted += [vec_restricted.astype(spec_dtype)]
+        vec_list_EB += [vec_EB.astype(spec_dtype)]
 
 
     mean_vec = np.mean(vec_list, axis=0)

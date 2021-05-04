@@ -36,12 +36,13 @@ for id_sv1, sv1 in enumerate(surveys):
                 spec_list += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
 
 
-tf = {}
-tf["TT"] = []
-tf["EE"] = []
-tf["BB"] = []
 
 for sid, spec in enumerate(spec_list):
+
+    tf = {}
+    tf["TT"] = []
+    tf["EE"] = []
+    tf["BB"] = []
 
     for spectrum in ["TT", "EE", "BB"]:
 

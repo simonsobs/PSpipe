@@ -142,7 +142,7 @@ for iii in subtasks:
                                                         spin_pairs=spin_pairs)
                                                         
                                                         
-                    # we  compute the power spectra of the sim
+                    # we  compute the power spectra of the sim (with and without the k-space filter applied)
                     
                     for filt in ["filter", "nofilter"]:
                     

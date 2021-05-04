@@ -29,7 +29,7 @@ elif sim_alm_dtype == "complex128":
 
 window_dir = "windows"
 mcm_dir = "mcms"
-tf_dir = "spectra_for_tf"
+tf_dir = "sim_spectra_for_tf"
 bestfit_dir = "best_fits"
 ps_model_dir = "noise_model"
 

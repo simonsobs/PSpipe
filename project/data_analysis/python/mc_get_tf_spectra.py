@@ -135,12 +135,11 @@ for iii in subtasks:
                     if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                     if  (id_sv1 > id_sv2) : continue
 
-                    spec_name="%s_%s_%sx%s_%s_%d%d" % (type, sv1, ar1, sv2, ar2, s1, s2)
+                    spec_name="%s_%s_%sx%s_%s" % (type, sv1, ar1, sv2, ar2)
 
                     
                     mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%sx%s_%s" % (mcm_dir, sv1, ar1, sv2, ar2),
                                                         spin_pairs=spin_pairs)
-                                                        
                                                         
                     # we  compute the power spectra of the sim (with and without the k-space filter applied)
                     

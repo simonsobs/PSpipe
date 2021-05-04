@@ -15,10 +15,10 @@ config = TOML.parsefile(configfile)
 
 # Let's generate the commands we need for likelihood spectra.
 mapids = [k for k in keys(config["map"])]
-run = "sbatch scripts/4core1hr.cmd"
+cmd = "sbatch scripts/4core1hr.cmd"
 for i in 1:length(mapids)
     for j in i:length(mapids)
-        println("$(run) \"julia src/rawspectra.jl global.toml $(mapids[i]) $(mapids[j])\"")
+        println("$(cmd) \"julia src/rawspectra.jl global.toml $(mapids[i]) $(mapids[j])\"")
     end
 end
 
@@ -30,6 +30,21 @@ end
 ## loop over freqs and noise channels
 for freq in ("100", "143", "217")
     for spec in ("TT", "EE")
-        println("$(run) \"julia src/fitnoisemodel.jl global.toml $(freq) $(spec)\"")
+        println("$(cmd) \"julia src/fitnoisemodel.jl global.toml $(freq) $(spec)\"")
+    end
+end
+
+
+# ## Fit Signal-Only Simulation Corrections
+# These SLURM commands correct the covariances for the insufficiently-apodized point source
+# holes.
+## loop over freqs and noise channels
+freqs = ("100", "143", "217")
+for i in 1:3
+    for j in i:3
+        for spec in ("TT", "EE")
+            freq1, freq2 = freqs[i], freqs[j]
+            println("$(cmd) \"julia src/corrections.jl global.toml $(freq1) $(freq2) $(spec)\"")
+        end
     end
 end

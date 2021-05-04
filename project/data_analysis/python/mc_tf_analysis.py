@@ -40,6 +40,9 @@ for id_sv1, sv1 in enumerate(surveys):
 for sid, spec in enumerate(spec_list):
 
     tf = {}
+    mean = {}
+    std = {}
+    
     tf["TT"] = []
     tf["EE"] = []
     tf["BB"] = []
@@ -56,7 +59,8 @@ for sid, spec in enumerate(spec_list):
         
             tf[spectrum] += [ps_filt[spectrum]/ps_nofilt[spectrum] ]
         
-        tf[spectrum]  = np.mean(tf[spectrum], axis = 0)
-    
-    np.savetxt("%s/tf_%s.dat" % (mc_dir, spec), np.array([lb, tf["TT"], tf["EE"],  tf["BB"]]).T)
+        mean[spectrum]  = np.mean(tf[spectrum], axis = 0)
+        std[spectrum]  = np.std(tf[spectrum], axis = 0)
+
+    np.savetxt("%s/tf_%s.dat" % (mc_dir, spec), np.array([lb, mean["TT"], std["TT"], mean["EE"], std["EE"], mean["BB"], std["BB"]]).T)
 

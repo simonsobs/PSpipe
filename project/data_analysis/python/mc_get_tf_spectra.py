@@ -103,8 +103,12 @@ for iii in subtasks:
 
             # generate our signal only sim
             split = sph_tools.alm2map(alms_beamed, template)
+            
+            # compute the alms of the sim
                 
             master_alms_nofilt[sv, ar] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
+            
+            # apply the k-space filter
 
             binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
             split = data_analysis_utils.get_filtered_map(split,
@@ -112,6 +116,8 @@ for iii in subtasks:
                                                          vk_mask=d["vk_mask"],
                                                          hk_mask=d["hk_mask"],
                                                          normalize=False)
+                                                         
+            # compute the alms of the filtered sim
 
             master_alms_filt[sv, ar] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
             master_alms_filt[sv, ar] /= (split.data.shape[1]*split.data.shape[2])
@@ -135,6 +141,29 @@ for iii in subtasks:
                     
                     mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%sx%s_%s" % (mcm_dir, sv1, ar1, sv2, ar2),
                                                         spin_pairs=spin_pairs)
+                                                        
+                                                        
+                    # we  compute the power spectra of the sim
+                    
+                    
+                    l, ps_master_nofilt = so_spectra.get_spectra_pixell(master_alms_nofilt[sv1, ar1],
+                                                                        master_alms_nofilt[sv2, ar2],
+                                                                        spectra=spectra)
+                                                                                      
+                    lb, ps_nofilt = so_spectra.bin_spectra(l,
+                                                           ps_master_nofilt,
+                                                           binning_file,
+                                                           lmax,
+                                                           type=type,
+                                                           mbb_inv=mbb_inv,
+                                                           spectra=spectra)
+                                        
+
+                    so_spectra.write_ps(tf_dir + "/%s_%05d_nofilt.dat" % (spec_name, iii), lb, ps, type, spectra=spectra)
+
+                    # and now compute the power spectra of the filtered sim
+                    # the comparison of the two power spectra will give us the transfer function
+
 
                     l, ps_master_filt = so_spectra.get_spectra_pixell(master_alms_filt[sv1, ar1],
                                                                       master_alms_filt[sv2, ar2],
@@ -152,17 +181,3 @@ for iii in subtasks:
                     so_spectra.write_ps(tf_dir + "/%s_%05d_filt.dat" % (spec_name, iii), lb, ps, type, spectra=spectra)
 
 
-                    l, ps_master_nofilt = so_spectra.get_spectra_pixell(master_alms_nofilt[sv1, ar1],
-                                                                        master_alms_nofilt[sv2, ar2],
-                                                                        spectra=spectra)
-                                                                                      
-                    lb, ps_nofilt = so_spectra.bin_spectra(l,
-                                                           ps_master_nofilt,
-                                                           binning_file,
-                                                           lmax,
-                                                           type=type,
-                                                           mbb_inv=mbb_inv,
-                                                           spectra=spectra)
-                                        
-
-                    so_spectra.write_ps(tf_dir + "/%s_%05d_nofilt.dat" % (spec_name, iii), lb, ps, type, spectra=spectra)

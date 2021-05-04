@@ -120,7 +120,7 @@ for iii in subtasks:
 
             master_alms[sv, ar, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
             master_alms[sv, ar, "filter"] /= (split.data.shape[1]*split.data.shape[2])
-
+            print(sv, ar, time.time()-t0)
 
     ps_dict = {}
     _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
@@ -160,5 +160,6 @@ for iii in subtasks:
 
                         so_spectra.write_ps(tf_dir + "/%s_%s_%05d.dat" % (spec_name, filt, iii), lb, ps, type, spectra=spectra)
 
-              
+    print("sim number %05d done in %.02f s" % (iii, time.time()-t0))
+
 

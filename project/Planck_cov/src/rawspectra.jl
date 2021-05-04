@@ -86,7 +86,7 @@ function load_maps_and_masks(config, mapid, maptype=Float64)
     ## read map file 
     println("Reading ", config["map"][mapid])
     mapfile = joinpath(config["dir"]["map"], config["map"][mapid])
-    polmap = PolarizedMap(
+    polmap = PolarizedHealpixMap(
         nest2ring(readMapFromFITS(mapfile, 1, maptype)),  # I
         nest2ring(readMapFromFITS(mapfile, 2, maptype)),  # Q
         nest2ring(readMapFromFITS(mapfile, 3, maptype)))  # U
@@ -149,7 +149,7 @@ save_if_needed(maskP₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_
 #
 # Once you have cleaned up maps and masks, you compute the 
 # calculation is described in [PowerSpectra - Mode Coupling](https://xzackli.github.io/PowerSpectra.jl/dev/spectra/#Mode-Coupling-for-EE,-EB,-BB).
-# That package has a utility function [`master`](https://xzackli.github.io/PowerSpectra.jl/dev/module_index/#PowerSpectra.master-Tuple{Healpix.PolarizedMap,%20Healpix.Map,%20Healpix.Map,%20Healpix.PolarizedMap,%20Healpix.Map,%20Healpix.Map})
+# That package has a utility function [`master`](https://xzackli.github.io/PowerSpectra.jl/dev/module_index/#PowerSpectra.master-Tuple{Healpix.PolarizedHealpixMap,%20Healpix.Map,%20Healpix.Map,%20Healpix.PolarizedHealpixMap,%20Healpix.Map,%20Healpix.Map})
 # that performs the full MASTER calculation on two ``IQU`` maps with associated masks.
 #
 

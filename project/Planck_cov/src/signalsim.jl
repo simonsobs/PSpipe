@@ -38,8 +38,8 @@ inds = 1:(lmax_planck+1)
 𝐂[2,2,inds] .= signal[splits[2], splits[2]][Y * Y][inds];
 
 # Next, we generate the mode-coupling matrix.
-m1 = PolarizedMap{Float64, RingOrder}(nside)
-m2 = PolarizedMap{Float64, RingOrder}(nside)
+m1 = PolarizedHealpixMap{Float64, RingOrder}(nside)
+m2 = PolarizedHealpixMap{Float64, RingOrder}(nside)
 a1 = [Alm(lmax, lmax) for i in 1:3]
 a2 = [Alm(lmax, lmax) for i in 1:3]
 

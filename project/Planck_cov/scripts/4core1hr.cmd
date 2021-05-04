@@ -9,7 +9,6 @@
 
 
 module load anaconda3
-PATH=/home/zequnl/src/julia-1.6.0/bin/:$PATH; export PATH
 export OMP_NUM_THREADS=4
 export JULIA_NUM_THREADS=4
 

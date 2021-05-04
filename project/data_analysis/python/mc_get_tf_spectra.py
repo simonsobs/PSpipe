@@ -1,5 +1,5 @@
 """
-This script generate simplistic signa-only simulations of the actpol data and measure the transfer function
+This script generate simplistic signa-only simulations of the actpol data that will be used to measure the transfer function
 This is essentially a much simpler version of mc_get_spectra.py, since it doesn't include noise on the simulation and thus does not require
 different split of the data
 """

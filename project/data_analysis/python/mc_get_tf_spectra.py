@@ -162,8 +162,7 @@ for iii in subtasks:
                     so_spectra.write_ps(tf_dir + "/%s_%05d_nofilt.dat" % (spec_name, iii), lb, ps, type, spectra=spectra)
 
                     # and now compute the power spectra of the filtered sim
-                    # the comparison of the two power spectra will give us the transfer function
-
+                    # the comparison of the two types of power spectra will give us the transfer function
 
                     l, ps_master_filt = so_spectra.get_spectra_pixell(master_alms_filt[sv1, ar1],
                                                                       master_alms_filt[sv2, ar2],

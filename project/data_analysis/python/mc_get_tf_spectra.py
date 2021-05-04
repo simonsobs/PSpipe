@@ -1,7 +1,7 @@
 """
 This script generate simplistic signa-only simulations of the actpol data that will be used to measure the transfer function
 This is essentially a much simpler version of mc_get_spectra.py, since it doesn't include noise on the simulation and thus does not require
-different split of the data
+different splits of the data
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi

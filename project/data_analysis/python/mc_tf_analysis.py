@@ -39,10 +39,7 @@ for id_sv1, sv1 in enumerate(surveys):
 
 for sid, spec in enumerate(spec_list):
 
-    tf = {}
-    mean = {}
-    std = {}
-    
+    tf, mean, std = {}, {}, {}
     
     tf["TT"] = []
     tf["EE"] = []

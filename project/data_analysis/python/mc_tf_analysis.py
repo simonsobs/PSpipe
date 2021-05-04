@@ -43,6 +43,7 @@ for sid, spec in enumerate(spec_list):
     mean = {}
     std = {}
     
+    
     tf["TT"] = []
     tf["EE"] = []
     tf["BB"] = []

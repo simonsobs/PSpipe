@@ -17,12 +17,11 @@ iStart = d["iStart"]
 iStop = d["iStop"]
 lmax = d["lmax"]
 
-clfile = "%s/lcdm.dat" % bestfit_dir
-
 
 spec_dir = "sim_spectra_for_tf"
 tf_dir = "transfer_functions"
 bestfit_dir = "best_fits"
+
 plot_dir = "plots/transfer_functions"
 
 pspy_utils.create_directory(tf_dir)
@@ -47,6 +46,7 @@ for id_sv1, sv1 in enumerate(surveys):
                 spec_list += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
 
 
+clfile = "%s/lcdm.dat" % bestfit_dir
 lth, Dlth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type=type, lmax=lmax, start_at_zero=False)
 
 

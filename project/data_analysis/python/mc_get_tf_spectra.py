@@ -63,6 +63,11 @@ l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lma
 template = d["maps_%s_%s" % (surveys[0], arrays[0])][0]
 template = so_map.read_map(template)
 
+# the filter also introduce E->B leakage, in order to measure it we run the scenario where there
+# is no E or B modes
+scenarios = ["standard", "noE", "noB"]
+
+
 # we will use mpi over the number of simulations
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
@@ -100,27 +105,38 @@ for iii in subtasks:
             l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
             alms_beamed = curvedsky.almxfl(alms_beamed, bl)
 
-            # generate our signal only sim
-            split = sph_tools.alm2map(alms_beamed, template)
+
+            for scenario in scenarios:
             
-            # compute the alms of the sim
+                alms_sim = alms_beamed.copy()
+                print(alms_sim.shape())
+            
+                if scenario == "noE": alms_sim[1] *= 0
+                if scenario == "noB": alms_sim[2] *= 0
+
+            
+                # generate our signal only sim
+                split = sph_tools.alm2map(alms_beamed, template)
+            
+                # compute the alms of the sim
                 
-            master_alms[sv, ar, "nofilter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
+                master_alms[sv, ar, "nofilter", scenario] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
             
-            # apply the k-space filter
+                # apply the k-space filter
 
-            binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-            split = data_analysis_utils.get_filtered_map(split,
-                                                         binary,
-                                                         vk_mask=d["vk_mask"],
-                                                         hk_mask=d["hk_mask"],
-                                                         normalize=False)
+                binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+                split = data_analysis_utils.get_filtered_map(split,
+                                                            binary,
+                                                            vk_mask=d["vk_mask"],
+                                                            hk_mask=d["hk_mask"],
+                                                            normalize=False)
                                                          
-            # compute the alms of the filtered sim
+                # compute the alms of the filtered sim
 
-            master_alms[sv, ar, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
-            master_alms[sv, ar, "filter"] /= (split.data.shape[1]*split.data.shape[2])
-            print(sv, ar, time.time()-t0)
+                master_alms[sv, ar, "filter", scenario] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
+                master_alms[sv, ar, "filter", scenario] /= (split.data.shape[1]*split.data.shape[2])
+                
+                print(sv, ar, time.time()-t0)
 
     ps_dict = {}
     _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
@@ -143,22 +159,23 @@ for iii in subtasks:
                                                         
                     # we  compute the power spectra of the sim (with and without the k-space filter applied)
                     
-                    for filt in ["filter", "nofilter"]:
+                    for scenario in scenarios:
+                        for filt in ["filter", "nofilter"]:
                     
-                        l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, filt],
-                                                                     master_alms[sv2, ar2, filt],
-                                                                     spectra=spectra)
+                            l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, filt, scenario],
+                                                                         master_alms[sv2, ar2, filt, scenario],
+                                                                         spectra=spectra)
                                                                                       
-                        lb, ps = so_spectra.bin_spectra(l,
-                                                        ps_master,
-                                                        binning_file,
-                                                        lmax,
-                                                        type=type,
-                                                        mbb_inv=mbb_inv,
-                                                        spectra=spectra)
+                            lb, ps = so_spectra.bin_spectra(l,
+                                                            ps_master,
+                                                            binning_file,
+                                                            lmax,
+                                                            type=type,
+                                                            mbb_inv=mbb_inv,
+                                                            spectra=spectra)
                                         
 
-                        so_spectra.write_ps(tf_dir + "/%s_%s_%05d.dat" % (spec_name, filt, iii), lb, ps, type, spectra=spectra)
+                            so_spectra.write_ps(tf_dir + "/%s_%s_%s_%05d.dat" % (spec_name, filt, scenario, iii), lb, ps, type, spectra=spectra)
 
     print("sim number %05d done in %.02f s" % (iii, time.time()-t0))
 

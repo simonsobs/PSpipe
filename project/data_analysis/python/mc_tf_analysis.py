@@ -17,11 +17,10 @@ iStart = d["iStart"]
 iStop = d["iStop"]
 lmax = d["lmax"]
 
-
+mcm_dir = "mcms"
 spec_dir = "sim_spectra_for_tf"
 tf_dir = "transfer_functions"
 bestfit_dir = "best_fits"
-
 plot_dir = "plots/transfer_functions"
 
 pspy_utils.create_directory(tf_dir)

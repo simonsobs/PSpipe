@@ -125,4 +125,4 @@ for sid, spec in enumerate(spec_list):
         plt.close()
 
 
-
+    np.savetxt("%s/tf_%s.dat" % (tf_dir, spec), np.transpose([lb, mean["TT", "tf"], std["TT", "tf"], mean["EE", "tf"], std["EE", "tf"], mean["BB", "tf"], std["BB", "tf"]]))

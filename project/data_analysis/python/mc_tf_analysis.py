@@ -15,14 +15,25 @@ type = d["type"]
 surveys = d["surveys"]
 iStart = d["iStart"]
 iStop = d["iStop"]
+lmax = d["lmax"]
+
+clfile = "%s/lcdm.dat" % bestfit_dir
 
 
-tf_dir = "sim_spectra_for_tf"
-mc_dir = "montecarlo"
+spec_dir = "sim_spectra_for_tf"
+tf_dir = "transfer_functions"
+bestfit_dir = "best_fits"
+plot_dir = "plots/transfer_functions"
 
-pspy_utils.create_directory(mc_dir)
+pspy_utils.create_directory(tf_dir)
+pspy_utils.create_directory(plot_dir)
+
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
+nsims = iStop - iStart
+
+
 
 spec_list = []
 for id_sv1, sv1 in enumerate(surveys):
@@ -36,29 +47,82 @@ for id_sv1, sv1 in enumerate(surveys):
                 spec_list += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
 
 
+lth, Dlth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type=type, lmax=lmax, start_at_zero=False)
+
 
 for sid, spec in enumerate(spec_list):
 
-    tf, mean, std = {}, {}, {}
+    prefix= "%s/%s" % (mcm_dir, spec)
+
+    mbb_inv, Bbl = so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
+
+    # we will compare simulation power spectrum to theory
+    # we need to add foreground in TT
+    n1, n2 = spec.split("x")
+    nu_eff_1 = d["nu_eff_%s" % (n1)]
+    nu_eff_2 = d["nu_eff_%s" % (n2)]
+    _, flth = np.loadtxt("%s/fg_%sx%s_TT.dat" %(bestfit_dir, nu_eff_1, nu_eff_2), unpack=True)
+    Dlth["TT"]  = Dlth["TT"] + flth[:lmax]
     
-    tf["TT"] = []
-    tf["EE"] = []
-    tf["BB"] = []
+    bin_theory = so_mcm.apply_Bbl(Bbl, Dlth, spectra=spectra)
 
+    mean, std = {}, {}
+    
     for spectrum in ["TT", "EE", "BB"]:
-
+    
+        nofilt_list = []
+        filt_list = []
+        tf_list = []
+        
         for iii in range(iStart, iStop):
         
             spec_name_no_filter = "%s_%s_nofilter_%05d" % (type, spec, iii)
             spec_name_filter = "%s_%s_filter_%05d" % (type, spec, iii)
 
-            lb, ps_nofilt = so_spectra.read_ps(tf_dir + "/%s.dat" % spec_name_no_filter, spectra=spectra)
-            lb, ps_filt = so_spectra.read_ps(tf_dir + "/%s.dat" % spec_name_filter, spectra=spectra)
+            lb, ps_nofilt = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_no_filter, spectra=spectra)
+            lb, ps_filt = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_filter, spectra=spectra)
         
-            tf[spectrum] += [ps_filt[spectrum]/ps_nofilt[spectrum] ]
-        
-        mean[spectrum]  = np.mean(tf[spectrum], axis = 0)
-        std[spectrum]  = np.std(tf[spectrum], axis = 0)
+            nofilt_list += [ps_nofilt[spectrum]]
+            filt_list += [ps_filt[spectrum]]
+            tf_list += [ps_filt[spectrum]/ps_nofilt[spectrum]]
+            
+        mean[spectrum, "nofilt"] = np.mean(nofilt_list, axis = 0)
+        mean[spectrum, "filt"] = np.mean(filt_list, axis = 0)
+        mean[spectrum, "tf"] = np.mean(tf_list, axis = 0)
 
-    np.savetxt("%s/tf_%s.dat" % (mc_dir, spec), np.array([lb, mean["TT"], std["TT"], mean["EE"], std["EE"], mean["BB"], std["BB"]]).T)
+        std[spectrum, "nofilt"] = np.std(nofilt_list, axis = 0)
+        std[spectrum, "filt"] = np.std(filt_list, axis = 0)
+        std[spectrum, "tf"] = np.std(tf_list, axis = 0)
+
+        # First let make sure that the spectrum without filter is unbiased
+        if spectrum == "TT":
+            plt.semilogy()
+        
+        plt.plot(lth, Dlth[spectrum], color="grey", alpha=0.4)
+        plt.plot(lb, bin_theory[spectrum])
+        plt.errorbar(lb, mean[spectrum, "nofilt"], std[spectrum, "nofilt"] , fmt=".", color="red")
+        plt.errorbar(lb, mean[spectrum, "filt"], std[spectrum, "nofilt"] , fmt=".")
+        plt.title(r"$D_{\ell}$", fontsize=20)
+        plt.xlabel(r"$\ell$", fontsize=20)
+        plt.savefig("%s/%s_%s.png" % (plot_dir, spec, spectrum), bbox_inches="tight")
+        plt.clf()
+        plt.close()
+                
+        plt.errorbar(lb, (mean[spectrum, "nofilt"] - bin_theory[spectrum])/ (std[spectrum, "nofilt"]  / np.sqrt(nsims)), fmt=".", color="red")
+        plt.title(r"$\Delta D_{\ell}$" , fontsize=20)
+        plt.xlabel(r"$\ell$", fontsize=20)
+        plt.savefig("%s/frac_%s_%s.png" % (plot_dir, spec, spectrum), bbox_inches="tight")
+        plt.clf()
+        plt.close()
+        
+        # Then lets plot the transfer function
+
+        plt.errorbar(lb, mean[spectrum, "tf"], std[spectrum, "tf"]/np.sqrt(nsims), fmt=".", color="red")
+        plt.title(r"$\Delta D_{\ell}$" , fontsize=20)
+        plt.xlabel(r"$\ell$", fontsize=20)
+        plt.savefig("%s/frac_%s_%s.png" % (plot_dir, spec, spectrum), bbox_inches="tight")
+        plt.clf()
+        plt.close()
+
+
 

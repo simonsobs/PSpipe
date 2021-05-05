@@ -116,7 +116,7 @@ for iii in subtasks:
 
             
                 # generate our signal only sim
-                split = sph_tools.alm2map(alms_beamed, template)
+                split = sph_tools.alm2map(alms_sim, template)
             
                 # compute the alms of the sim
                 

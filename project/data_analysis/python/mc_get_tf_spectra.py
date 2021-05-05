@@ -75,51 +75,48 @@ subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 for iii in subtasks:
     t0 = time.time()
  
-    # generate cmb alms and foreground alms
-    # cmb alms will be of shape (3, lm) 3 standing for T,E,B
-    # fglms will be of shape (nfreq, lm) and is T only
-    
-    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, dtype=sim_alm_dtype)
-    fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, dtype=sim_alm_dtype)
-    
-    master_alms = {}
+    for scenario in scenarios:
 
-    for sv in surveys:
+        # generate cmb alms and foreground alms
+        # cmb alms will be of shape (3, lm) 3 standing for T,E,B
+        # fglms will be of shape (nfreq, lm) and is T only
     
-        arrays = d["arrays_%s" % sv]
-        
-        for ar_id, ar in enumerate(arrays):
-        
-            win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
-            win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+        alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, dtype=sim_alm_dtype)
+        fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, dtype=sim_alm_dtype)
     
-            window_tuple = (win_T, win_pol)
-            
-            del win_T, win_pol
+        master_alms = {}
+
+        for sv in surveys:
         
-            # we add fg alms to cmb alms in temperature
-            alms_beamed = alms.copy()
-            alms_beamed[0] += fglms[id_freq[d["nu_eff_%s_%s" % (sv, ar)]]]
+            arrays = d["arrays_%s" % sv]
+        
+            for ar_id, ar in enumerate(arrays):
+        
+                win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
+                win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+    
+                window_tuple = (win_T, win_pol)
             
-            # we convolve signal + foreground with the beam of the array
-            l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
-            alms_beamed = curvedsky.almxfl(alms_beamed, bl)
-
-
-            for scenario in scenarios:
+                del win_T, win_pol
+        
+                # we add fg alms to cmb alms in temperature
+                alms_beamed = alms.copy()
+                alms_beamed[0] += fglms[id_freq[d["nu_eff_%s_%s" % (sv, ar)]]]
             
-                alms_sim = alms_beamed.copy()
-            
-                if scenario == "noE": alms_sim[1] *= 0
-                if scenario == "noB": alms_sim[2] *= 0
+                # we convolve signal + foreground with the beam of the array
+                l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
+                alms_beamed = curvedsky.almxfl(alms_beamed, bl)
+                
+                if scenario == "noE": alms_beamed[1] *= 0
+                if scenario == "noB": alms_beamed[2] *= 0
 
             
                 # generate our signal only sim
-                split = sph_tools.alm2map(alms_sim, template)
+                split = sph_tools.alm2map(alms_beamed, template)
             
                 # compute the alms of the sim
                 
-                master_alms[sv, ar, "nofilter", scenario] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
+                master_alms[sv, ar, "nofilter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
             
                 # apply the k-space filter
 
@@ -132,37 +129,36 @@ for iii in subtasks:
                                                          
                 # compute the alms of the filtered sim
 
-                master_alms[sv, ar, "filter", scenario] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
-                master_alms[sv, ar, "filter", scenario] /= (split.data.shape[1]*split.data.shape[2])
+                master_alms[sv, ar, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
+                master_alms[sv, ar, "filter"] /= (split.data.shape[1]*split.data.shape[2])
                 
                 print(scenario, sv, ar, time.time()-t0)
 
-    ps_dict = {}
-    _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
+        ps_dict = {}
+        _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 
-    for id_sv1, sv1 in enumerate(surveys):
-        arrays_1 = d["arrays_%s" % sv1]
-        for id_ar1, ar1 in enumerate(arrays_1):
-            for id_sv2, sv2 in enumerate(surveys):
-                arrays_2 = d["arrays_%s" % sv2]
-                for id_ar2, ar2 in enumerate(arrays_2):
+        for id_sv1, sv1 in enumerate(surveys):
+            arrays_1 = d["arrays_%s" % sv1]
+            for id_ar1, ar1 in enumerate(arrays_1):
+                for id_sv2, sv2 in enumerate(surveys):
+                    arrays_2 = d["arrays_%s" % sv2]
+                    for id_ar2, ar2 in enumerate(arrays_2):
 
-                    if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                    if  (id_sv1 > id_sv2) : continue
+                        if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
+                        if  (id_sv1 > id_sv2) : continue
 
-                    spec_name="%s_%s_%sx%s_%s" % (type, sv1, ar1, sv2, ar2)
+                        spec_name="%s_%s_%sx%s_%s" % (type, sv1, ar1, sv2, ar2)
 
                     
-                    mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%sx%s_%s" % (mcm_dir, sv1, ar1, sv2, ar2),
-                                                        spin_pairs=spin_pairs)
+                        mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%sx%s_%s" % (mcm_dir, sv1, ar1, sv2, ar2),
+                                                            spin_pairs=spin_pairs)
                                                         
-                    # we  compute the power spectra of the sim (with and without the k-space filter applied)
+                        # we  compute the power spectra of the sim (with and without the k-space filter applied)
                     
-                    for scenario in scenarios:
                         for filt in ["filter", "nofilter"]:
                     
-                            l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, filt, scenario],
-                                                                         master_alms[sv2, ar2, filt, scenario],
+                            l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, filt],
+                                                                         master_alms[sv2, ar2, filt],
                                                                          spectra=spectra)
                                                                                       
                             lb, ps = so_spectra.bin_spectra(l,

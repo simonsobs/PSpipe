@@ -118,7 +118,7 @@ for sid, spec in enumerate(spec_list):
         # Then lets plot the transfer function
 
         plt.errorbar(lb, mean[spectrum, "tf"], std[spectrum, "tf"]/np.sqrt(nsims), fmt=".", color="red")
-        plt.title(r"$\Delta D_{\ell}$" , fontsize=20)
+        plt.title(r"$t_{\ell}$" , fontsize=20)
         plt.xlabel(r"$\ell$", fontsize=20)
         plt.savefig("%s/tf_%s_%s.png" % (plot_dir, spec, spectrum), bbox_inches="tight")
         plt.clf()

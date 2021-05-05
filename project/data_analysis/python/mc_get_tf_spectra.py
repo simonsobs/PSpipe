@@ -109,7 +109,6 @@ for iii in subtasks:
             for scenario in scenarios:
             
                 alms_sim = alms_beamed.copy()
-                print(alms_sim.shape())
             
                 if scenario == "noE": alms_sim[1] *= 0
                 if scenario == "noB": alms_sim[2] *= 0
@@ -136,7 +135,7 @@ for iii in subtasks:
                 master_alms[sv, ar, "filter", scenario] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
                 master_alms[sv, ar, "filter", scenario] /= (split.data.shape[1]*split.data.shape[2])
                 
-                print(sv, ar, time.time()-t0)
+                print(scenario, sv, ar, time.time()-t0)
 
     ps_dict = {}
     _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)

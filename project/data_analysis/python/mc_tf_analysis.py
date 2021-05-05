@@ -6,6 +6,7 @@ it estimates the mean and numerical covariances from the simulations
 
 from pspy import pspy_utils, so_dict, so_spectra, so_mcm
 import numpy as np
+import pylab as plt
 import sys
 
 d = so_dict.so_dict()

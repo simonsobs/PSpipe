@@ -46,8 +46,6 @@ for id_sv1, sv1 in enumerate(surveys):
                 spec_list += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
 
 
-clfile = "%s/lcdm.dat" % bestfit_dir
-lth, Dlth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type=type, lmax=lmax, start_at_zero=False)
 
 
 for sid, spec in enumerate(spec_list):
@@ -58,6 +56,9 @@ for sid, spec in enumerate(spec_list):
 
     # we will compare simulation power spectrum to theory
     # we need to add foreground in TT
+    
+    clfile = "%s/lcdm.dat" % bestfit_dir
+    lth, Dlth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type=type, lmax=lmax, start_at_zero=False)
     n1, n2 = spec.split("x")
     nu_eff_1 = d["nu_eff_%s" % (n1)]
     nu_eff_2 = d["nu_eff_%s" % (n2)]

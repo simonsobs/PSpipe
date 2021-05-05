@@ -111,7 +111,9 @@ spectra = Dict{SpectrumName, SpectralVector{Float64, Vector{Float64}}}(
 workspace_signal = CovarianceWorkspace(m1_signal, m2_signal, m1_signal, m2_signal);
 
 @time C = coupledcov(Symbol(spec), Symbol(spec), workspace_signal, spectra)
-@time 𝐌 = mcm(Symbol(spec), maskT₁, maskT₂)
+
+symspec = (spec == "EE") ? :M⁺⁺ : Symbol(spec)
+@time 𝐌 = mcm(symspec, maskT₁, maskT₂)
 C_decoupled = decouple_covmat(C, 𝐌, 𝐌)
 
 

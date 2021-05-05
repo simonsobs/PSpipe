@@ -44,6 +44,6 @@ to run this file on the head node in order to install packages.
 Pkg.add(PackageSpec(name="Healpix", rev="master")) 
 Pkg.add(url="git@github.com:xzackli/PowerSpectra.jl.git")
 Pkg.add.(["CSV", "DataFrames", "TOML", "BlackBoxOptim", "FileIO", "JLD2", 
-  "DataInterpolations", "GaussianProcesses"])
+  "DataInterpolations", "Optim", "GaussianProcesses"])
 </code></pre>
 ```

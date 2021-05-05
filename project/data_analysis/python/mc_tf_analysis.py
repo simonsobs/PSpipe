@@ -27,7 +27,7 @@ plot_dir = "plots/transfer_functions"
 pspy_utils.create_directory(tf_dir)
 pspy_utils.create_directory(plot_dir)
 
-
+clfile = "%s/lcdm.dat" % bestfit_dir
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 nsims = iStop - iStart
@@ -57,7 +57,6 @@ for sid, spec in enumerate(spec_list):
     # we will compare simulation power spectrum to theory
     # we need to add foreground in TT
     
-    clfile = "%s/lcdm.dat" % bestfit_dir
     lth, Dlth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type=type, lmax=lmax, start_at_zero=False)
     n1, n2 = spec.split("x")
     nu_eff_1 = d["nu_eff_%s" % (n1)]
@@ -121,7 +120,7 @@ for sid, spec in enumerate(spec_list):
         plt.errorbar(lb, mean[spectrum, "tf"], std[spectrum, "tf"]/np.sqrt(nsims), fmt=".", color="red")
         plt.title(r"$\Delta D_{\ell}$" , fontsize=20)
         plt.xlabel(r"$\ell$", fontsize=20)
-        plt.savefig("%s/frac_%s_%s.png" % (plot_dir, spec, spectrum), bbox_inches="tight")
+        plt.savefig("%s/tf_%s_%s.png" % (plot_dir, spec, spectrum), bbox_inches="tight")
         plt.clf()
         plt.close()
 

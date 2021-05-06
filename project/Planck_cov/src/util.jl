@@ -14,6 +14,7 @@ using PowerSpectra
 using DataFrames, CSV
 using DelimitedFiles
 using LinearAlgebra
+using FITSIO
 
 # ## Planck Binning 
 # Planck bins the spectra at the very end, and applies an ``\ell (\ell+1)`` relative 
@@ -90,12 +91,12 @@ function util_planck_beam_Wl(T::Type, freq1, split1, freq2, split2, spec1_, spec
         freq1, freq2 = freq2, freq1
         split1, split2 = split2, split1
     end
-    if (parse(Int, freq1) == parse(Int, freq2)) && ((split1 == "hm2") && (split1 == "hm1"))
+    if (freq1 == freq2) && ((split1 == "hm2") && (split2 == "hm1"))
         split1, split2 = split2, split1
     end
 
     fname = "Wl_R3.01_plikmask_$(freq1)$(split1)x$(freq2)$(split2).fits"
-    f = PowerSpectra.FITS(joinpath(beamdir, "BeamWf_HFI_R3.01", fname))
+    f = FITS(joinpath(beamdir, "BeamWf_HFI_R3.01", fname))
     Wl = convert(Vector{T}, read(f[spec1], "$(spec1)_2_$(spec2)")[:,1])
     if lmax < 4000
         Wl = Wl[1:lmax+1]

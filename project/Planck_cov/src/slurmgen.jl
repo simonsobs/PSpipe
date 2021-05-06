@@ -39,12 +39,13 @@ end
 # These SLURM commands correct the covariances for the insufficiently-apodized point source
 # holes.
 ## loop over freqs and noise channels
+cmd = "sbatch scripts/16core6hr.cmd"
 freqs = ("100", "143", "217")
 for i in 1:3
     for j in i:3
-        for spec in ("TT", "EE")
+        for spec in ("TT", "TE", "EE")
             freq1, freq2 = freqs[i], freqs[j]
-            println("$(cmd) \"julia src/signalsim.jl global.toml $(freq1) $(freq2) $(spec) 1000\"")
+            println("$(cmd) \"julia src/signalsim.jl global.toml $(freq1) $(freq2) $(spec) 5000\"")
         end
     end
 end
@@ -57,7 +58,7 @@ end
 freqs = ("100", "143", "217")
 for i in 1:3
     for j in i:3
-        for spec in ("TT", "EE")
+        for spec in ("TT", "TE", "EE")
             freq1, freq2 = freqs[i], freqs[j]
             println("$(cmd) \"julia src/corrections.jl global.toml $(freq1) $(freq2) $(spec)\"")
         end

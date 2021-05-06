@@ -137,7 +137,7 @@ gp = GP(t,u,m,se)
 using Optim
 optimize!(gp)   # Optimise the hyperparameters
 correction_gp = predict_y(gp,float.(0:(lmax_cut+20)))[1];
-correction_gp[1:(lmin_cut-21)] .= 1.0
+correction_gp[1:(lmin_cut-21)] .= 0.0
 
 correction_path = joinpath(config["dir"]["scratch"], "point_source_corrections")
 mkpath(correction_path)

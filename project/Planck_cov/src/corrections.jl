@@ -113,7 +113,9 @@ workspace_signal = CovarianceWorkspace(m1_signal, m2_signal, m1_signal, m2_signa
 @time C = coupledcov(Symbol(spec), Symbol(spec), workspace_signal, spectra)
 
 symspec = (spec == "EE") ? :M⁺⁺ : Symbol(spec)
-@time 𝐌 = mcm(symspec, maskT₁, maskT₂)
+mask₁ = (spec[1] == 'T') ? maskT₁ : maskP₁
+mask₂ = (spec[2] == 'T') ? maskT₂ : maskP₂
+@time 𝐌 = mcm(symspec, mask₁, mask₂)
 C_decoupled = decouple_covmat(C, 𝐌, 𝐌)
 
 

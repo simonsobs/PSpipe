@@ -86,9 +86,11 @@ function sim_iteration(𝐂, m1, m2, a1, a2, M, spec::String)
     mask!(m2, mask2, mask2)
 
     ## subtract monopole if TT
-    if spec == "TT"
+    if spec[1] == 'T'
         monopole, dipole = fitdipole(m1.i * mask1)
         subtract_monopole_dipole!(m1.i, monopole, dipole)
+    end
+    if spec[2] == 'T'
         monopole, dipole = fitdipole(m2.i * mask2)
         subtract_monopole_dipole!(m2.i, monopole, dipole)
     end

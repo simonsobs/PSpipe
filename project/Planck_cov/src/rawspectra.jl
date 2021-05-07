@@ -101,19 +101,18 @@ function load_maps_and_masks(config, mapid, maptype=Float64)
     covQQ = nest2ring(readMapFromFITS(mapfile, 8, maptype)) .* 1e12
     covUU = nest2ring(readMapFromFITS(mapfile, 10, maptype)) .* 1e12
 
+    ## identify missing pixels and also pixels with crazy variances
+    for p in eachindex(maskT)
+        if (polmap.i[p] < -1.6e30) | (covQQ[p] > 1e6) | (covUU[p] > 1e6) | 
+                (covQQ[p] < 0) | (covUU[p] < 0)
+            maskT[p] = 0.
+            maskP[p] = 0.
+        end
+    end
+
     ## go from KCMB to μKCMB, and apply polarization factor
     poleff = config["poleff"][mapid]
     scale!(polmap, 1e6, 1e6 * poleff)  # apply 1e6 to (I) and 1e6 * poleff to (Q,U)
-
-    ## identify missing pixels and also pixels with crazy variances
-    missing_pix = (polmap.i .< -1.6e30)
-    missing_pix .*= (covQQ .> 1e6) .| (covUU .> 1e6) .| (covQQ .< 0.0) .| (covUU .< 0.0)
-    allowed = (~).(missing_pix)
-
-    ## apply the missing pixels to the map and mask for T/P
-    mask!(polmap, allowed, allowed)
-    mask!(maskT, allowed)
-    mask!(maskP, allowed)
 
     ## fit and remove pseudo-monopole/dipole in I
     monopole, dipole = fitdipole(polmap.i * maskT)

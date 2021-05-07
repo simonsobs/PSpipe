@@ -115,3 +115,8 @@ download_if_necessary(
     "https://github.com/xzackli/PSPipePlanckRender.jl/releases/download/0.1.2/plicref.tar.gz", 
     plicreffile)
 run(`tar -xzvf $(plicreffile) --overwrite -C $(plicrefdir)`);
+
+
+# sims 
+using Healpix
+Healpix.applyfullweights!(HealpixMap{Float64, RingOrder}(2048))

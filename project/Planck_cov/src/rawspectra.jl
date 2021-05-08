@@ -178,7 +178,7 @@ mkpath(spectrapath)
 
 ## assemble a table with the ells and spectra
 df = DataFrame()
-df[!,:ell] = collect(0:(length(Cl[first(keys(Cl))])-1))
+df[!,:ell] = eachindex(Cl[first(keys(Cl))])
 for spec in keys(Cl)
     df[!,spec] = parent(Cl[spec])
 end

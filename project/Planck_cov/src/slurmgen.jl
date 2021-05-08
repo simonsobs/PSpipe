@@ -15,7 +15,7 @@ config = TOML.parsefile(configfile)
 
 # Let's generate the commands we need for likelihood spectra.
 mapids = [k for k in keys(config["map"])]
-cmd = "sbatch scripts/4core1hr.cmd"
+cmd = "sbatch scripts/16core6hr.cmd"
 for i in 1:length(mapids)
     for j in i:length(mapids)
         println("$(cmd) \"julia src/rawspectra.jl global.toml $(mapids[i]) $(mapids[j])\"")

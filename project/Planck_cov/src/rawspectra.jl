@@ -58,12 +58,6 @@ using Plots
 #
 config = TOML.parsefile(configfile)
 
-# Next, we check to see if we need to render plots for the Documentation.
-
-if "--plot" ∉ ARGS
-    Plots.plot(args...; kwargs...) = nothing
-    Plots.plot!(args...; kwargs...) = nothing
-end
 
 # For both input channels, we need to do some pre-processing steps.
 # 1. We first load in the ``I``, ``Q``, and ``U`` Stokes vectors, which are FITS 
@@ -128,7 +122,9 @@ m₂, maskT₂, maskP₂ = load_maps_and_masks(config, mapid2)
 plot(m₁.i, clim=(-200,200))  # plot the intensity map
 
 #  
-plot(maskT₁)  # show the temperature mask
+if "--plot" ∈ ARGS
+    plot(maskT₁)  # show the temperature mask
+end
 
 #
 run_name = config["general"]["name"]
@@ -162,15 +158,17 @@ println(keys(Cl))  # check what spectra were computed
 # The PowerSpectra.jl package has the Planck bestfit theory and beams as utility functions,  
 # for demo and testing purposes. We can use it that for plotting here.
 
-spec = :TT
-Wl = PowerSpectra.planck_beam_Wl("143", "hm1", "143", "hm2", spec, spec; lmax=lmax)
-pixwinT = SpectralVector(pixwin(nside)[1:(lmax+1)])
-ell = eachindex(Wl)
-prefactor = ell .* (ell .+ 1) ./ (2π)
-plot( prefactor .*  Cl[spec] ./ (Wl .* pixwinT.^2), 
-    label="\$D_{\\ell}\$", xlim=(0,2nside))
-theory = PowerSpectra.planck_theory_Dl()
-plot!(theory[spec], label="theory $(spec)")
+if "--plot" ∈ ARGS
+    spec = :TT
+    Wl = PowerSpectra.planck_beam_Wl("143", "hm1", "143", "hm2", spec, spec; lmax=lmax)
+    pixwinT = SpectralVector(pixwin(nside)[1:(lmax+1)])
+    ell = eachindex(Wl)
+    prefactor = ell .* (ell .+ 1) ./ (2π)
+    plot( prefactor .*  Cl[spec] ./ (Wl .* pixwinT.^2), 
+        label="\$D_{\\ell}\$", xlim=(0,2nside))
+    theory = PowerSpectra.planck_theory_Dl()
+    plot!(theory[spec], label="theory $(spec)")
+end
 
 # Now we save our spectra. 
 ## set up spectra path

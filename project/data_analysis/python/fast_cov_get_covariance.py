@@ -95,7 +95,7 @@ for sid1, spec1 in enumerate(spec_name):
         ncovs += 1
 
 
-if d["use_toeplitz"] == True:
+if d["use_toeplitz_cov"] == True:
     print("we will use the toeplitz approximation")
     l_exact, l_band, l_toep = 800, 2000, 2750
 else:

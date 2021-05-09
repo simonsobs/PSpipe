@@ -15,7 +15,7 @@ pspy_utils.create_directory(mcm_dir)
 surveys = d["surveys"]
 lmax = d["lmax"]
 
-if d["use_toeplitz"] == True:
+if d["use_toeplitz_mcm"] == True:
     print("we will use the toeplitz approximation")
     l_exact, l_band, l_toep = 800, 2000, 2750
 else:

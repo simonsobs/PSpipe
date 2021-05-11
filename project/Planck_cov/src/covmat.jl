@@ -13,6 +13,7 @@ using TOML
 using PowerSpectra
 using Healpix
 using JLD2
+using Plots
 include("../src/util.jl")
 
 
@@ -148,9 +149,11 @@ end
 
 fnames = ["P$(freq)hm$(split)" for (freq, split) in zip(freqs, splits)]
 
-plot(noiseratios[(:TT, fnames[1], fnames[1])].parent, label="$(freqs[1]) hm1 TT")
-plot!(noiseratios[(:EE, fnames[1], fnames[1])].parent, label="$(freqs[1]) hm1 EE", 
-    ylim=(0.0,2), xlim=(0,200), size=(600,300))
+if "--plot" ∈ ARGS
+    plot(noiseratios[(:TT, fnames[1], fnames[1])].parent, label="$(freqs[1]) hm1 TT")
+    plot!(noiseratios[(:EE, fnames[1], fnames[1])].parent, label="$(freqs[1]) hm1 EE", 
+        ylim=(0.0,2), xlim=(0,200), size=(600,300))
+end
 
 #
 

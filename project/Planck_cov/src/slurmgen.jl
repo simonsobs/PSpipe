@@ -18,7 +18,7 @@ mapids = [k for k in keys(config["map"])]
 cmd = "sbatch scripts/16core6hr.cmd"
 for i in 1:length(mapids)
     for j in i:length(mapids)
-        println("$(cmd) \"julia src/rawspectra.jl global.toml $(mapids[i]) $(mapids[j])\"")
+        println("$(cmd) \"julia src/rawspectra.jl $(configfile) $(mapids[i]) $(mapids[j])\"")
     end
 end
 
@@ -31,7 +31,7 @@ end
 println()
 for freq in ("100", "143", "217")
     for spec in ("TT", "EE")
-        println("$(cmd) \"julia src/fitnoisemodel.jl global.toml $(freq) $(spec)\"")
+        println("$(cmd) \"julia src/fitnoisemodel.jl $(configfile) $(freq) $(spec)\"")
     end
 end
 
@@ -47,7 +47,7 @@ for i in 1:3
     for j in i:3
         for spec in ("TT", "TE", "ET", "EE")
             freq1, freq2 = freqs[i], freqs[j]
-            println("$(cmd) \"julia src/signalsim.jl global.toml $(freq1) $(freq2) $(spec) 5000\"")
+            println("$(cmd) \"julia src/signalsim.jl $(configfile) $(freq1) $(freq2) $(spec) 5000\"")
         end
     end
 end
@@ -63,7 +63,7 @@ for i in 1:3
     for j in i:3
         for spec in ("TT", "TE", "ET", "EE")
             freq1, freq2 = freqs[i], freqs[j]
-            println("$(cmd) \"julia src/corrections.jl global.toml $(freq1) $(freq2) $(spec)\"")
+            println("$(cmd) \"julia src/corrections.jl $(configfile) $(freq1) $(freq2) $(spec)\"")
         end
     end
 end
@@ -111,7 +111,7 @@ open("scripts/$(run_name)_gen_covmats.sh", "w") do f
         for i2 in i1:nspecs
             A, B, f1, f2, s1, s2 = constituents[i1]
             C, D, f3, f4, s3, s4 = constituents[i2]
-            write(f, "$(cmd) \"julia src/covmat.jl $A $B $C $D $f1 $f2 $f3 $f4 $s1 $s2 $s3 $s4\"\n")
+            write(f, "$(cmd) \"julia src/covmat.jl $(configfile) $A $B $C $D $f1 $f2 $f3 $f4 $s1 $s2 $s3 $s4\"\n")
         end
     end
 end

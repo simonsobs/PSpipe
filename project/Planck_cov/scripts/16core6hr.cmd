@@ -6,7 +6,7 @@
 #SBATCH --mem-per-cpu=4G         # memory per cpu-core (4G per cpu-core is default)
 #SBATCH -t 6:00:00
 #SBATCH -p physics
-
+#SBATCH --output=output/R-.%j-$(echo $1 | xargs).out
 
 module load anaconda3
 export OMP_NUM_THREADS=16

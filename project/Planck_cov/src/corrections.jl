@@ -150,6 +150,11 @@ correction_gp[1:(lmin_cut-21)] .= 0.0
 
 correction_path = joinpath(config["dir"]["scratch"], "point_source_corrections")
 mkpath(correction_path)
-correction_file = joinpath(correction_path, "$(freq1)_$(freq2)_$(spec)_corr.dat")
-writedlm(correction_file, correction_gp)
 
+if transposed
+    revspec = reverse(spec)
+    correction_file = joinpath(correction_path, "$(freq1)_$(freq2)_$(revspec)_corr.dat")
+else
+    correction_file = joinpath(correction_path, "$(freq1)_$(freq2)_$(spec)_corr.dat")
+end
+writedlm(correction_file, correction_gp)

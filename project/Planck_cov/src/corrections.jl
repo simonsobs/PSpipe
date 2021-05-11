@@ -15,6 +15,8 @@ using Plots
 using TOML
 using UUIDs, JLD2, FileIO
 using Statistics
+using GaussianProcesses
+
 include("../src/util.jl")
 
 config = TOML.parsefile(configfile)
@@ -124,8 +126,6 @@ correction = SpectralVector(cl_var[:,1] ./ diag(parent(C_decoupled)))
 
 lmin_cut, lmax_cut = plic_ellranges()[(Symbol(spec), freq1, freq2)]
 correction[lmax_cut:end] .= 1.0
-
-using GaussianProcesses
 
 fit_ells = (lmin_cut-20):(lmax_cut)
 u = correction[fit_ells] .- 1

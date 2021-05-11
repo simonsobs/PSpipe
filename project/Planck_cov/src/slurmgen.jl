@@ -118,7 +118,7 @@ open("scripts/$(run_name)_gen_covmats.sh", "w") do f
         for i2 in i1:nspecs
             A, B, f1, f2, s1, s2 = constituents[i1]
             C, D, f3, f4, s3, s4 = constituents[i2]
-            write(f, "$(cmd) \"julia src/covmat.jl $(configfile) $A $B $C $D $f1 $f2 $f3 $f4 $s1 $s2 $s3 $s4\"\n")
+            write(f, "$(cmd) \"julia src/covmat.jl $(configfile) $f1 $f2 $f3 $f4 $A $B $C $D $s1 $s2 $s3 $s4\"\n")
         end
     end
 end

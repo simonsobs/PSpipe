@@ -67,3 +67,51 @@ for i in 1:3
         end
     end
 end
+
+##
+function unique_splits(X, Y, f1, f2)
+    if (X == Y) && (f1 == f2)
+        return [(1,2)]
+    elseif (X==Y) && (f1 != f2)
+        return [(1,2), (2,1)]
+    else
+        return [(1,1), (1,2), (2,1), (2,2)]
+    end
+end
+
+using Test
+using Base.Iterators
+
+@test unique_splits("T", "T", "100", "100") == [(1,2)]
+@test unique_splits("T", "E", "100", "100") == [(1,1), (1,2), (2,1), (2,2)]
+@test unique_splits("T", "T", "100", "143") == [(1,2), (2,1)]
+@test unique_splits("E", "E", "100", "143") == [(1,2), (2,1)]
+@test unique_splits("T", "E", "100", "143") == [(1,1), (1,2), (2,1), (2,2)]
+
+include("util.jl")
+specs = plic_order() 
+
+constituents = []
+
+for spec in specs
+    AB, f1, f2 = spec
+    A, B = string(AB)
+    for (s1, s2) in unique_splits(A, B, f1, f2)
+        push!(constituents, (A, B, f1, f2, s1, s2))
+    end
+end
+
+run_name = config["general"]["name"]
+cmd = "sbatch scripts/16core6hr.cmd"
+open("scripts/$(run_name)_gen_covmats.sh", "w") do f
+    nspecs = length(constituents)
+
+    # generate the upper triangle
+    for i1 in 1:nspecs
+        for i2 in i1:nspecs
+            A, B, f1, f2, s1, s2 = constituents[i1]
+            C, D, f3, f4, s3, s4 = constituents[i2]
+            write(f, "$(cmd) \"julia src/covmat.jl $A $B $C $D $f1 $f2 $f3 $f4 $s1 $s2 $s3 $s4\"\n")
+        end
+    end
+end

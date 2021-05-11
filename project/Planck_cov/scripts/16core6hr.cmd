@@ -1,7 +1,4 @@
 #! /bin/bash
-
-VAR1 = $(echo $1 | xargs)
-
 #
 #SBATCH --nodes=1                # node count
 #SBATCH --ntasks-per-node=1      # total number of tasks per node
@@ -9,7 +6,7 @@ VAR1 = $(echo $1 | xargs)
 #SBATCH --mem-per-cpu=4G         # memory per cpu-core (4G per cpu-core is default)
 #SBATCH -t 6:00:00
 #SBATCH -p physics
-#SBATCH --output=output/R-.%j-$VAR1.out
+#SBATCH --output=output/R-%j.out
 
 module load anaconda3
 export OMP_NUM_THREADS=16

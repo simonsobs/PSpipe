@@ -28,6 +28,7 @@ end
 # ## Fit Noise Model
 # These SLURM commands fit the raw spectra with the camspec noise model.
 ## loop over freqs and noise channels
+println()
 for freq in ("100", "143", "217")
     for spec in ("TT", "EE")
         println("$(cmd) \"julia src/fitnoisemodel.jl global.toml $(freq) $(spec)\"")
@@ -39,6 +40,7 @@ end
 # These SLURM commands correct the covariances for the insufficiently-apodized point source
 # holes.
 ## loop over freqs and noise channels
+println()
 cmd = "sbatch scripts/16core6hr.cmd"
 freqs = ("100", "143", "217")
 for i in 1:3
@@ -55,6 +57,7 @@ end
 # These SLURM commands correct the covariances for the insufficiently-apodized point source
 # holes.
 ## loop over freqs and noise channels
+println()
 freqs = ("100", "143", "217")
 for i in 1:3
     for j in i:3

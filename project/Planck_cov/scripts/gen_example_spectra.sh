@@ -1,4 +1,4 @@
-# run from Planck_cov/ as "scripts/gen_example_spectra.sh"
+# run from Planck_cov/ as ".scripts/gen_example_spectra.sh"
 export JULIA_NUM_THREADS=8
 export OMP_NUM_THREADS=8
 

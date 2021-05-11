@@ -10,6 +10,7 @@ configfile, freq1, freq2, spec = ARGS
 
 freqs = [freq1, freq2]
 splits = ["1", "2"]
+print("$(freqs[1]), $(freqs[2]), $(spec)\n")
 
 transposed = (spec == "ET")
 if transposed
@@ -34,8 +35,6 @@ simpath = joinpath(config["dir"]["scratch"], "signalsims",
     "$(freq1)_$(freq2)_$(spec)")
 lmax = nside2lmax(nside)
 lmax_planck = min(2508, lmax)
-
-print("$(freqs[1]), $(freqs[2]), $(spec)\n")
 
 function readsims(path)
     files = [f for f in readdir(simpath; join=false) if f != "summary.jld2"]

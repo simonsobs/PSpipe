@@ -75,8 +75,13 @@ function extend_signal(s::Vector{T}) where T
 end
 
 function get_correction(freq1, freq2, spec)
+    spec_str = string(spec)
+    if parse(Float64, freq1) > parse(Float64, freq2)
+        freq1, freq2 = freq2, freq1
+        spec_str = reverse(spec_str)
+    end
     correction_path = joinpath(config["dir"]["scratch"], "point_source_corrections")
-    correction_file = joinpath(correction_path, "$(freq1)_$(freq2)_$(spec)_corr.dat")
+    correction_file = joinpath(correction_path, "$(freq1)_$(freq2)_$(spec_str)_corr.dat")
     correction_gp = readdlm(correction_file)[:,1]
     correction_gp[1:3] .= 0.0
     return extend_signal(correction_gp)

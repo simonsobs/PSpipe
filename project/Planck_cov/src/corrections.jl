@@ -11,6 +11,14 @@ configfile, freq1, freq2, spec = ARGS
 freqs = [freq1, freq2]
 splits = ["1", "2"]
 
+transposed = (spec == "ET")
+if transposed
+    spec = "TE"
+    splits = reverse(splits)
+    freqs = reverse(freqs)
+end
+
+
 using Plots
 using TOML
 using UUIDs, JLD2, FileIO
@@ -120,8 +128,7 @@ mask₂ = (spec[2] == 'T') ? maskT₂ : maskP₂
 @time 𝐌 = mcm(symspec, mask₁, mask₂)
 C_decoupled = decouple_covmat(C, 𝐌, 𝐌)
 
-
-
+ # the covariance is possibly transposed, but we only care about the diagonal
 correction = SpectralVector(cl_var[:,1] ./ diag(parent(C_decoupled)))
 
 lmin_cut, lmax_cut = plic_ellranges()[(Symbol(spec), freq1, freq2)]

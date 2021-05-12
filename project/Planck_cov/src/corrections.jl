@@ -130,7 +130,7 @@ C_decoupled = decouple_covmat(C, 𝐌, 𝐌)
  # the covariance is possibly transposed, but we only care about the diagonal
 correction = SpectralVector(cl_var[:,1] ./ diag(parent(C_decoupled)))
 
-lmin_cut, lmax_cut = plic_ellranges()[(Symbol(spec), freq1, freq2)]
+lmin_cut, lmax_cut = get_plic_ellrange(Symbol(spec), freq1, freq2)
 correction[lmax_cut:end] .= 1.0
 
 fit_ells = (lmin_cut-20):(lmax_cut)

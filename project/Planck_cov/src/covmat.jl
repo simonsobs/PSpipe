@@ -218,9 +218,8 @@ end
 Cbb = P * parent(C₀) * (P')
 
 # 
-ellranges = plic_ellranges()
-lminAB, lmaxAB = ellranges[specAB, freqs[1], freqs[2]]
-lminCD, lmaxCD = ellranges[specCD, freqs[3], freqs[4]]
+lminAB, lmaxAB = get_plic_ellrange(specAB, freqs[1], freqs[2])
+lminCD, lmaxCD = get_plic_ellrange(specCD, freqs[3], freqs[4])
 rangeAB = findfirst(lb .> lminAB):findlast(lb .< lmaxAB)
 rangeCD = findfirst(lb .> lminCD):findlast(lb .< lmaxCD)
 

@@ -124,7 +124,7 @@ plic_order() = (
     (:TE,"143","217"), (:TE,"217","217")
 )
 
-plic_ellranges() = Dict(
+const plic_ellranges = Dict(
     (:TT, "100", "100") => (30, 1197),
     (:TT, "143", "143") => (30, 1996),
     (:TT, "143", "217") => (30, 2508),
@@ -142,17 +142,20 @@ plic_ellranges() = Dict(
     (:TE, "143", "143") => (30, 1996),
     (:TE, "143", "217") => (505, 1996),
     (:TE, "217", "217") => (505, 1996),
-
-    (:ET, "100", "100") => (30, 999),
-    (:ET, "100", "143") => (30, 999),
-    (:ET, "100", "217") => (505, 999),
-    (:ET, "143", "143") => (30, 1996),
-    (:ET, "143", "217") => (505, 1996),
-    (:ET, "217", "217") => (505, 1996),
-
+    
     (:TT, "100", "143") => (30, 999),   # not used
     (:TT, "100", "217") => (505, 999),  # not used
 )
+
+function get_plic_ellrange(spec::Symbol, freq1, freq2)
+    if spec ∈ (:TE, :ET)
+        if parse(Float64, freq1) > parse(Float64, freq2)
+            freq1, freq2 = freq2, freq1
+        end
+        return plic_ellranges[:TE, freq1, freq2]
+    end
+    return plic_ellranges[spec, freq1, freq2]
+end
 
 
 # ## Signal Spectra 
@@ -167,9 +170,8 @@ function signal_and_theory(freq1, freq2, config::Dict)
     fg = read_commented_header(joinpath(likelihood_data_dir,
         "base_plikHM_TTTEEE_lowl_lowE_lensing.minimum.plik_foregrounds"))
         
-    ranges = plic_ellranges()
     for (spec, f1, f2) in plic_order()
-        lmin, lmax = ranges[spec, f1, f2]
+        lmin, lmax = get_plic_ellrange(spec, f1, f2)
         const_val = fg[lmax-1,"$(spec)$(f1)X$(f2)"]
         ## constant foreground level after lmax -- there are fitting artifacts otherwise
         fg[(lmax-1):end, "$(spec)$(f1)X$(f2)"] .= const_val

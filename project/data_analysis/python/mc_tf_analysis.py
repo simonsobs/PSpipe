@@ -76,8 +76,8 @@ for sid, spec in enumerate(spec_list):
         
         for iii in range(iStart, iStop):
         
-            spec_name_no_filter = "%s_%s_nofilter_%05d" % (type, spec, iii)
-            spec_name_filter = "%s_%s_filter_%05d" % (type, spec, iii)
+            spec_name_no_filter = "%s_%s_nofilter_standard_%05d" % (type, spec, iii)
+            spec_name_filter = "%s_%s_filter_standard_%05d" % (type, spec, iii)
 
             lb, ps_nofilt = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_no_filter, spectra=spectra)
             lb, ps_filt = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_filter, spectra=spectra)
@@ -126,3 +126,43 @@ for sid, spec in enumerate(spec_list):
 
 
     np.savetxt("%s/tf_%s.dat" % (tf_dir, spec), np.transpose([lb, mean["TT", "tf"], std["TT", "tf"], mean["EE", "tf"], std["EE", "tf"], mean["BB", "tf"], std["BB", "tf"]]))
+
+
+for sid, spec in enumerate(spec_list):
+    
+    tf = {}
+    component = ["EE->EE", "EE->BB", "BB->BB", "BB->EE"]
+    for comp in component:
+        tf[comp] = []
+
+    for iii in range(iStart, iStop):
+
+        spec_name_no_filter_noB = "%s_%s_nofilter_noB_%05d" % (type, spec, iii)
+        spec_name_filter_noB = "%s_%s_filter_noB_%05d" % (type, spec, iii)
+        
+        spec_name_no_filter_noE = "%s_%s_nofilter_noE_%05d" % (type, spec, iii)
+        spec_name_filter_noE = "%s_%s_filter_noE_%05d" % (type, spec, iii)
+
+        lb, ps_nofilt_noB = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_no_filter_noB, spectra=spectra)
+        lb, ps_filt_noB = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_filter_noB, spectra=spectra)
+        
+        lb, ps_nofilt_noE = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_no_filter_noE, spectra=spectra)
+        lb, ps_filt_noE = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_filter_noE, spectra=spectra)
+
+        tf["EE->EE"] += [ps_filt_noB["EE"]/ps_nofilt_noB["EE"]]
+        tf["EE->BB"] += [ps_filt_noB["BB"]/ps_nofilt_noB["EE"]]
+        
+        tf["BB->BB"] += [ps_filt_noE["BB"]/ps_nofilt_noE["BB"]]
+        tf["BB->EE"] += [ps_filt_noE["EE"]/ps_nofilt_noE["BB"]]
+
+    
+    for comp in component:
+        mean = np.mean(tf[comp], axis = 0)
+        std = np.std(tf[comp], axis = 0)
+
+        plt.errorbar(lb, mean, std/np.sqrt(nsims), fmt=".", color="red")
+        plt.title(r"$t^{%s}_{\ell}$" % comp , fontsize=20)
+        plt.xlabel(r"$\ell$", fontsize=20)
+        plt.savefig("%s/tf_%s_%s.png" % (plot_dir, spec, comp), bbox_inches="tight")
+        plt.clf()
+        plt.close()

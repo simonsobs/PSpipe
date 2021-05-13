@@ -218,16 +218,16 @@ end
 Cbb = P * parent(C₀) * (P')
 
 # 
-lminAB, lmaxAB = get_plic_ellrange(specAB, freqs[1], freqs[2])
-lminCD, lmaxCD = get_plic_ellrange(specCD, freqs[3], freqs[4])
-rangeAB = findfirst(lb .> lminAB):findlast(lb .< lmaxAB)
-rangeCD = findfirst(lb .> lminCD):findlast(lb .< lmaxCD)
+# lminAB, lmaxAB = get_plic_ellrange(specAB, freqs[1], freqs[2])
+# lminCD, lmaxCD = get_plic_ellrange(specCD, freqs[3], freqs[4])
+# rangeAB = findfirst(lb .> lminAB):findlast(lb .< lmaxAB)
+# rangeCD = findfirst(lb .> lminCD):findlast(lb .< lmaxCD)
 
-cov_result = Cbb[rangeAB, rangeCD]
+# cov_result = Cbb[rangeAB, rangeCD]
 
 ##
 if transposed
-    cov_result = Array(transpose(cov_result))
+    Cbb = Array(transpose(Cbb))
 end
 
 spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
@@ -236,4 +236,4 @@ mkpath(covpath)
 
 covmat_filename = joinpath(covpath, join(specs) * "_" *
     join(freqs) * "_" * join(splits) * ".jld2")
-@save covmat_filename cov_result
+@save covmat_filename Cbb

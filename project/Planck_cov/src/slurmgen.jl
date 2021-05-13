@@ -15,7 +15,7 @@ config = TOML.parsefile(configfile)
 
 # Let's generate the commands we need for likelihood spectra.
 mapids = [k for k in keys(config["map"])]
-cmd = "sbatch scripts/16core6hr.cmd"
+cmd = "sbatch scripts/8core6hr.cmd"
 for i in 1:length(mapids)
     for j in i:length(mapids)
         println("$(cmd) \"julia src/rawspectra.jl $(configfile) $(mapids[i]) $(mapids[j])\"")
@@ -41,7 +41,7 @@ end
 # holes.
 ## loop over freqs and noise channels
 println()
-cmd = "sbatch scripts/16core6hr.cmd"
+cmd = "sbatch scripts/8core6hr.cmd"
 freqs = ("100", "143", "217")
 for i in 1:3
     for j in i:3
@@ -109,7 +109,7 @@ for spec in specs
 end
 
 run_name = config["general"]["name"]
-cmd = "sbatch scripts/16core6hr.cmd"
+cmd = "sbatch scripts/8core6hr.cmd"
 open("scripts/$(run_name)_gen_covmats.sh", "w") do f
     nspecs = length(constituents)
 

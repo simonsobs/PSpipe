@@ -87,7 +87,7 @@ zero_var_component = HealpixMap{Float64, RingOrder}(zeros(nside2npix(nside)))
 zero_var = PolarizedHealpixMap(zero_var_component, zero_var_component, zero_var_component);
 
 m1_signal = CovField(mapid1, maskT₁, maskP₁, zero_var)
-m2_signal = CovField(mapid1, maskT₂, maskP₂, zero_var)
+m2_signal = CovField(mapid2, maskT₂, maskP₂, zero_var)
 
 # convert a Vector (starting from 0) into a SpectralVector of full length
 function format_signal(v::Vector{T}, nside) where T

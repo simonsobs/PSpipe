@@ -11,6 +11,7 @@ binary = so_map.read_map(d["survey"])
 if binary.data.ndim > 2:
     # Only use temperature
     binary.data = binary.data[0]
+binary.data = binary.data.astype(np.int16)
 binary.data[:] = 1
 
 # Sigurd point sources
@@ -41,5 +42,4 @@ if "dust_file" in d:
 
 print("Writing mask...")
 mask.write_map(d["output_file"])
-mask.downgrade(4)
-mask.plot(file_name=d["output_file"].replace(".fits", ""))
+mask.downgrade(4).plot(file_name=d["output_file"].replace(".fits", ""))

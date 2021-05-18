@@ -10,7 +10,7 @@ point_source_Tflux = 15
 # Point source Signal-Noise-Ratio (default: 5)
 point_source_SNR = 5
 # Point source radius (default: 8 arcmin)
-point_source_radius = 8
+point_source_radius = 8.0
 
 # Point source with variable radius size
 monster_source_file = data_dir + "masks/pointsrcs/monster_catalog.csv"
@@ -19,4 +19,4 @@ monster_source_file = data_dir + "masks/pointsrcs/monster_catalog.csv"
 dust_file = data_dir + "masks/mask_dust.fits"
 
 # Output file name
-output_file = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_8arcmin_dust_monster.fits"
+output_file = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_8.0arcmin_dust_monster.fits"

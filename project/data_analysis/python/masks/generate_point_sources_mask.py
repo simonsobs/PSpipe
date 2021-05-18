@@ -7,7 +7,7 @@ from pspy import so_dict, so_map
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-binary = so_map.read_map(d["survey"])
+binary = so_map.read_map(d["template"])
 if binary.data.ndim > 2:
     # Only use temperature
     binary.data = binary.data[0]
@@ -23,7 +23,7 @@ if "point_source_file" in d:
     )
     df = df[high_flux_good_SNR]
     coordinates = np.deg2rad([df.dec, df.ra])
-    mask = so_map.generate_source_mask(binary, coordinates, d.get("point_source_radius", 8))
+    mask = so_map.generate_source_mask(binary, coordinates, d.get("point_source_radius", 5.0))
 
 # Monster sources
 if "monster_source_file" in d:

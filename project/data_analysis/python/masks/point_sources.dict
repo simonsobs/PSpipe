@@ -1,0 +1,22 @@
+data_dir = "/project/projectdirs/act/data/tlouis/s17s18s19/"
+
+# Template mask
+template = data_dir + "maps/srcfree_s19/s19_cmb_pa4_f150_nohwp_night_1pass_4way_set0_map_srcfree.fits"
+
+# Point sources config
+point_source_file = data_dir + "masks/pointsrcs/act_planck_s08_s19_cmb_f150_daynight_cat.txt"
+# Point source flux cut (default: 15 mJy @ 150 GHz)
+point_source_Tflux = 15
+# Point source Signal-Noise-Ratio (default: 5)
+point_source_SNR = 5
+# Point source radius (default: 5 arcmin)
+point_source_radius = 5.0
+
+# Point source with variable radius size
+monster_source_file = data_dir + "masks/pointsrcs/monster_catalog.csv"
+
+# Dust
+dust_file = data_dir + "masks/mask_dust.fits"
+
+# Output file name
+output_file = data_dir + "masks/act_planck_mask_s08s19_15mJy_5.0arcmin_dust_monster.fits"

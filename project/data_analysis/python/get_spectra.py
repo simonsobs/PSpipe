@@ -1,12 +1,13 @@
 """
 This script compute all power spectra and write them to disk.
 It uses the window function provided in the dictionnary file.
-Optionally, it applies a calibration to the maps and a kspace filter.
+Optionally, it applies a calibration to the maps, a kspace filter and deconvolve the pixel window function.
 The spectra are then combined in mean auto, cross and noise power spectrum and written to disk.
-If write_all_spectra=True, each individual spectrum is written to disk.
+If write_all_spectra=True, each individual spectrum is also written to disk.
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra
+from pixell import enmap
 import numpy as np
 import sys
 import data_analysis_utils
@@ -21,6 +22,7 @@ niter = d["niter"]
 type = d["type"]
 binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]
+deconvolve_pixwin = d["deconvolve_pixwin"]
 
 window_dir = "windows"
 mcm_dir = "mcms"
@@ -37,8 +39,11 @@ ncomp = 3
 
 master_alms = {}
 nsplit = {}
+pixwin_l = {}
+
 for sv in surveys:
     arrays = d["arrays_%s" % sv]
+
     for ar in arrays:
         win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
         win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
@@ -50,6 +55,31 @@ for sv in surveys:
 
         cal = d["cal_%s_%s" % (sv, ar)]
         print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
+        
+        if deconvolve_pixwin:
+            # ok so this is a bit overcomplicated because we need to take into account CAR and HEALPIX
+            # for CAR the pixel window function deconvolution is done in Fourier space and take into account
+            # the anisotropy if the pixwin
+            # In HEALPIX it's a simple 1d function in multipole space
+            # we also need to take account the case where we have projected Planck into a CAR pixellisation since
+            # the native pixel window function of Planck need to be deconvolved
+            if win_T.pixel == "CAR":
+                wy, wx = enmap.calc_window(win_T.data.shape)
+                inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
+                pixwin_l[sv] = np.ones(2 * lmax)
+                if sv == "Planck":
+                    # we include this special case for Planck projected in CAR taking into account the Planck native pixellisation
+                    # we should check if the projection doesn't include an extra pixel window
+                    inv_pixwin_lxly = None
+                    pixwin_l[sv] = hp.pixwin(2048)
+
+            elif win_T.pixel == "HEALPIX":
+                pixwin_l[sv] = hp.pixwin(win_T.nside)
+                
+        else:
+            inv_pixwin_lxly = None
+
+
         t = time.time()
         for k, map in enumerate(maps):
         
@@ -65,8 +95,13 @@ for sv in surveys:
                     print("apply kspace filter on %s" %map)
                     binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                     split = data_analysis_utils.get_filtered_map(
-                        split, binary, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], normalize=False)
-
+                        split, binary, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], normalize=False, inv_pixwin_lxly=inv_pixwin_lxly)
+                else:
+                    print("WARNING: no kspace filter is applied")
+                    if deconvolve_pixwin:
+                        print("WARNING: pixwin deconvolution in CAR WITHOUT kspace filter is not implemented")
+                        sys.exit()
+                        
             elif win_T.pixel == "HEALPIX":
                 split = so_map.read_map(map)
                 
@@ -74,9 +109,9 @@ for sv in surveys:
             if d["remove_mean"] == True:
                 split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
-            #split.plot(file_name="%s/split_%d_%s_%s" % (plot_dir, k, sv, ar), color_range=[250, 100, 100])
 
             master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
+            
             if d["use_kspace_filter"]:
                 # there is an extra normalisation for the FFT/IFFT bit
                 # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
@@ -96,7 +131,15 @@ for id_sv1, sv1 in enumerate(surveys):
         _, _, tf1, _ = np.loadtxt(d["tf_%s" % sv1], unpack=True)
     else:
         tf1 = np.ones(len(lb))
-
+    
+    if deconvolve_pixwin:
+        # we have an extra correction for the 1d healpix pixel window function
+        # this should be checked with simulations since maybe this
+        # step should be done at the mcm level
+        l_pw = np.arange(len(pixwin_l[sv1]))
+        _, pw1 = pspy_utils.naive_binning(l_pw,  pixwin_l[sv1], binning_file, lmax)
+        tf1 *= pw1
+        
     for id_ar1, ar1 in enumerate(arrays_1):
     
         for id_sv2, sv2 in enumerate(surveys):
@@ -108,6 +151,11 @@ for id_sv1, sv1 in enumerate(surveys):
                 _, _, tf2, _ = np.loadtxt(d["tf_%s" % sv2], unpack=True)
             else:
                 tf2 = np.ones(len(lb))
+                
+            if deconvolve_pixwin:
+                l_pw = np.arange(len(pixwin_l[sv2]))
+                _, pw2 = pspy_utils.naive_binning(l_pw,  pixwin_l[sv2], binning_file, lmax)
+                tf2 *= pw2
 
             for id_ar2, ar2 in enumerate(arrays_2):
 

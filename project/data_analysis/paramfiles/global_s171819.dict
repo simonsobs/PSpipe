@@ -4,7 +4,7 @@ arrays_s17 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f
 arrays_s18 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 arrays_s19 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 
-data_dir = '/global/cscratch1/sd/tlouis/data_analysis/data/s171819_product/'
+data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/'
 
 deconvolve_pixwin = True
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"

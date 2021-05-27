@@ -23,7 +23,7 @@ The next step is to precompute the mode coupling matrices associated with these 
 
 .. code:: shell
 
-    salloc -N 20 -C haswell -q interactive -t 03:00:00
+    salloc -N 20 -C haswell -q interactive -t 01:30:00
     srun -n 20 -c 64 --cpu_bind=cores python get_mcm_and_bbl_mpi.py global_s171819.dict
 
 Now we can compute all the power spectra, for this we won't use MPI, simply

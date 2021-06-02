@@ -47,7 +47,7 @@ for scan in scan_list:
             Db_cross_dict[scan, run, spec] = np.mean(Db_cross_dict[scan, run, spec], axis=0)
 
 # look at the split per split properties
-colors = ["blue", "green", "orange", "red", "grey", "royalblue", "magenta"]
+colors = ["blue", "green", "orange", "red", "grey", "lightblue", "magenta"]
 for run in runs:
     plt.figure(figsize = (25, 10))
     for c, spec in enumerate(["TT", "EE", "BB"]):
@@ -80,7 +80,7 @@ for scan in scan_list:
         plt.semilogy()
         plt.plot(lth, ps_theory[spec])
         for run in runs:
-            plt.plot(lb, Db_auto_dict[scan, run, spec] - Db_cross_dict[scan, run, spec], label = r" %s %s" % (scan, run))
+            plt.plot(lb, (Db_auto_dict[scan, run, spec] - Db_cross_dict[scan, run, spec])/2, label = r" %s %s" % (scan, run))
     plt.legend()
     plt.show()
 

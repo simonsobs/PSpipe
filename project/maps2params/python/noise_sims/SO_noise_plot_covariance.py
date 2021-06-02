@@ -4,7 +4,7 @@ import numpy as np
 from pspy import so_spectra, so_cov, so_mcm, pspy_utils, so_map, so_dict
 import scipy.interpolate
 import sys
-
+import SO_noise_utils
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -25,6 +25,7 @@ lth, ps_theory = pspy_utils.ps_lensed_theory_to_dict(clfile, "Dl", lmax=lmax)
 spectra_dir = "spectra"
 plot_dir = "plot/covariance"
 cov_dir = "covariance"
+window_dir = "windows"
 
 
 pspy_utils.create_directory(plot_dir)
@@ -43,6 +44,7 @@ for bl in ["TTTT", "TETE", "EEEE"]:
             cov_select = so_cov.selectblock(cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
 
             var = cov_select.diagonal()
+            
             plt.plot(lb, np.sqrt(var), label = run)
             
         plt.title(r"$\sigma^{%s}_{\ell}$, %s" % (bl, scan), fontsize=14)
@@ -55,7 +57,36 @@ for bl in ["TTTT", "TETE", "EEEE"]:
         plt.close()
 
 
-colors = ["blue", "green", "orange", "red", "grey", "royalblue", "magenta"]
+# Check effect of approximating
+for bl in ["TTTT", "TETE", "EEEE"]:
+    for scan in scan_list:
+        for run in runs:
+            _name = "%s_%sx%s_%s" % (scan, "split0", "split0", run)
+            lb, _ = so_spectra.read_ps("%s/spectra_%s.dat" % (spectra_dir, _name), spectra=spectra)
+            n_bins = len(lb)
+            
+            cov = np.load("%s/analytic_cov_%s_%s.npy" % (cov_dir, scan, run))
+            quick_cov = np.load("%s/quick_cov_%s_%s.npy" % (cov_dir, scan, run))
+
+            cov_select = so_cov.selectblock(cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
+            quick_cov_select = so_cov.selectblock(quick_cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
+            
+            var = cov_select.diagonal()
+            quick_var = quick_cov_select.diagonal()
+            
+            plt.plot(lb, np.sqrt(var), ".", label = run, color = "blue")
+            plt.plot(lb, np.sqrt(quick_var), "-", label = "approx %s" % run, color = "blue")
+
+            plt.title(r"$\sigma^{%s}_{\ell}$, %s" % (bl, scan), fontsize=14)
+            plt.xlabel(r"$\ell$", fontsize=14)
+
+            plt.legend()
+            plt.show()
+           # plt.savefig("%s/test_approx_sigma_%s_%s_%s.png" % (plot_dir, bl, scan, run), bbox_inches="tight")
+           # plt.clf()
+           # plt.close()
+
+colors = ["blue", "green", "orange", "red", "grey", "lightblue", "magenta"]
 
 
 for bl in ["TTTT", "TETE", "EEEE"]:
@@ -84,3 +115,5 @@ for bl in ["TTTT", "TETE", "EEEE"]:
     plt.savefig("%s/sigma_%s.png" % (plot_dir, bl), bbox_inches="tight")
     plt.clf()
     plt.close()
+
+

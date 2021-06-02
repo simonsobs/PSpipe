@@ -4,6 +4,7 @@ import numpy as np
 from pspy import so_spectra, so_cov, so_mcm, pspy_utils, so_map, so_dict
 import scipy.interpolate
 import sys
+import SO_noise_utils
 
 
 d = so_dict.so_dict()
@@ -50,7 +51,7 @@ for scan in scan_list:
 
             nb = (Db_dict_00[spec] + Db_dict_11[spec])/2 - Db_dict_10[spec]
             
-            nb /= 2 # because we have two splits the effective noise is half the mean
+            #nb /= 2 # because we have two splits the effective noise is half the mean
             
             nl_th[spec] = scipy.interpolate.interp1d(lb, nb, fill_value = "extrapolate")
             nl_th[spec] = np.array([nl_th[spec](i) for i in lth])
@@ -93,5 +94,10 @@ for scan in scan_list:
         coupling_dict = so_cov.cov_coupling_spin0and2_simple(window, lmax, niter=niter, planck=False)
         analytic_cov = so_cov.cov_spin0and2(Clth_dict, coupling_dict, binning_file, lmax, mbb_inv, mbb_inv)
         
+        quick_cov = SO_noise_utils.quick_analytic_cov(lth, Clth_dict, window, binning_file, lmax)
+        
+        
         np.save("%s/analytic_cov_%s_%s.npy" % (cov_dir, scan, run), analytic_cov)
+        np.save("%s/quick_cov_%s_%s.npy" % (cov_dir, scan, run), quick_cov)
 
+        

@@ -23,6 +23,8 @@ map_plot_range = d["map_plot_range"]
 vrange = 3 * [map_plot_range]
 K_to_muK = 10**6
 
+include_cmb = True
+
 lth, ps_theory = pspy_utils.ps_lensed_theory_to_dict(clfile, "Dl", lmax=lmax)
 
 pspy_utils.create_binning_file(bin_size=bin_size, n_bins=300, file_name=binning_file )
@@ -56,9 +58,12 @@ for scan in scan_list:
         noise_map.data[:] *= K_to_muK * np.sqrt(2)
         noise_map.plot(file_name="%s/%s_map_%s" % (plot_dir, split, scan), color_range=vrange)
         
-        sim[split] = cmb.copy()
-        sim[split].data[:] += noise_map.data[:]
-        
+        if include_cmb == True:
+            sim[split] = cmb.copy()
+            sim[split].data[:] += noise_map.data[:]
+        else:
+            sim[split] = noise_map.copy()
+            
     binary.plot(file_name="%s/binary_%s" % (plot_dir, scan))
 
     #naive_fsky[scan] = np.sum(binary.data) / (12 * binary.nside ** 2) * 100

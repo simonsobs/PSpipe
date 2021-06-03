@@ -16,7 +16,7 @@ Pipeline flow chart
 
 
 Let's assume you run the script on NERSC, first create a folder and copy the code, then get access to a single node
-(salloc -N 20 -C haswell -q interactive -t 02:00:00) and run
+(salloc -N 1 -C haswell -q interactive -t 02:00:00) and run
 
 
 .. code:: shell

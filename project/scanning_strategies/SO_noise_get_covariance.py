@@ -38,6 +38,7 @@ window_dir = "windows"
 pspy_utils.create_directory(plot_dir)
 pspy_utils.create_directory(cov_dir)
 
+fsky = {}
 for scan in scan_list:
     for run in runs:
         print(scan, run)
@@ -99,10 +100,13 @@ for scan in scan_list:
         coupling_dict = so_cov.cov_coupling_spin0and2_simple(window, lmax, niter=niter, planck=False)
         analytic_cov = so_cov.cov_spin0and2(Clth_dict, coupling_dict, binning_file, lmax, mbb_inv, mbb_inv)
         
-        quick_cov = SO_noise_utils.quick_analytic_cov(lth, Clth_dict, window, binning_file, lmax)
+        fsky[scan, run], quick_cov = SO_noise_utils.quick_analytic_cov(lth, Clth_dict, window, binning_file, lmax)
         
         
         np.save("%s/analytic_cov_%s_%s.npy" % (cov_dir, scan, run), analytic_cov)
         np.save("%s/quick_cov_%s_%s.npy" % (cov_dir, scan, run), quick_cov)
 
-        
+for run in runs:
+    print("")
+    for scan in scan_list:
+        print(run, scan, "%0.3f" % fsky[scan, run])

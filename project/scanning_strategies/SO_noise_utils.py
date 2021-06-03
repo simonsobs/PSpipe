@@ -15,7 +15,6 @@ def quick_analytic_cov(l, Clth_dict, window, binning_file, lmax):
     nbins = len(bin_size)
     fsky = steve_effective_fsky(window)
     prefac = 1 / ((2 * bin_c + 1) * fsky * bin_size)
-    print(fsky)
 
     cov = {}
     cov["TT"] = Clth_dict["TaTc"] * Clth_dict["TbTd"]  + Clth_dict["TaTd"] * Clth_dict["TbTc"]
@@ -31,5 +30,5 @@ def quick_analytic_cov(l, Clth_dict, window, binning_file, lmax):
         for i in range(nbins):
             mat_diag[i + count * nbins, i + count * nbins] = cov[spec][i]
         
-    return mat_diag
+    return fsky, mat_diag
     

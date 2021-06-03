@@ -33,7 +33,7 @@ lth, ps_theory = pspy_utils.ps_lensed_theory_to_dict(clfile, "Dl", lmax=lmax)
 
 pspy_utils.create_binning_file(bin_size=bin_size, n_bins=300, file_name=binning_file )
 
-
+map_dir = d["map_dir"]
 mcm_dir = "mcms"
 spectra_dir = "spectra"
 plot_dir = "plot/map"
@@ -56,7 +56,7 @@ for scan in scan_list:
     
     sim = {}
     for split in split_list:
-        noise_map = so_map.read_map("%s/%s_telescope_all_time_all_map.fits" % (split, scan))
+        noise_map = so_map.read_map("%s/%s_telescope_all_time_all_map.fits" % (map_dir[split], scan))
         binary.data[noise_map.data[0] == hp.pixelfunc.UNSEEN] = 0
         # the sqrt(2) is because each split has noise corresponding to the whole survey
         noise_map.data[:] *= K_to_muK * np.sqrt(2)
@@ -79,7 +79,7 @@ for scan in scan_list:
     
         if run == "weighted":
             print("Use hits maps")
-            hmap = so_map.read_map("hits_map/%s_telescope_all_time_all_hmap.fits" % scan)
+            hmap = so_map.read_map("%s/%s_telescope_all_time_all_hmap.fits" % (map_dir["split0"], scan))
             window.data *= hmap.data
         else:
             print("Uniform weighting")
@@ -87,7 +87,7 @@ for scan in scan_list:
                 
         window.write_map("%s/window_%s_%s.fits" % (window_dir, scan, run))
 
-        window.plot(file_name="%s/window_%s_%s" % (plot_dir, scan, run))
+        window.plot(file_name="%s/window_%s_%s" % (plot_dir, scan, run), title=scan)
     
         window = (window, window)
     

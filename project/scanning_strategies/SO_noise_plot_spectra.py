@@ -26,6 +26,8 @@ lth, ps_theory = pspy_utils.ps_lensed_theory_to_dict(clfile, "Dl", lmax=lmax)
 spectra_dir = "spectra"
 plot_dir = "plot/spectra"
 
+pspy_utils.create_directory(plot_dir)
+
 Db_dict = {}
 Db_auto_dict = {}
 Db_cross_dict = {}

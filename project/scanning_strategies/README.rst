@@ -21,7 +21,6 @@ Let's assume you run the script on NERSC, first create a folder and copy the cod
 
 .. code:: shell
 
-    python SO_copy_and_format_data.py global.dict
     python SO_noise_get_spectra.py global.dict
     python SO_noise_plot_spectra.py global.dict
     python SO_noise_get_covariance.py global.dict

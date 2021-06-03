@@ -81,10 +81,9 @@ for bl in ["TTTT", "TETE", "EEEE"]:
             plt.xlabel(r"$\ell$", fontsize=14)
 
             plt.legend()
-            plt.show()
-           # plt.savefig("%s/test_approx_sigma_%s_%s_%s.png" % (plot_dir, bl, scan, run), bbox_inches="tight")
-           # plt.clf()
-           # plt.close()
+            plt.savefig("%s/test_approx_sigma_%s_%s_%s.png" % (plot_dir, bl, scan, run), bbox_inches="tight")
+            plt.clf()
+            plt.close()
 
 colors = ["blue", "green", "orange", "red", "grey", "lightblue", "magenta"]
 

@@ -1,3 +1,7 @@
+"""
+This script compute the auto and cross power spectra for the different scanning strategy
+"""
+
 import healpy as hp
 import pylab as plt
 import numpy as np
@@ -54,8 +58,9 @@ for scan in scan_list:
     for split in split_list:
         noise_map = so_map.read_map("%s/%s_telescope_all_time_all_map.fits" % (split, scan))
         binary.data[noise_map.data[0] == hp.pixelfunc.UNSEEN] = 0
-        
+        # the sqrt(2) is because each split has noise corresponding to the whole survey
         noise_map.data[:] *= K_to_muK * np.sqrt(2)
+        
         noise_map.plot(file_name="%s/%s_map_%s" % (plot_dir, split, scan), color_range=vrange)
         
         if include_cmb == True:
@@ -66,8 +71,6 @@ for scan in scan_list:
             
     binary.plot(file_name="%s/binary_%s" % (plot_dir, scan))
 
-    #naive_fsky[scan] = np.sum(binary.data) / (12 * binary.nside ** 2) * 100
-    
     for run in runs:
 
         window = so_window.create_apodization(binary,
@@ -81,10 +84,7 @@ for scan in scan_list:
         else:
             print("Uniform weighting")
         
-        
-        #eff_fsky[scan] = SO_noise_utils.steve_effective_fsky(window.data.copy()) * 100
-        #print(naive_fsky[scan], eff_fsky[scan])
-        
+                
         window.write_map("%s/window_%s_%s.fits" % (window_dir, scan, run))
 
         window.plot(file_name="%s/window_%s_%s" % (plot_dir, scan, run))

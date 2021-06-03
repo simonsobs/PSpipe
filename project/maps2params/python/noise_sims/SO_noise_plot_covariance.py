@@ -1,4 +1,9 @@
+"""
+This script plot and compare the covariance matrix elements
+"""
 
+import matplotlib
+matplotlib.use("Agg")
 import pylab as plt
 import numpy as np
 from pspy import so_spectra, so_cov, so_mcm, pspy_utils, so_map, so_dict

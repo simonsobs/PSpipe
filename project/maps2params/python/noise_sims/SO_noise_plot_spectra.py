@@ -1,3 +1,10 @@
+"""
+This script plot and compare the different noise power spectra corresponding to
+the different scanning strategies
+"""
+
+import matplotlib
+matplotlib.use("Agg")
 import pylab as plt
 import numpy as np
 import sys
@@ -70,8 +77,11 @@ for run in runs:
         plt.title(r"$D^{%s}_{\ell}$" % spec, fontsize=14)
         plt.xlabel(r"$\ell$", fontsize=14)
     plt.suptitle(run)
-    plt.show()
-
+    plt.savefig("%s/noise_spec_%s.png" % (plot_dir, run), bbox_inches="tight")
+    plt.clf()
+    plt.close()
+    
+    
 # look at weight vs unweight
 for scan in scan_list:
     plt.figure(figsize = (25, 10))
@@ -82,8 +92,10 @@ for scan in scan_list:
         for run in runs:
             plt.plot(lb, (Db_auto_dict[scan, run, spec] - Db_cross_dict[scan, run, spec])/2, label = r" %s %s" % (scan, run))
     plt.legend()
-    plt.show()
-
+    plt.savefig("%s/noise_spec_%s.png" % (plot_dir, scan), bbox_inches="tight")
+    plt.clf()
+    plt.close()
+    
 # Check if the cross is unbiased
 for scan in scan_list:
     plt.figure(figsize = (25, 10))
@@ -94,5 +106,7 @@ for scan in scan_list:
         for run in runs:
             plt.plot(lb, Db_cross_dict[scan, run, spec], "o", label = r" %s %s" % (scan, run))
     plt.legend()
-    plt.show()
+    plt.savefig("%s/signal_spec_%s.png" % (plot_dir, scan), bbox_inches="tight")
+    plt.clf()
+    plt.close()
 

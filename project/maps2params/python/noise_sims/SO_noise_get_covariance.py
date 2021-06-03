@@ -1,3 +1,8 @@
+"""
+This script compute the covariance matrix corresponding to
+the different scanning strategies.
+We use both a master analytical computation and a simple approximation
+"""
 
 import pylab as plt
 import numpy as np

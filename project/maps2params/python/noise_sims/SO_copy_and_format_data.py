@@ -1,3 +1,7 @@
+"""
+This script copy the data from reijo dir on nersc
+"""
+
 from pspy import so_dict, pspy_utils
 import os, sys
 

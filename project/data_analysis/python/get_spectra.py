@@ -9,9 +9,11 @@ If write_all_spectra=True, each individual spectrum is also written to disk.
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra
 from pixell import enmap
 import numpy as np
+import healpy as hp
 import sys
 import data_analysis_utils
 import time
+
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -130,6 +132,7 @@ for id_sv1, sv1 in enumerate(surveys):
     if d["tf_%s" % sv1] is not None:
         print("will deconvolve tf of %s" %sv1)
         _, _, tf1, _ = np.loadtxt(d["tf_%s" % sv1], unpack=True)
+        tf1 = tf1[:len(lb)]
     else:
         tf1 = np.ones(len(lb))
     
@@ -150,6 +153,7 @@ for id_sv1, sv1 in enumerate(surveys):
             if d["tf_%s" % sv2] is not None:
                 print("will deconvolve tf of %s" %sv2)
                 _, _, tf2, _ = np.loadtxt(d["tf_%s" % sv2], unpack=True)
+                tf2 = tf2[:len(lb)]
             else:
                 tf2 = np.ones(len(lb))
                 

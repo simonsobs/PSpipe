@@ -41,7 +41,11 @@ tf_s19 = data_dir + "transfer_fcns/tf.dat"
 
 
 
-src_free_maps = True
+src_free_maps_s17 = True
+src_free_maps_s18 = True
+src_free_maps_s19 = True
+
+
 maps_s17_pa4_f150 = [data_dir + 'maps/srcfree_s1718/s17_cmb_pa4_f150_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
 maps_s17_pa4_f220 = [data_dir + 'maps/srcfree_s1718/s17_cmb_pa4_f220_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]
 maps_s17_pa5_f090 = [data_dir + 'maps/srcfree_s1718/s17_cmb_pa5_f090_nohwp_night_1pass_2way_set%d_map_srcfree.fits' % i for i in range(2)]

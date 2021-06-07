@@ -20,3 +20,15 @@ dust_file = data_dir + "masks/mask_dust.fits"
 
 # Output file name
 output_file = data_dir + "masks/act_planck_mask_s08s19_15mJy_5.0arcmin_dust_monster.fits"
+
+# Patch masks
+nbr_patches = 5
+
+# dec-ra coordinates for the selection box
+patch_0 = [[+23, 180], [-5, 100]]
+patch_1 = [[+23, 105], [-26, -75]]
+patch_2 = [[-38, 120], [-62, -94]]
+patch_3 = [[+23, -83], [5, -180]]
+patch_4 = [[-23, 104], [-42, -85]]
+
+patch_output_dir = data_dir + "masks"

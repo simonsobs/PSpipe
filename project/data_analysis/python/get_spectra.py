@@ -93,7 +93,6 @@ for sv in surveys:
                     point_source_map_name = map.replace("srcfree.fits", "model.fits")
                     if point_source_map_name == map:
                         raise ValueError("No model map is provided! Check map names!")
-                        sys.exit()
                     point_source_map = so_map.read_map(point_source_map_name)
                     point_source_mask = so_map.read_map(d["ps_mask"])
                     split = data_analysis_utils.get_coadded_map(split, point_source_map, point_source_mask)

@@ -91,7 +91,7 @@ for sv in surveys:
                 
                 if d["src_free_maps_%s" % sv] == True:
                     point_source_map_name = map.replace("srcfree.fits", "model.fits")
-                    if model_map_name == map_name:
+                    if point_source_map_name == map:
                         raise ValueError("No model map is provided! Check map names!")
                         sys.exit()
                     point_source_map = so_map.read_map(point_source_map_name)

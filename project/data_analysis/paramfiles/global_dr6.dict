@@ -2,7 +2,7 @@ surveys = ["dr6"]
 
 arrays_sdr6 = ["pa4_f150"]
 
-data_dir = '/project/projectdirs/act/data/tlouis/dr6_00/'
+data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/'
 
 deconvolve_pixwin = True
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
@@ -40,7 +40,7 @@ tf_s19 = data_dir + "transfer_fcns/tf.dat"
 
 src_free_maps_dr6 = False
 
-maps_dr6_pa4_f150 = [data_dir + 'maps/dr6/cmb_night_pa4_f150_plain_2pass_8way_set%d_map.fits' % i for i in range(8)]
+maps_dr6_pa4_f150 = [data_dir + 'maps/dr6_00/cmb_night_pa4_f150_plain_2pass_8way_set%d_map.fits' % i for i in range(8)]
 cal_dr6_pa4_f150 = 1.0
 nu_eff_dr6_pa4_f150 = 150
 

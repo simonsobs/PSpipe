@@ -1,6 +1,6 @@
 surveys = ["dr6"]
 
-arrays_sdr6 = ["pa4_f150"]
+arrays_dr6 = ["pa4_f150"]
 
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/'
 

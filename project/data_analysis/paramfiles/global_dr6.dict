@@ -33,10 +33,7 @@ hk_mask = [-50, 50]
 
 # transfer functions
 
-tf_s17 = data_dir + "transfer_fcns/tf.dat"
-tf_s18 = data_dir + "transfer_fcns/tf.dat"
-tf_s19 = data_dir + "transfer_fcns/tf.dat"
-
+tf_dr6 = data_dir + "transfer_fcns/tf.dat"
 
 src_free_maps_dr6 = False
 

@@ -37,7 +37,7 @@ tf_dr6 = data_dir + "transfer_fcns/tf.dat"
 
 src_free_maps_dr6 = False
 
-maps_dr6_pa4_f150 = [data_dir + 'maps/dr6_00/cmb_night_pa4_f150_plain_2pass_8way_set%d_map.fits' % i for i in range(8)]
+maps_dr6_pa4_f150 = [data_dir + 'maps/dr6_00/cmb_night_pa4_f150_plain_3pass_8way_set%d_map.fits' % i for i in range(8)]
 cal_dr6_pa4_f150 = 1.0
 nu_eff_dr6_pa4_f150 = 150
 

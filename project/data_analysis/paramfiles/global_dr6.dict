@@ -63,3 +63,5 @@ range_TT = [10, 8000]
 range_TE = [-150, 150]
 range_ET = [-150, 150]
 range_EE = [-20, 50]
+
+planck_data_dir = data_dir + "planck_data/"

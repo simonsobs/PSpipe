@@ -1,9 +1,11 @@
 surveys = ["dr6"]
 
-arrays_dr6 = ["pa4_f150"]
+arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/'
+map_dir = '/global/project/projectdirs/act/data/sigurdkn/actpol/maps/dr6v2_20200624/release/'
 
+npass = 1
 deconvolve_pixwin = True
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
 niter = 0
@@ -37,14 +39,53 @@ tf_dr6 = data_dir + "transfer_fcns/tf.dat"
 
 src_free_maps_dr6 = False
 
-maps_dr6_pa4_f150 = [data_dir + 'maps/dr6_00/cmb_night_pa4_f150_plain_3pass_8way_set%d_map.fits' % i for i in range(8)]
+maps_dr6_pa4_f150 = [map_dir + 'cmb_night_pa4_f150_plain_%dpass_8way_set%d_map.fits' % (npass, i) for i in range(8)]
+maps_dr6_pa4_f220 = [map_dir + 'cmb_night_pa4_f220_plain_%dpass_8way_set%d_map.fits' % (npass, i) for i in range(8)]
+maps_dr6_pa5_f090 = [map_dir + 'cmb_night_pa5_f090_plain_%dpass_8way_set%d_map.fits' % (npass, i) for i in range(8)]
+maps_dr6_pa5_f150 = [map_dir + 'cmb_night_pa5_f150_plain_%dpass_8way_set%d_map.fits' % (npass, i) for i in range(8)]
+maps_dr6_pa6_f090 = [map_dir + 'cmb_night_pa6_f090_plain_%dpass_8way_set%d_map.fits' % (npass, i) for i in range(8)]
+maps_dr6_pa6_f150 = [map_dir + 'cmb_night_pa6_f150_plain_%dpass_8way_set%d_map.fits' % (npass, i) for i in range(8)]
+
 cal_dr6_pa4_f150 = 1.0
+cal_dr6_pa4_f220 = 1.0
+cal_dr6_pa5_f090 = 1.0
+cal_dr6_pa5_f150 = 1.0
+cal_dr6_pa6_f090 = 1.0
+cal_dr6_pa6_f150 = 1.0
+
 nu_eff_dr6_pa4_f150 = 150
+nu_eff_dr6_pa4_f220 = 220
+nu_eff_dr6_pa5_f090 = 90
+nu_eff_dr6_pa5_f150 = 150
+nu_eff_dr6_pa6_f090 = 90
+nu_eff_dr6_pa6_f150 = 150
 
 beam_dr6_pa4_f150 = data_dir + 'beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt'
+beam_dr6_pa4_f220 = data_dir + 'beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt'
+beam_dr6_pa5_f090 = data_dir + 'beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt'
+beam_dr6_pa5_f150 = data_dir + 'beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt'
+beam_dr6_pa6_f090 = data_dir + 'beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt'
+beam_dr6_pa6_f150 = data_dir + 'beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt'
 
 window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
 window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
+
+window_T_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220.fits"
+window_pol_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220.fits"
+
+window_T_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090.fits"
+window_pol_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090.fits"
+
+window_T_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150.fits"
+window_pol_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150.fits"
+
+window_T_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090.fits"
+window_pol_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090.fits"
+
+window_T_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
+window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
+
+
 
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}

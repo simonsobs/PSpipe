@@ -1,5 +1,5 @@
 # This script create the window functions used in the PS computation
-# They consist of a point source mask, a galactic mask and a mask based on the amount of cross linking in the data
+# They consist of a point source mask, a galactic mask and a mask based on the amount of cross linking in the data, we also produce a window that include the pixel weighting.
 # The different masks are apodized.
 # We also produce a binary mask that will later be used for the kspace filtering operation, in order to remove the edges and avoid nasty pixels before
 # this not so well defined Fourier operation.

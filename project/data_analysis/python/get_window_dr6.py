@@ -129,6 +129,10 @@ for task in subtasks:
 
     survey_mask.write_map("%s/window_%s_%s.fits" % (window_dir, sv, ar))
     
+    # We also create an optional window which also include pixel weighting
+    # Note that with use the threshold n_ivar * med so that pixels with very high
+    # hit count do not dominate
+    
     survey_mask_weighted = survey_mask.copy()
     id = np.where(ivar_all.data[:] * survey_mask.data[:] != 0)
     med = np.median(ivar_all.data[id])

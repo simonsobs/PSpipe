@@ -44,7 +44,7 @@ skip_from_edges_degree = d["skip_from_edges_degree"]
 cross_link_threshold = d["cross_link_threshold"]
 # pixel weight with inverse variance above n_ivar * median are set to ivar
 # this ensure that the window is not totally dominated by few pixels with too much weight
-n_ivar = d["n_ivar"]
+n_med_ivar = d["n_med_ivar"]
 
 
 window_dir = "windows"
@@ -136,7 +136,7 @@ for task in subtasks:
     survey_mask_weighted = survey_mask.copy()
     id = np.where(ivar_all.data[:] * survey_mask.data[:] != 0)
     med = np.median(ivar_all.data[id])
-    ivar_all.data[ivar_all.data[:] > n_ivar * med] = n_ivar * med
+    ivar_all.data[ivar_all.data[:] > n_med_ivar * med] = n_med_ivar * med
     survey_mask_weighted.data[:] *= ivar_all.data[:]
     survey_mask_weighted.write_map("%s/window_w_%s_%s.fits" % (window_dir, sv, ar))
 

@@ -98,7 +98,7 @@ for task in subtasks:
     ivar_all.data[:] /= np.max(ivar_all.data[:])
 
     for k, map in enumerate(maps):
-        index = map.find("map_srcfree.fits")
+        index = map.find("map.fits")
         xlink_map = map[:index] + "xlink.fits"
         print(xlink_map)
         x_mask = create_crosslink_mask(xlink_map, cross_link_threshold)

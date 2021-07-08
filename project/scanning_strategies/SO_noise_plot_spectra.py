@@ -92,7 +92,9 @@ for scan in scan_list:
         plt.semilogy()
         plt.plot(lth, ps_theory[spec])
         for run in runs:
-            plt.plot(lb, (Db_auto_dict[scan, run, spec] - Db_cross_dict[scan, run, spec])/2, label = r" %s %s" % (scan, run))
+            noise_ps = (Db_auto_dict[scan, run, spec] - Db_cross_dict[scan, run, spec])/2
+            plt.plot(lb, noise_ps, label = r" %s %s" % (scan, run))
+            np.savetxt("%s/noise_%s_%s_%s.dat" % (spectra_dir, scan, run, spec), noise_ps)
     plt.legend()
     plt.savefig("%s/noise_spec_%s.png" % (plot_dir, scan), bbox_inches="tight")
     plt.clf()

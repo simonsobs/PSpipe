@@ -2,7 +2,7 @@
 
 import matplotlib
 matplotlib.use("Agg")
-from pspy import so_dict, pspy_utils, so_spectra, so_cov
+from pspy import so_dict, pspy_utils, so_spectra, so_cov, so_mcm
 from itertools import combinations_with_replacement as cwr
 from itertools import product
 import data_analysis_utils
@@ -16,6 +16,9 @@ d.read_from_file(sys.argv[1])
 cov_dir = "covariances"
 spec_dir = "sim_spectra"
 like_product_dir = "sim_like_product"
+mcm_dir = "mcms"
+bestfit_dir = "best_fits"
+
 
 pspy_utils.create_directory(like_product_dir)
 
@@ -25,6 +28,9 @@ lmax = d["lmax"]
 binning_file = d["binning_file"]
 iStart = d["iStart"]
 iStop = d["iStop"]
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
+
 
 bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(bin_hi)
@@ -55,7 +61,6 @@ np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
 
 
 
-# Lets read the data vector corresponding to the covariance matrix
 all_vec = []
 for iii in range(iStart, iStop):
     data_vec = []
@@ -71,8 +76,7 @@ for iii in range(iStart, iStop):
                         if  (id_sv1 > id_sv2) : continue
                 
                         spec_name = "%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)
-                    
-                        spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+                        
                         lb, Db = so_spectra.read_ps(spec_dir + "/%s_%s_cross_%05d.dat" % (type, spec_name, iii), spectra=spectra)
                         # remove same array, same season ET
                         if (spec == "ET") & (ar1 == ar2) & (sv1 == sv2): continue
@@ -81,12 +85,16 @@ for iii in range(iStart, iStop):
     proj_data_vec = np.dot(proj_cov_mat, np.dot(P_mat, np.dot(inv_cov_mat, data_vec)))
     np.savetxt("%s/data_vec_%05d.dat" % (like_product_dir, iii), proj_data_vec)
     all_vec += [ proj_data_vec]
-    
+
+
+
+proj_data_vec_mean = np.mean(all_vec, axis=0)
+
 mc_proj_cov_mat = 0
 for iii in range(iStart, iStop):
     mc_proj_cov_mat += np.outer(all_vec[iii], all_vec[iii])
 
-mc_proj_cov_mat = mc_proj_cov_mat / (iStop-iStart) - np.outer(np.mean(all_vec, axis=0), np.mean(all_vec, axis=0))
+mc_proj_cov_mat = mc_proj_cov_mat / (iStop-iStart) - np.outer(proj_data_vec_mean, proj_data_vec_mean)
 so_cov.plot_cov_matrix(np.log(mc_proj_cov_mat), file_name = "%s/combined_mc_cov" % like_product_dir)
 np.save("%s/combined_mc_cov.npy" % like_product_dir, proj_cov_mat)
 
@@ -111,29 +119,46 @@ plt.clf()
 plt.close()
 
 
-#my_spectra = ["TT", "TE", "EE"]
-#count = 0
-#for s1, spec in enumerate(my_spectra):
-    
-#    plt.figure(figsize=(12, 6))
 
-#    if spec == "TE":
-#        cross_freq_list = ["%sx%s" % (f0,f1) for f0, f1 in product(freq_list, freq_list)]
-#    else:
-#        cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
+# Now compare combined spectra with theory
+from matplotlib.pyplot import cm
 
-#    for cross_freq in cross_freq_list:
+clfile = "%s/lcdm.dat" % bestfit_dir
+lth, Dlth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type=type, lmax=lmax, start_at_zero=False)
+
+my_spectra = ["TT", "TE", "EE"]
+count = 0
+for s1, spec in enumerate(my_spectra):
+    plt.figure(figsize=(12, 6))
+
+    if spec == "TE":
+        cross_freq_list = ["%sx%s" % (f0,f1) for f0, f1 in product(freq_list, freq_list)]
+    else:
+        cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
+
+    color=iter(cm.tab20(np.linspace(0, 1, 10)))
+
+    for cross_freq in cross_freq_list:
+        ps = Dlth[spec].copy()
+
+        if spec == "TT":
+            plt.semilogy()
+            f0, f1 = cross_freq.split("x")
+            _, flth = np.loadtxt("%s/fg_%sx%s_TT.dat" %(bestfit_dir, f0, f1), unpack=True)
+            ps += flth[:lmax]
+
         
-#        Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
-#        sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
+        Db = proj_data_vec_mean[count * n_bins: (count + 1) * n_bins]
+        sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
 
-#        np.savetxt("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
-        
- #       plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".")
+        c=next(color)
 
- #       count += 1
+        plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".", color=c)
+        plt.errorbar(lth, ps, label = "theory %s %s" % (spec, cross_freq), color=c)
+
+        count += 1
     
- #   plt.legend()
- #   plt.savefig("%s/spectra_%s.png" % (like_product_dir, spec))
- #   plt.clf()
- #   plt.close()
+    plt.legend()
+    plt.savefig("%s/mc_spectra_%s.png" % (like_product_dir, spec))
+    plt.clf()
+    plt.close()

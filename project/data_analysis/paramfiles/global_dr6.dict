@@ -62,12 +62,12 @@ nu_eff_dr6_pa5_f150 = 150
 nu_eff_dr6_pa6_f090 = 90
 nu_eff_dr6_pa6_f150 = 150
 
-beam_dr6_pa4_f150 = data_dir + 'beams/s17_pa4_f150_nohwp_night_beam_tform_jitter.txt'
-beam_dr6_pa4_f220 = data_dir + 'beams/s17_pa4_f220_nohwp_night_beam_tform_jitter.txt'
-beam_dr6_pa5_f090 = data_dir + 'beams/s17_pa5_f090_nohwp_night_beam_tform_jitter.txt'
-beam_dr6_pa5_f150 = data_dir + 'beams/s17_pa5_f150_nohwp_night_beam_tform_jitter.txt'
-beam_dr6_pa6_f090 = data_dir + 'beams/s17_pa6_f090_nohwp_night_beam_tform_jitter.txt'
-beam_dr6_pa6_f150 = data_dir + 'beams/s17_pa6_f150_nohwp_night_beam_tform_jitter.txt'
+beam_dr6_pa4_f150 = data_dir + 'beams/beam_pa4_f150_straightaverage.dat'
+beam_dr6_pa4_f220 = data_dir + 'beams/beam_pa4_f220_straightaverage.dat'
+beam_dr6_pa5_f090 = data_dir + 'beams/beam_pa5_f090_straightaverage.dat'
+beam_dr6_pa5_f150 = data_dir + 'beams/beam_pa5_f150_straightaverage.dat'
+beam_dr6_pa6_f090 = data_dir + 'beams/beam_pa6_f090_straightaverage.dat'
+beam_dr6_pa6_f150 = data_dir + 'beams/beam_pa6_f150_straightaverage.dat'
 
 window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
 window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"

@@ -102,6 +102,8 @@ for s1, spec in enumerate(my_spectra):
         plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".")
 
         count += 1
+        
+    plt.ylim(yrange[spec][0], yrange[spec][1])
     plt.legend()
     plt.savefig("%s/spectra_%s.png" % (like_product_dir, spec))
     plt.clf()
@@ -127,6 +129,7 @@ for s1, spec in enumerate(my_spectra):
 
         count += 1
         
+    plt.ylim(yrange[spec][0], yrange[spec][1])
     plt.legend()
     plt.savefig("%s/spectra_%s_no220.png" % (like_product_dir, spec))
     plt.clf()

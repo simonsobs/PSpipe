@@ -87,6 +87,9 @@ for s1, spec in enumerate(my_spectra):
     else:
         cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
 
+    if spec == "TT":
+        plt.semilogy()
+        
     for cross_freq in cross_freq_list:
         
         Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]

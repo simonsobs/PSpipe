@@ -77,19 +77,21 @@ np.savetxt("%s/data_vec.dat" % like_product_dir, proj_data_vec)
 
 
 my_spectra = ["TT", "TE", "EE"]
+yrange = {}
+yrange["TT"] = [30, 5000]
+yrange["TE"] = [-150, 150]
+yrange["EE"] = [-25, 50]
+
 count = 0
 for s1, spec in enumerate(my_spectra):
     
     plt.figure(figsize=(12, 6))
-
     if spec == "TE":
         cross_freq_list = ["%sx%s" % (f0,f1) for f0, f1 in product(freq_list, freq_list)]
     else:
         cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
-
     if spec == "TT":
         plt.semilogy()
-        
     for cross_freq in cross_freq_list:
         
         Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
@@ -100,8 +102,35 @@ for s1, spec in enumerate(my_spectra):
         plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".")
 
         count += 1
-    
     plt.legend()
     plt.savefig("%s/spectra_%s.png" % (like_product_dir, spec))
     plt.clf()
     plt.close()
+
+
+    plt.figure(figsize=(12, 6))
+    if spec == "TE":
+        cross_freq_list = ["%sx%s" % (f0,f1) for f0, f1 in product(freq_list, freq_list)]
+    else:
+        cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
+    if spec == "TT":
+        plt.semilogy()
+    for cross_freq in cross_freq_list:
+        if "220" in cross_freq: continue
+        
+        Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
+        sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
+
+        np.savetxt("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
+        
+        plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".")
+
+        count += 1
+        
+    plt.legend()
+    plt.savefig("%s/spectra_%s_no220.png" % (like_product_dir, spec))
+    plt.clf()
+    plt.close()
+
+
+

@@ -109,6 +109,8 @@ for s1, spec in enumerate(my_spectra):
     plt.clf()
     plt.close()
 
+count = 0
+for s1, spec in enumerate(my_spectra):
 
     plt.figure(figsize=(12, 6))
     if spec == "TE":

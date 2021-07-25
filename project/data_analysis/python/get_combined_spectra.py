@@ -120,16 +120,18 @@ for s1, spec in enumerate(my_spectra):
     if spec == "TT":
         plt.semilogy()
     for cross_freq in cross_freq_list:
-        if "220" in cross_freq: continue
         
+
         Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
         sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
+        
+        count += 1
+        if "220" in cross_freq: continue
 
         np.savetxt("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
         
         plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".")
 
-        count += 1
         
     plt.ylim(yrange[spec][0], yrange[spec][1])
     plt.legend()

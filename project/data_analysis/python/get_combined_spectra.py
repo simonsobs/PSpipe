@@ -84,11 +84,12 @@ yrange["EE"] = [-25, 50]
 
 ell_max_array = [3000, 10000]
 
-count = 0
-for s1, spec in enumerate(my_spectra):
-    for ell_max in ell_max_array:
-    
-        id = np.where(lb < ell_max)
+for ell_max in ell_max_array:
+    id = np.where(lb < ell_max)
+
+    count = 0
+    for s1, spec in enumerate(my_spectra):
+
 
         plt.figure(figsize=(12, 6))
         if spec == "TE":
@@ -122,11 +123,11 @@ yrange["TE"] = [-130, 130]
 yrange["EE"] = [-5, 40]
 
 
-count = 0
-for s1, spec in enumerate(my_spectra):
-    for ell_max in ell_max_array:
-    
-        id = np.where(lb < ell_max)
+for ell_max in ell_max_array:
+    id = np.where(lb < ell_max)
+
+    count = 0
+    for s1, spec in enumerate(my_spectra):
 
         plt.figure(figsize=(12, 6))
         if spec == "TE":

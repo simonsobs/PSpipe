@@ -109,6 +109,13 @@ for s1, spec in enumerate(my_spectra):
     plt.clf()
     plt.close()
 
+
+yrange = {}
+yrange["TT"] = [30, 5000]
+yrange["TE"] = [-130, 130]
+yrange["EE"] = [-5, 40]
+
+
 count = 0
 for s1, spec in enumerate(my_spectra):
 

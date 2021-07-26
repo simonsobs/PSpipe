@@ -74,7 +74,7 @@ np.savetxt("%s/data_vec.dat" % like_product_dir, proj_data_vec)
 
 print ("is matrix positive definite:", data_analysis_utils.is_pos_def(proj_cov_mat))
 print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat))
-so_cov.plot_cov_matrix(np.log(proj_cov_mat))
+#so_cov.plot_cov_matrix(np.log(proj_cov_mat))
 np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
 
 
@@ -82,11 +82,11 @@ np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
 proj_cov_mat_forcesim = np.tril(proj_cov_mat) + np.triu(proj_cov_mat.T, 1)
 print ("is matrix positive definite:", data_analysis_utils.is_pos_def(proj_cov_mat_forcesim))
 print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat_forcesim))
-so_cov.plot_cov_matrix(np.log(proj_cov_mat_forcesim))
+#so_cov.plot_cov_matrix(np.log(proj_cov_mat_forcesim))
 np.save("%s/combined_analytic_cov_forcesim.npy" % like_product_dir, proj_cov_mat_forcesim)
 
 print(np.max(proj_cov_mat-proj_cov_mat_forcesim))
-so_cov.plot_cov_matrix(np.log(np.abs(proj_cov_mat-proj_cov_mat_forcesim)))
+#so_cov.plot_cov_matrix(np.log(np.abs(proj_cov_mat-proj_cov_mat_forcesim)))
 
 
 

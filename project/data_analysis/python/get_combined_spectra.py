@@ -68,102 +68,44 @@ inv_cov_mat = np.linalg.inv(cov_mat)
 proj_cov_mat = np.linalg.inv(np.dot(np.dot(P_mat, inv_cov_mat), P_mat.T))
 proj_data_vec = np.dot(proj_cov_mat, np.dot(P_mat, np.dot(inv_cov_mat, data_vec)))
 
-print ("is matrix positive definite:", data_analysis_utils.is_pos_def(proj_cov_mat))
-print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat))
-#so_cov.plot_cov_matrix(np.log(proj_cov_mat))
 
-np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
 np.savetxt("%s/data_vec.dat" % like_product_dir, proj_data_vec)
 
 
+print ("is matrix positive definite:", data_analysis_utils.is_pos_def(proj_cov_mat))
+print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat))
+so_cov.plot_cov_matrix(np.log(proj_cov_mat))
+np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
+
+
+
+proj_cov_mat_forcesim = np.tril(proj_cov_mat) + np.triu(proj_cov_mat.T, 1)
+print ("is matrix positive definite:", data_analysis_utils.is_pos_def(proj_cov_mat_forcesim))
+print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat_forcesim))
+so_cov.plot_cov_matrix(np.log(proj_cov_mat_forcesim))
+np.save("%s/combined_analytic_cov_forcesim.npy" % like_product_dir, proj_cov_mat_forcesim)
+
+print(np.max(proj_cov_mat-proj_cov_mat_forcesim))
+so_cov.plot_cov_matrix(np.log(np.abs(proj_cov_mat-proj_cov_mat_forcesim)))
+
+
+
 my_spectra = ["TT", "TE", "EE"]
-yrange = {}
-yrange["TT"] = [30, 5000]
-yrange["TE"] = [-150, 150]
-yrange["EE"] = [-25, 50]
-
-ell_max_array = [3000, 10000]
 
 
-compare_with_steve = False
-if compare_with_steve:
-    l_s, Cl_s["90x90","TT"], sigma_s["90x90","TT"], Cl_s["90x150","TT"], sigma_s["90x150","TT"], Cl_s["150x150","TT"], sigma_s["150x150","TT"] = np.loadtxt("multifreq_spectra/act_dr4.01_multifreq_deep_C_ell_TT.txt", unpack=True)
-    l_s, Cl_s["90x90","EE"], sigma_s["90x90","EE"], Cl_s["90x150","EE"], sigma_s["90x150","EE"], Cl_s["150x150","EE"], sigma_s["150x150","EE"] = np.loadtxt("multifreq_spectra/act_dr4.01_multifreq_deep_C_ell_EE.txt", unpack=True)
-    l_s, Cl_s["90x90","TE"], sigma_s["90x90","TE"], Cl_s["90x150","TE"], sigma_s["90x150","TE"], Cl_s["150x90","TE"], sigma_s["150x90","TE"],  Cl_s["150x150","TE"], sigma_s["150x150","TE"] = np.loadtxt("multifreq_spectra/act_dr4.01_multifreq_deep_C_ell_EE.txt", unpack=True)
-    f_s = l_s * (l_s + 1) / (2*np.pi))
+count = 0
+for s1, spec in enumerate(my_spectra):
 
-
-for ell_max in ell_max_array:
-    id = np.where(lb < ell_max)
-
-    count = 0
-    for s1, spec in enumerate(my_spectra):
-
-
-        plt.figure(figsize=(12, 6))
-        if spec == "TE":
-            cross_freq_list = ["%sx%s" % (f0,f1) for f0, f1 in product(freq_list, freq_list)]
-        else:
-            cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
-        if spec == "TT":
-            plt.semilogy()
+    if spec == "TE":
+        cross_freq_list = ["%sx%s" % (f0,f1) for f0, f1 in product(freq_list, freq_list)]
+    else:
+        cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
             
-        for cross_freq in cross_freq_list:
+    for cross_freq in cross_freq_list:
     
-            Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
-            sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
+        Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
+        sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
 
-            np.savetxt("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
-            if compare_with_steve:
-                plt.errorbar(l_s, Cl_s[cross_freq] * f_s, sigma_s[cross_freq] * f_s, color="gray", alpha = 0.3)
-            plt.errorbar(lb[id], Db[id], sigmab[id], label = "%s %s" % (spec, cross_freq), fmt=".")
-
-            count += 1
+        np.savetxt("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
+        count += 1
         
-        plt.ylim(yrange[spec][0], yrange[spec][1])
-        plt.legend()
-        plt.savefig("%s/spectra_%s_%d.png" % (like_product_dir, spec, ell_max))
-        plt.clf()
-        plt.close()
-
-
-yrange = {}
-yrange["TT"] = [30, 5000]
-yrange["TE"] = [-130, 130]
-yrange["EE"] = [-5, 40]
-
-
-for ell_max in ell_max_array:
-    id = np.where(lb < ell_max)
-
-    count = 0
-    for s1, spec in enumerate(my_spectra):
-
-        plt.figure(figsize=(12, 6))
-        if spec == "TE":
-            cross_freq_list = ["%sx%s" % (f0,f1) for f0, f1 in product(freq_list, freq_list)]
-        else:
-            cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
-        if spec == "TT":
-            plt.semilogy()
-        for cross_freq in cross_freq_list:
-        
-
-            Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
-            sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
-        
-            count += 1
-            if "220" in cross_freq: continue
-
-        
-            plt.errorbar(lb[id], Db[id], sigmab[id], label = "%s %s" % (spec, cross_freq), fmt=".")
-
-        
-        plt.ylim(yrange[spec][0], yrange[spec][1])
-        plt.legend()
-        plt.savefig("%s/spectra_%s_%d_no220.png" % (like_product_dir, spec, ell_max))
-        plt.clf()
-        plt.close()
-
-
-

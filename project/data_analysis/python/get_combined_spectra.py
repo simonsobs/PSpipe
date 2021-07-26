@@ -84,6 +84,15 @@ yrange["EE"] = [-25, 50]
 
 ell_max_array = [3000, 10000]
 
+
+compare_with_steve = False
+if compare_with_steve:
+    l_s, Cl_s["90x90","TT"], sigma_s["90x90","TT"], Cl_s["90x150","TT"], sigma_s["90x150","TT"], Cl_s["150x150","TT"], sigma_s["150x150","TT"] = np.loadtxt("multifreq_spectra/act_dr4.01_multifreq_deep_C_ell_TT.txt", unpack=True)
+    l_s, Cl_s["90x90","EE"], sigma_s["90x90","EE"], Cl_s["90x150","EE"], sigma_s["90x150","EE"], Cl_s["150x150","EE"], sigma_s["150x150","EE"] = np.loadtxt("multifreq_spectra/act_dr4.01_multifreq_deep_C_ell_EE.txt", unpack=True)
+    l_s, Cl_s["90x90","TE"], sigma_s["90x90","TE"], Cl_s["90x150","TE"], sigma_s["90x150","TE"], Cl_s["150x90","TE"], sigma_s["150x90","TE"],  Cl_s["150x150","TE"], sigma_s["150x150","TE"] = np.loadtxt("multifreq_spectra/act_dr4.01_multifreq_deep_C_ell_EE.txt", unpack=True)
+    f_s = l_s * (l_s + 1) / (2*np.pi))
+
+
 for ell_max in ell_max_array:
     id = np.where(lb < ell_max)
 
@@ -105,7 +114,8 @@ for ell_max in ell_max_array:
             sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
 
             np.savetxt("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
-        
+            if compare_with_steve:
+                plt.errorbar(l_s, Cl_s[cross_freq] * f_s, sigma_s[cross_freq] * f_s, color="gray", alpha = 0.3)
             plt.errorbar(lb[id], Db[id], sigmab[id], label = "%s %s" % (spec, cross_freq), fmt=".")
 
             count += 1

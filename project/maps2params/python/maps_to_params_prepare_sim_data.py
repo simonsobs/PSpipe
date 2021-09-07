@@ -20,6 +20,9 @@ import sys
 import so_noise_calculator_public_20180822 as noise_calc
 from copy import deepcopy
 
+from cobaya.install import install
+from cobaya.model import get_model
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
@@ -143,7 +146,7 @@ for exp in ["LAT", "Planck"]:
     for f in my_freqs:
         l, bl[exp + f] = pspy_utils.beam_from_fwhm(beam_fwhm[exp + '_' + f], ell_max)
         np.savetxt("sim_data/beams/beam_%s_%s.dat" % (exp,f), np.transpose([l, bl[exp + f] ]))
-        
+
         plt.plot(l, bl[exp + f] , linestyle=linestyle[exp], label="%s_%s" % (exp, f))
         plt.xlabel(r"$\ell$", fontsize=22)
         plt.ylabel(r"$b_{\ell}$", fontsize=22)
@@ -185,9 +188,9 @@ for exp in ["LAT", "Planck"]:
     for cross in cwr(my_freqs, 2):
         f1, f2 = cross
         name = "%s_%sx%s_%s"%(exp,f1,exp,f2)
-        
+
         fac = ell * (ell + 1) / (2 * np.pi)
-        
+
         if (len(np.nonzero(n_ell_t[name])[0])) != 0:  # plot only the spectra that are non zero
 
             ax[0].set_yscale("symlog")
@@ -197,10 +200,14 @@ for exp in ["LAT", "Planck"]:
                      linestyle=linestyle[exp],
                      label="%s" % (name))
 <<<<<<< HEAD
+<<<<<<< HEAD
                  
+=======
+
+>>>>>>> 34eb26e... compatibility with MFLike
             plt.xlabel(r"$\ell$", fontsize=22)
             plt.ylabel(r"$N^{T}_{\ell}$", fontsize=22)
-        
+
             plt.subplot(2, 1, 2)
             plt.semilogy()
             plt.ylim(5 * 10**-2, 10**3)
@@ -208,7 +215,7 @@ for exp in ["LAT", "Planck"]:
             plt.plot(ell, n_ell_pol[name] * fac / (bl[exp + f1] * bl[exp + f2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
-                 
+
             plt.xlabel(r"$\ell$", fontsize=22)
             plt.ylabel(r"$N^{P}_{\ell}$", fontsize=22)
 =======
@@ -237,9 +244,12 @@ import mflike as mfl
 experiments = d["experiments"]
 
 fg_norm = d["fg_norm"]
-components = {"tt": d["fg_components"], "ee": [], "te": []}
+components = {"tt": d["fg_components"]["TT"],
+              "ee": d["fg_components"]["EE"],
+              "te": d["fg_components"]["TE"]}
 fg_model =  {"normalisation":  fg_norm, "components": components}
 fg_params =  d["fg_params"]
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
@@ -306,12 +316,49 @@ ThFo = tmf.TheoryForge_MFLike(mflike)
 ThFo.bandint_freqs = ThFo._bandpass_construction(**nuisance_params)
 
 fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)
+=======
+nuisance_params = d["nuisance_params"]
+
+band_integration = d["band_integration"]
+systematics_template = d["systematics_template"]
+packages_path = d["packages_path"]
+
+all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
+nfreqs = len(all_freqs)
+
+mflike_config = {
+    "mflike.MFLike": {
+        "input_file": "data_sacc_00000.fits",
+        "cov_Bbl_file": "data_sacc_w_covar_and_Bbl.fits",
+        "band_integration": band_integration,
+        "systematics_template": systematics_template,
+        }}
+cosmo_params["As"] = 1e-10 * np.exp(cosmo_params.pop("logA"))
+info = {
+    "params": {**cosmo_params, **fg_params, **nuisance_params},
+    "likelihood": mflike_config,
+    "theory": {"camb": {"extra_args": {"lens_potential_accuracy": 1}}},
+    "packages_path": packages_path,
+}
+
+install({"likelihood": mflike_config},
+        path = packages_path, skip_global = True)
+model = get_model(info)
+mflike = model.likelihood["mflike.MFLike"]
+bandint_freqs = mflike.ThFo._bandpass_construction(**nuisance_params)
+fg_dict = mflike.ThFo._get_foreground_model(ell = ell,bandint_freqs = bandint_freqs,
+                                            **fg_params)
+>>>>>>> 34eb26e... compatibility with MFLike
 
 # Plot separated components for tSZ and CIB
 components["tt"].remove("tSZ_and_CIB")
 for comp in ["tSZ", "cibc", "tSZxCIB"]:
     components["tt"].append(comp)
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 34eb26e... compatibility with MFLike
 for mode in ["tt", "te", "ee"]:
     fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))
     from itertools import product
@@ -344,8 +391,13 @@ for mode in ["tt", "te", "ee"]:
     fig.legend(fg_model["components"][mode] + ["all"], title=mode.upper(), bbox_to_anchor=(1,1))
     plt.tight_layout()
     plt.savefig("%s/foregrounds_%s.pdf"%(plot_dir,mode))
+<<<<<<< HEAD
     plt.close()
 >>>>>>> 1b99fbb... update sim script
+=======
+    plt.clf()
+    plt.close()
+>>>>>>> 34eb26e... compatibility with MFLike
 
 
 
@@ -368,9 +420,3 @@ for i in range(n_bins):
     g.write("%f %f %f\n" % (bin_min, bin_max, bin_mean))
     bin_min += bin_size[i] + 1
 g.close()
-
-
-
-
-
-

@@ -14,10 +14,13 @@ spin = "0-2"
 
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 clfile = 'sim_data/cosmo_and_fg/cosmo_spectra.dat'
+
+#fg parameters
 include_fg = True
 fg_dir = "sim_data/cosmo_and_fg/"
-fg_components = ["cibc", "cibp", "kSZ", "radio", "tSZ"]
+fg_components = {"TT": ["kSZ", "tSZ_and_CIB", "cibp", "dust", "radio"], "TE": ["radio", "dust"], "EE": ["radio", "dust"]}
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+<<<<<<< HEAD
 <<<<<<< HEAD
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "n_CIBC": 1.20,"a_s": 3.10, "T_d": 9.60}
 
@@ -33,6 +36,14 @@ systematics_template = {"has_file": False, "rootname": "test_template"}
 nuisance_params = {"bandint_shift_93": 0, "bandint_shift_145": 0, "bandint_shift_225": 0}
 packages_path = "temp/"
 >>>>>>> 0eee8dc... remove unused nuisance
+=======
+#fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "n_CIBC": 1.20,"a_s": 3.10, "T_d": 9.60}
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 2.79, "a_gte": 0.36, "a_gee": 0.13, "a_psee": 0.05, "a_pste": 0, "xi": 0.1, "T_d": 9.60}
+band_integration = {"external_bandpass": False, "nsteps": 1, "bandwidth": 0}
+systematics_template = {"has_file": False, "rootname": "test_template"}
+nuisance_params = {"bandint_shift_93": 0, "bandint_shift_145": 0, "bandint_shift_225": 0, "calT_93": 1, "calE_93": 1, "calT_145": 1, "calE_145": 1, "calT_225": 1, "calE_225": 1, "calG_all": 1, "alpha_93": 0, "alpha_145": 0, "alpha_225": 0}
+packages_path = "temp/"
+>>>>>>> 34eb26e... compatibility with MFLike
 apo_type_survey_LAT = "Rectangle"
 apo_radius_survey_LAT = 1
 

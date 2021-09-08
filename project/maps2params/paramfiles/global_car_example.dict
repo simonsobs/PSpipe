@@ -14,6 +14,15 @@ spin = "0-2"
 
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 clfile = 'sim_data/cosmo_and_fg/cosmo_spectra.dat'
+<<<<<<< HEAD
+=======
+
+#map parameters
+use_official_so_sim = False
+map_dir = "/global/project/projectdirs/sobs/v4_sims/mbs/201911_lensed_cmb/4096/cmb"
+
+#fg parameters
+>>>>>>> 0e375d4... add mbs
 include_fg = True
 fg_dir = "sim_data/cosmo_and_fg/"
 fg_components = ["cibc", "cibp", "kSZ", "radio", "tSZ"]

@@ -23,6 +23,16 @@ include_fg = d["include_fg"]
 fg_dir = d["fg_dir"]
 fg_components = d["fg_components"]
 
+map_dir = d["map_dir"]
+use_so_sim = d["use_official_so_sim"]
+
+freq2chan = {27: "LF1",
+             39: "LF2",
+             93: "MFF1",
+             145: "MFF2",
+             225: "UHF1",
+             280: "UHF2"}
+
 window_dir = "windows"
 mcm_dir = "mcms"
 noise_data_dir = "sim_data/noise_ps"
@@ -48,9 +58,12 @@ subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 for iii in subtasks:
     #First we will generate our simulations and take their harmonics transforms
     t0 = time.time()
-    
-    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax_simu)
-    
+
+    if not use_so_sim:
+        alms = curvedsky.rand_alm(ps_cmb, lmax=lmax_simu)
+    else:
+        alms = np.zeros((3, (lmax_simu + 1) * (lmax_simu + 2) // 2), dtype = "complex128")
+
     if include_fg == True:
         fglms = curvedsky.rand_alm(ps_fg, lmax=lmax_simu)
 
@@ -60,7 +73,7 @@ for iii in subtasks:
     for exp in experiments:
         freqs = d["freqs_%s" % exp]
         nsplits = d["nsplits_%s" % exp]
-        
+
         if d["pixel_%s" % exp] == "CAR":
             template = so_map.car_template(ncomp,
                                            d["ra0_%s" % exp],
@@ -70,7 +83,7 @@ for iii in subtasks:
                                            d["res_%s" % exp])
         else:
             template = so_map.healpix_template(ncomp, nside=d["nside_%s" % exp])
-        
+
         l, nl_array_t, nl_array_pol = maps_to_params_utils.get_noise_matrix_spin0and2(noise_data_dir,
                                                                                       exp,
                                                                                       freqs,
@@ -88,27 +101,35 @@ for iii in subtasks:
             window = so_map.read_map("%s/window_%s_%s.fits" % (window_dir, exp, freq))
             window_tuple = (window, window)
             l, bl = np.loadtxt("sim_data/beams/beam_%s_%s.dat" %(exp, freq), unpack=True)
-            
+
             alms_beamed = alms.copy()
-            
+
             if include_fg == True:
                 # include fg for the temperature alms
                 # pol not implemented yet
                 alms_beamed[0] += fglms[fcount]
-            
+
             alms_beamed = maps_to_params_utils.multiply_alms(alms_beamed, bl, ncomp)
-            
+
             fcount += 1
+
+            if use_so_sim:
+                map = so_map.read_map(
+                    "%s/%04d/simonsobs_cmb_uKCMB_la%s_nside4096_%04d.fits" % (
+                    map_dir, iii, freq2chan[freq], iii))
 
             for k in range(nsplits):
                 noisy_alms = alms_beamed.copy()
-            
+
                 noisy_alms[0] +=  nlms["T",k][fid]
                 noisy_alms[1] +=  nlms["E",k][fid]
                 noisy_alms[2] +=  nlms["B",k][fid]
 
                 split = sph_tools.alm2map(noisy_alms, template)
-                
+
+                if use_so_sim:
+                    split.data += map.data
+
                 # Now that we have generated a split of data of experiment exp
                 # and frequency freq, we take its harmonic transform
                 split = maps_to_params_utils.remove_mean(split, window_tuple, ncomp)
@@ -120,9 +141,9 @@ for iii in subtasks:
     for id_exp1, exp1 in enumerate(experiments):
         freqs1 = d["freqs_%s" % exp1]
         nsplits1 = d["nsplits_%s" % exp1]
-        
+
         for id_f1, f1 in enumerate(freqs1):
-            
+
             for id_exp2, exp2 in enumerate(experiments):
                 freqs2 = d["freqs_%s" % exp2]
                 nsplits2 = d["nsplits_%s" % exp2]
@@ -135,7 +156,7 @@ for iii in subtasks:
                     for spec in spectra:
                         ps_dict[spec, "auto"] = []
                         ps_dict[spec, "cross"] = []
-                    
+
                     for s1 in range(nsplits1):
                         for s2 in range(nsplits2):
                             mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%sx%s_%s" % (mcm_dir, exp1, f1, exp2, f2),
@@ -144,9 +165,9 @@ for iii in subtasks:
                             l, ps_master = so_spectra.get_spectra(master_alms[exp1, f1, s1],
                                                                   master_alms[exp2, f2, s2],
                                                                   spectra=spectra)
-                                                                  
+
                             spec_name="%s_%s_%s_%dx%s_%s_%d_%05d" % (type, exp1, f1, s1, exp2, f2, s2, iii)
-                            
+
                             lb, ps = so_spectra.bin_spectra(l,
                                                             ps_master,
                                                             binning_file,
@@ -154,7 +175,7 @@ for iii in subtasks:
                                                             type=type,
                                                             mbb_inv=mbb_inv,
                                                             spectra=spectra)
-                                                            
+
                             if write_all_spectra:
                                 so_spectra.write_ps(specDir + "/%s.dat" % spec_name, lb, ps, type, spectra=spectra)
 
@@ -175,7 +196,7 @@ for iii in subtasks:
                     for spec in spectra:
                         ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
                         spec_name_cross = "%s_%s_%sx%s_%s_cross_%05d" % (type, exp1, f1, exp2, f2, iii)
-                        
+
                         if exp1 == exp2:
                             ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
                             spec_name_auto = "%s_%s_%sx%s_%s_auto_%05d" % (type, exp1, f1, exp2, f2, iii)
@@ -183,7 +204,7 @@ for iii in subtasks:
                             spec_name_noise = "%s_%s_%sx%s_%s_noise_%05d" % (type, exp1, f1, exp2, f2, iii)
 
                     so_spectra.write_ps(specDir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
-                    
+
                     if exp1 == exp2:
                         so_spectra.write_ps(specDir+"/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)
                         so_spectra.write_ps(specDir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)

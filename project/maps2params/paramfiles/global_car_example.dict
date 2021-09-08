@@ -18,8 +18,14 @@ include_fg = True
 fg_dir = "sim_data/cosmo_and_fg/"
 fg_components = ["cibc", "cibp", "kSZ", "radio", "tSZ"]
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+<<<<<<< HEAD
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "n_CIBC": 1.20,"a_s": 3.10, "T_d": 9.60}
 
+=======
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 2.79, "a_gte": 0.36, "a_gee": 0.13, "a_psee": 0.05, "a_pste": 0, "xi": 0.1, "T_d": 9.60}
+band_integration = {"external_bandpass": False, "nsteps": 1, "bandwidth": 0}
+nuisance_params = {"bandint_shift_93": 0, "bandint_shift_145": 0, "bandint_shift_225": 0}
+>>>>>>> 1b99fbb... update sim script
 
 apo_type_survey_LAT = "Rectangle"
 apo_radius_survey_LAT = 1

@@ -179,9 +179,7 @@ cosmo_fg_dir=("sim_data/cosmo_and_fg")
 pspy_utils.create_directory(cosmo_fg_dir)
 np.savetxt("%s/cosmo_spectra.dat"% cosmo_fg_dir, np.transpose([ell, dls["tt"], dls["ee"], dls["bb"], dls["te"]]))
 
-print(ell)
-
-plt.figure(figsize=(12, 12))
+fig, ax = plt.subplots(2, 1, figsize = (12, 12))
 for exp in ["LAT", "Planck"]:
     my_freqs = freqs[exp]
     for cross in cwr(my_freqs, 2):
@@ -192,16 +190,13 @@ for exp in ["LAT", "Planck"]:
         
         if (len(np.nonzero(n_ell_t[name])[0])) != 0:  # plot only the spectra that are non zero
 
-            plt.subplot(2, 1, 1)
-            plt.semilogy()
-            plt.ylim(1, 10**5)
-            plt.plot(ell, dls["tt"], color='black')
-            print(ell.shape)
-            print(n_ell_t[name].shape)
-            print(bl[exp + f1].shape)
-            plt.plot(ell, n_ell_t[name] * fac / (bl[exp + f1] * bl[exp + f2]),
+            ax[0].set_yscale("symlog")
+            ax[0].set_ylim(1, 10**5)
+            ax[0].plot(ell, dls["tt"], color = "black")
+            ax[0].plot(ell, n_ell_t[name] * fac / (bl[exp + f1] * bl[exp + f2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
+<<<<<<< HEAD
                  
             plt.xlabel(r"$\ell$", fontsize=22)
             plt.ylabel(r"$N^{T}_{\ell}$", fontsize=22)
@@ -216,10 +211,22 @@ for exp in ["LAT", "Planck"]:
                  
             plt.xlabel(r"$\ell$", fontsize=22)
             plt.ylabel(r"$N^{P}_{\ell}$", fontsize=22)
+=======
+            ax[0].set_xlabel(r"$\ell$", fontsize=22)
+            ax[0].set_ylabel(r"$N^{T}_{\ell}$", fontsize=22)
+            ax[1].set_yscale("symlog")
+            ax[1].set_ylim(5e-2, 1e3)
+            ax[1].plot(ell, dls["ee"], color = "black")
+            ax[1].plot(ell, n_ell_pol[name] * fac / (bl[exp + f1] * bl[exp + f2]),
+                     linestyle=linestyle[exp],
+                     label="%s" % (name))
+            ax[1].set_xlabel(r"$\ell$", fontsize=22)
+            ax[1].set_ylabel(r"$N^{P}_{\ell}$", fontsize=22)
 
-plt.legend()
+>>>>>>> 1b99fbb... update sim script
+
+ax[0].legend()
 plt.savefig("%s/noise_ps_plot.pdf"%plot_dir)
-plt.clf()
 plt.close()
 
 
@@ -233,6 +240,7 @@ fg_norm = d["fg_norm"]
 components = {"tt": d["fg_components"], "ee": [], "te": []}
 fg_model =  {"normalisation":  fg_norm, "components": components}
 fg_params =  d["fg_params"]
+<<<<<<< HEAD
 
 all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
 nfreqs = len(all_freqs)
@@ -271,6 +279,73 @@ plt.tight_layout()
 plt.savefig("%s/foregrounds.pdf"%plot_dir)
 plt.clf()
 plt.close()
+=======
+nuisance_params = d["nuisance_params"]
+
+band_integration = d["band_integration"]
+
+all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
+nfreqs = len(all_freqs)
+
+mflike_config = {
+    "mflike.MFLike": {
+        "band_integration": band_integration,
+        "standalone": True,
+        "foregrounds": fg_model
+        }}
+
+info = {
+    "params": {**fg_params, **nuisance_params},
+    "likelihood": mflike_config}
+
+model = get_model(info)
+mflike = model.likelihood["mflike.MFLike"]
+mflike.freqs = [int(f) for f in all_freqs]
+import mflike.theoryforge_MFLike as tmf
+ThFo = tmf.TheoryForge_MFLike(mflike)
+ThFo.bandint_freqs = ThFo._bandpass_construction(**nuisance_params)
+
+fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)
+
+# Plot separated components for tSZ and CIB
+components["tt"].remove("tSZ_and_CIB")
+for comp in ["tSZ", "cibc", "tSZxCIB"]:
+    components["tt"].append(comp)
+
+for mode in ["tt", "te", "ee"]:
+    fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))
+    from itertools import product
+    for i, cross in enumerate(product(all_freqs, all_freqs)):
+        f0, f1 = cross
+        f0, f1 = int(f0), int(f1)
+        idx = (i%nfreqs, i//nfreqs)
+        ax = axes[idx]
+        if idx in zip(*np.triu_indices(nfreqs, k=1)):
+            fig.delaxes(ax)
+            continue
+        for compo in fg_model["components"][mode]:
+            ax.plot(l, fg_dict[mode, compo, f0, f1])
+            np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, compo, f0, f1),
+                       np.transpose([l,fg_dict[mode, compo, f0, f1]]))
+
+        ax.plot(l, fg_dict[mode, "all", f0, f1], color="k")
+        ax.plot(l, dls[mode], color="gray")
+        np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, "all", f0, f1),
+                   np.transpose([l,fg_dict[mode, "all", f0, f1]]))
+
+        ax.legend([], title="{}x{} GHz".format(*cross))
+        if mode == "tt":
+            ax.set_yscale("log")
+            ax.set_ylim(10**-1, 10**4)
+
+    for i in range(nfreqs):
+        axes[-1, i].set_xlabel("$\ell$")
+        axes[i, 0].set_ylabel("$D_\ell$")
+    fig.legend(fg_model["components"][mode] + ["all"], title=mode.upper(), bbox_to_anchor=(1,1))
+    plt.tight_layout()
+    plt.savefig("%s/foregrounds_%s.pdf"%(plot_dir,mode))
+    plt.close()
+>>>>>>> 1b99fbb... update sim script
 
 
 

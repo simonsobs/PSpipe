@@ -199,26 +199,6 @@ for exp in ["LAT", "Planck"]:
             ax[0].plot(ell, n_ell_t[name] * fac / (bl[exp + f1] * bl[exp + f2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
-<<<<<<< HEAD
-<<<<<<< HEAD
-                 
-=======
-
->>>>>>> 34eb26e... compatibility with MFLike
-            plt.xlabel(r"$\ell$", fontsize=22)
-            plt.ylabel(r"$N^{T}_{\ell}$", fontsize=22)
-
-            plt.subplot(2, 1, 2)
-            plt.semilogy()
-            plt.ylim(5 * 10**-2, 10**3)
-            plt.plot(ell, dls["ee"], color='black')
-            plt.plot(ell, n_ell_pol[name] * fac / (bl[exp + f1] * bl[exp + f2]),
-                     linestyle=linestyle[exp],
-                     label="%s" % (name))
-
-            plt.xlabel(r"$\ell$", fontsize=22)
-            plt.ylabel(r"$N^{P}_{\ell}$", fontsize=22)
-=======
             ax[0].set_xlabel(r"$\ell$", fontsize=22)
             ax[0].set_ylabel(r"$N^{T}_{\ell}$", fontsize=22)
             ax[1].set_yscale("symlog")
@@ -230,7 +210,6 @@ for exp in ["LAT", "Planck"]:
             ax[1].set_xlabel(r"$\ell$", fontsize=22)
             ax[1].set_ylabel(r"$N^{P}_{\ell}$", fontsize=22)
 
->>>>>>> 1b99fbb... update sim script
 
 ax[0].legend()
 plt.savefig("%s/noise_ps_plot.pdf"%plot_dir)
@@ -249,47 +228,6 @@ components = {"tt": d["fg_components"]["TT"],
               "te": d["fg_components"]["TE"]}
 fg_model =  {"normalisation":  fg_norm, "components": components}
 fg_params =  d["fg_params"]
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
-nfreqs = len(all_freqs)
-fg_dict = mfl.get_foreground_model(fg_params, fg_model, all_freqs, ell)
-
-mode = "tt"
-fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))
-from itertools import product
-for i, cross in enumerate(product(all_freqs, all_freqs)):
-    f0, f1 = cross
-    idx = (i%nfreqs, i//nfreqs)
-    ax = axes[idx]
-    if idx in zip(*np.triu_indices(nfreqs, k=1)):
-        fig.delaxes(ax)
-        continue
-    for compo in fg_model["components"][mode]:
-        ax.plot(l, fg_dict[mode, compo, f0, f1])
-        np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, compo, f0, f1),
-                   np.transpose([l,fg_dict[mode, compo, f0, f1]]))
-
-    ax.plot(l, fg_dict[mode, "all", f0, f1], color="k")
-    ax.plot(l, dls[mode], color="gray")
-    np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, "all", f0, f1),
-               np.transpose([l,fg_dict[mode, "all", f0, f1]]))
-
-    ax.legend([], title="{}x{} GHz".format(*cross))
-    if mode == "tt":
-        ax.set_yscale("log")
-        ax.set_ylim(10**-1, 10**4)
-
-for i in range(nfreqs):
-    axes[-1, i].set_xlabel("$\ell$")
-    axes[i, 0].set_ylabel("$D_\ell$")
-fig.legend(fg_model["components"][mode] + ["all"], title=mode.upper(), bbox_to_anchor=(1,1))
-plt.tight_layout()
-plt.savefig("%s/foregrounds.pdf"%plot_dir)
-plt.clf()
-plt.close()
-=======
 nuisance_params = d["nuisance_params"]
 
 band_integration = d["band_integration"]
@@ -316,49 +254,12 @@ ThFo = tmf.TheoryForge_MFLike(mflike)
 ThFo.bandint_freqs = ThFo._bandpass_construction(**nuisance_params)
 
 fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)
-=======
-nuisance_params = d["nuisance_params"]
-
-band_integration = d["band_integration"]
-systematics_template = d["systematics_template"]
-packages_path = d["packages_path"]
-
-all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
-nfreqs = len(all_freqs)
-
-mflike_config = {
-    "mflike.MFLike": {
-        "input_file": "data_sacc_00000.fits",
-        "cov_Bbl_file": "data_sacc_w_covar_and_Bbl.fits",
-        "band_integration": band_integration,
-        "systematics_template": systematics_template,
-        }}
-cosmo_params["As"] = 1e-10 * np.exp(cosmo_params.pop("logA"))
-info = {
-    "params": {**cosmo_params, **fg_params, **nuisance_params},
-    "likelihood": mflike_config,
-    "theory": {"camb": {"extra_args": {"lens_potential_accuracy": 1}}},
-    "packages_path": packages_path,
-}
-
-install({"likelihood": mflike_config},
-        path = packages_path, skip_global = True)
-model = get_model(info)
-mflike = model.likelihood["mflike.MFLike"]
-bandint_freqs = mflike.ThFo._bandpass_construction(**nuisance_params)
-fg_dict = mflike.ThFo._get_foreground_model(ell = ell,bandint_freqs = bandint_freqs,
-                                            **fg_params)
->>>>>>> 34eb26e... compatibility with MFLike
 
 # Plot separated components for tSZ and CIB
 components["tt"].remove("tSZ_and_CIB")
 for comp in ["tSZ", "cibc", "tSZxCIB"]:
     components["tt"].append(comp)
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 34eb26e... compatibility with MFLike
 for mode in ["tt", "te", "ee"]:
     fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))
     from itertools import product
@@ -391,13 +292,7 @@ for mode in ["tt", "te", "ee"]:
     fig.legend(fg_model["components"][mode] + ["all"], title=mode.upper(), bbox_to_anchor=(1,1))
     plt.tight_layout()
     plt.savefig("%s/foregrounds_%s.pdf"%(plot_dir,mode))
-<<<<<<< HEAD
     plt.close()
->>>>>>> 1b99fbb... update sim script
-=======
-    plt.clf()
-    plt.close()
->>>>>>> 34eb26e... compatibility with MFLike
 
 
 

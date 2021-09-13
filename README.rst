@@ -16,7 +16,7 @@ The package
 telescope of the Simons Observatory. It contains tools for estimating power spectra and a
 multi-frequency likelihood interfaced with the ``cobaya`` MCMC sampler.
 
-The pipelines are mainly written in python and make use of three different codes
+The pipelines are mainly written in python and make use of three different codes,
 
 * ``pspy`` : python library for power spectrum estimation (https://github.com/simonsobs/pspy)
 * ``namaster`` : C library + python wrapper for power spectrum estimation (https://github.com/LSSTDESC/NaMaster)

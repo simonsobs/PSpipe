@@ -68,37 +68,44 @@ inv_cov_mat = np.linalg.inv(cov_mat)
 proj_cov_mat = np.linalg.inv(np.dot(np.dot(P_mat, inv_cov_mat), P_mat.T))
 proj_data_vec = np.dot(proj_cov_mat, np.dot(P_mat, np.dot(inv_cov_mat, data_vec)))
 
-print ("is matrix positive definite:", data_analysis_utils.is_pos_def(proj_cov_mat))
-print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat))
-#so_cov.plot_cov_matrix(np.log(proj_cov_mat))
 
-np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
 np.savetxt("%s/data_vec.dat" % like_product_dir, proj_data_vec)
 
 
+print ("is matrix positive definite:", data_analysis_utils.is_pos_def(proj_cov_mat))
+print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat))
+#so_cov.plot_cov_matrix(np.log(proj_cov_mat))
+np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
+
+
+
+proj_cov_mat_forcesim = np.tril(proj_cov_mat) + np.triu(proj_cov_mat.T, 1)
+print ("is matrix positive definite:", data_analysis_utils.is_pos_def(proj_cov_mat_forcesim))
+print ("is matrix symmetric :", data_analysis_utils.is_symmetric(proj_cov_mat_forcesim))
+#so_cov.plot_cov_matrix(np.log(proj_cov_mat_forcesim))
+np.save("%s/combined_analytic_cov_forcesim.npy" % like_product_dir, proj_cov_mat_forcesim)
+
+print(np.max(proj_cov_mat-proj_cov_mat_forcesim))
+#so_cov.plot_cov_matrix(np.log(np.abs(proj_cov_mat-proj_cov_mat_forcesim)))
+
+
+
 my_spectra = ["TT", "TE", "EE"]
+
+
 count = 0
 for s1, spec in enumerate(my_spectra):
-    
-    plt.figure(figsize=(12, 6))
 
     if spec == "TE":
         cross_freq_list = ["%sx%s" % (f0,f1) for f0, f1 in product(freq_list, freq_list)]
     else:
         cross_freq_list = ["%sx%s" %(f0,f1) for f0, f1 in cwr(freq_list, 2)]
-
+            
     for cross_freq in cross_freq_list:
-        
+    
         Db = proj_data_vec[count * n_bins: (count + 1) * n_bins]
         sigmab = np.sqrt(proj_cov_mat.diagonal()[count * n_bins: (count + 1) * n_bins])
 
         np.savetxt("%s/spectra_%s_%s.dat" % (like_product_dir, spec, cross_freq), np.transpose([lb, Db, sigmab]))
-        
-        plt.errorbar(lb, Db, sigmab, label = "%s %s" % (spec, cross_freq), fmt=".")
-
         count += 1
-    
-    plt.legend()
-    plt.savefig("%s/spectra_%s.png" % (like_product_dir, spec))
-    plt.clf()
-    plt.close()
+        

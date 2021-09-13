@@ -3,7 +3,7 @@ Data Analysis
 **************************
 
 In this ``project`` we analyse data maps from the ACTPol experiment.
-For s17-s19 analysis, follow the specific instructions in `s17-s19 <https://github.com/simonsobs/PSpipe/blob/master/project/data_analysis/s17-s19.rst>`_.
+For DR6 analysis, follow the specific instructions in `DR6 <https://github.com/simonsobs/PSpipe/blob/master/project/data_analysis/dr6.rst>`_.
 
 Requirements
 ============

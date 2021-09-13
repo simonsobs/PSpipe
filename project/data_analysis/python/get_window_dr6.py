@@ -88,17 +88,27 @@ for task in subtasks:
     ivar_all.data[:] = 0
 
     for k, map in enumerate(maps):
+
+        if d["src_free_maps_%s" % sv] == True:
+            index = map.find("map_srcfree.fits")
+        else:
             index = map.find("map.fits")
-            ivar_map = map[:index] + "ivar.fits"
-            print(ivar_map)
-            ivar_map = so_map.read_map(ivar_map)
-            survey_mask.data[ivar_map.data[:] == 0.0] = 0.0
-            ivar_all.data[:] += ivar_map.data[:]
+
+        ivar_map = map[:index] + "ivar.fits"
+        print(ivar_map)
+        ivar_map = so_map.read_map(ivar_map)
+        survey_mask.data[ivar_map.data[:] == 0.0] = 0.0
+        ivar_all.data[:] += ivar_map.data[:]
 
     ivar_all.data[:] /= np.max(ivar_all.data[:])
 
     for k, map in enumerate(maps):
-        index = map.find("map.fits")
+
+        if d["src_free_maps_%s" % sv] == True:
+            index = map.find("map_srcfree.fits")
+        else:
+            index = map.find("map.fits")
+            
         xlink_map = map[:index] + "xlink.fits"
         print(xlink_map)
         x_mask = create_crosslink_mask(xlink_map, cross_link_threshold)

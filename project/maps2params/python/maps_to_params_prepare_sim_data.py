@@ -248,9 +248,9 @@ info = {
 
 model = get_model(info)
 mflike = model.likelihood["mflike.MFLike"]
-mflike.freqs = [int(f) for f in all_freqs]
-import mflike.theoryforge_MFLike as tmf
-ThFo = tmf.TheoryForge_MFLike(mflike)
+ThFo = mflike.ThFo
+ThFo.freqs = [int(f) for f in all_freqs]
+#import mflike.theoryforge_MFLike as tmf
 ThFo.bandint_freqs = ThFo._bandpass_construction(**nuisance_params)
 
 fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)

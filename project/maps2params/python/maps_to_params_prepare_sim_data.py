@@ -223,10 +223,8 @@ import mflike as mfl
 experiments = d["experiments"]
 
 fg_norm = d["fg_norm"]
-components = {"tt": d["fg_components"]["TT"],
-              "ee": d["fg_components"]["EE"],
-              "te": d["fg_components"]["TE"]}
-fg_model =  {"normalisation":  fg_norm, "components": components}
+fg_components = d["fg_components"]
+fg_model =  {"normalisation":  fg_norm, "components": fg_components}
 fg_params =  d["fg_params"]
 nuisance_params = d["nuisance_params"]
 
@@ -250,7 +248,6 @@ model = get_model(info)
 mflike = model.likelihood["mflike.MFLike"]
 ThFo = mflike.ThFo
 ThFo.freqs = [int(f) for f in all_freqs]
-#import mflike.theoryforge_MFLike as tmf
 ThFo.bandint_freqs = ThFo._bandpass_construction(**nuisance_params)
 
 fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)

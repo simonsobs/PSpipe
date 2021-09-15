@@ -23,8 +23,8 @@ include_fg = d["include_fg"]
 fg_dir = d["fg_dir"]
 fg_components = d["fg_components"]
 
-map_dir = d["map_dir"]
-use_so_sim = d["use_official_so_sim"]
+map_dir = d["mbs_dir"]
+use_mbs = d["use_mbs"]
 
 freq2chan = {27: "LF1",
              39: "LF2",
@@ -59,10 +59,10 @@ for iii in subtasks:
     #First we will generate our simulations and take their harmonics transforms
     t0 = time.time()
 
-    if not use_so_sim:
-        alms = curvedsky.rand_alm(ps_cmb, lmax=lmax_simu)
-    else:
+    if use_mbs:
         alms = np.zeros((3, (lmax_simu + 1) * (lmax_simu + 2) // 2), dtype = "complex128")
+    else:
+        alms = curvedsky.rand_alm(ps_cmb, lmax=lmax_simu)
 
     if include_fg == True:
         fglms = curvedsky.rand_alm(ps_fg, lmax=lmax_simu)
@@ -113,7 +113,7 @@ for iii in subtasks:
 
             fcount += 1
 
-            if use_so_sim:
+            if use_mbs:
                 map = so_map.read_map(
                     "%s/%04d/simonsobs_cmb_uKCMB_la%s_nside4096_%04d.fits" % (
                     map_dir, iii, freq2chan[freq], iii))
@@ -127,7 +127,7 @@ for iii in subtasks:
 
                 split = sph_tools.alm2map(noisy_alms, template)
 
-                if use_so_sim:
+                if use_mbs:
                     split.data += map.data
 
                 # Now that we have generated a split of data of experiment exp

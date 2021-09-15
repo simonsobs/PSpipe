@@ -253,9 +253,9 @@ ThFo.bandint_freqs = ThFo._bandpass_construction(**nuisance_params)
 fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)
 
 # Plot separated components for tSZ and CIB
-components["tt"].remove("tSZ_and_CIB")
+fg_components["tt"].remove("tSZ_and_CIB")
 for comp in ["tSZ", "cibc", "tSZxCIB"]:
-    components["tt"].append(comp)
+    fg_components["tt"].append(comp)
 
 for mode in ["tt", "te", "ee"]:
     fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))
@@ -265,7 +265,7 @@ for mode in ["tt", "te", "ee"]:
         f0, f1 = int(f0), int(f1)
         idx = (i%nfreqs, i//nfreqs)
         ax = axes[idx]
-        if idx in zip(*np.triu_indices(nfreqs, k=1)):
+        if idx in zip(*np.triu_indices(nfreqs, k=1)) and mode != "te":
             fig.delaxes(ax)
             continue
         for compo in fg_model["components"][mode]:

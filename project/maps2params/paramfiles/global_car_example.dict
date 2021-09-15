@@ -14,17 +14,16 @@ spin = "0-2"
 
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 clfile = 'sim_data/cosmo_and_fg/cosmo_spectra.dat'
-
-#map parameters
-use_official_so_sim = False
-map_dir = "/global/project/projectdirs/sobs/v4_sims/mbs/201911_lensed_cmb/4096/cmb"
-
-#fg parameters
 include_fg = True
 fg_dir = "sim_data/cosmo_and_fg/"
 fg_components = ["cibc", "cibp", "kSZ", "radio", "tSZ"]
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "n_CIBC": 1.20,"a_s": 3.10, "T_d": 9.60}
+
+# Use map based simulations
+# /!\ Only works with HEALPIX pixellisation
+use_mbs = False
+mbs_dir = "/global/project/projectdirs/sobs/v4_sims/mbs/201911_lensed_cmb/4096/cmb"
 
 apo_type_survey_LAT = "Rectangle"
 apo_radius_survey_LAT = 1

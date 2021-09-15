@@ -23,6 +23,10 @@ fg_components = ["cibc", "cibp", "kSZ", "radio", "tSZ"]
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.66, "a_p": 6.91, "beta_p": 2.07, "a_c": 4.88, "beta_c": 2.20, "n_CIBC": 1.20,"a_s": 3.09, "T_d": 9.60}
 
+# Use map based simulations
+# /!\ Only works with HEALPIX pixellisation
+use_mbs = False
+mbs_dir = "/global/project/projectdirs/sobs/v4_sims/mbs/201911_lensed_cmb/4096/cmb"
 
 # map pixellisation
 pixel_LAT = "HEALPIX"

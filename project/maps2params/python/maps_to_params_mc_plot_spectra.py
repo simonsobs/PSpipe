@@ -80,14 +80,14 @@ for id_exp1, exp1 in enumerate(experiments):
                     ps_th = {}
                     for spec in spectra:
                         ps=Dlth[spec].copy()
-                        #if spec == "TT":
-                        if include_fg:
-                            flth_all = 0
-                            for foreground in fg_components[spec.lower()]:
-                                l, flth = np.loadtxt("%s/%s_%s_%sx%s.dat" % (fg_dir,spec.lower(), foreground, f1, f2)
-                                                    ,unpack=True)
-                                flth_all += flth[:lmax]
-                            ps = Dlth[spec] + flth_all
+                        if spec.lower() in fg_components:
+                            if include_fg:
+                                flth_all = 0
+                                for foreground in fg_components[spec.lower()]:
+                                    l, flth = np.loadtxt("%s/%s_%s_%sx%s.dat" % (fg_dir,spec.lower(), foreground, f1, f2)
+                                                        ,unpack=True)
+                                    flth_all += flth[:lmax]
+                                ps = Dlth[spec] + flth_all
 
                         if kind == "cross":
                             ps_th[spec] = ps

@@ -292,7 +292,7 @@ def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None, dt
             nlms[k] = curvedsky.rand_alm(nl_array_t,lmax=lmax, dtype=dtype)
     else:
         for k in range(n_splits):
-            nlms["T", k] = curvedsky.rand_alm(nl_array_t, lmax=lmax, dtype=dtype)
+            nlms["T", k] = curvedsky.rand_alm(nl_array_t[:,:,k], lmax=lmax, dtype=dtype)
             nlms["E", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax, dtype=dtype)
             nlms["B", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax, dtype=dtype)
     
@@ -441,6 +441,39 @@ def fast_cov_coupling(sq_win_alms_dir,
     return coupling_dict
 
 
+def covariance_element_new(coupling, id_element, ns, ps_all, nl_all, binning_file, mbb_inv_ab, mbb_inv_cd):
+
+    # Let's try with that
+    na, nb, nc, nd = id_element
+
+    lmax = coupling["TaTcTbTd"].shape[0]
+    bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
+    nbins = len(bin_hi)
+    
+    speclist = ["TT", "TE", "ET", "EE"]
+    nspec = len(speclist)
+    analytic_cov = np.zeros((nspec*nbins, nspec*nbins))
+    for i, sp1 in enumerate(speclist):
+        for j, sp2 in enumerate(speclist):
+            
+            id0 = sp1[0] + "a" + sp2[0] + "c"
+            id1 = sp1[1] + "b" + sp2[1] + "d"
+            id2 = sp1[0] + "a" + sp2[1] + "d"
+            id3 = sp1[1] + "b" + sp2[0] + "c"
+            
+            M = coupling_dict[id0.replace("E","P") + id1.replace("E","P")] * chi(na, nc, nb, nd, ns, ps_all, nl_all, id0+id1)
+            M += coupling_dict[id2.replace("E","P") + id3.replace("E","P")] * chi(na, nd, nb, nc, ns, ps_all, nl_all, id2+id3)
+            analytic_cov[i * nbins:(i+1) * nbins, j * nbins: (j + 1) * nbins] = so_cov.bin_mat(M, binning_file, lmax)
+
+    mbb_inv_ab = so_cov.extract_TTTEEE_mbb(mbb_inv_ab)
+    mbb_inv_cd = so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
+
+    analytic_cov = np.dot(np.dot(mbb_inv_ab, analytic_cov), mbb_inv_cd.T)
+    
+    return analytic_cov
+
+
+    
 
 def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, mbb_inv_ab, mbb_inv_cd):
     

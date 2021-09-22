@@ -463,7 +463,7 @@ def covariance_element_new(coupling, id_element, ns, ps_all, nl_all, binning_fil
             
             M = coupling_dict[id0.replace("E","P") + id1.replace("E","P")] * chi(na, nc, nb, nd, ns, ps_all, nl_all, id0+id1)
             M += coupling_dict[id2.replace("E","P") + id3.replace("E","P")] * chi(na, nd, nb, nc, ns, ps_all, nl_all, id2+id3)
-            analytic_cov[i * nbins:(i+1) * nbins, j * nbins: (j + 1) * nbins] = so_cov.bin_mat(M, binning_file, lmax)
+            analytic_cov[i * nbins: (i+1) * nbins, j * nbins: (j + 1) * nbins] = so_cov.bin_mat(M, binning_file, lmax)
 
     mbb_inv_ab = so_cov.extract_TTTEEE_mbb(mbb_inv_ab)
     mbb_inv_cd = so_cov.extract_TTTEEE_mbb(mbb_inv_cd)

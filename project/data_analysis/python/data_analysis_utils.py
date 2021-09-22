@@ -452,7 +452,7 @@ def covariance_element_new(coupling, id_element, ns, ps_all, nl_all, binning_fil
     
     speclist = ["TT", "TE", "ET", "EE"]
     nspec = len(speclist)
-    analytic_cov = np.zeros((nspec*nbins, nspec*nbins))
+    analytic_cov = np.zeros((nspec * nbins, nspec * nbins))
     for i, sp1 in enumerate(speclist):
         for j, sp2 in enumerate(speclist):
             

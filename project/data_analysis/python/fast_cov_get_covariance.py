@@ -10,6 +10,9 @@ from pspy import pspy_utils, so_cov, so_dict, so_map, so_mcm, so_mpi, so_spectra
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+
+
+
 windows_dir = "windows"
 mcms_dir = "mcms"
 spectra_dir = "spectra"
@@ -25,8 +28,22 @@ binning_file = d["binning_file"]
 lmax = d["lmax"]
 niter = d["niter"]
 
+
+
+
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
+
+
+# This routine is designed to be fast but is not for general usage
+# In particular we assume that the same window function is used in T and Pol
+# This loop check that this is what was specified in the dictfile
+for sv in surveys:
+    arrays = d["arrays_%s" % sv]
+    for ar in arrays:
+        assert(d["window_T_%s_%s" % (sv, ar)] == d["window_pol_%s_%s" % (sv, ar)], "T and pol windows have to be the same")
+
+
 
 ps_all = {}
 nl_all = {}
@@ -93,6 +110,9 @@ for sid1, spec1 in enumerate(spec_name):
         nc_list += [nc]
         nd_list += [nd]
         ncovs += 1
+
+
+
 
 
 if d["use_toeplitz_cov"] == True:

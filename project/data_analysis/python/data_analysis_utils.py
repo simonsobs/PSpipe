@@ -517,12 +517,12 @@ def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):
     sv_gamma, ar_gamma = gamma.split("&")
     sv_eta, ar_eta = eta.split("&")
     
-    RX = id[0] + id[1]
-    SY = id[2] + id[3]
-    chi = Dl[alpha, gamma, RX] * Dl[beta, eta, SY]
-    chi += Dl[alpha, gamma, RX] * DNl[beta, eta, SY] * f(sv_beta, sv_eta, sv_alpha, sv_gamma, ns)
-    chi += Dl[beta, eta, SY] * DNl[alpha, gamma, RX] * f(sv_alpha, sv_gamma, sv_beta, sv_eta, ns)
-    chi += g(sv_alpha, sv_gamma, sv_beta, sv_eta, ns) * DNl[alpha, gamma, RX] * DNl[beta, eta, SY]
+    AB = id[0] + id[1]
+    CD = id[2] + id[3]
+    chi = Dl[alpha, gamma, AB] * Dl[beta, eta, CD]
+    chi += Dl[alpha, gamma, AB] * DNl[beta, eta, CD] * f(sv_beta, sv_eta, sv_alpha, sv_gamma, ns)
+    chi += Dl[beta, eta, CD] * DNl[alpha, gamma, AB] * f(sv_alpha, sv_gamma, sv_beta, sv_eta, ns)
+    chi += g(sv_alpha, sv_gamma, sv_beta, sv_eta, ns) * DNl[alpha, gamma, AB] * DNl[beta, eta, CD]
     chi= symm_power(chi, mode="arithm")
 
     return chi

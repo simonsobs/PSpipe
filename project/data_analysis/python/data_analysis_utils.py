@@ -460,9 +460,15 @@ def covariance_element_new(coupling, id_element, ns, ps_all, nl_all, binning_fil
             id1 = sp1[1] + "b" + sp2[1] + "d"
             id2 = sp1[0] + "a" + sp2[1] + "d"
             id3 = sp1[1] + "b" + sp2[0] + "c"
+
+            print("")
+            print(i,j)
+            print(id0.replace("E","P") + id1.replace("E","P"), sp1[0] + sp2[0] + sp1[1] + sp2[1])
+            print(id2.replace("E","P") + id3.replace("E","P"), sp1[0] + sp2[1] + sp1[1] + sp2[0])
+            print("")
             
-            M = coupling_dict[id0.replace("E","P") + id1.replace("E","P")] * chi(na, nc, nb, nd, ns, ps_all, nl_all, id0+id1)
-            M += coupling_dict[id2.replace("E","P") + id3.replace("E","P")] * chi(na, nd, nb, nc, ns, ps_all, nl_all, id2+id3)
+            M = coupling[id0.replace("E","P") + id1.replace("E","P")] * chi(na, nc, nb, nd, ns, ps_all, nl_all, sp1[0] + sp2[0] + sp1[1] + sp2[1])
+            M += coupling[id2.replace("E","P") + id3.replace("E","P")] * chi(na, nd, nb, nc, ns, ps_all, nl_all, sp1[0] + sp2[1] + sp1[1] + sp2[0])
             analytic_cov[i * nbins: (i + 1) * nbins, j * nbins: (j + 1) * nbins] = so_cov.bin_mat(M, binning_file, lmax)
 
     mbb_inv_ab = so_cov.extract_TTTEEE_mbb(mbb_inv_ab)

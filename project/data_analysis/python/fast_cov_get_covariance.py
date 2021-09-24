@@ -10,9 +10,6 @@ from pspy import pspy_utils, so_cov, so_dict, so_map, so_mcm, so_mpi, so_spectra
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-
-
-
 windows_dir = "windows"
 mcms_dir = "mcms"
 spectra_dir = "spectra"
@@ -22,27 +19,24 @@ bestfit_dir = "best_fits"
 sq_win_alms_dir = "sq_win_alms"
 
 pspy_utils.create_directory(cov_dir)
-
 surveys = d["surveys"]
 binning_file = d["binning_file"]
 lmax = d["lmax"]
 niter = d["niter"]
 
-
+fast_coupling = True
+if fast_coupling:
+    # This option is designed to be fast but is not for general usage
+    # In particular we assume that the same window function is used in T and Pol
+    # This loop check that this is what was specified in the dictfile
+    for sv in surveys:
+        arrays = d["arrays_%s" % sv]
+        for ar in arrays:
+            assert(d["window_T_%s_%s" % (sv, ar)] == d["window_pol_%s_%s" % (sv, ar)], "T and pol windows have to be the same")
 
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
-
-
-# This routine is designed to be fast but is not for general usage
-# In particular we assume that the same window function is used in T and Pol
-# This loop check that this is what was specified in the dictfile
-for sv in surveys:
-    arrays = d["arrays_%s" % sv]
-    for ar in arrays:
-        assert(d["window_T_%s_%s" % (sv, ar)] == d["window_pol_%s_%s" % (sv, ar)], "T and pol windows have to be the same")
-
 
 
 ps_all = {}
@@ -112,9 +106,6 @@ for sid1, spec1 in enumerate(spec_name):
         ncovs += 1
 
 
-
-
-
 if d["use_toeplitz_cov"] == True:
     print("we will use the toeplitz approximation")
     l_exact, l_band, l_toep = 800, 2000, 2750
@@ -131,15 +122,37 @@ for task in subtasks:
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
     print("cov element (%s x %s, %s x %s)" % (na_r, nb_r, nc_r, nd_r))
 
-    coupling = data_analysis_utils.fast_cov_coupling(sq_win_alms_dir,
-                                                     na_r,
-                                                     nb_r,
-                                                     nc_r,
-                                                     nd_r,
-                                                     lmax,
-                                                     l_exact=l_exact,
-                                                     l_band=l_band,
-                                                     l_toep=l_toep)
+
+    if fast_coupling:
+    
+        coupling = data_analysis_utils.fast_cov_coupling(sq_win_alms_dir,
+                                                         na_r,
+                                                         nb_r,
+                                                         nc_r,
+                                                         nd_r,
+                                                         lmax,
+                                                         l_exact=l_exact,
+                                                         l_band=l_band,
+                                                         l_toep=l_toep)
+                                                         
+    else:
+        win = {}
+        win["Ta"] = so_map.read_map(d["window_T_%s" % na_r])
+        win["Tb"] = so_map.read_map(d["window_T_%s" % nb_r])
+        win["Tc"] = so_map.read_map(d["window_T_%s" % nc_r])
+        win["Td"] = so_map.read_map(d["window_T_%s" % nd_r])
+        win["Pa"] = so_map.read_map(d["window_pol_%s" % na_r])
+        win["Pb"] = so_map.read_map(d["window_pol_%s" % nb_r])
+        win["Pc"] = so_map.read_map(d["window_pol_%s" % nc_r])
+        win["Pd"] = so_map.read_map(d["window_pol_%s" % nd_r])
+        coupling = so_cov.cov_coupling_spin0and2_simple(win,
+                                                        lmax,
+                                                        niter=niter,
+                                                        l_exact=l_exact,
+                                                        l_band=l_band,
+                                                        l_toep=l_toep)
+
+    
 
     try:
         mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, na_r, nb_r), spin_pairs=spin_pairs)

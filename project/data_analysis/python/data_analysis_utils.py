@@ -451,7 +451,7 @@ def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, m
     The formula for the analytic covariance of C1, C2 is given by
     Cov( Wa * Xb,  Yc * Zd) = < Wa Yc> <Xb Zd>  + < Wa Zd> <Xb Yc> (this is just from the wick theorem)
     In practice we need to include the effect of the mask (so we have to introduce the coupling dict D)
-    and we need to take into account only the auto power spectrum, that is why we use the chi function
+    and we need to take into account that we use only the cross power spectra, that is why we use the chi function
     Cov( Wa * Xb,  Yc * Zd) = D(Wa*Yc,Xb Zd) chi(Wa,Yc,Xb Zd) +  D(Wa*Zd,Xb*Yc) chi(Wa,Zd,Xb,Yc)
     
     Parameters
@@ -504,8 +504,6 @@ def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, m
     
     return analytic_cov
 
-
-    
 
 
 def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):

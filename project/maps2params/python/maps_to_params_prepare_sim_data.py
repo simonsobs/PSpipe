@@ -162,7 +162,12 @@ cosmo_params =  d["cosmo_params"]
 camb_cosmo = {k: v for k, v in cosmo_params.items()
               if k not in ["logA", "As"]}
 camb_cosmo.update({"As": 1e-10*np.exp(cosmo_params["logA"]),
-                   "lmax": ell_max, "lens_potential_accuracy": 1})
+                   "lmax": ell_max,
+                   "lens_potential_accuracy": d["lens_potential_accuracy"],
+                   "lens_margin": d["lens_margin"],
+                   "AccuracyBoost": d["AccuracyBoost"],
+                   "lSampleBoost": d["lSampleBoost"],
+                   "lAccuracyBoost": d["lAccuracyBoost"]})
 pars = camb.set_params(**camb_cosmo)
 results = camb.get_results(pars)
 

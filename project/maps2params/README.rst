@@ -55,6 +55,7 @@ And analysis of the simulations can be performed by running
 Now that we have simulations spectra, we should generate analytical covariances matrices. Again for this step, mpi is recommended.
 
 .. code:: shell
+
     salloc -N 21 -C haswell -q interactive -t 02:00:00
     srun -n 21 -c 64 --cpu_bind=cores python get_maps_to_params_covariances.py global.dict
 

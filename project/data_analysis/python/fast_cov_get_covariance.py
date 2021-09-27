@@ -32,7 +32,7 @@ if fast_coupling:
     for sv in surveys:
         arrays = d["arrays_%s" % sv]
         for ar in arrays:
-            assert(d["window_T_%s_%s" % (sv, ar)] == d["window_pol_%s_%s" % (sv, ar)], "T and pol windows have to be the same")
+            assert d["window_T_%s_%s" % (sv, ar)] == d["window_pol_%s_%s" % (sv, ar)], "T and pol windows have to be the same"
 
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]

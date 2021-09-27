@@ -20,9 +20,6 @@ import sys
 import so_noise_calculator_public_20180822 as noise_calc
 from copy import deepcopy
 
-from cobaya.install import install
-from cobaya.model import get_model
-
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
@@ -218,37 +215,28 @@ plt.close()
 
 # We now compare the signal power spectra with foreground power spectra
 
-import mflike as mfl
-
 experiments = d["experiments"]
 
 fg_norm = d["fg_norm"]
 fg_components = d["fg_components"]
 fg_model =  {"normalisation":  fg_norm, "components": fg_components}
 fg_params =  d["fg_params"]
-nuisance_params = d["nuisance_params"]
 
 band_integration = d["band_integration"]
 
-all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
+all_freqs = np.array([int(freq) for exp in experiments for freq in d["freqs_%s" % exp]])
 nfreqs = len(all_freqs)
 
-mflike_config = {
-    "mflike.MFLike": {
-        "band_integration": band_integration,
-        "standalone": True,
-        "foregrounds": fg_model
-        }}
+from mflike import theoryforge_MFLike as th_mflike
 
-info = {
-    "params": {**fg_params, **nuisance_params},
-    "likelihood": mflike_config}
+ThFo = th_mflike.TheoryForge_MFLike()
+ThFo.freqs = all_freqs
+ThFo.bandint_nsteps = band_integration["nsteps"]
+ThFo.bandint_width = band_integration["bandwidth"]
+ThFo.bandint_external_bandpass = band_integration["external_bandpass"]
 
-model = get_model(info)
-mflike = model.likelihood["mflike.MFLike"]
-ThFo = mflike.ThFo
-ThFo.freqs = [int(f) for f in all_freqs]
-ThFo.bandint_freqs = ThFo._bandpass_construction(**nuisance_params)
+ThFo.foregrounds = fg_model
+ThFo._init_foreground_model()
 
 fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)
 
@@ -282,6 +270,8 @@ for mode in ["tt", "te", "ee"]:
         if mode == "tt":
             ax.set_yscale("log")
             ax.set_ylim(10**-1, 10**4)
+        if mode == "ee":
+            ax.set_yscale("log")
 
     for i in range(nfreqs):
         axes[-1, i].set_xlabel("$\ell$")

@@ -44,14 +44,14 @@ apo_radius_mask_LAT = 0.3
 apo_type_mask_LAT = "C1"
 
 galactic_mask_LAT = False
-galactic_mask_LAT_file_93 = "masks/mask_equatorial_4096.fits"
-galactic_mask_LAT_file_145 = "masks/mask_equatorial_4096.fits"
-galactic_mask_LAT_file_225 = "masks/mask_equatorial_4096.fits"
+galactic_mask_LAT_file_93 = "masks/mask_equatorial_car.fits"
+galactic_mask_LAT_file_145 = "masks/mask_equatorial_car.fits"
+galactic_mask_LAT_file_225 = "masks/mask_equatorial_car.fits"
 
 survey_mask_LAT = False
-survey_mask_LAT_file_93 = "masks/survey_mask_4096.fits"
-survey_mask_LAT_file_145 = "masks/survey_mask_4096.fits"
-survey_mask_LAT_file_225 = "masks/survey_mask_4096.fits"
+survey_mask_LAT_file_93 = "masks/survey_mask_car.fits"
+survey_mask_LAT_file_145 = "masks/survey_mask_car.fits"
+survey_mask_LAT_file_225 = "masks/survey_mask_car.fits"
 
 # Spectra  parameter
 type = "Dl"
@@ -61,6 +61,12 @@ lmax_mcm = 3000
 niter = 0
 lcut = 30 # parameter to regularize the noise power spectrum at very low ell
 
+# CAMB acc. parameters
+lens_potential_accuracy = 1
+lens_margin = 1000
+AccuracyBoost = 1.0
+lSampleBoost = 1.0
+lAccuracyBoost = 1.0
 
 hdf5 = False
 write_all_spectra = False

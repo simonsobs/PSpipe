@@ -1,5 +1,5 @@
 **************************
-Maps2Parameters 
+Maps2Parameters
 **************************
 
 In this ``project`` we generate CMB simulations and compute their power spectra and covariance matrices.
@@ -32,32 +32,32 @@ This can be done simply by running
 
     python maps_to_params_prepare_sim_data.py global.dict
 
-then we generate the window functions and associated mode coupling matrices 
+then we generate the window functions and associated mode coupling matrices
 
 .. code:: shell
 
     python get_maps_to_params_mcm_and_bbl.py global.dict
 
-The next step is to generate simulations and take their power spectra this is done with 
+The next step is to generate simulations and take their power spectra. For this step you might want to generate many simulations and you might benefit from using a computer cluster with MPI. Details on how to run this script at NERSC with MPI are given in the NERSC section.
+This is done with
 
 .. code:: shell
 
-    python get_maps_to_params_spectra.py global.dict
-    
-for this step you might want to generate many simulations and you might benefit from using a computer cluster with MPI. Details on how to run this script at NERSC with MPI are given in the NERSC section.
+    salloc -N 40 -C haswell -q interactive -t 01:00:00
+    srun -n 40 -c 64 --cpu_bind=cores python get_maps_to_params_spectra.py global.dict
+
 And analysis of the simulations can be performed by running
 
 .. code:: shell
 
     python maps_to_params_mc_analysis.py global.dict
 
-Now that we have simulations spectra, we should generate analytical covariances matrices 
+Now that we have simulations spectra, we should generate analytical covariances matrices. Again for this step, mpi is recommended.
 
 .. code:: shell
 
-    python get_maps_to_params_covariances.py global.dict
-
-Again for this step, mpi is recommended.
+    salloc -N 21 -C haswell -q interactive -t 02:00:00
+    srun -n 21 -c 64 --cpu_bind=cores python get_maps_to_params_covariances.py global.dict
 
 We are done with the simulations/spectra and covariances part, it is time to plot the results and check that the pipeline is working as expected
 
@@ -65,3 +65,10 @@ We are done with the simulations/spectra and covariances part, it is time to plo
 
     python maps_to_params_mc_plot_spectra.py global.dict
     python maps_to_params_mc_plot_covariances.py global.dict
+
+Now you might want to produce the ``sacc`` files for your set of simulations. This can be done with
+
+.. code:: shell
+
+    python maps_to_params_multifrequency_covmat.py global.dict
+    python maps_to_params_port_to_sacc.py global.dict

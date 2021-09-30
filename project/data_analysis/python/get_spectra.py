@@ -147,8 +147,6 @@ for id_sv1, sv1 in enumerate(surveys):
         tf1 *= pw1
         
     for id_ar1, ar1 in enumerate(arrays_1):
-        nsplits_1 = nsplit[sv1, ar1]
-
     
         for id_sv2, sv2 in enumerate(surveys):
             arrays_2 = d["arrays_%s" % sv2]
@@ -167,15 +165,16 @@ for id_sv1, sv1 in enumerate(surveys):
 
             for id_ar2, ar2 in enumerate(arrays_2):
             
-
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
-                
-                nsplits_2 = nsplit[sv2, ar2]
-
+            
                 for spec in spectra:
                     ps_dict[spec, "auto"] = []
                     ps_dict[spec, "cross"] = []
+                    
+                    
+                nsplits_1 = nsplit[sv1, ar1]
+                nsplits_2 = nsplit[sv2, ar2]
                 
                 for s1 in range(nsplits_1):
                     for s2 in range(nsplits_2):

@@ -94,7 +94,7 @@ for sv in surveys:
                     if point_source_map_name == map:
                         raise ValueError("No model map is provided! Check map names!")
                     point_source_map = so_map.read_map(point_source_map_name)
-                    point_source_mask = so_map.read_map(d["ps_mask"])
+                    point_source_mask = so_map.read_map(d["ps_mask_%s_%s" % (sv, ar)])
                     split = data_analysis_utils.get_coadded_map(split, point_source_map, point_source_mask)
 
                 if d["use_kspace_filter"]:

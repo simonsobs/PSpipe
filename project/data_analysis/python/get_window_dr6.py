@@ -51,7 +51,6 @@ window_dir = "windows"
 surveys = d["surveys"]
 
 pspy_utils.create_directory(window_dir)
-gal_mask = so_map.read_map(d["gal_mask"])
 
 patch = None
 if "patch" in d:
@@ -77,6 +76,9 @@ for task in subtasks:
 
     task = int(task)
     sv, ar = sv_list[task], ar_list[task]
+    
+    
+    gal_mask = so_map.read_map(d["gal_mask_%s_%s" % (sv, ar)])
 
     survey_mask = gal_mask.copy()
     survey_mask.data[:] = 1
@@ -133,7 +135,7 @@ for task in subtasks:
     # Now we create the final window function that will be used in the analysis
     survey_mask.data[dist.data < skip_from_edges_degree] = 0
     survey_mask = so_window.create_apodization(survey_mask, "C1", apod_survey_degree, use_rmax=True)
-    ps_mask = so_map.read_map(d["ps_mask"])
+    ps_mask = so_map.read_map(d["ps_mask_%s_%s" % (sv, ar)])
     ps_mask = so_window.create_apodization(ps_mask, "C1", apod_pts_source_degree, use_rmax=True)
     survey_mask.data *= ps_mask.data
 

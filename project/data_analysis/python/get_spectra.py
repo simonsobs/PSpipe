@@ -227,11 +227,15 @@ for id_sv1, sv1 in enumerate(surveys):
                     if sv1 == sv2:
                         ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
                         spec_name_auto = "%s_%s_%sx%s_%s_auto" % (type, sv1, ar1, sv2, ar2)
-                        ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplit[sv1]
-                        spec_name_noise = "%s_%s_%sx%s_%s_noise" % (type, sv1, ar1, sv2, ar2)
+                        if ar1 == ar2:
+                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplit[sv1, ar1]
+                            spec_name_noise = "%s_%s_%sx%s_%s_noise" % (type, sv1, ar1, sv2, ar2)
+                        else:
+                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec])
+                            spec_name_noise = "%s_%s_%sx%s_%s_noise_not_normalised" % (type, sv1, ar1, sv2, ar2)
 
+                        
                 so_spectra.write_ps(specDir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
-                
                 if sv1 == sv2:
                     so_spectra.write_ps(specDir+"/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)
                     so_spectra.write_ps(specDir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)

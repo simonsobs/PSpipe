@@ -6,7 +6,6 @@ import numpy as np
 import sys
 
 
-
 def mult(map_a, map_b):
 
     res_a = 1 / map_a.data.pixsize()
@@ -14,17 +13,17 @@ def mult(map_a, map_b):
 
     if res_a == res_b:
         prod = map_a.copy()
-        prod.data[:] *= map_b.data[:]
+        prod.data *= map_b.data
     elif res_a < res_b:
         print("resample map a")
         prod = map_b.copy()
         map_a_proj = so_map.car2car(map_a, map_b)
-        prod.data[:] *= map_a_proj.data[:]
+        prod.data *= map_a_proj.data
     elif res_b < res_a:
         print("resample map b")
         prod = map_a.copy()
         map_b_proj = so_map.car2car(map_b, map_a)
-        prod.data[:] *= map_b_proj.data
+        prod.data *= map_b_proj.data
     
     return prod
 

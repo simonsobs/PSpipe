@@ -5,6 +5,30 @@ from pspy import so_dict, so_map, sph_tools, so_spectra, pspy_utils, so_mpi
 import numpy as np
 import sys
 
+
+
+def mult(map_a, map_b):
+
+    res_a = 1 / map_a.data.pixsize()
+    res_b = 1 / map_b.data.pixsize()
+
+    if res_a == res_b:
+        prod = map_a.copy()
+        prod.data[:] *= map_b.data[:]
+    elif res_a < res_b:
+        print("resample map a")
+        prod = map_b.copy()
+        map_a_proj = so_map.car2car(map_a, map_b)
+        prod.data[:] *= map_a_proj.data[:]
+    elif res_b < res_a:
+        print("resample map b")
+        prod = map_a.copy()
+        map_b_proj = so_map.car2car(map_b, map_a)
+        prod.data[:] *= map_b_proj.data
+    
+    return prod
+
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
@@ -43,8 +67,9 @@ for task in subtasks:
     win_T1 = so_map.read_map(d["window_T_%s_%s" % (sv1, ar1)])
     win_T2 = so_map.read_map(d["window_T_%s_%s" % (sv2, ar2)])
 
-    sq_win = win_T1.copy()
-    sq_win.data[:] *= win_T2.data[:]
+    sq_win = mult(win_T1, win_T2)
+    #sq_win = win_T1.copy()
+    #sq_win.data[:] *= win_T2.data[:]
     sqwin_alm = sph_tools.map2alm(sq_win, niter=niter, lmax=lmax)
     
     np.save("%s/alms_%s_%sx%s_%s.npy" % (sq_win_alms_dir, sv1, ar1, sv2, ar2), sqwin_alm)

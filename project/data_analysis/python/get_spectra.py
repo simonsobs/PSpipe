@@ -53,10 +53,10 @@ for sv in surveys:
         window_tuple = (win_T, win_pol)
         
         maps = d["maps_%s_%s" % (sv, ar)]
-        nsplit[sv] = len(maps)
+        nsplit[sv, ar] = len(maps)
 
         cal = d["cal_%s_%s" % (sv, ar)]
-        print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
+        print("%s split of survey: %s, array %s"%(nsplit[sv, ar], sv, ar))
         
         if deconvolve_pixwin:
             # ok so this is a bit overcomplicated because we need to take into account CAR and HEALPIX
@@ -130,7 +130,6 @@ _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 
 for id_sv1, sv1 in enumerate(surveys):
     arrays_1 = d["arrays_%s" % sv1]
-    nsplits_1 = nsplit[sv1]
     
     if d["tf_%s" % sv1] is not None:
         print("will deconvolve tf of %s" %sv1)
@@ -148,10 +147,11 @@ for id_sv1, sv1 in enumerate(surveys):
         tf1 *= pw1
         
     for id_ar1, ar1 in enumerate(arrays_1):
+        nsplits_1 = nsplit[sv1, ar1]
+
     
         for id_sv2, sv2 in enumerate(surveys):
             arrays_2 = d["arrays_%s" % sv2]
-            nsplits_2 = nsplit[sv2]
             
             if d["tf_%s" % sv2] is not None:
                 print("will deconvolve tf of %s" %sv2)
@@ -166,10 +166,12 @@ for id_sv1, sv1 in enumerate(surveys):
                 tf2 *= pw2
 
             for id_ar2, ar2 in enumerate(arrays_2):
-
+            
 
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
+                
+                nsplits_2 = nsplit[sv2, ar2]
 
                 for spec in spectra:
                     ps_dict[spec, "auto"] = []

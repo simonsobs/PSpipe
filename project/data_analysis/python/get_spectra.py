@@ -53,10 +53,10 @@ for sv in surveys:
         window_tuple = (win_T, win_pol)
         
         maps = d["maps_%s_%s" % (sv, ar)]
-        nsplit[sv, ar] = len(maps)
+        nsplit[sv] = len(maps)
 
         cal = d["cal_%s_%s" % (sv, ar)]
-        print("%s split of survey: %s, array %s"%(nsplit[sv, ar], sv, ar))
+        print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
         
         if deconvolve_pixwin:
             # ok so this is a bit overcomplicated because we need to take into account CAR and HEALPIX
@@ -173,8 +173,8 @@ for id_sv1, sv1 in enumerate(surveys):
                     ps_dict[spec, "cross"] = []
                     
                     
-                nsplits_1 = nsplit[sv1, ar1]
-                nsplits_2 = nsplit[sv2, ar2]
+                nsplits_1 = nsplit[sv1]
+                nsplits_2 = nsplit[sv2]
                 
                 for s1 in range(nsplits_1):
                     for s2 in range(nsplits_2):
@@ -227,12 +227,8 @@ for id_sv1, sv1 in enumerate(surveys):
                     if sv1 == sv2:
                         ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
                         spec_name_auto = "%s_%s_%sx%s_%s_auto" % (type, sv1, ar1, sv2, ar2)
-                        if ar1 == ar2:
-                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplit[sv1, ar1]
-                            spec_name_noise = "%s_%s_%sx%s_%s_noise" % (type, sv1, ar1, sv2, ar2)
-                        else:
-                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec])
-                            spec_name_noise = "%s_%s_%sx%s_%s_noise_not_normalised" % (type, sv1, ar1, sv2, ar2)
+                        ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplit[sv1]
+                        spec_name_noise = "%s_%s_%sx%s_%s_noise" % (type, sv1, ar1, sv2, ar2)
 
                         
                 so_spectra.write_ps(specDir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)

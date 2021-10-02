@@ -120,11 +120,11 @@ window_pol_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090.fits"
 window_T_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
 window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
 
-window_T_lf_pa7_f030 =  "windows/window_dr6_pa7_f030.fits"
-window_pol_lf_pa7_f030 =  "windows/window_dr6_pa7_f030.fits"
+window_T_lf_pa7_f030 =  "windows/window_lf_pa7_f030.fits"
+window_pol_lf_pa7_f030 =  "windows/window_lf_pa7_f030.fits"
 
-window_T_lf_pa7_f040 =  "windows/window_dr6_pa7_f040.fits"
-window_pol_lf_pa7_f040 =  "windows/window_dr6_pa7_f040.fits"
+window_T_lf_pa7_f040 =  "windows/window_lf_pa7_f040.fits"
+window_pol_lf_pa7_f040 =  "windows/window_lf_pa7_f040.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)

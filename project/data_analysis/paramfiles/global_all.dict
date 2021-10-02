@@ -1,12 +1,12 @@
-surveys = ["lf","dr6"]
+surveys = ["lf", "dr6"]
 
 arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 arrays_lf = ["pa7_f030", "pa7_f040"]
 
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/'
 map_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/maps_dr6/'
-npass = 3
-npass_low = 1
+npass_dr6 = 3
+npass_lf = 1
 
 deconvolve_pixwin = True
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
@@ -56,19 +56,21 @@ hk_mask = [-50, 50]
 
 # transfer functions
 
+tf_lf = data_dir + "transfer_fcns/tf.dat"
 tf_dr6 = data_dir + "transfer_fcns/tf.dat"
 
 src_free_maps_dr6 = True
+src_free_maps_lf = True
 
 
-maps_dr6_pa4_f150 = [map_dir + 'cmb_night_pa4_f150_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
-maps_dr6_pa4_f220 = [map_dir + 'cmb_night_pa4_f220_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
-maps_dr6_pa5_f090 = [map_dir + 'cmb_night_pa5_f090_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
-maps_dr6_pa5_f150 = [map_dir + 'cmb_night_pa5_f150_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
-maps_dr6_pa6_f090 = [map_dir + 'cmb_night_pa6_f090_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
-maps_dr6_pa6_f150 = [map_dir + 'cmb_night_pa6_f150_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
-maps_lf_pa7_f030 = [map_dir + 'cmb_night_pa7_f030_%dpass_2way_set%d_map_srcfree.fits' % (npass_low, i) for i in range(2)]
-maps_lf_pa7_f040 = [map_dir + 'cmb_night_pa7_f040_%dpass_2way_set%d_map_srcfree.fits' % (npass_low, i) for i in range(2)]
+maps_dr6_pa4_f150 = [map_dir + 'cmb_night_pa4_f150_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa4_f220 = [map_dir + 'cmb_night_pa4_f220_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa5_f090 = [map_dir + 'cmb_night_pa5_f090_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa5_f150 = [map_dir + 'cmb_night_pa5_f150_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa6_f090 = [map_dir + 'cmb_night_pa6_f090_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa6_f150 = [map_dir + 'cmb_night_pa6_f150_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_lf_pa7_f030 = [map_dir + 'cmb_night_pa7_f030_%dpass_2way_set%d_map_srcfree.fits' % (npass_lf, i) for i in range(2)]
+maps_lf_pa7_f040 = [map_dir + 'cmb_night_pa7_f040_%dpass_2way_set%d_map_srcfree.fits' % (npass_lf, i) for i in range(2)]
 
 
 cal_dr6_pa4_f150 = 1.0

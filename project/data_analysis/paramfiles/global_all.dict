@@ -1,6 +1,7 @@
-surveys = ["dr6"]
+surveys = ["lf","dr6"]
 
-arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150", "pa7_f030", "pa7_f040"]
+arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+arrays_lf = ["pa7_f030", "pa7_f040"]
 
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/'
 map_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/maps_dr6/'
@@ -26,8 +27,8 @@ ps_mask_dr6_pa5_f090 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcm
 ps_mask_dr6_pa5_f150 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
 ps_mask_dr6_pa6_f090 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
 ps_mask_dr6_pa6_f150 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
-ps_mask_dr6_pa7_f030 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_8.0arcmin_dust_monster_lowres.fits"
-ps_mask_dr6_pa7_f040 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_8.0arcmin_dust_monster_lowres.fits"
+ps_mask_lf_pa7_f030 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_8.0arcmin_dust_monster_lowres.fits"
+ps_mask_lf_pa7_f040 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_8.0arcmin_dust_monster_lowres.fits"
 
 
 gal_mask_dr6_pa4_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
@@ -36,8 +37,8 @@ gal_mask_dr6_pa5_f090 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmi
 gal_mask_dr6_pa5_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
 gal_mask_dr6_pa6_f090 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
 gal_mask_dr6_pa6_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
-gal_mask_dr6_pa7_f030 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_lowres.fits"
-gal_mask_dr6_pa7_f040 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_lowres.fits"
+gal_mask_lf_pa7_f030 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_lowres.fits"
+gal_mask_lf_pa7_f040 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_lowres.fits"
 
 
 
@@ -66,8 +67,8 @@ maps_dr6_pa5_f090 = [map_dir + 'cmb_night_pa5_f090_plain_%dpass_8way_set%d_map_s
 maps_dr6_pa5_f150 = [map_dir + 'cmb_night_pa5_f150_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
 maps_dr6_pa6_f090 = [map_dir + 'cmb_night_pa6_f090_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
 maps_dr6_pa6_f150 = [map_dir + 'cmb_night_pa6_f150_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
-maps_dr6_pa7_f030 = [map_dir + 'cmb_night_pa7_f030_%dpass_2way_set%d_map_srcfree.fits' % (npass_low, i) for i in range(2)]
-maps_dr6_pa7_f040 = [map_dir + 'cmb_night_pa7_f040_%dpass_2way_set%d_map_srcfree.fits' % (npass_low, i) for i in range(2)]
+maps_lf_pa7_f030 = [map_dir + 'cmb_night_pa7_f030_%dpass_2way_set%d_map_srcfree.fits' % (npass_low, i) for i in range(2)]
+maps_lf_pa7_f040 = [map_dir + 'cmb_night_pa7_f040_%dpass_2way_set%d_map_srcfree.fits' % (npass_low, i) for i in range(2)]
 
 
 cal_dr6_pa4_f150 = 1.0
@@ -76,8 +77,8 @@ cal_dr6_pa5_f090 = 1.0
 cal_dr6_pa5_f150 = 1.0
 cal_dr6_pa6_f090 = 1.0
 cal_dr6_pa6_f150 = 1.0
-cal_dr6_pa7_f030 = 1.0
-cal_dr6_pa7_f040 = 1.0
+cal_lf_pa7_f030 = 1.0
+cal_lf_pa7_f040 = 1.0
 
 
 nu_eff_dr6_pa4_f150 = 150
@@ -86,8 +87,8 @@ nu_eff_dr6_pa5_f090 = 90
 nu_eff_dr6_pa5_f150 = 150
 nu_eff_dr6_pa6_f090 = 90
 nu_eff_dr6_pa6_f150 = 150
-nu_eff_dr6_pa7_f030 = 30
-nu_eff_dr6_pa7_f040 = 40
+nu_eff_lf_pa7_f030 = 30
+nu_eff_lf_pa7_f040 = 40
 
 
 beam_dr6_pa4_f150 = data_dir + 'beams/beam_pa4_f150_straightaverage.dat'
@@ -96,8 +97,8 @@ beam_dr6_pa5_f090 = data_dir + 'beams/beam_pa5_f090_straightaverage.dat'
 beam_dr6_pa5_f150 = data_dir + 'beams/beam_pa5_f150_straightaverage.dat'
 beam_dr6_pa6_f090 = data_dir + 'beams/beam_pa6_f090_straightaverage.dat'
 beam_dr6_pa6_f150 = data_dir + 'beams/beam_pa6_f150_straightaverage.dat'
-beam_dr6_pa7_f030 = data_dir + 'beams/beam_transform_pa7_f030_201203.txt'
-beam_dr6_pa7_f040 = data_dir + 'beams/beam_transform_pa7_f040_201203.txt'
+beam_lf_pa7_f030 = data_dir + 'beams/beam_transform_pa7_f030_201203.txt'
+beam_lf_pa7_f040 = data_dir + 'beams/beam_transform_pa7_f040_201203.txt'
 
 window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
 window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
@@ -117,11 +118,11 @@ window_pol_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090.fits"
 window_T_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
 window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
 
-window_T_dr6_pa7_f030 =  "windows/window_dr6_pa7_f030.fits"
-window_pol_dr6_pa7_f030 =  "windows/window_dr6_pa7_f030.fits"
+window_T_lf_pa7_f030 =  "windows/window_dr6_pa7_f030.fits"
+window_pol_lf_pa7_f030 =  "windows/window_dr6_pa7_f030.fits"
 
-window_T_dr6_pa7_f040 =  "windows/window_dr6_pa7_f040.fits"
-window_pol_dr6_pa7_f040 =  "windows/window_dr6_pa7_f040.fits"
+window_T_lf_pa7_f040 =  "windows/window_dr6_pa7_f040.fits"
+window_pol_lf_pa7_f040 =  "windows/window_dr6_pa7_f040.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)

@@ -292,7 +292,7 @@ def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None, dt
             nlms[k] = curvedsky.rand_alm(nl_array_t,lmax=lmax, dtype=dtype)
     else:
         for k in range(n_splits):
-            nlms["T", k] = curvedsky.rand_alm(nl_array_t[:,:,k], lmax=lmax, dtype=dtype)
+            nlms["T", k] = curvedsky.rand_alm(nl_array_t, lmax=lmax, dtype=dtype)
             nlms["E", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax, dtype=dtype)
             nlms["B", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax, dtype=dtype)
     

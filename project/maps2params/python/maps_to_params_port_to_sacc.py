@@ -1,8 +1,13 @@
-import numpy as np
+import importlib
+import os
+import sys
+from datetime import datetime
+
 import matplotlib.pyplot as plt
-import os, sys
+import numpy as np
 import sacc
-from pspy import so_dict, pspy_utils, so_mcm
+from pspy import pspy_utils, so_dict, so_mcm
+
 
 def get_ell_covar(e1a, f1a, p1a, e1b, f1b, p1b, e2a, f2a, p2a, e2b, f2b, p2b, covar_in, n_ells, id_cov_order):
 
@@ -22,7 +27,7 @@ def get_ell_covar(e1a, f1a, p1a, e1b, f1b, p1b, e2a, f2a, p2a, e2b, f2b, p2b, co
 
     i1 = id_cov_order[nx_1 + "_" + px_1]
     i2 = id_cov_order[nx_2 + "_" + px_2]
-    
+
     return covar_in[i1][ :, i2,:]
 
 def get_bbl(ea, fa, pa, eb, fb, pb):
@@ -79,7 +84,7 @@ def get_x_iterator():
                             polsb = pols
                         for pb in polsb:
                             yield (ea, fa, eb, fb, pa, pb)
-                        
+
 spec_name_list = []
 for id_ea, ea in enumerate(experiments):
     freqs_a = d["freqs_%s" % ea]
@@ -105,13 +110,13 @@ n_ells = len(covar_in) // len_x_cov
 covar_in = covar_in.reshape([len_x_cov, n_ells, len_x_cov, n_ells])
 
 
-                    
+
 nmaps = 0
 for id_ea, ea in enumerate(experiments):
     freqs_a = d["freqs_%s" % ea]
     for id_fa, fa in enumerate(freqs_a):
         nmaps += 3
-        
+
 n_x = (nmaps * (nmaps + 1)) // 2
 n_cls = n_ells * n_x
 
@@ -199,12 +204,12 @@ for isim in range(iStart,iStop):
             cl_type = "cl_" + map_types[pb] + map_types[pa]
         else:
             cl_type = "cl_" + map_types[pa] + map_types[pb]
-            
+
         lbin = data["%s_%s" % (ea, fa), "%s_%s" % (eb, fb)]["lbin"]
         cb = data["%s_%s" % (ea, fa), "%s_%s" % (eb, fb)][pa + pb]
-        
+
         spec_sacc.add_ell_cl(cl_type, ta_name, tb_name, lbin, cb)
-    
+
         if isim == 0:
             bbl = get_bbl(ea, fa, pa, eb, fb, pb)
             ls_w = np.arange(2, bbl.shape[-1] + 2)
@@ -213,6 +218,16 @@ for isim in range(iStart,iStop):
                                 lbin, cb, window=wins)
 
     if isim == 0:
+        # Add metadata
+        cov_sacc.metadata["author"] = d.get("author", "SO Collaboration PS Task Force")
+        cov_sacc.metadata["date"] = d.get("date", datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
+        modules = ["mflike", "numpy", "pixell", "pspy", "pspipe", "sacc"]
+        cov_sacc.metadata["modules"] = str(modules)
+        for m in modules:
+            cov_sacc.metadata[f"{m}_version"] = importlib.import_module(m).__version__
+        # Store dict file as strings
+        for k, v in d.items():
+            cov_sacc.metadata[k] = str(v)
         cov_sacc.add_covariance(cov_full)
         cov_sacc.save_fits("%s/data_sacc_w_covar_and_Bbl.fits" % sacc_dir, overwrite=True)
 

@@ -221,7 +221,7 @@ for isim in range(iStart,iStop):
         # Add metadata
         cov_sacc.metadata["author"] = d.get("author", "SO Collaboration PS Task Force")
         cov_sacc.metadata["date"] = d.get("date", datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
-        modules = ["mflike", "numpy", "pixell", "pspy", "pspipe", "sacc"]
+        modules = ["camb", "mflike", "numpy", "pixell", "pspy", "pspipe", "sacc"]
         cov_sacc.metadata["modules"] = str(modules)
         for m in modules:
             cov_sacc.metadata[f"{m}_version"] = importlib.import_module(m).__version__

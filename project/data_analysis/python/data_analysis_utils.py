@@ -1,16 +1,20 @@
 """
 Some utility functions for the data analysis project.
 """
-import numpy as np, healpy as hp, pylab as plt
+import numpy as np
+import healpy as hp
+import pylab as plt
 from pixell import curvedsky
 from pspy import pspy_utils, so_cov, so_spectra, so_mcm, so_map_preprocessing
 from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 from pixell import enmap
 
-def kspace_filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys"):
+def filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys", inv_pixwin_lxly=None):
+
     """Filter the map in Fourier space removing modes in a horizontal and vertical band
     defined by hk_mask and vk_mask. This is a faster version that what is implemented in pspy
+    We also include an option for removing the pixel window function
     
     Parameters
     ---------
@@ -20,6 +24,10 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys"):
         format is fourier modes [-lx,+lx]
     hk_mask: list with 2 elements
         format is fourier modes [-ly,+ly]
+    normalize: string
+        optional normalisation of the Fourier transform
+    inv_pixwin_lxly: 2d array
+        the inverse of the pixel window function in fourier space
     """
 
     lymap, lxmap = map.data.lmap()
@@ -46,16 +54,20 @@ def kspace_filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys"):
             if hk_mask is not None:
                 ft[i, id_hk , :] = 0.
 
+    if inv_pixwin_lxly is not None:
+        ft  *= inv_pixwin_lxly
+        
     map.data[:] = np.real(enmap.ifft(ft, normalize=normalize))
     return map
 
 
-def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys"):
+def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys", inv_pixwin_lxly=None):
 
     """Filter the map in Fourier space removing modes in a horizontal and vertical band
     defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before
     doing this operation in order to remove pathological pixels
-    
+    We also include an option for removing the pixel window function
+
     Parameters
     ---------
     orig_map: ``so_map``
@@ -66,13 +78,18 @@ def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys"):
         format is fourier modes [-lx,+lx]
     hk_mask: list with 2 elements
         format is fourier modes [-ly,+ly]
+    normalize: string
+        optional normalisation of the Fourier transform
+    inv_pixwin_lxly: 2d array
+        the inverse of the pixel window function in fourier space
+
     """
 
     if orig_map.ncomp == 1:
         orig_map.data *= binary.data
     else:
         orig_map.data[:] *= binary.data
-    filtered_map = kspace_filter_fast(orig_map, vk_mask, hk_mask, normalize=normalize)
+    filtered_map = filter_fast(orig_map, vk_mask, hk_mask, normalize=normalize, inv_pixwin_lxly=inv_pixwin_lxly)
     # filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
 
     return filtered_map
@@ -169,6 +186,7 @@ def get_noise_matrix_spin0and2(noise_dir, survey, arrays, lmax, nsplits):
             l, nl = so_spectra.read_ps("%s/mean_%sx%s_%s_noise.dat" % (noise_dir, ar1, ar2, survey), spectra=spectra)
             nl_t = nl["TT"][:lmax]
             nl_pol = (nl["EE"][:lmax] + nl["BB"][:lmax])/2
+            l = l[:lmax]
 
             
             nl_array_t[c1, c2, :] = nl_t * nsplits *  2 * np.pi / (l * (l + 1))
@@ -244,7 +262,7 @@ def multiply_alms(alms, bl, ncomp):
     return alms_mult
 
 
-def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None):
+def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None, dtype=np.complex128):
     
     """This function generates the alms corresponding to the noise power spectra matrices
     nl_array_t, nl_array_pol. The function returns a dictionnary nlms["T", i].
@@ -273,12 +291,12 @@ def generate_noise_alms(nl_array_t, lmax, n_splits, ncomp, nl_array_pol=None):
     nlms = {}
     if ncomp == 1:
         for k in range(n_splits):
-            nlms[k] = curvedsky.rand_alm(nl_array_t,lmax=lmax)
+            nlms[k] = curvedsky.rand_alm(nl_array_t,lmax=lmax, dtype=dtype)
     else:
         for k in range(n_splits):
-            nlms["T", k] = curvedsky.rand_alm(nl_array_t, lmax=lmax)
-            nlms["E", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax)
-            nlms["B", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax)
+            nlms["T", k] = curvedsky.rand_alm(nl_array_t, lmax=lmax, dtype=dtype)
+            nlms["E", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax, dtype=dtype)
+            nlms["B", k] = curvedsky.rand_alm(nl_array_pol, lmax=lmax, dtype=dtype)
     
     return nlms
 
@@ -425,95 +443,59 @@ def fast_cov_coupling(sq_win_alms_dir,
     return coupling_dict
 
 
-
 def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, mbb_inv_ab, mbb_inv_cd):
+    """
+    This routine deserves some explanation
+    We want to compute the covariance between two power spectra
+    C1 = Wa * Xb, C2 =  Yc * Zd
+    Here W, X, Y, Z can be either T or E and a,b,c,d will be an index
+    corresponding to the survey and array we consider so for example a = s17_pa5_150 or a = dr6_pa4_090
+    The formula for the analytic covariance of C1, C2 is given by
+    Cov( Wa * Xb,  Yc * Zd) = < Wa Yc> <Xb Zd>  + < Wa Zd> <Xb Yc> (this is just from the wick theorem)
+    In practice we need to include the effect of the mask (so we have to introduce the coupling dict D)
+    and we need to take into account that we use only the cross power spectra, that is why we use the chi function
+    Cov( Wa * Xb,  Yc * Zd) = D(Wa*Yc,Xb Zd) chi(Wa,Yc,Xb Zd) +  D(Wa*Zd,Xb*Yc) chi(Wa,Zd,Xb,Yc)
     
+    Parameters
+    ----------
+    coupling : dictionnary
+      a dictionnary that countains the coupling terms arising from the window functions
+    id_element : list
+      a list of the form [a,b,c,d] where a = dr6_pa4_090, etc, this identify which pair of power spectrum we want the covariance of
+    ns: dict
+      this dictionnary contains the number of split we consider for each of the survey
+    ps_all: dict
+      this dict contains the theoretical best power spectra, convolve with the beam for example
+      ps["dr6&pa5_150", "dr6&pa4_150", "TT"] = bl_dr6_pa5_150 * bl_dr6_pa4_150 * (Dl^{CMB}_TT + fg_TT)
+    nl_all: dict
+      this dict contains the estimated noise power spectra, note that it correspond to the noise power spectrum per split
+      e.g nl["dr6&pa5_150", "dr6&pa4_150", "TT"]
+    binning_file:
+      a binning file with three columns bin low, bin high, bin mean
+    mbb_inv_ab and mbb_inv_cd:
+      the inverse mode coupling matrices corresponding to the C1 = Wa * Xb and C2 =  Yc * Zd power spectra
+    """
+
     na, nb, nc, nd = id_element
-    
+
     lmax = coupling["TaTcTbTd"].shape[0]
     bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
     nbins = len(bin_hi)
-    analytic_cov = np.zeros((4*nbins, 4*nbins))
-
-    # TaTbTcTd
-    M_00 = coupling["TaTcTbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTTT")
-    M_00 += coupling["TaTdTbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTTT")
-    analytic_cov[0*nbins:1*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_00, binning_file, lmax)
-
-    # TaEbTcEd
-    M_11 = coupling["TaTcPbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTEE")
-    M_11 += coupling["TaPdPbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TEET")
-    analytic_cov[1*nbins:2*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_11, binning_file, lmax)
-
-    # EaTbEcTd
-    M_22 = coupling["PaPcTbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "EETT")
-    M_22 += coupling["PaTdTbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETTE")
-    analytic_cov[2*nbins:3*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_22, binning_file, lmax)
-
-    # EaEbEcEd
-    M_33 = coupling["PaPcPbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEEE")
-    M_33 += coupling["PaPdPbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEEE")
-    analytic_cov[3*nbins:4*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_33, binning_file, lmax)
-
-    # TaTbTcEd
-    M_01 = coupling["TaTcTbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTTE")
-    M_01 += coupling["TaPdTbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TETT")
-    analytic_cov[0*nbins:1*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_01, binning_file, lmax)
-
-    # TaTbEcTd
-    M_02 = coupling["TaPcTbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TETT")
-    M_02 += coupling["TaTdTbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTTE")
-    analytic_cov[0*nbins:1*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_02, binning_file, lmax)
-
-    # TaTbEcEd
-    M_03 = coupling["TaPcTbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TETE")
-    M_03 += coupling["TaPdTbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TETE")
-    analytic_cov[0*nbins:1*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_03, binning_file, lmax)
-
-    # TaEbEcTd
-    M_12 = coupling["TaPcPbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TEET")
-    M_12 += coupling["TaTdPbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTEE")
-    analytic_cov[1*nbins:2*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_12, binning_file, lmax)
-
-    # TaEbEcEd
-    M_13 = coupling["TaPcPbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TEEE")
-    M_13 += coupling["TaPdPbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TEEE")
-    analytic_cov[1*nbins:2*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_13, binning_file, lmax)
-
-    # EaTbEcEd
-    M_23 = coupling["PaPcTbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "EETE")
-    M_23 += coupling["PaPdTbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "EETE")
-    analytic_cov[2*nbins:3*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_23, binning_file, lmax)
-
-    # TaEbTcTd
-    M_10 = coupling["TaTcPbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTET")
-    M_10 += coupling["TaTdPbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTET")
-    analytic_cov[1*nbins:2*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_10, binning_file, lmax)
-
-    # EaTbTcTd
-    M_20 = coupling["PaTcTbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETTT")
-    M_20 += coupling["PaTdTbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETTT")
-    analytic_cov[2*nbins:3*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_20, binning_file, lmax)
-
-    # EaEbTcTd
-    M_30 = coupling["PaTcPbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETET")
-    M_30 += coupling["PaTdPbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETET")
-    analytic_cov[3*nbins:4*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_30, binning_file, lmax)
-
-    # EaTbTcEd
-    M_21 = coupling["PaTcTbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETTE")
-    M_21 += coupling["PaPdTbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "EETT")
-    analytic_cov[2*nbins:3*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_21, binning_file, lmax)
-
-    # EaEbTcEd
-    M_31 = coupling["PaTcPbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETEE")
-    M_31 += coupling["PaPdPbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEET")
-    analytic_cov[3*nbins:4*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_31, binning_file, lmax)
-
-    # EaEbEcTd
-    M_32 = coupling["PaPcPbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEET")
-    M_32 += coupling["PaTdPbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETEE")
-    analytic_cov[3*nbins:4*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_32, binning_file, lmax)
+    
+    speclist = ["TT", "TE", "ET", "EE"]
+    nspec = len(speclist)
+    analytic_cov = np.zeros((nspec * nbins, nspec * nbins))
+    for i, (W, X) in enumerate(speclist):
+        for j, (Y, Z) in enumerate(speclist):
+        
+            id0 = W + "a" + Y + "c"
+            id1 = X + "b" + Z + "d"
+            id2 = W + "a" + Z + "d"
+            id3 = X + "b" + Y + "c"
+            
+            M = coupling[id0.replace("E","P") + id1.replace("E","P")] * chi(na, nc, nb, nd, ns, ps_all, nl_all, W + Y + X + Z)
+            M += coupling[id2.replace("E","P") + id3.replace("E","P")] * chi(na, nd, nb, nc, ns, ps_all, nl_all, W + Z + X + Y)
+            analytic_cov[i * nbins: (i + 1) * nbins, j * nbins: (j + 1) * nbins] = so_cov.bin_mat(M, binning_file, lmax)
 
     mbb_inv_ab = so_cov.extract_TTTEEE_mbb(mbb_inv_ab)
     mbb_inv_cd = so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
@@ -521,6 +503,7 @@ def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, m
     analytic_cov = np.dot(np.dot(mbb_inv_ab, analytic_cov), mbb_inv_cd.T)
     
     return analytic_cov
+
 
 
 def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):
@@ -532,12 +515,12 @@ def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):
     sv_gamma, ar_gamma = gamma.split("&")
     sv_eta, ar_eta = eta.split("&")
     
-    RX = id[0] + id[1]
-    SY = id[2] + id[3]
-    chi = Dl[alpha, gamma, RX] * Dl[beta, eta, SY]
-    chi += Dl[alpha, gamma, RX] * DNl[beta, eta, SY] * f(sv_beta, sv_eta, sv_alpha, sv_gamma, ns)
-    chi += Dl[beta, eta, SY] * DNl[alpha, gamma, RX] * f(sv_alpha, sv_gamma, sv_beta, sv_eta, ns)
-    chi += g(sv_alpha, sv_gamma, sv_beta, sv_eta, ns) * DNl[alpha, gamma, RX] * DNl[beta, eta, SY]
+    AB = id[0] + id[1]
+    CD = id[2] + id[3]
+    chi = Dl[alpha, gamma, AB] * Dl[beta, eta, CD]
+    chi += Dl[alpha, gamma, AB] * DNl[beta, eta, CD] * f(sv_beta, sv_eta, sv_alpha, sv_gamma, ns)
+    chi += Dl[beta, eta, CD] * DNl[alpha, gamma, AB] * f(sv_alpha, sv_gamma, sv_beta, sv_eta, ns)
+    chi += g(sv_alpha, sv_gamma, sv_beta, sv_eta, ns) * DNl[alpha, gamma, AB] * DNl[beta, eta, CD]
     chi= symm_power(chi, mode="arithm")
 
     return chi

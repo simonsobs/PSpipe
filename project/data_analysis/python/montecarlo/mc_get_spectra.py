@@ -21,6 +21,12 @@ niter = d["niter"]
 type = d["type"]
 binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]
+sim_alm_dtype = d["sim_alm_dtype"]
+
+if sim_alm_dtype == "complex64":
+    sim_alm_dtype = np.complex64
+elif sim_alm_dtype == "complex128":
+    sim_alm_dtype = np.complex128
 
 window_dir = "windows"
 mcm_dir = "mcms"
@@ -69,8 +75,8 @@ for iii in subtasks:
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
     # fglms will be of shape (nfreq, lm) and is T only
     
-    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax)
-    fglms = curvedsky.rand_alm(ps_fg, lmax=lmax)
+    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, dtype=sim_alm_dtype)
+    fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, dtype=sim_alm_dtype)
     
     master_alms = {}
     nsplits = {}
@@ -98,13 +104,19 @@ for iii in subtasks:
                                                        lmax,
                                                        nsplits[sv],
                                                        ncomp,
-                                                       nl_array_pol=nl_array_pol)
+                                                       nl_array_pol=nl_array_pol,
+                                                       dtype=sim_alm_dtype)
+        print(nl_array_t.shape)
+        del nl_array_t, nl_array_pol
 
         for ar_id, ar in enumerate(arrays):
         
             win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
             win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+            
             window_tuple = (win_T, win_pol)
+            
+            del win_T, win_pol
         
             # we add fg alms to cmb alms in temperature
             alms_beamed = alms.copy()
@@ -112,9 +124,11 @@ for iii in subtasks:
             
             # we convolve signal + foreground with the beam of the array
             l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
-            alms_beamed = data_analysis_utils.multiply_alms(alms_beamed, bl, ncomp)
+            alms_beamed = curvedsky.almxfl(alms_beamed, bl)
 
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
+
+            t1 = time.time()
 
             for k in range(nsplits[sv]):
             
@@ -129,7 +143,7 @@ for iii in subtasks:
                 # from now on the simulation pipeline is done
                 # and we are back to the get_spectra algorithm
                                 
-                if win_T.pixel == "CAR":
+                if window_tuple[0].pixel == "CAR":
                     if d["use_kspace_filter"]:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                         split = data_analysis_utils.get_filtered_map(split,
@@ -137,16 +151,19 @@ for iii in subtasks:
                                                                      vk_mask=d["vk_mask"],
                                                                      hk_mask=d["hk_mask"],
                                                                      normalize=False)
+                        del binary
                 
                 if d["remove_mean"] == True:
                     split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
-                master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
+                master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
+                print("m_alms_dtype", master_alms[sv, ar, k].dtype)
                 if d["use_kspace_filter"]:
                     # there is an extra normalisation for the FFT/IFFT bit
                     # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
                     master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2])
 
+            print(time.time()-t1)
 
     ps_dict = {}
     _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)

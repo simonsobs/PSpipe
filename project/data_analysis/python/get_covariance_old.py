@@ -68,6 +68,8 @@ for id_sv1, sv1 in enumerate(surveys):
 
                         nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = Nl[spec][:lmax] * ns[sv1]
                     else:
+                        # Note that here we also set to zero the noise correlation between array
+                        # We should check that this is a good approximation
                         nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = np.zeros(lmax)
                     
                     ps_all["%s&%s" % (sv2, ar2), "%s&%s"%(sv1, ar1), spec] = ps_all["%s&%s"%(sv1, ar1), "%s&%s"%(sv2, ar2), spec]
@@ -90,7 +92,7 @@ for sid1, spec1 in enumerate(spec_name):
         ncovs += 1
 
 
-if d["use_toeplitz"] == True:
+if d["use_toeplitz_cov"] == True:
     print("we will use the toeplitz approximation")
     l_exact, l_band, l_toep = 800, 2000, 2750
 else:

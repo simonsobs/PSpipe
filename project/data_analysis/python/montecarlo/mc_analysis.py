@@ -16,6 +16,12 @@ surveys = d["surveys"]
 iStart = d["iStart"]
 iStop = d["iStop"]
 lmax = d["lmax"]
+sim_alm_dtype = d["sim_alm_dtype"]
+
+if sim_alm_dtype == "complex64":
+    spec_dtype = np.float32
+elif sim_alm_dtype == "complex128":
+    spec_dtype = np.float64
 
 spec_dir = "sim_spectra"
 mcm_dir = "mcms"
@@ -75,9 +81,9 @@ for kind in ["cross", "noise", "auto"]:
                                 vec_EB = np.append(vec_EB, (Db["EB"] + Db["BE"])/2 )
 
 
-        vec_list += [vec]
-        vec_list_restricted += [vec_restricted]
-        vec_list_EB += [vec_EB]
+        vec_list += [vec.astype(spec_dtype)]
+        vec_list_restricted += [vec_restricted.astype(spec_dtype)]
+        vec_list_EB += [vec_EB.astype(spec_dtype)]
 
 
     mean_vec = np.mean(vec_list, axis=0)
@@ -122,52 +128,4 @@ for kind in ["cross", "noise", "auto"]:
                         np.savetxt("%s/spectra_%s_%s_%sx%s_%s_%s.dat" % (mc_dir, spec, sv1, ar1, sv2, ar2, kind), np.array([lb,mean,std]).T)
                                    
                         id_spec += 1
-
-# in this part we create covariance matrices in the same shape and form as the analytical one
-# it's a bit redundant with the first step but is more convenient for direct comparison with
-# the analytical one (and take very little time)
-
-spec_list = []
-for id_sv1, sv1 in enumerate(surveys):
-    arrays_1 = d["arrays_%s" % sv1]
-    for id_ar1, ar1 in enumerate(arrays_1):
-        for id_sv2, sv2 in enumerate(surveys):
-            arrays_2 = d["arrays_%s" % sv2]
-            for id_ar2, ar2 in enumerate(arrays_2):
-                if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                if  (id_sv1 > id_sv2) : continue
-                spec_list += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
-            
-for sid1, spec1 in enumerate(spec_list):
-    for sid2, spec2 in enumerate(spec_list):
-        if sid1 > sid2 : continue
-        na, nb = spec1.split("x")
-        nc, nd = spec2.split("x")
-        
-        ps_list_ab = []
-        ps_list_cd = []
-        for iii in range(iStart, iStop):
-            spec_name_cross_ab = "%s_%sx%s_cross_%05d" % (type, na, nb, iii)
-            spec_name_cross_cd = "%s_%sx%s_cross_%05d" % (type, nc, nd, iii)
-        
-            lb, ps_ab = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_cross_ab, spectra=spectra)
-            lb, ps_cd = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_cross_cd, spectra=spectra)
-    
-            vec_ab = []
-            vec_cd = []
-            for spec in ["TT", "TE", "ET", "EE"]:
-                vec_ab = np.append(vec_ab, ps_ab[spec])
-                vec_cd = np.append(vec_cd, ps_cd[spec])
-    
-            ps_list_ab += [vec_ab]
-            ps_list_cd += [vec_cd]
-
-        cov_mc = 0
-        for iii in range(iStart, iStop):
-            cov_mc += np.outer(ps_list_ab[iii], ps_list_cd[iii])
-
-        cov_mc = cov_mc / (iStop-iStart) - np.outer(np.mean(ps_list_ab, axis=0), np.mean(ps_list_cd, axis=0))
-
-        np.save("%s/mc_cov_%sx%s_%sx%s.npy"%(cov_dir, na, nb, nc, nd), cov_mc)
-
 

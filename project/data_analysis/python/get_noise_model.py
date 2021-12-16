@@ -47,7 +47,7 @@ for sv in surveys:
                 nbs_mean = nbs[spec] * bb_ar1*bb_ar2
                 plt.figure(figsize=(12,12))
 
-                if (spec == "TT" or spec == "EE" or spec == "BB") & (ar1 == ar2):
+                if (spec == "TT" or spec == "EE" or spec == "BB"):
                 
                     nl = scipy.interpolate.interp1d(lb, nbs_mean, fill_value = "extrapolate")
                     nl_dict[spec] = np.array([nl(i) for i in lth])

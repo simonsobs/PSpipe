@@ -1,7 +1,7 @@
 #
 # ```@setup covmat
 # # the example command line input for this script
-# ARGS = ["example.toml", "100", "100", "100", "100", "T", "T", "T", "T", "1", "2", "1", "2", "--plot"] 
+# ARGS = ["example.toml", "143", "143", "143", "143", "T", "T", "T", "T", "1", "2", "1", "2", "--plot"] 
 # ``` 
 
 freqs = [ARGS[2], ARGS[3], ARGS[4], ARGS[5]]
@@ -68,9 +68,12 @@ identity_spectrum = SpectralVector(ones(lmax+1));
 
 #
 
-function extend_signal(s::Vector{T}) where T
-    es = SpectralVector(zeros(T, nside2lmax(nside)+1))
-    es[0:(length(s)-1)] .= s
+function extend_signal(s::Vector{T}, nside) where T
+    lmax = nside2lmax(nside)
+    es = SpectralVector(zeros(T, lmax+1))
+    for ℓ ∈ 0:min(length(s) - 1, lmax)
+        es[ℓ] = s[ℓ+1]
+    end
     return es
 end
 
@@ -84,7 +87,7 @@ function get_correction(freq1, freq2, spec)
     correction_file = joinpath(correction_path, "$(freq1)_$(freq2)_$(spec_str)_corr.dat")
     correction_gp = readdlm(correction_file)[:,1]
     correction_gp[1:3] .= 0.0
-    return extend_signal(correction_gp)
+    return extend_signal(correction_gp, nside)
 end
 
 function whitenoiselevel(config, freq::String, split::String)
@@ -121,11 +124,11 @@ for (f1, s1) in zip(freqs, splits)
         WlEE = util_planck_beam_Wl(f1, "hm"*s1, f2, "hm"*s2, :EE, :EE; 
             lmax=lmax, beamdir=beampath)
 
-        spectra[(:TT, f1_name, f2_name)] = extend_signal(signal["TT"]) .* WlTT .*
+        spectra[(:TT, f1_name, f2_name)] = extend_signal(signal["TT"], nside) .* WlTT .*
             sqrt.(1 .+ get_correction(f1, f2, "TT"))
-        spectra[(:TE, f1_name, f2_name)] = extend_signal(signal["TE"]) .* WlTE .*
+        spectra[(:TE, f1_name, f2_name)] = extend_signal(signal["TE"], nside) .* WlTE .*
             sqrt.(1 .+ get_correction(f1, f2, "TE"))
-        spectra[(:EE, f1_name, f2_name)] = extend_signal(signal["EE"]) .* WlEE .*
+        spectra[(:EE, f1_name, f2_name)] = extend_signal(signal["EE"], nside) .* WlEE .*
             sqrt.(1 .+ get_correction(f1, f2, "EE"))
         
         if f1_name == f2_name
@@ -159,7 +162,7 @@ end
 
 ## load information that the covmat needs about a field
 function loadcovfield(freq, split)
-    # read maskT, maskP, covariances
+    ## read maskT, maskP, covariances
     mapid = "P$(freq)hm$(split)"
     maskfileT = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid)_maskT.fits")
     maskfileP = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid)_maskP.fits")
@@ -217,14 +220,6 @@ for l1 in 0:lmax
 end
 
 Cbb = P * parent(C₀) * (P')
-
-# 
-# lminAB, lmaxAB = get_plic_ellrange(specAB, freqs[1], freqs[2])
-# lminCD, lmaxCD = get_plic_ellrange(specCD, freqs[3], freqs[4])
-# rangeAB = findfirst(lb .> lminAB):findlast(lb .< lmaxAB)
-# rangeCD = findfirst(lb .> lminCD):findlast(lb .< lmaxCD)
-
-# cov_result = Cbb[rangeAB, rangeCD]
 
 ##
 if transposed

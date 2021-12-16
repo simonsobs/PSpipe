@@ -35,7 +35,7 @@ Cl11 = CSV.read(joinpath(spectrapath,"$(run_name)_P$(freq)hm1xP$(freq)hm1.csv"),
 Cl12 = CSV.read(joinpath(spectrapath,"$(run_name)_P$(freq)hm1xP$(freq)hm2.csv"), DataFrame);
 Cl22 = CSV.read(joinpath(spectrapath,"$(run_name)_P$(freq)hm2xP$(freq)hm2.csv"), DataFrame);
 
-truncate(vec::Vector, lmax) = SpectralVector(vec[firstindex(vec):(lmax+1)])
+truncate(vec::AbstractVector, lmax) = SpectralVector(vec[firstindex(vec):(lmax+1)])
 truncate(vec::SpectralVector, lmax) = vec[IdentityRange(firstindex(vec):lmax)]
 
 cl11 = truncate(Cl11[!,XY], lmax)
@@ -73,15 +73,15 @@ function fit_bb_model(model, p0, xl, yl, signal; kwargs...)
     like(α) = (sum((2 .* xl .+ 1) ./ (model(xl, p0).^2 .+ signal.^2) .* (model(xl, α) .- yl).^2))
     println("starting opt ", like(p0))
     res = bboptimize(like; SearchRange=map((i,j)->(i,j), lower, upper), NumDimensions = length(p0), 
-        MaxFuncEvals=50_000, TraceInterval=20)
+        MaxFuncEvals=500_000, TraceInterval=20)
     return best_candidate(res)
 end
 
-# 
-p0_1 = readdlm(joinpath(@__DIR__, "../../", "output", 
-        "planck_noise_coeffs", "$(freq)_hm1_$(spec)_coeff.dat"))[:,1]
-p0_2 = readdlm(joinpath(@__DIR__, "../../", "output", 
-        "planck_noise_coeffs", "$(freq)_hm2_$(spec)_coeff.dat"))[:,1]
+#
+p0_1 = readdlm(joinpath(@__DIR__, "../", "input",
+        "initial_planck_noise_coeffs", "$(freq)_hm1_$(spec)_coeff.dat"))[:,1]
+p0_2 = readdlm(joinpath(@__DIR__, "../", "input",
+        "initial_planck_noise_coeffs", "$(freq)_hm2_$(spec)_coeff.dat"))[:,1]
 
 #
 min_ell_ind = 31 # lmin=30

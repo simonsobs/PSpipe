@@ -136,7 +136,7 @@ correction = SpectralVector(cl_var[:,1] ./ diag(parent(C_decoupled)))
 lmin_cut, lmax_cut = get_plic_ellrange(Symbol(spec), freq1, freq2)
 correction[lmax_cut:end] .= 1.0
 
-fit_ells = intersect((lmin_cut-20):(lmax_cut),1:lmax)
+fit_ells = intersect((lmin_cut-20):(lmax_cut), 0:lmax)
 u = correction[fit_ells] .- 1
 t = 1.0 * collect(fit_ells)
 

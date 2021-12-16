@@ -110,10 +110,12 @@ end
 
 run_name = config["general"]["name"]
 cmd = "sbatch scripts/8core2hr.cmd"
-open("scripts/$(run_name)_gen_covmats.sh", "w") do f
+scriptpath = joinpath(config["scratch"], "scripts")
+mkpath(scriptpath)
+open(joinpath(scriptpath, "$(run_name)_gen_covmats.sh"), "w") do f
     nspecs = length(constituents)
 
-    # generate the upper triangle
+    ## generate the upper triangle
     for i1 in 1:nspecs
         for i2 in i1:nspecs
             A, B, f1, f2, s1, s2 = constituents[i1]

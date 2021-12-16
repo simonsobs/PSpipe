@@ -38,7 +38,7 @@
 # 
 # # take a look at the config
 # config = TOML.parsefile(configfile)
-# TOML.print(Dict("dir"=>config["dir"]))  # print just the "dir" TOML entry
+# TOML.print(Dict("dir"=>config))  # print just the "dir" TOML entry
 # ```
 
 ##src
@@ -68,9 +68,9 @@ else
 end
 
 ## set up directories
-mapdest = config["dir"]["map"]
-maskdest = config["dir"]["mask"]
-beamdest = config["dir"]["beam"]
+mapdest = joinpath(config["scratch"], "maps")
+maskdest = joinpath(config["scratch"], "masks")
+beamdest = joinpath(config["scratch"], "beams")
 mkpath(mapdest)
 mkpath(maskdest)
 mkpath(beamdest)
@@ -109,8 +109,8 @@ run(`tar -xf $(joinpath(beamdest, beamfiletar)) --overwrite -C $(beamdest)`);
 
 # 
 ## We also want to retrieve the plic templates. 
-plicrefdir = joinpath(config["dir"]["scratch"])
-plicreffile = joinpath(config["dir"]["scratch"], "plicref.tar.gz")
+plicrefdir = joinpath(config["scratch"])
+plicreffile = joinpath(config["scratch"], "plicref.tar.gz")
 download_if_necessary(
     "https://github.com/xzackli/PSPipePlanckRender.jl/releases/download/0.1.2/plicref.tar.gz", 
     plicreffile)
@@ -119,6 +119,6 @@ run(`tar -xzvf $(plicreffile) --overwrite -C $(plicrefdir)`);
 
 # sims 
 using Healpix
-Healpix.applyfullweights!(HealpixMap{Float64, RingOrder}(2048))
+Healpix.applyFullWeights!(HealpixMap{Float64, RingOrder}(2048))
 using PowerSpectra
 PowerSpectra.planck256_beamdir()

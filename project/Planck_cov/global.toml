@@ -1,14 +1,10 @@
+
+scratch = "/tigress/zequnl/planck"
+
 [debug]
 [general]
 name = "pr3"
 nside = 2048
-
-[dir]
-pspipe_project = "/home/zequnl/Projects/PSpipe/project/Planck_cov"
-scratch = "/tigress/zequnl/planck"
-map = "/tigress/zequnl/planck/maps"
-mask = "/tigress/zequnl/planck/masks"
-beam = "/tigress/zequnl/planck/beams"
 
 [map]
 "P100hm1" = "HFI_SkyMap_100_2048_R3.01_halfmission-1.fits"

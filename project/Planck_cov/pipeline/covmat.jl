@@ -1,9 +1,8 @@
 #
-# ```@setup rawspectra
+# ```@setup covmat
 # # the example command line input for this script
-# ARGS = ["example.toml", "P143hm1", "P143hm2", "T", "T", "T", "T", "--plot"] 
+# ARGS = ["example.toml", "100", "100", "100", "100", "T", "T", "T", "T", "1", "2", "1", "2", "--plot"] 
 # ``` 
-
 
 freqs = [ARGS[2], ARGS[3], ARGS[4], ARGS[5]]
 specs = [ARGS[6], ARGS[7], ARGS[8], ARGS[9]]
@@ -14,7 +13,7 @@ using PowerSpectra
 using Healpix
 using JLD2
 using Plots
-include("../src/util.jl")
+include("util.jl")
 
 
 configfile = ARGS[1]
@@ -81,7 +80,7 @@ function get_correction(freq1, freq2, spec)
         freq1, freq2 = freq2, freq1
         spec_str = reverse(spec_str)
     end
-    correction_path = joinpath(config["dir"]["scratch"], "point_source_corrections")
+    correction_path = joinpath(config["scratch"], "point_source_corrections")
     correction_file = joinpath(correction_path, "$(freq1)_$(freq2)_$(spec_str)_corr.dat")
     correction_gp = readdlm(correction_file)[:,1]
     correction_gp[1:3] .= 0.0
@@ -89,8 +88,8 @@ function get_correction(freq1, freq2, spec)
 end
 
 function whitenoiselevel(config, freq::String, split::String)
-    whitenoisefile = joinpath(config["dir"]["scratch"], "whitenoise.dat")
-    df = DataFrame(CSV.File(whitenoisefile))
+    whitenoisefile = joinpath(config["scratch"], "whitenoise.dat")
+    df = CSV.read(whitenoisefile, DataFrame)
     for row in 1:nrow(df)
         if (string(df[row,:freq]) == freq) && (string(df[row,:split]) == split)
             return df[row, :noiseT], df[row, :noiseP]
@@ -105,7 +104,8 @@ end
 #
 
 ells = collect(0:(lmax))
-coefficientpath = joinpath(config["dir"]["scratch"], "noise_model_coeffs")
+coefficientpath = joinpath(config["scratch"], "noise_model_coeffs")
+beampath = joinpath(config["scratch"], "beams")
 
 ## loop over combinations and put stuff into the dictionaries
 for (f1, s1) in zip(freqs, splits)
@@ -115,11 +115,11 @@ for (f1, s1) in zip(freqs, splits)
         signal, theory_dict = signal_and_theory(f1, f2, config)
         
         WlTT = util_planck_beam_Wl(f1, "hm"*s1, f2, "hm"*s2, :TT, :TT; 
-            lmax=lmax, beamdir=config["dir"]["beam"])
+            lmax=lmax, beamdir=beampath)
         WlTE = util_planck_beam_Wl(f1, "hm"*s1, f2, "hm"*s2, :TE, :TE; 
-            lmax=lmax, beamdir=config["dir"]["beam"])
+            lmax=lmax, beamdir=beampath)
         WlEE = util_planck_beam_Wl(f1, "hm"*s1, f2, "hm"*s2, :EE, :EE; 
-            lmax=lmax, beamdir=config["dir"]["beam"])
+            lmax=lmax, beamdir=beampath)
 
         spectra[(:TT, f1_name, f2_name)] = extend_signal(signal["TT"]) .* WlTT .*
             sqrt.(1 .+ get_correction(f1, f2, "TT"))
@@ -161,9 +161,9 @@ end
 function loadcovfield(freq, split)
     # read maskT, maskP, covariances
     mapid = "P$(freq)hm$(split)"
-    maskfileT = joinpath(config["dir"]["mask"], "$(run_name)_$(mapid)_maskT.fits")
-    maskfileP = joinpath(config["dir"]["mask"], "$(run_name)_$(mapid)_maskP.fits")
-    mapfile = joinpath(config["dir"]["map"], config["map"][mapid])
+    maskfileT = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid)_maskT.fits")
+    maskfileP = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid)_maskP.fits")
+    mapfile = joinpath(config["scratch"], "maps", config["map"][mapid])
     maskT = readMapFromFITS(maskfileT, 1, Float64)
     maskP = readMapFromFITS(maskfileP, 1, Float64)
     covII = nest2ring(readMapFromFITS(mapfile, 5, Float64)) * 1e12
@@ -200,14 +200,15 @@ pixwinAB = spec2pixwin(specAB, nside)
 pixwinCD = spec2pixwin(specCD, nside)
 
 ## load binnings
-binfile = joinpath(config["dir"]["pspipe_project"], "input", "binused.dat")
+binfile = joinpath(@__DIR__, "../", "input", "binused.dat")
 P, lb = util_planck_binning(binfile; lmax=lmax)
+beampath = joinpath(config["scratch"], "beams")
 
 C₀ = decouple_covmat(C, M₁₂, M₃₄)
 WlAB = util_planck_beam_Wl(freqs[1], "hm"*splits[1], freqs[2], "hm"*splits[2], specAB, specAB; 
-    lmax=lmax, beamdir=config["dir"]["beam"])
+    lmax=lmax, beamdir=beampath)
 WlCD = util_planck_beam_Wl(freqs[3], "hm"*splits[3], freqs[4], "hm"*splits[4], specCD, specCD; 
-    lmax=lmax, beamdir=config["dir"]["beam"])
+    lmax=lmax, beamdir=beampath)
 
 for l1 in 0:lmax
     for l2 in 0:lmax
@@ -230,8 +231,8 @@ if transposed
     Cbb = Array(transpose(Cbb))
 end
 
-spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
-covpath = joinpath(config["dir"]["scratch"], "covmatblocks")
+spectrapath = joinpath(config["scratch"], "rawspectra")
+covpath = joinpath(config["scratch"], "covmatblocks")
 mkpath(covpath)
 
 covmat_filename = joinpath(covpath, join(specs) * "_" *

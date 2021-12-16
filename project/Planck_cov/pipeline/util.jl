@@ -165,7 +165,7 @@ end
 # between two frequencies. The data is stored in the `plicref` directory in the config.
 
 function signal_and_theory(freq1, freq2, config::Dict)
-    likelihood_data_dir = joinpath(config["dir"]["scratch"], "plicref")
+    likelihood_data_dir = joinpath(config["scratch"], "plicref")
     th = read_commented_header(joinpath(likelihood_data_dir,"theory_cl.txt"))
     fg = read_commented_header(joinpath(likelihood_data_dir,
         "base_plikHM_TTTEEE_lowl_lowE_lensing.minimum.plik_foregrounds"))

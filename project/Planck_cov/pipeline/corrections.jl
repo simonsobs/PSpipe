@@ -1,10 +1,8 @@
 #
-# ```@setup signalcorrections
+# ```@setup corrections
 # # the example command line input for this script
-# ARGS = ["example.toml",   "143", "143", "TT", "--plot"]
-# ``` 
-
-# configfile, freq1, freq2, spec = ["example.toml", "143", "143", "TT"]
+# ARGS = ["example.toml", "143", "143", "TT", "--plot"]
+# ```
 
 configfile, freq1, freq2, spec = ARGS
 
@@ -21,17 +19,18 @@ end
 
 
 using Plots
+using PowerSpectra
 using TOML
 using UUIDs, JLD2, FileIO
 using Statistics
 using GaussianProcesses
 
-include("../src/util.jl")
+include("util.jl")
 
 config = TOML.parsefile(configfile)
 nside = config["general"]["nside"]
 run_name = config["general"]["name"]
-simpath = joinpath(config["dir"]["scratch"], "signalsims", 
+simpath = joinpath(config["scratch"], "signalsims", 
     "$(freq1)_$(freq2)_$(spec)")
 lmax = nside2lmax(nside)
 lmax_planck = min(2508, lmax)
@@ -46,7 +45,7 @@ function readsims(path)
     return cl_array
 end
 
-            
+
 @time cl_array = readsims(simpath)
 cl_mean = mean(cl_array, dims=2)
 cl_var = var(cl_array, dims=2)
@@ -64,6 +63,7 @@ if "--plot" ∈ ARGS
     plot!(signal12[spec] .* collect(0:length(signal11[spec])-1).^2, xlim=(0,2nside))
 end
 
+#
 ##
 X, Y = Symbol(spec[1]), Symbol(spec[2])
 run_name = config["general"]["name"]
@@ -72,11 +72,12 @@ masktype2 = (Y == :T) ? "T" : "P"
 mapid1 = "P$(freq1)hm$(splits[1])"
 mapid2 = "P$(freq2)hm$(splits[2])"
 
+#
 using Healpix
-maskfileT₁ = joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskT.fits")
-maskfileP₁ = joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskP.fits")
-maskfileT₂ = joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskT.fits")
-maskfileP₂ = joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskP.fits")
+maskfileT₁ = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid1)_maskT.fits")
+maskfileP₁ = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid1)_maskP.fits")
+maskfileT₂ = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid2)_maskT.fits")
+maskfileP₂ = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid2)_maskP.fits")
 
 maskT₁ = readMapFromFITS(maskfileT₁, 1, Float64)
 maskP₁ = readMapFromFITS(maskfileP₁, 1, Float64)
@@ -88,6 +89,8 @@ zero_var = PolarizedHealpixMap(zero_var_component, zero_var_component, zero_var_
 
 m1_signal = CovField(mapid1, maskT₁, maskP₁, zero_var)
 m2_signal = CovField(mapid2, maskT₂, maskP₂, zero_var)
+
+#
 
 # convert a Vector (starting from 0) into a SpectralVector of full length
 function format_signal(v::Vector{T}, nside) where T
@@ -133,7 +136,7 @@ correction = SpectralVector(cl_var[:,1] ./ diag(parent(C_decoupled)))
 lmin_cut, lmax_cut = get_plic_ellrange(Symbol(spec), freq1, freq2)
 correction[lmax_cut:end] .= 1.0
 
-fit_ells = (lmin_cut-20):(lmax_cut)
+fit_ells = intersect((lmin_cut-20):(lmax_cut),1:lmax)
 u = correction[fit_ells] .- 1
 t = 1.0 * collect(fit_ells)
 
@@ -147,7 +150,7 @@ optimize!(gp)   # Optimise the hyperparameters
 correction_gp = predict_y(gp,float.(0:(lmax_cut+20)))[1];
 correction_gp[1:(lmin_cut-21)] .= 0.0
 
-correction_path = joinpath(config["dir"]["scratch"], "point_source_corrections")
+correction_path = joinpath(config["scratch"], "point_source_corrections")
 mkpath(correction_path)
 
 if transposed

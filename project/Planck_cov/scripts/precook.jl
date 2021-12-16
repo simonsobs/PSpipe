@@ -11,7 +11,8 @@ using CSV, DataFrames
 
 run_name = config["general"]["name"]
 mapids = [k for k in keys(config["map"])]
-spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
+spectrapath = joinpath(config["scratch"], "rawspectra")
+mkpath(spectrapath)
 
 function download_if_necessary(url, dest; verbose=true)
     if isfile(dest) == false
@@ -25,7 +26,7 @@ end
 spec_url_root = "https://github.com/xzackli/PSPipePlanckRender.jl/releases/download/v0.1/"
 spec_file = "rawspectra.tar.gz"
 spec_url = spec_url_root * spec_file
-spec_dest = joinpath(config["dir"]["scratch"], spec_file)
+spec_dest = joinpath(config["scratch"], spec_file)
 download_if_necessary(spec_url, spec_dest)
 
-run(`tar -xzvf $(spec_dest) --overwrite -C $(config["dir"]["scratch"])`)
+run(`tar -xzvf $(spec_dest) --overwrite -C $(config["scratch"])`)

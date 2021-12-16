@@ -17,26 +17,26 @@ config = TOML.parsefile(configfile)
 nside = config["general"]["nside"]
 lmax = nside2lmax(nside)
 
-pl = PlanckReferenceCov(joinpath(config["dir"]["scratch"], "plicref"))
+pl = PlanckReferenceCov(joinpath(config["scratch"], "plicref"))
 
 ## read binning scheme
-binfile = joinpath(config["dir"]["pspipe_project"], "input", "binused.dat")
+binfile = joinpath(@__DIR__, "../", "input", "binused.dat")
 P, lb = util_planck_binning(binfile; lmax=lmax);
 
 ##
 freq1, freq2 = "100", "100"
 Wl = util_planck_beam_Wl(freq1, "hm1", freq2, "hm2", :EE, :EE; 
-    lmax=lmax, beamdir=config["dir"]["beam"])
+    lmax=lmax, beamdir=joinpath(config["scratch"], "beams"))
 plot(Wl, yaxis=:log10, label="\$B_{\\ell}\$")
 
 ##
 run_name = config["general"]["name"]
 mapids = [k for k in keys(config["map"])]
-spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
+spectrapath = joinpath(config["scratch"], "rawspectra")
 
 mapid1 = "P$(freq1)hm1"
 mapid2 = "P$(freq2)hm2"
-spec = DataFrame(CSV.File(joinpath(spectrapath,"$(run_name)_$(mapid1)x$(mapid2).csv")))
+spec = CSV.read(joinpath(spectrapath,"$(run_name)_$(mapid1)x$(mapid2).csv"), DataFrame)
 plot(spec.ell, spec.ell.^2 .* spec.EE, label="$(run_name)_$(mapid1)x$(mapid2)",
     xlabel="multipole moment", ylabel="\$\\ell^2 C_{\\ell}^{EE}\$", xlim=(0,2nside))
 

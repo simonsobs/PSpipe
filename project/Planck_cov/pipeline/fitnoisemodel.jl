@@ -17,7 +17,7 @@ include("util.jl")
 config = TOML.parsefile(configfile)
 nside = config["general"]["nside"]
 run_name = config["general"]["name"]
-spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
+spectrapath = joinpath(config["scratch"], "rawspectra")
 XY = Symbol(spec)
 lmax = min(2508,nside2lmax(nside))
 
@@ -31,9 +31,9 @@ end
 
 # We read in the raw spectra generated from rawspectra.jl.
 
-Cl11 = DataFrame(CSV.File(joinpath(spectrapath,"$(run_name)_P$(freq)hm1xP$(freq)hm1.csv")));
-Cl12 = DataFrame(CSV.File(joinpath(spectrapath,"$(run_name)_P$(freq)hm1xP$(freq)hm2.csv")));
-Cl22 = DataFrame(CSV.File(joinpath(spectrapath,"$(run_name)_P$(freq)hm2xP$(freq)hm2.csv")));
+Cl11 = CSV.read(joinpath(spectrapath,"$(run_name)_P$(freq)hm1xP$(freq)hm1.csv"), DataFrame);
+Cl12 = CSV.read(joinpath(spectrapath,"$(run_name)_P$(freq)hm1xP$(freq)hm2.csv"), DataFrame);
+Cl22 = CSV.read(joinpath(spectrapath,"$(run_name)_P$(freq)hm2xP$(freq)hm2.csv"), DataFrame);
 
 truncate(vec::Vector, lmax) = SpectralVector(vec[firstindex(vec):(lmax+1)])
 truncate(vec::SpectralVector, lmax) = vec[IdentityRange(firstindex(vec):lmax)]
@@ -42,12 +42,13 @@ cl11 = truncate(Cl11[!,XY], lmax)
 cl12 = truncate(Cl12[!,XY], lmax)
 cl22 = truncate(Cl22[!,XY], lmax)
 
+beampath = joinpath(config["scratch"], "beams")
 Wl11 = util_planck_beam_Wl(freq, "hm1", freq, "hm1", XY, XY; 
-    lmax=lmax, beamdir=config["dir"]["beam"])
+    lmax=lmax, beamdir=beampath)
 Wl12 = util_planck_beam_Wl(freq, "hm1", freq, "hm2", XY, XY; 
-    lmax=lmax, beamdir=config["dir"]["beam"])
+    lmax=lmax, beamdir=beampath)
 Wl22 = util_planck_beam_Wl(freq, "hm2", freq, "hm2", XY, XY; 
-    lmax=lmax, beamdir=config["dir"]["beam"])
+    lmax=lmax, beamdir=beampath)
 
 Wl11, Wl12, Wl22 = map(v->truncate(v,lmax), (Wl11, Wl12, Wl22))
 
@@ -77,9 +78,9 @@ function fit_bb_model(model, p0, xl, yl, signal; kwargs...)
 end
 
 # 
-p0_1 = readdlm(joinpath(config["dir"]["pspipe_project"], "output", 
+p0_1 = readdlm(joinpath(@__DIR__, "../../", "output", 
         "planck_noise_coeffs", "$(freq)_hm1_$(spec)_coeff.dat"))[:,1]
-p0_2 = readdlm(joinpath(config["dir"]["pspipe_project"], "output", 
+p0_2 = readdlm(joinpath(@__DIR__, "../../", "output", 
         "planck_noise_coeffs", "$(freq)_hm2_$(spec)_coeff.dat"))[:,1]
 
 #
@@ -102,7 +103,7 @@ plot!(2:lmax, [camspec_model(ℓ, p0_2) for ℓ in 2:lmax], ylim=(0.0, 2mean(nl2
 plot!(2:lmax, [camspec_model(ℓ, pfit_2) for ℓ in 2:lmax], ylim=(0.0, 2mean(nl2)), label="fitted model", linestyle=:dash)
 
 #
-coefficientpath = joinpath(config["dir"]["scratch"], "noise_model_coeffs")
+coefficientpath = joinpath(config["scratch"], "noise_model_coeffs")
 mkpath(coefficientpath)
 
 open(joinpath(coefficientpath, "$(run_name)_$(freq)_$(spec)_hm1.dat"), "w") do io

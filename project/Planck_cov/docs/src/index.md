@@ -9,7 +9,7 @@ This is a Simons Observatory pipeline for computing the spectra and covariances 
 settings have been chosen to reproduce the official ``\texttt{plic}`` analysis. The
 code is also described in Li et al. (in prep). **Each page
 is directly generated from a source file used in the pipeline**, in the style of
-[Literate programming](https://en.wikipedia.org/wiki/Literate_programming). Each source
+[literate programming](https://en.wikipedia.org/wiki/Literate_programming). Each source
 file can be located on the [PSPipe GitHub](https://github.com/simonsobs/PSpipe) using the
 *Edit on GitHub* link on the top of every page.
 

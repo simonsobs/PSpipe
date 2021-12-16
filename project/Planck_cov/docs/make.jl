@@ -11,7 +11,7 @@ default(
     left_margin=5mm, right_margin=5mm)
 
 src = joinpath(@__DIR__, "src")
-lit = joinpath(@__DIR__, "lit")
+lit = joinpath(@__DIR__, "../pipeline")
 
 config = Dict(
     "credit" => false,  # credit is configured to render in Documenter instead
@@ -20,9 +20,11 @@ config = Dict(
 
 nonexecute_config = copy(config)
 nonexecute_config["codefence"] = "```julia" => "```"
-execution_exclusion = []
+execution_exclusion = ["covmat.jl"]
 
-cp(joinpath(@__DIR__, "..", "src", "util.jl"), joinpath(@__DIR__, "build", "util.jl"); force=true)
+cp(joinpath(@__DIR__, "..", "pipeline", "util.jl"), joinpath(@__DIR__, "build", "util.jl"); force=true)
+cp(joinpath(@__DIR__, "..", "example.toml"), joinpath(@__DIR__, "build", "example.toml"); force=true)
+cp(joinpath(@__DIR__, "..", "input"), joinpath(@__DIR__, "input"); force=true)
 
 for (root, _, files) ∈ walkdir(lit), file ∈ files
     splitext(file)[2] == ".jl" || continue

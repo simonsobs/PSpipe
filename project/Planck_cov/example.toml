@@ -1,14 +1,10 @@
 # example files
+
+scratch = "/home/zack/planck256/"
+
 [general]
 name = "example"
 nside = 256
-
-[dir]
-pspipe_project = "/tmp/PSpipe/project/Planck_cov"
-scratch = "/tmp/planck256"
-map = "/tmp/planck256/maps"
-mask = "/tmp/planck256/masks"
-beam = "/tmp/planck256/beams"
 
 [map]
 "P100hm1" = "nside256_HFI_SkyMap_100_2048_R3.01_halfmission-1.fits"

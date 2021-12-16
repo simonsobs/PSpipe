@@ -2,7 +2,7 @@
 # ```@setup rawspectra
 # # the example command line input for this script
 # ARGS = ["example.toml", "P143hm1", "P143hm2", "--plot"] 
-# ``` 
+# ```
 
 
 # # [Raw Spectra (rawspectra.jl)](@id rawspectra)
@@ -79,15 +79,15 @@ config = TOML.parsefile(configfile)
 function load_maps_and_masks(config, mapid, maptype=Float64)
     ## read map file 
     println("Reading ", config["map"][mapid])
-    mapfile = joinpath(config["dir"]["map"], config["map"][mapid])
+    mapfile = joinpath(config["scratch"], "maps", config["map"][mapid])
     polmap = PolarizedHealpixMap(
         nest2ring(readMapFromFITS(mapfile, 1, maptype)),  # I
         nest2ring(readMapFromFITS(mapfile, 2, maptype)),  # Q
         nest2ring(readMapFromFITS(mapfile, 3, maptype)))  # U
 
     ## read maskT and maskP
-    maskfileT = joinpath(config["dir"]["mask"], config["maskT"][mapid])
-    maskfileP = joinpath(config["dir"]["mask"], config["maskP"][mapid])
+    maskfileT = joinpath(config["scratch"], "masks", config["maskT"][mapid])
+    maskfileP = joinpath(config["scratch"], "masks", config["maskP"][mapid])
     maskT = readMapFromFITS(maskfileT, 1, maptype)
     maskP = readMapFromFITS(maskfileP, 1, maptype)
 
@@ -134,10 +134,10 @@ function save_if_needed(mapobj, mapfile)
     end
 end
 
-save_if_needed(maskT₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskT.fits"))
-save_if_needed(maskP₁, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_maskP.fits"))
-save_if_needed(maskT₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskT.fits"))
-save_if_needed(maskP₂, joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_maskP.fits"))
+save_if_needed(maskT₁, joinpath(config["scratch"], "masks", "$(run_name)_$(mapid1)_maskT.fits"))
+save_if_needed(maskP₁, joinpath(config["scratch"], "masks", "$(run_name)_$(mapid1)_maskP.fits"))
+save_if_needed(maskT₂, joinpath(config["scratch"], "masks", "$(run_name)_$(mapid2)_maskT.fits"))
+save_if_needed(maskP₂, joinpath(config["scratch"], "masks", "$(run_name)_$(mapid2)_maskP.fits"))
 
 #
 # # Computing Spectra and Saving
@@ -173,7 +173,7 @@ end
 # Now we save our spectra. 
 ## set up spectra path
 using CSV, DataFrames
-spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
+spectrapath = joinpath(config["scratch"], "rawspectra")
 mkpath(spectrapath)
 
 ## assemble a table with the ells and spectra

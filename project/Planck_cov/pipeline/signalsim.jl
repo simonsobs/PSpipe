@@ -1,7 +1,7 @@
 #
 # ```@setup signalsim
 # # the example command line input for this script
-# ARGS = ["example.toml",  "143", "143", "EE", "10", "--plot"]
+# ARGS = ["example.toml",  "143", "143", "TT", "10", "--plot"]
 # ``` 
 
 configfile, freq1, freq2, spec, nsims = ARGS
@@ -18,7 +18,7 @@ include("util.jl")
 config = TOML.parsefile(configfile)
 nside = config["general"]["nside"]
 run_name = config["general"]["name"]
-spectrapath = joinpath(config["dir"]["scratch"], "rawspectra")
+spectrapath = joinpath(config["scratch"], "rawspectra")
 lmax = nside2lmax(nside)
 lmax_planck = min(2508, lmax)
 splits = "1", "2"  # planck never uses any other splits
@@ -50,8 +50,8 @@ masktype2 = (Y == :T) ? "T" : "P"
 mapid1 = "P$(freq1)hm$(splits[1])"
 mapid2 = "P$(freq2)hm$(splits[2])"
 
-maskfile1 = joinpath(config["dir"]["mask"], "$(run_name)_$(mapid1)_mask$(masktype1).fits")
-maskfile2 = joinpath(config["dir"]["mask"], "$(run_name)_$(mapid2)_mask$(masktype2).fits")
+maskfile1 = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid1)_mask$(masktype1).fits")
+maskfile2 = joinpath(config["scratch"], "masks", "$(run_name)_$(mapid2)_mask$(masktype2).fits")
 mask1 = readMapFromFITS(maskfile1, 1, Float64)
 mask2 = readMapFromFITS(maskfile2, 1, Float64)
 
@@ -96,8 +96,8 @@ function sim_iteration(𝐂, m1, m2, a1, a2, M, spec::String)
     end
 
     ## apply pixel weights and then map2alm
-    Healpix.applyfullweights!(m1)
-    Healpix.applyfullweights!(m2)
+    Healpix.applyFullWeights!(m1)
+    Healpix.applyFullWeights!(m2)
     map2alm!(m1, a1; niter=0)
     map2alm!(m2, a2; niter=0)
 
@@ -114,18 +114,16 @@ function sim_iteration(𝐂, m1, m2, a1, a2, M, spec::String)
 end
 
 if "--plot" in ARGS
-    @time simEE = sim_iteration(𝐂, m1, m2, a1, a2, M, "EE")
-    plot(simEE .* eachindex(simEE).^2, label="sim")
-    plot!(signal12["EE"][1:(lmax_planck+1)] .* eachindex(0:lmax_planck).^2, 
+    @time simTT = sim_iteration(𝐂, m1, m2, a1, a2, M, "TT")
+    plot(simTT .* eachindex(simTT).^2, label="sim")
+    plot!(signal12["TT"][1:(lmax_planck+1)] .* eachindex(0:lmax_planck).^2, 
         xlim=(0,lmax_planck), label="input")
 end
 
 # This script generates many simulations.
 
-simpath = joinpath(config["dir"]["scratch"], "signalsims", 
-    "$(freq1)_$(freq2)_$(spec)")
+simpath = joinpath(config["scratch"], "signalsims", "$(freq1)_$(freq2)_$(spec)")
 mkpath(simpath)
-
 
 for sim_index in 1:parse(Int,nsims)
     @time cl = sim_iteration(𝐂, m1, m2, a1, a2, M, spec)

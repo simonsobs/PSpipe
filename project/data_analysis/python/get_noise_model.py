@@ -13,7 +13,7 @@ def interpolate_dict(lb, cb, lth, spectra, force_positive=True, l_inf_lmin_equal
        cl_dict = {}
        for spec in spectra:
             cl = scipy.interpolate.interp1d(lb, cb[spec], fill_value = "extrapolate")
-            cl_dict[spec] = np.array([cl(i) for i in lth])
+            cl_dict[spec] = cl(lth)
             if l_inf_lmin_equal_lmin:
                 id = np.where(lth <= np.min(lb))
                 cl_dict[spec][id]= cb[spec][0]

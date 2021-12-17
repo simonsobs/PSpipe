@@ -5,6 +5,13 @@
 # ``` 
 
 configfile, freq, spec = ARGS
+if length(ARGS) > 3
+    if ARGS[4] != "--plot"
+        maxfuncevals = ARGS[4]
+    else
+        maxfuncevals = 500_000
+    end
+end
 
 # # [Fit Noise Model (fitnoisemodel.jl)](@id fitnoisemodel)
 
@@ -29,6 +36,7 @@ if "--plot" ∉ ARGS
     Plots.plot!(args...; kwargs...) = nothing
 end
 
+##
 # We read in the raw spectra generated from rawspectra.jl.
 
 Cl11 = CSV.read(joinpath(spectrapath,"$(run_name)_P$(freq)hm1xP$(freq)hm1.csv"), DataFrame);
@@ -73,7 +81,7 @@ function fit_bb_model(model, p0, xl, yl, signal; kwargs...)
     like(α) = (sum((2 .* xl .+ 1) ./ (model(xl, p0).^2 .+ signal.^2) .* (model(xl, α) .- yl).^2))
     println("starting opt ", like(p0))
     res = bboptimize(like; SearchRange=map((i,j)->(i,j), lower, upper), NumDimensions = length(p0), 
-        MaxFuncEvals=500_000, TraceInterval=20)
+        MaxFuncEvals=maxfuncevals, TraceInterval=20)
     return best_candidate(res)
 end
 
@@ -98,6 +106,7 @@ plot!(2:lmax, [camspec_model(ℓ, p0_1) for ℓ in 2:lmax], ylim=(0.0, 4mean(abs
 plot!(2:lmax, [camspec_model(ℓ, pfit_1) for ℓ in 2:lmax], label="fitted model", linestyle=:dash)
 
 #
+##
 plot((nl2), alpha=0.5, label="nl hm2")
 plot!(2:lmax, [camspec_model(ℓ, p0_2) for ℓ in 2:lmax], ylim=(0.0, 2mean(nl2)), label="initial model")
 plot!(2:lmax, [camspec_model(ℓ, pfit_2) for ℓ in 2:lmax], ylim=(0.0, 2mean(nl2)), label="fitted model", linestyle=:dash)

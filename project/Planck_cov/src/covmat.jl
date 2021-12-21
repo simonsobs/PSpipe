@@ -1,8 +1,33 @@
-#
 # ```@setup covmat
 # # the example command line input for this script
 # ARGS = ["example.toml", "143", "143", "143", "143", "T", "T", "T", "T", "1", "2", "1", "2", "--plot"] 
 # ``` 
+#
+# # [Covariance Matrix Estimation (covmat.jl)](@id covmat)
+# This part of the pipeline dominates the total computational cost. Many of the steps like
+# spectra estimation could have been run on a laptop, but estimating the covariance for the
+# full Planck data vector involves computing ``\sim 10^3`` covariance matrix blocks. The 
+# covariance matrix involves four fields, and those fields each have a frequency, channel,
+# and map split. We thus 
+# need every combination of frequencies ``f_1``, ``f_2``, ``f_3``, ``f_4`` for 
+# ``f_i \in \{ 100, 143, 217 \}`` with channels ``A``, ``B``, ``C``, ``D`` 
+# for ``X_i \in \{T, E\}``, and splits 
+# ``s_1``, ``s_2``, ``s_3``, ``s_4`` for ``s_i \in \{ \mathrm{hm1}, \mathrm{hm2} \}``.
+# 
+# These are the inputs for the command line interface for this script, `covmat.jl`. 
+# 
+# ```@raw html
+# <pre class="shell">
+# <code class="language-shell hljs">$ julia covmat.jl global.toml f1 f2 f3 f3 X1 X2 X3 X4 s1 s2 s3 s4 --plot</code></pre>
+# ```
+# As usual, the ``--plot`` argument is optional.
+# 
+#
+
+# ## Setup
+# As usual, we need to load up our dependencies and then unpack 
+# the command line arguments into variables. We'll keep the 
+# `freqs`, `specs`, and `splits` as just arrays of strings for now. 
 
 freqs = [ARGS[2], ARGS[3], ARGS[4], ARGS[5]]
 specs = [ARGS[6], ARGS[7], ARGS[8], ARGS[9]]
@@ -15,6 +40,8 @@ using JLD2
 using Plots
 include("util.jl")
 
+# As usual, we get some general information from the configuration file 
+# specified as the first command line argument. 
 
 configfile = ARGS[1]
 config = TOML.parsefile(configfile)
@@ -23,7 +50,23 @@ lmax = nside2lmax(nside)
 lmax_planck = min(2508, lmax)
 run_name = config["general"]["name"]
 
-## determine if a channel is polarized
+# ## Change to canonical ordering
+# The covariance matrix is over fields ``F_1``, ``F_2``, ``F_3``, ``F_4`` and represents
+# the covariance between the ``\langle F_1, F_2 \rangle`` and  
+# ``\langle F_3 \times F_4 \rangle`` cross-spectra. 
+# However, the covariance matrix is invariant when swapping ``F_1 \leftrightarrow F_2`` 
+# as well as ``F_3 \leftrightarrow F_4``. Under the transformation that swaps the 
+# first pair for the second pair (i.e. ``F_1 \leftrightarrow F_3`` and 
+# ``F_2 \leftrightarrow F_4`` simultaneously), the covariance matrix is transposed. 
+#
+# Given these convenient properties, we define a canonical ordering of the fields
+# in a covariance matrix. We insist that no temperature field can ever be after a 
+# polarization field in an ordering. Thus, we don't need to implement an expression 
+# for a ``TETT`` covariance, because it can always be transformed into the canonical
+# ``TTTE`` (this example requires a transposition pf the matrix at the end). 
+# We'll write a few utility functions to enable these transformations here.
+#
+## This utility tests if it's not a temperature channel
 ispol(spec_str) = (spec_str == "T") ? 0 : 1 
 
 function swap!(specs, freqs, splits, i, j)
@@ -32,7 +75,24 @@ function swap!(specs, freqs, splits, i, j)
     splits[i], splits[j] = splits[j], splits[i]
 end
 
-## canonical form: E as far left as possible
+## canonical form: T as far left as possible
+
+"""
+    canonical!(specs, freqs, splits)
+
+Given four fields, described by length-4 arrays of specs (T, E), freqs, and splits,
+modify these input arrays so they are in the canonical ordering, i.e. with 
+temperature fields before polarization. 
+
+### Arguments:
+- `specs`: array of four strings, containing "T" and "E" elements
+- `freqs`: array of four frequencies
+- `splits`: array of four choices of data split
+
+### Returns: 
+- `Boolean`: some canonical orderings are a matrix transpose of the inputs. If this
+    function returns true, then one needs to perform this transposition.
+"""
 function canonical!(specs, freqs, splits)
     transposed = false 
 
@@ -51,6 +111,9 @@ function canonical!(specs, freqs, splits)
     return transposed
 end
 
+# We re-arrange the `specs`, `freqs`, and `splits` spectra so they are in the 
+# canonical ordering. We save whether we need to transpose the result.
+
 transposed = canonical!(specs, freqs, splits)
 @show specs freqs splits transposed
 
@@ -59,14 +122,20 @@ specAB = Symbol(specs[1]*specs[2])
 specCD = Symbol(specs[3]*specs[4])
 @show specAB specCD
 
-# 
+# Next, we need to create dictionaries that contain the fruits of our labors from 
+# earlier parts of the pipeline. These include the theory spectra, the ratio of the 
+# noise power spectrum to the white noise power spectrum.
 
 ## store info needed for covariance calculations
 spectra = Dict{SpectrumName, SpectralVector{Float64, Vector{Float64}}}()
 noiseratios = Dict{SpectrumName, SpectralVector{Float64, Vector{Float64}}}()
 identity_spectrum = SpectralVector(ones(lmax+1));
 
-#
+# The point source holes in the Planck likelihood maps are not sufficiently apodized,
+# which causes problems in the covariance matrix estimation. Recall that we ran 
+# signal-only simulations in `signalsim.jl` so that we could correct for them here.
+# We read in the correction curve estimated in `corrections.jl` for those simuulations,
+# for use in the covariance matrix.
 
 function extend_signal(s::Vector{T}, nside) where T
     lmax = nside2lmax(nside)
@@ -90,6 +159,9 @@ function get_correction(freq1, freq2, spec)
     return extend_signal(correction_gp, nside)
 end
 
+# We want to supply the ratios of the noise power spectrum and the white noise power spectrum.
+# To do that, we need to read in the estimates of the white noise power spectrum that 
+# were obtained from the maps.
 function whitenoiselevel(config, freq::String, split::String)
     whitenoisefile = joinpath(config["scratch"], "whitenoise.dat")
     df = CSV.read(whitenoisefile, DataFrame)
@@ -101,10 +173,12 @@ function whitenoiselevel(config, freq::String, split::String)
     throw(ArgumentError("freq and split combo missing from white noise file"))
 end
 
-#
+# We save the noise power spectrum models in terms of parameters of the smooth
+# model fit. We use the expression from CamSpec. 
 @. camspec_model(ℓ, α) =  α[1] * (100. / ℓ)^α[2] + α[3] * (ℓ / 1000.)^α[4] / ( 1 + (ℓ / α[5])^α[6] )^α[7]
 
-#
+# Now to put it all together. We need to put all of this information into our
+# various dictionaries.
 
 ells = collect(0:(lmax))
 coefficientpath = joinpath(config["scratch"], "noise_model_coeffs")
@@ -158,9 +232,11 @@ if "--plot" ∈ ARGS
         ylim=(0.0,2), xlim=(0,200), size=(600,300))
 end
 
-#
+# Each of the four fields involved with the covariance matrix involves a polarized map,
+# with associated mask and variance map. These are packed toegether in the `CovField` struct
+# in `PowerSpectra.jl`.
 
-## load information that the covmat needs about a field
+## pack all the information that the covmat needs into a structure
 function loadcovfield(freq, split)
     ## read maskT, maskP, covariances
     mapid = "P$(freq)hm$(split)"
@@ -177,6 +253,9 @@ end
 
 fields = [loadcovfield(freqs[i], splits[i]) for i in 1:4];
 
+# Next, we need to compute the mode-coupling matrices. These are multiplied with
+# the covariance matrices in order to correct for the effects of the mask, just 
+# like in the case of the spectra.
 ## compute mode-coupling matrices
 mcm_type_AB = (specAB == :EE) ? :M⁺⁺ : specAB
 mcm_type_CD = (specCD == :EE) ? :M⁺⁺ : specCD
@@ -202,6 +281,10 @@ end
 pixwinAB = spec2pixwin(specAB, nside)
 pixwinCD = spec2pixwin(specCD, nside)
 
+# Next, we need decouple the modes from the effect of the mask, correct for the 
+# instrumental beam and pixel window function, and then finally bin the covariance matrix.
+# 
+
 ## load binnings
 binfile = joinpath(@__DIR__, "../", "input", "binused.dat")
 P, lb = util_planck_binning(binfile; lmax=lmax)
@@ -221,7 +304,7 @@ end
 
 Cbb = P * parent(C₀) * (P')
 
-##
+## transpose if needed, from turning into the canonical form
 if transposed
     Cbb = Array(transpose(Cbb))
 end

@@ -26,7 +26,7 @@ nside = config["general"]["nside"]
 run_name = config["general"]["name"]
 spectrapath = joinpath(config["scratch"], "rawspectra")
 XY = Symbol(spec)
-lmax = min(2508,nside2lmax(nside))
+lmax = min(2508, nside2lmax(nside))
 
 
 # Next, we check to see if we need to render plots for the Documentation.

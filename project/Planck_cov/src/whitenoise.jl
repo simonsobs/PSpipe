@@ -4,9 +4,25 @@
 # ARGS = ["example.toml"] 
 # ``` 
 #
-# # White Noise Levels (whitenoise.jl)
-configfile = first(ARGS)
+# # [White Noise Levels (whitenoise.jl)](@id whitenoise)
+# This file estimates the amplitude of the noise power spectrum from the 
+# pixel variance map, under the assumption that the noise is white.
+# We want to compute
+# ```math
+# N_{\ell}^{\mathrm{white}} = \frac{1}{\sum_p m_p^2} \sum_p \sigma_{II}^2 \Omega_p m_p^2
+# ```
+# where ``m_p`` is mask at pixel ``p``, ``\Omega_p`` is the pixel area, and ``\sigma_{II}^2`` 
+# is the pixel variance. 
+#
+# ```@raw html
+# <pre class="shell">
+# <code class="language-shell hljs">$ julia whitenoise.jl example.toml</code></pre>
+# ```
+# 
+# We first need to do the usual setup steps. We read the command-line arguments and load
+# the packages we need.
 
+configfile = first(ARGS)
 
 ## setup data
 using Plots
@@ -24,7 +40,8 @@ lmax = min(2508,nside2lmax(nside))
 npix = nside2npix(nside)
 Ωp = 4π / npix
 
-## loop over freqs and noise channels
+# Next, we loop over each half-mission frequency map, and estimate the white noise power
+# spectrum.
 df = DataFrame(freq = String[], split = String[], noiseT = Float64[], noiseP = Float64[])
 
 for freq ∈ ("100", "143", "217"),  split ∈ ("1", "2")
@@ -42,5 +59,6 @@ for freq ∈ ("100", "143", "217"),  split ∈ ("1", "2")
     push!(df, (freq, split, N_white_T, N_white_P))
 end
 
+# Finally, we save this all to a CSV.
 csvfile = joinpath(config["scratch"], "whitenoise.dat")
 CSV.write(csvfile, df)

@@ -28,22 +28,28 @@ mode-coupling and covariance matrix calculations were added to
 [PowerSpectra.jl](https://xzackli.github.io/PowerSpectra.jl/dev/).
 This pipeline mostly wrangles data and calls the routines from those packages.
 
+## Overview
 
-## Package Installation
-We use the package manager in the Julia interpeter
-to install the latest versions of Healpix and PowerSpectra. This will be simpler in
-the future, when we tag a stable version of these packages for the General Registry. 
-For now, we add the latest versions of these packages from GitHub. Note that package 
-installation requires an internet connection, so unlike the other parts of the pipeline,
-`setup.jl` requires an internet connection. If you're on a cluster, that means you need 
-to run this file on the head node in order to install packages.
+The pipeline operates on the Planck maps, and generates estimates of the spectra and 
+covariances. A pipeline really boils down to a series of command-line arguments which one
+executes on some computing cluster with a job manager like SLURM. The files in this 
+pipeline are generally written to be executed with some command-line arguments. 
+Each step of this pipeline will look something like
 
-```@raw html 
+```@raw html
 <pre class="shell">
-<code class="language-julia hljs">using Pkg  
-Pkg.add(PackageSpec(name="Healpix", rev="master")) 
-Pkg.add(url="git@github.com:xzackli/PowerSpectra.jl.git")
-Pkg.add.(["CSV", "DataFrames", "TOML", "BlackBoxOptim", "FileIO", "JLD2", "FITSIO",
-  "DataInterpolations", "Optim", "GaussianProcesses"])
-</code></pre>
+<code class="language-shell hljs">$ julia scriptname.jl example.toml [more arguments...]</code></pre>
 ```
+
+We now provide a review of the different steps that go into this spectrum pipeline.
+
+1. [`setup`](@ref setup) downloads the Planck data, and also sets up some packages. This requires an internet connection, so you would typically run this on a head node.
+2. [`rawspectra`](@ref rawspectra) computes the basic spectra, by performing mode-decoupling on the pseudo-``C_{\ell}``. This step also combines the missing pixels and the input likelihood mask, which it saves. These combined masks are used hereafter.
+3. [`fitnoisemodel`](@ref fitnoisemodel) estimates the noise power spectrum from the difference between the auto- and cross-spectra of the half-mission frequency maps. It then fits a smooth model to the estimated spectrum.
+4. [`signalsim`](@ref signalsim) generates spectra from signal-only simulations, which are used to correct for the effect of insufficiently-apodized point source holes in the mask.
+5. [`corrections`](@ref corrections) computes the correction to the covariance matrix obtained from the signal-only simulations in `signalsim`.
+6. [`whitenoise`](@ref whitenoise) estimates the noise power spectrum if the Planck noise was white, from the pixel variance maps.
+7. [`covmat`](@ref covmat) computes covariance matrices between different spectra in the likelihood data vector, using as inputs the noise model from `noisemodel`, the corrections from the signal simulations in `corrections`, and the white-noise levels found in `whitenoise`. 
+
+Lists of commands used to run this pipeline with the job manager SLURM are available in [`slurmgen`](@ref slurmgen).
+

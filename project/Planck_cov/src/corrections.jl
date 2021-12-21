@@ -3,6 +3,8 @@
 # # the example command line input for this script
 # ARGS = ["example.toml", "143", "143", "TT", "--plot"]
 # ```
+#
+# # [Corrections for Point Sources (corrections.jl)](@id corrections)
 
 configfile, freq1, freq2, spec = ARGS
 

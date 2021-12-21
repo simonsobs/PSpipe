@@ -11,7 +11,7 @@ default(
     left_margin=5mm, right_margin=5mm)
 
 src = joinpath(@__DIR__, "src")
-lit = joinpath(@__DIR__, "../src/")
+lit = joinpath(@__DIR__, "src")
 
 config = Dict(
     "credit" => false,  # credit is configured to render in Documenter instead
@@ -22,14 +22,15 @@ nonexecute_config = copy(config)
 nonexecute_config["codefence"] = "```julia" => "```"
 execution_exclusion = []
 
+mkpath(joinpath(@__DIR__, "build"))
 cp(joinpath(@__DIR__, "..", "src", "util.jl"), joinpath(@__DIR__, "build", "util.jl"); force=true)
 cp(joinpath(@__DIR__, "..", "example.toml"), joinpath(@__DIR__, "build", "example.toml"); force=true)
 cp(joinpath(@__DIR__, "..", "input"), joinpath(@__DIR__, "input"); force=true)
 
-for (root, _, files) ∈ walkdir(lit), file ∈ files
+for (root, _, files) ∈ walkdir(joinpath(@__DIR__, "../src")), file ∈ files
     splitext(file)[2] == ".jl" || continue
     ipath = joinpath(root, file)
-    opath = splitdir(replace(ipath, lit=>src))[1]
+    opath = lit
     if file ∉ execution_exclusion
         Literate.markdown(ipath, opath; config=config)
     else
@@ -37,6 +38,13 @@ for (root, _, files) ∈ walkdir(lit), file ∈ files
         Literate.markdown(ipath, opath; config=nonexecute_config)
     end
 end
+
+## manually clean and add back files
+rm(joinpath(@__DIR__, "build"); force=true, recursive=true)
+mkpath(joinpath(@__DIR__, "build"))
+cp(joinpath(@__DIR__, "..", "src", "util.jl"), joinpath(@__DIR__, "build", "util.jl"); force=true)
+cp(joinpath(@__DIR__, "..", "example.toml"), joinpath(@__DIR__, "build", "example.toml"); force=true)
+cp(joinpath(@__DIR__, "..", "input"), joinpath(@__DIR__, "input"); force=true)
 
 
 makedocs(
@@ -55,6 +63,8 @@ makedocs(
         "rawspectra.jl" => "rawspectra.md",
         "fitnoisemodel.jl" => "fitnoisemodel.md",
         "signalsim.jl" => "signalsim.md",
+        "corrections.jl" => "corrections.md",
+        "whitenoise.jl" => "whitenoise.md",
         "covmat.jl" => "covmat.md",
         "slurmgen.jl" => "slurmgen.md",
 

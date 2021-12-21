@@ -6,7 +6,8 @@
 
 configfile = ARGS[1]
 
-# # SLURM Commands for Spectra (slurmgen.jl)
+# # 
+# # [SLURM Commands for Spectra (slurmgen.jl)](@id slurmgen)
 # This command generates SLURM commands that executes [rawspectra.jl](@ref rawspectra)
 # on all the pairs of maps in the config.
 ## this file just prints out the SLURM commands required to compute the spectra

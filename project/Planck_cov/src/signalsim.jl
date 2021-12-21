@@ -3,10 +3,12 @@
 # # the example command line input for this script
 # ARGS = ["example.toml",  "143", "143", "TT", "10", "--plot"]
 # ``` 
+#
+#
 
 configfile, freq1, freq2, spec, nsims = ARGS
 
-# # Signal Sims (signalsim.jl)
+# # [Signal Sims (signalsim.jl)](@id signalsim)
 # This script runs signal simulations.
 
 using TOML

@@ -4,13 +4,29 @@
 # ARGS = ["example.toml"] 
 # ``` 
 #
-# # Setup (setup.jl)
+# # [Setup (setup.jl)](@id setup)
 #
 # This pipeline is written in Julia, so you will need a [Julia](https://julialang.org/) 
 # installation in order to run the components. We recommend
 # you use the precompiled binaries provided on the Julia website. Make sure to add the 
 # Julia executable to your path, as described in the 
 # [platform-specific instructions.](https://julialang.org/downloads/platform/)
+#
+#
+
+# ## Package Installation
+# We use the package manager in the Julia interpeter
+# to install the latest versions of Healpix and PowerSpectra. This will be simpler in
+# the future, when we tag a stable version of these packages for the General Registry. 
+# For now, we add the latest versions of these packages from GitHub. Note that package 
+# installation requires an internet connection, so unlike the other parts of the pipeline,
+# `setup.jl` requires an internet connection. If you're on a cluster, that means you need 
+# to run this file on the head node in order to install packages.
+using Pkg  
+Pkg.add.(["Healpix", "PowerSpectra", "CSV", "DataFrames", "TOML", 
+  "BlackBoxOptim", "FileIO", "JLD2", "FITSIO",
+  "DataInterpolations", "Optim", "GaussianProcesses"])
+#
 #
 # The command-line interface for this basic pipeline setup script is
 # ```@raw html

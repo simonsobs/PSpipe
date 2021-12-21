@@ -1,5 +1,6 @@
 
-# # Utilities 
+# #  
+# # [Utilities (util.jl)](@id util)
 # Unlike every other file in the pipeline, this file is not intended to be run directly.
 # Instead, include this in other files. These utilities provide an interface to the Planck
 # data products, namely 
@@ -7,7 +8,6 @@
 # 2. beam ``W_{\ell}^{XY} = B_{\ell}^X B_{\ell}^{Y}``
 # 3. foreground model cross-spectra
 # 4. ``\texttt{plic}`` reference covariance matrix and reference spectra, for comparison plots
-
 
 
 using PowerSpectra

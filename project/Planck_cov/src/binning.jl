@@ -1,5 +1,3 @@
-
-
 # ```@setup binning
 # # all examples are run on an example global.toml and downsized maps.
 # ARGS = ["example.toml"] 

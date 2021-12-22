@@ -1,5 +1,3 @@
-
-# #  
 # # [Utilities (util.jl)](@id util)
 # Unlike every other file in the pipeline, this file is not intended to be run directly.
 # Instead, include this in other files. These utilities provide an interface to the Planck

@@ -20,7 +20,7 @@
 # <pre class="shell">
 # <code class="language-shell hljs">$ julia covmat.jl global.toml f1 f2 f3 f3 X1 X2 X3 X4 s1 s2 s3 s4 --plot</code></pre>
 # ```
-# As usual, the ``--plot`` argument is optional.
+# As usual, the `--plot` argument is optional.
 # 
 #
 

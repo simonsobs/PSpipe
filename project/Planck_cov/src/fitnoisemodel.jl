@@ -1,8 +1,22 @@
-#
 # ```@setup fitnoisemodel
 # # the example command line input for this script
 # ARGS = ["example.toml", "100", "EE", "--plot"] 
 # ``` 
+#
+# # [Fit Noise Model (fitnoisemodel.jl)](@id fitnoisemodel)
+# This script estimates a smooth fit to the noise power spectrum. In this pipeline, we estimate the noise power spectrum
+# of each frequency map using the difference between half-mission auto- and cross-spectra,
+# ```math
+# \begin{split}
+# N_{\ell}^{X, \mathrm{hm1} \times \mathrm{hm1}} &=  C_{\ell}^{X, \mathrm{hm1} \times \mathrm{hm1}} -  C_{\ell}^{X, \mathrm{hm1} \times \mathrm{hm2}}, \\
+# N_{\ell}^{X, \mathrm{hm2} \times \mathrm{hm2}} &=  C_{\ell}^{X, \mathrm{hm2} \times \mathrm{hm2}} -  C_{\ell}^{X, \mathrm{hm1} \times \mathrm{hm2}}.
+# \end{split}
+# ```
+#
+# ```@raw html
+# <pre class="shell">
+# <code class="language-shell hljs">$ julia fitnoisemodel.jl example.toml 100 EE</code></pre>
+# ```
 
 configfile, freq, spec = ARGS
 if length(ARGS) > 3
@@ -12,8 +26,6 @@ if length(ARGS) > 3
         maxfuncevals = 500_000
     end
 end
-
-# # [Fit Noise Model (fitnoisemodel.jl)](@id fitnoisemodel)
 
 ## setup data
 using Plots

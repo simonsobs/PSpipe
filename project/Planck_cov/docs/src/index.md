@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "https://github.com/simonsobs/PSpipe/tree/planckcov/project/Planck_cov/docs/src/index.md"
+EditURL = "https://github.com/simonsobs/PSpipe/blob/master/project/Planck_cov/docs/src/index.md"
 ```
 
 # Introduction

@@ -1,4 +1,3 @@
-#
 # ```@setup whitenoise
 # # all examples are run on an example global.toml and downsized maps.
 # ARGS = ["example.toml"] 
@@ -62,3 +61,7 @@ end
 # Finally, we save this all to a CSV.
 csvfile = joinpath(config["scratch"], "whitenoise.dat")
 CSV.write(csvfile, df)
+
+
+# Let's inspect the values that we saved.
+df

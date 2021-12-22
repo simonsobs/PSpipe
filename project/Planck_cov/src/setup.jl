@@ -25,7 +25,7 @@
 using Pkg  
 Pkg.add.(["Healpix", "PowerSpectra", "CSV", "DataFrames", "TOML", 
   "BlackBoxOptim", "FileIO", "JLD2", "FITSIO",
-  "DataInterpolations", "Optim", "GaussianProcesses"])
+  "DataInterpolations", "Optim", "GaussianProcesses"]);
 #
 #
 # The command-line interface for this basic pipeline setup script is
@@ -133,7 +133,11 @@ download_if_necessary(
 run(`tar -xzvf $(plicreffile) --overwrite -C $(plicrefdir)`);
 
 
-# sims 
+# For the sims, we will use the full pixel weights to efficiently compute the spherical harmonic
+# transforms. The pixel weights are lazily downloaded in the Healpix package. We trigger
+# that downloading here. Similarly we trigger some downloading of example data from PowerSpectra.jl 
+# for the purpose of plotting.
+
 using Healpix
 Healpix.applyFullWeights!(HealpixMap{Float64, RingOrder}(2048))
 using PowerSpectra

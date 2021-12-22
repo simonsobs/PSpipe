@@ -15,7 +15,7 @@ lit = joinpath(@__DIR__, "src")
 
 config = Dict(
     "credit" => false,  # credit is configured to render in Documenter instead
-    "repo_root_url"=> "https://github.com/simonsobs/PSpipe/tree/planckcov/project/Planck_cov/",
+    "repo_root_url"=> "https://github.com/simonsobs/PSpipe/blob/master/project/Planck_cov/",
 )
 
 nonexecute_config = copy(config)

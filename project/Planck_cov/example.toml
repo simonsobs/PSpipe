@@ -39,6 +39,6 @@ nside = 256
 "P217hm2" = 0.999
 
 [url]
-maps = "https://github.com/xzackli/PSPipePlanckRender.jl/releases/download/v0.1/"
+maps = "https://github.com/xzackli/PSPipePlanckRender.jl/releases/download/0.1.1/"
 masks = "https://github.com/xzackli/PSPipePlanckRender.jl/releases/download/v0.1/"
 beams = "https://irsa.ipac.caltech.edu/data/Planck/release_3/ancillary-data/"

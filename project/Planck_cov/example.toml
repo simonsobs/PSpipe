@@ -1,0 +1,44 @@
+# example files
+
+scratch = "/home/zack/planck256/"
+
+[general]
+name = "example"
+nside = 256
+
+[map]
+"P100hm1" = "nside256_HFI_SkyMap_100_2048_R3.01_halfmission-1.fits"
+"P100hm2" = "nside256_HFI_SkyMap_100_2048_R3.01_halfmission-2.fits"
+"P143hm1" = "nside256_HFI_SkyMap_143_2048_R3.01_halfmission-1.fits"
+"P143hm2" = "nside256_HFI_SkyMap_143_2048_R3.01_halfmission-2.fits"
+"P217hm1" = "nside256_HFI_SkyMap_217_2048_R3.01_halfmission-1.fits"
+"P217hm2" = "nside256_HFI_SkyMap_217_2048_R3.01_halfmission-2.fits"
+
+[maskT]
+"P100hm1" = "nside256_COM_Mask_Likelihood-temperature-100-hm1_2048_R3.00.fits"
+"P100hm2" = "nside256_COM_Mask_Likelihood-temperature-100-hm2_2048_R3.00.fits"
+"P143hm1" = "nside256_COM_Mask_Likelihood-temperature-143-hm1_2048_R3.00.fits"
+"P143hm2" = "nside256_COM_Mask_Likelihood-temperature-143-hm2_2048_R3.00.fits"
+"P217hm1" = "nside256_COM_Mask_Likelihood-temperature-217-hm1_2048_R3.00.fits"
+"P217hm2" = "nside256_COM_Mask_Likelihood-temperature-217-hm2_2048_R3.00.fits"
+
+[maskP]
+"P100hm1" = "nside256_COM_Mask_Likelihood-polarization-100-hm1_2048_R3.00.fits"
+"P100hm2" = "nside256_COM_Mask_Likelihood-polarization-100-hm2_2048_R3.00.fits"
+"P143hm1" = "nside256_COM_Mask_Likelihood-polarization-143-hm1_2048_R3.00.fits"
+"P143hm2" = "nside256_COM_Mask_Likelihood-polarization-143-hm2_2048_R3.00.fits"
+"P217hm1" = "nside256_COM_Mask_Likelihood-polarization-217-hm1_2048_R3.00.fits"
+"P217hm2" = "nside256_COM_Mask_Likelihood-polarization-217-hm2_2048_R3.00.fits"
+
+[poleff]
+"P100hm1" = 0.9995 
+"P143hm1" = 0.999
+"P217hm1" = 0.999
+"P100hm2" = 0.9995 
+"P143hm2" = 0.999
+"P217hm2" = 0.999
+
+[url]
+maps = "https://github.com/xzackli/PSPipePlanckRender.jl/releases/download/0.1.1/"
+masks = "https://github.com/xzackli/PSPipePlanckRender.jl/releases/download/v0.1/"
+beams = "https://irsa.ipac.caltech.edu/data/Planck/release_3/ancillary-data/"

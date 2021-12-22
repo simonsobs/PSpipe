@@ -1,0 +1,6 @@
+docs/src/*.md
+docs/*.md
+docs/build
+docs/input
+docs/Manifest.toml
+notebooks

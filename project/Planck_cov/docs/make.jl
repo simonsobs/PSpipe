@@ -27,15 +27,19 @@ cp(joinpath(@__DIR__, "..", "src", "util.jl"), joinpath(@__DIR__, "build", "util
 cp(joinpath(@__DIR__, "..", "example.toml"), joinpath(@__DIR__, "build", "example.toml"); force=true)
 cp(joinpath(@__DIR__, "..", "input"), joinpath(@__DIR__, "input"); force=true)
 
+
+# fence = nothing 
+fence = "```julia" => "```"
+
 for (root, _, files) ∈ walkdir(joinpath(@__DIR__, "../src")), file ∈ files
     splitext(file)[2] == ".jl" || continue
     ipath = joinpath(root, file)
     opath = lit
     if file ∉ execution_exclusion
-        Literate.markdown(ipath, opath; config=config)
+        Literate.markdown(ipath, opath; config=config, codefence=fence)
     else
         @warn("not executing unless forced for ", file)
-        Literate.markdown(ipath, opath; config=nonexecute_config)
+        Literate.markdown(ipath, opath; config=nonexecute_config, codefence=fence)
     end
 end
 
@@ -55,6 +59,7 @@ makedocs(
     format=Documenter.HTML(
         prettyurls=get(ENV, "CI", nothing) == "true",
         assets=["assets/so.css"],
+        footer="Powered by [Documenter.jl](https://github.com/JuliaDocs/Documenter.jl), [Literate.jl](https://github.com/fredrikekre/Literate.jl), and the [Julia Programming Language](https://julialang.org/). Published in [Li et al. 2021](https://arxiv.org/abs/2112.13839)."
     ),
     pages = [
         "Introduction" => "index.md",

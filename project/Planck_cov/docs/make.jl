@@ -28,8 +28,8 @@ cp(joinpath(@__DIR__, "..", "example.toml"), joinpath(@__DIR__, "build", "exampl
 cp(joinpath(@__DIR__, "..", "input"), joinpath(@__DIR__, "input"); force=true)
 
 
-# fence = nothing 
-fence = "```julia" => "```"
+fence = nothing 
+# fence = "```julia" => "```"
 
 for (root, _, files) ∈ walkdir(joinpath(@__DIR__, "../src")), file ∈ files
     splitext(file)[2] == ".jl" || continue

@@ -12,6 +12,33 @@ import time
 from pixell import curvedsky, powspec
 
 
+def get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, verbose=True):
+
+    # for each survey, we read the mesasured noise power spectrum from the data
+    # since we want to allow for array x array noise correlation this is an
+    # (narrays, narrays, lmax) matrix
+    # the pol noise is taken as the arithmetic mean of E and B noise
+    l, nl_array_t, nl_array_pol = data_analysis_utils.get_noise_matrix_spin0and2(ps_model_dir,
+                                                                                sv,
+                                                                                arrays,
+                                                                                lmax,
+                                                                                nsplits[sv])
+                                                                                
+    # we generate noise alms from the matrix, resulting in a dict with entry ["T,E,B", "0,...nsplit-1"]
+    # each element of the dict is a [narrays,lm] array
+    nlms = data_analysis_utils.generate_noise_alms(nl_array_t,
+                                                lmax,
+                                                nsplits[sv],
+                                                ncomp,
+                                                nl_array_pol=nl_array_pol,
+                                                dtype=sim_alm_dtype)
+
+    if verbose:
+        print(nl_array_t.shape)
+
+    return nlms
+
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
@@ -22,6 +49,7 @@ type = d["type"]
 binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]
 sim_alm_dtype = d["sim_alm_dtype"]
+noise_sim_type = d["noise_sim_type"]  # can be "gaussian", "tiled", "wavelet"
 
 if sim_alm_dtype == "complex64":
     sim_alm_dtype = np.complex64
@@ -86,28 +114,18 @@ for iii in subtasks:
         arrays = d["arrays_%s" % sv]
         nsplits[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
         
-        # for each survey, we read the mesasured noise power spectrum from the data
-        # since we want to allow for array x array noise correlation this is an
-        # (narrays, narrays, lmax) matrix
-        # the pol noise is taken as the arithmetic mean of E and B noise
+        if noise_sim_type == "gaussian":
+            nlms = get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, verbose=True)
+        elif noise_sim_type == "tiled":
+            print("NOT IMPLEMENTED YET")
+            sys.exit()
+        elif noise_sim_type == "wavelet":
+            print("NOT IMPLEMENTED YET")
+            sys.exit()
+        else:
+            print("noise_sim_type is not one of \"gaussian\", \"tiled\", or \"wavelet\"")
+            sys.exit()
 
-        l, nl_array_t, nl_array_pol = data_analysis_utils.get_noise_matrix_spin0and2(ps_model_dir,
-                                                                                     sv,
-                                                                                     arrays,
-                                                                                     lmax,
-                                                                                     nsplits[sv])
-                                                                                     
-        # we generate noise alms from the matrix, resulting in a dict with entry ["T,E,B", "0,...nsplit-1"]
-        # each element of the dict is a [narrays,lm] array
-        
-        nlms = data_analysis_utils.generate_noise_alms(nl_array_t,
-                                                       lmax,
-                                                       nsplits[sv],
-                                                       ncomp,
-                                                       nl_array_pol=nl_array_pol,
-                                                       dtype=sim_alm_dtype)
-        print(nl_array_t.shape)
-        del nl_array_t, nl_array_pol
 
         for ar_id, ar in enumerate(arrays):
         

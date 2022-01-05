@@ -54,14 +54,21 @@ np.savetxt("%s/lcdm.dat" % bestfit_dir, np.transpose([ell, clth["TT"], clth["EE"
     
 # we will now use mflike (and in particular the fg module) to get the best fit foreground model
 # we will only include foreground in tt, note that for now only extragalactic foreground are present
-import mflike as mfl
+
+from mflike import theoryforge_MFLike as th_mflike
+
+ThFo = th_mflike.TheoryForge_MFLike()
 
 fg_norm = d["fg_norm"]
 fg_components =  d["fg_components"]
 components = {"tt": fg_components, "ee": [], "te": []}
 fg_model =  {"normalisation":  fg_norm, "components": components}
 fg_params = d["fg_params"]
-fg_dict = mfl.get_foreground_model(fg_params, fg_model, freq_list, ell)
+# fg_dict = mfl.get_foreground_model(fg_params, fg_model, freq_list, ell)
+
+ThFo.foregrounds = fg_model
+ThFo._init_foreground_model()
+fg_dict = ThFo._get_foreground_model(ell=ell, freqs_order=freq_list,  **fg_params)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 

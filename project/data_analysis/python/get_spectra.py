@@ -6,7 +6,7 @@ The spectra are then combined in mean auto, cross and noise power spectrum and w
 If write_all_spectra=True, each individual spectrum is also written to disk.
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra
+from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_map_preprocessing
 from pixell import enmap
 import numpy as np
 import healpy as hp
@@ -49,6 +49,11 @@ for sv in surveys:
     for ar in arrays:
         win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
         win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+        
+        if win_T.pixel == "CAR":
+            if d["use_kspace_filter"]:
+                shape, wcs = win_T.data.shape, win_T.data.wcs
+                filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], dtype=np.float64)
 
         window_tuple = (win_T, win_pol)
         
@@ -100,8 +105,10 @@ for sv in surveys:
                 if d["use_kspace_filter"]:
                     print("apply kspace filter on %s" %map)
                     binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                    split = data_analysis_utils.get_filtered_map(
-                        split, binary, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], normalize=False, inv_pixwin_lxly=inv_pixwin_lxly)
+                    split = data_analysis_utils.get_filtered_map_new(
+                        split, binary, filter, inv_pixwin_lxly=inv_pixwin_lxly)
+                        
+                        
                 else:
                     print("WARNING: no kspace filter is applied")
                     if deconvolve_pixwin:

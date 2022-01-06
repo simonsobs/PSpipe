@@ -10,92 +10,9 @@ from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 from pixell import enmap
 
-def filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys", inv_pixwin_lxly=None):
-
-    """Filter the map in Fourier space removing modes in a horizontal and vertical band
-    defined by hk_mask and vk_mask. This is a faster version that what is implemented in pspy
-    We also include an option for removing the pixel window function
-    
-    Parameters
-    ---------
-    map: ``so_map``
-        the map to be filtered
-    vk_mask: list with 2 elements
-        format is fourier modes [-lx,+lx]
-    hk_mask: list with 2 elements
-        format is fourier modes [-ly,+ly]
-    normalize: string
-        optional normalisation of the Fourier transform
-    inv_pixwin_lxly: 2d array
-        the inverse of the pixel window function in fourier space
-    """
-
-    lymap, lxmap = map.data.lmap()
-    ly, lx = lymap[:,0], lxmap[0,:]
-
-   # filtered_map = map.copy()
-    ft = enmap.fft(map.data, normalize=normalize)
-    
-    if vk_mask is not None:
-        id_vk = np.where((lx > vk_mask[0]) & (lx < vk_mask[1]))
-    if hk_mask is not None:
-        id_hk = np.where((ly > hk_mask[0]) & (ly < hk_mask[1]))
-
-    if map.ncomp == 1:
-        if vk_mask is not None:
-            ft[: , id_vk] = 0.
-        if hk_mask is not None:
-            ft[id_hk , :] = 0.
-    
-    if map.ncomp == 3:
-        for i in range(3):
-            if vk_mask is not None:
-                ft[i, : , id_vk] = 0.
-            if hk_mask is not None:
-                ft[i, id_hk , :] = 0.
-
-    if inv_pixwin_lxly is not None:
-        ft  *= inv_pixwin_lxly
-        
-    map.data[:] = np.real(enmap.ifft(ft, normalize=normalize))
-    return map
-
-
-def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys", inv_pixwin_lxly=None):
-
-    """Filter the map in Fourier space removing modes in a horizontal and vertical band
-    defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before
-    doing this operation in order to remove pathological pixels
-    We also include an option for removing the pixel window function
-
-    Parameters
-    ---------
-    orig_map: ``so_map``
-        the map to be filtered
-    binary:  ``so_map``
-        a binary mask removing pathological pixels
-    vk_mask: list with 2 elements
-        format is fourier modes [-lx,+lx]
-    hk_mask: list with 2 elements
-        format is fourier modes [-ly,+ly]
-    normalize: string
-        optional normalisation of the Fourier transform
-    inv_pixwin_lxly: 2d array
-        the inverse of the pixel window function in fourier space
-
-    """
-
-    if orig_map.ncomp == 1:
-        orig_map.data *= binary.data
-    else:
-        orig_map.data[:] *= binary.data
-    filtered_map = filter_fast(orig_map, vk_mask, hk_mask, normalize=normalize, inv_pixwin_lxly=inv_pixwin_lxly)
-    # filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
-
-    return filtered_map
     
     
-def get_filtered_map_new(orig_map, binary, filter, inv_pixwin_lxly=None):
+def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None):
 
     """Filter the map in Fourier space removing modes in a horizontal and vertical band
     defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before

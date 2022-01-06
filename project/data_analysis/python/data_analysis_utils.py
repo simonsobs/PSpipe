@@ -93,6 +93,48 @@ def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys", inv_p
     # filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
 
     return filtered_map
+    
+    
+def get_filtered_map_new(orig_map, binary, filter, inv_pixwin_lxly=None):
+
+    """Filter the map in Fourier space removing modes in a horizontal and vertical band
+    defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before
+    doing this operation in order to remove pathological pixels
+    We also include an option for removing the pixel window function
+
+    Parameters
+    ---------
+    orig_map: ``so_map``
+        the map to be filtered
+    binary:  ``so_map``
+        a binary mask removing pathological pixels
+    vk_mask: list with 2 elements
+        format is fourier modes [-lx,+lx]
+    hk_mask: list with 2 elements
+        format is fourier modes [-ly,+ly]
+    normalize: string
+        optional normalisation of the Fourier transform
+    inv_pixwin_lxly: 2d array
+        the inverse of the pixel window function in fourier space
+
+    """
+    if orig_map.ncomp == 1:
+        orig_map.data *= binary.data
+        ft = enmap.fft(orig_map.data, normalize=False)
+        if inv_pixwin_lxly is not None:
+            ft  *= inv_pixwin_lxly
+        orig_map.data = enmap.ifft(filter * ft, normalize=False).real
+
+    else:
+        for i in range(orig_map.ncomp):
+            orig_map.data[i] *= binary.data
+        ft = enmap.fft(orig_map.data, normalize=False)
+        if inv_pixwin_lxly is not None:
+            ft  *= inv_pixwin_lxly
+        for i in range(orig_map.ncomp):
+            orig_map.data[i] = enmap.ifft(filter * ft, normalize=False).real
+    
+    return filtered_map
 
 
 def get_coadded_map(orig_map, coadd_map, coadd_mask):

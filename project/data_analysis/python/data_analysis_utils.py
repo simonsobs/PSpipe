@@ -10,12 +10,10 @@ from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 from pixell import enmap
 
-    
-    
+
 def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None):
 
-    """Filter the map in Fourier space removing modes in a horizontal and vertical band
-    defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before
+    """Filter the map in Fourier space using a predefined filter. Note that we mutliply the maps by a binary mask before
     doing this operation in order to remove pathological pixels
     We also include an option for removing the pixel window function
 
@@ -25,12 +23,7 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None):
         the map to be filtered
     binary:  ``so_map``
         a binary mask removing pathological pixels
-    vk_mask: list with 2 elements
-        format is fourier modes [-lx,+lx]
-    hk_mask: list with 2 elements
-        format is fourier modes [-ly,+ly]
-    normalize: string
-        optional normalisation of the Fourier transform
+    filter: 2d array
     inv_pixwin_lxly: 2d array
         the inverse of the pixel window function in fourier space
 

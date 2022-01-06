@@ -24,6 +24,7 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None):
     binary:  ``so_map``
         a binary mask removing pathological pixels
     filter: 2d array
+        a filter applied in fourier space
     inv_pixwin_lxly: 2d array
         the inverse of the pixel window function in fourier space
 

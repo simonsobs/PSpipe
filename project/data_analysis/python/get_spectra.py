@@ -105,7 +105,7 @@ for sv in surveys:
                 if d["use_kspace_filter"]:
                     print("apply kspace filter on %s" %map)
                     binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                    split = data_analysis_utils.get_filtered_map_new(
+                    split = data_analysis_utils.get_filtered_map(
                         split, binary, filter, inv_pixwin_lxly=inv_pixwin_lxly)
                         
                         

@@ -134,7 +134,7 @@ def get_filtered_map_new(orig_map, binary, filter, inv_pixwin_lxly=None):
         for i in range(orig_map.ncomp):
             orig_map.data[i] = enmap.ifft(filter * ft[i], normalize=False).real
     
-    return filtered_map
+    return orig_map
 
 
 def get_coadded_map(orig_map, coadd_map, coadd_mask):

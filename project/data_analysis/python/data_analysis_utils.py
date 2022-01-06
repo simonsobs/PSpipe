@@ -126,13 +126,11 @@ def get_filtered_map_new(orig_map, binary, filter, inv_pixwin_lxly=None):
         orig_map.data = enmap.ifft(filter * ft, normalize=False).real
 
     else:
-        for i in range(orig_map.ncomp):
-            orig_map.data[i] *= binary.data
+        orig_map.data *= binary.data
         ft = enmap.fft(orig_map.data, normalize=False)
         if inv_pixwin_lxly is not None:
             ft  *= inv_pixwin_lxly
-        for i in range(orig_map.ncomp):
-            orig_map.data[i] = enmap.ifft(filter * ft[i], normalize=False).real
+        orig_map.data = enmap.ifft(ft * filter, normalize=False).real
     
     return orig_map
 

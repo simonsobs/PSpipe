@@ -43,17 +43,21 @@ master_alms = {}
 nsplit = {}
 pixwin_l = {}
 
+
+
 for sv in surveys:
+
     arrays = d["arrays_%s" % sv]
+    
+    template = so_map.read_map(d["window_T_%s_%s" % (sv, arrays[0])])
+    if template.pixel == "CAR" and d["use_kspace_filter"]:
+        shape, wcs = template.data.shape, template.data.wcs
+        filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], dtype=np.float64)
 
     for ar in arrays:
         win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
         win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
         
-        if win_T.pixel == "CAR":
-            if d["use_kspace_filter"]:
-                shape, wcs = win_T.data.shape, win_T.data.wcs
-                filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], dtype=np.float64)
 
         window_tuple = (win_T, win_pol)
         

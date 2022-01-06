@@ -5,12 +5,15 @@ template = data_dir + "maps/srcfree_s19/s19_cmb_pa4_f150_nohwp_night_1pass_4way_
 
 # Point sources config
 point_source_file = data_dir + "masks/pointsrcs/act_planck_s08_s19_cmb_f150_daynight_cat.txt"
+# # Only keep the nth brightest sources
+# point_source_only_keep_nth_brighest = 100
 # Point source flux cut (default: 15 mJy @ 150 GHz)
 point_source_Tflux = 15
 # Point source Signal-Noise-Ratio (default: 5)
 point_source_SNR = 5
 # Point source radius (default: 5 arcmin)
 point_source_radius = 5.0
+
 
 # Point source with variable radius size
 monster_source_file = data_dir + "masks/pointsrcs/monster_catalog.csv"

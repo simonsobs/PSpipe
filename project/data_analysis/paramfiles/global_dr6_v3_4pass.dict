@@ -55,7 +55,7 @@ hk_mask = [-50, 50]
 tf_dr6 = data_dir + "transfer_fcns/tf_smallbin_new.dat"
 
 src_free_maps_dr6 = True
-src_free_maps_lf = True
+
 
 
 maps_dr6_pa4_f150 = [map_dir + 'cmb_night_pa4_f150_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]

@@ -11,7 +11,7 @@ from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 from pixell import enmap
 
 
-def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None):
+def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_filter=False, norm=0, tol=1e-4, ref=0.9):
 
     """Filter the map in Fourier space using a predefined filter. Note that we mutliply the maps by a binary mask before
     doing this operation in order to remove pathological pixels
@@ -27,16 +27,66 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None):
         a filter applied in fourier space
     inv_pixwin_lxly: 2d array
         the inverse of the pixel window function in fourier space
+    weighted_filter: boolean
+        wether to use weighted filter a la sigurd
+    norm: integer
+        everytime we do a FFT + IFFT operation we get a normalisation cst to take care of
+        this is counting the number of occurence of it, note that we could correct directly by
+        using normalize="physical", but dividing the map by a number is slow so we prefer to do it later
+        in the code.
+    tol, ref: floats
+        only in use in the case of the weighted filter, these arg
+        remove crazy pixels value in the weight applied
 
+    """
+    
+    orig_map.data *= binary.data
+    if weighted_filter == False:
+        ft = enmap.fft(orig_map.data, normalize=False)
+        if inv_pixwin_lxly is not None:
+            ft  *= inv_pixwin_lxly
+        orig_map.data = enmap.ifft(ft * filter, normalize=False).real
+        norm += 1
+    else:
+        rhs    = enmap.ifft((1 - filter) * enmap.fft(orig_map.data * binary.data, normalize=False), normalize=False).real
+        div    = enmap.ifft((1 - filter) * enmap.fft(binary.data, normalize=False), normalize=False).real
+        div    = np.maximum(div, np.percentile(ivar[::10, ::10], ref * 100) * tol)
+        orig_map.data = orig_map.data - rhs / div
+        
+        if inv_pixwin_lxly is not None:
+            ft = enmap.fft(orig_map.data, normalize=False)
+            ft  *= inv_pixwin_lxly
+            orig_map.data = enmap.ifft(ft, normalize=False).real
+            norm += 1
+
+    return norm, orig_map
+    
+def deconvolve_pixwin_CAR(orig_map, binary, inv_pixwin_lxly, norm=0):
+
+    """Deconvolve the two dimensional CAR pixel window function
+
+    Parameters
+    ---------
+    orig_map: ``so_map``
+        the map to be filtered
+    binary:  ``so_map``
+        a binary mask removing pathological pixels
+    inv_pixwin_lxly: 2d array
+        the inverse of the pixel window function in fourier space
+    norm: integer
+        everytime we do a FFT + IFFT operation we get a normalisation cst to take care of
+        this is counting the number of occurence of it, note that we could correct directly by
+        using normalize="physical", but dividing the map by a number is slow so we prefer to do it later
+        in the code.
     """
     orig_map.data *= binary.data
     ft = enmap.fft(orig_map.data, normalize=False)
-    if inv_pixwin_lxly is not None:
-        ft  *= inv_pixwin_lxly
-    orig_map.data = enmap.ifft(ft * filter, normalize=False).real
+    ft  *= inv_pixwin_lxly
+    orig_map.data = enmap.ifft(ft, normalize=False).real
+    norm += 1
     
-    return orig_map
-
+    return norm, orig_map
+    
 
 def get_coadded_map(orig_map, coadd_map, coadd_mask):
     """Co-add a map with another map given its associated mask.

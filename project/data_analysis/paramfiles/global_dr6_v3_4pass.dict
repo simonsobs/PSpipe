@@ -45,7 +45,7 @@ n_med_ivar = 3
 # kspace filter parameters
 
 use_kspace_filter = True
-weighted_filter = True
+weighted_filter = False
 vk_mask = [-90, 90]
 hk_mask = [-50, 50]
 

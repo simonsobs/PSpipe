@@ -50,7 +50,7 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_fi
     else:
         rhs    = enmap.ifft((1 - filter) * enmap.fft(orig_map.data * binary.data, normalize=False), normalize=False).real
         div    = enmap.ifft((1 - filter) * enmap.fft(binary.data, normalize=False), normalize=False).real
-        div    = np.maximum(div, np.percentile(ivar[::10, ::10], ref * 100) * tol)
+        div    = np.maximum(div, np.percentile(binary.data[::10, ::10], ref * 100) * tol)
         orig_map.data = orig_map.data - rhs / div
         
         if inv_pixwin_lxly is not None:

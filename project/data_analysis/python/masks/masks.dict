@@ -21,6 +21,10 @@ monster_source_file = data_dir + "masks/pointsrcs/monster_catalog.csv"
 # Dust
 dust_file = data_dir + "masks/mask_dust.fits"
 
+# Galatic mask from Planck
+planck_galactic_masks = data_dir + "masks/HFI_Mask_GalPlane-apo0_2048_R2.00.fits"
+
+
 # Output file name
 output_file = data_dir + "masks/act_planck_mask_s08s19_15mJy_5.0arcmin_dust_monster.fits"
 

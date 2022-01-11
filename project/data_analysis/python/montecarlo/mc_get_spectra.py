@@ -10,6 +10,55 @@ import sys
 import data_analysis_utils
 import time
 from pixell import curvedsky, powspec
+from mnms import noise_models as nm
+
+
+def get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, verbose=True):
+
+    # for each survey, we read the mesasured noise power spectrum from the data
+    # since we want to allow for array x array noise correlation this is an
+    # (narrays, narrays, lmax) matrix
+    # the pol noise is taken as the arithmetic mean of E and B noise
+    l, nl_array_t, nl_array_pol = data_analysis_utils.get_noise_matrix_spin0and2(ps_model_dir,
+                                                                                sv,
+                                                                                arrays,
+                                                                                lmax,
+                                                                                nsplits[sv])
+                                                                                
+    # we generate noise alms from the matrix, resulting in a dict with entry ["T,E,B", "0,...nsplit-1"]
+    # each element of the dict is a [narrays,lm] array
+    nlms = data_analysis_utils.generate_noise_alms(nl_array_t,
+                                                lmax,
+                                                nsplits[sv],
+                                                ncomp,
+                                                nl_array_pol=nl_array_pol,
+                                                dtype=sim_alm_dtype)
+
+    if verbose:
+        print(nl_array_t.shape)
+
+    return nlms
+
+
+# CURRENTLY DOES NOT HANDLE MULTIPLE SURVEYS
+def get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, sim_num, sv, soapack_arrays, nsplits, verbose=True):
+    nlms = {}
+    n_splits = nsplits[sv]
+    for split_num in range(n_splits):
+        # first, generate all relevant wafer simulations
+        array_sims = {}
+        for wafer_name in wafer_models:
+            # mnms get_sim returns (n_arrays, 1, 3, alm_size) in current implementation
+            # n_arrays will always be 2 for DR6, due to dichroics
+            sim_array0, sim_array1 = wafer_models[wafer_name].get_sim(split_num, sim_num, verbose=verbose)
+            array_sims[wafer_name, 0] = sim_array0
+            array_sims[wafer_name, 1] = sim_array1
+
+        # now assemble result. we want to assign each (channel, split) an array of shape (n_arrays, n_alms)
+        nlms["T", split_num] = np.vstack([array_sims[array_to_wafer_and_index[arr]][0,0,:] for arr in soapack_arrays])
+        nlms["E", split_num] = np.vstack([array_sims[array_to_wafer_and_index[arr]][0,1,:] for arr in soapack_arrays])
+        nlms["B", split_num] = np.vstack([array_sims[array_to_wafer_and_index[arr]][0,2,:] for arr in soapack_arrays])
+    return nlms
 
 
 d = so_dict.so_dict()
@@ -22,6 +71,8 @@ type = d["type"]
 binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]
 sim_alm_dtype = d["sim_alm_dtype"]
+noise_sim_type = d["noise_sim_type"]  # can be "gaussian", "tiled", "wavelet"
+noise_model_parameters = d["noise_model_parameters"]
 
 if sim_alm_dtype == "complex64":
     sim_alm_dtype = np.complex64
@@ -39,13 +90,39 @@ pspy_utils.create_directory(spec_dir)
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
+
 # let's list the different frequencies used in the code
+array_to_soapack_array = dict()
 freq_list = []
+noise_model_pair_list = []
 for sv in surveys:
     arrays = d["arrays_%s" % sv]
+    array_to_soapack_array.update(dict(zip(arrays, d["soapack_arrays_%s" % sv])))
     for ar in arrays:
         freq_list += [d["nu_eff_%s_%s" % (sv, ar)]]
 freq_list = list(dict.fromkeys(freq_list)) # this bit removes doublons
+
+
+# now we put together some mappings that contain some notion of wafers, as 
+# well as the pairs of arrays that live on them
+wafers = {}
+for sv in surveys:
+    wafers.update(d["wafers_%s" % sv])
+
+array_to_wafer_and_index = dict()
+wafer_models = dict()
+if (noise_sim_type == "tiled") or (noise_sim_type == "wavelet"):
+    for wafer_name in wafers:
+        array0, array1 = wafers[wafer_name]
+        if (noise_sim_type == "tiled"):
+            noise_model = nm.TiledNoiseModel(array0, array1, **noise_model_parameters)
+        elif (noise_sim_type == "wavelet"):
+            noise_model = nm.WaveletNoiseModel(array0, array1, **noise_model_parameters)
+        array_to_wafer_and_index[array0] = (wafer_name, 0)
+        array_to_wafer_and_index[array1] = (wafer_name, 1)
+        wafer_models[wafer_name] = noise_model
+
+print(array_to_wafer_and_index)
 
 id_freq = {}
 # create a list assigning an integer index to each freq (used later in the code to generate fg simulations)
@@ -67,6 +144,8 @@ template = so_map.read_map(template)
 # we will use mpi over the number of simulations
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
+subtasks = [int(iii) for iii in subtasks]  # prevent bug in pspy that makes the subtasks floats
+print(subtasks)
 
 for iii in subtasks:
     t0 = time.time()
@@ -84,30 +163,17 @@ for iii in subtasks:
     for sv in surveys:
     
         arrays = d["arrays_%s" % sv]
+        soapack_arrays = d["soapack_arrays_%s" % sv]
         nsplits[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
         
-        # for each survey, we read the mesasured noise power spectrum from the data
-        # since we want to allow for array x array noise correlation this is an
-        # (narrays, narrays, lmax) matrix
-        # the pol noise is taken as the arithmetic mean of E and B noise
-
-        l, nl_array_t, nl_array_pol = data_analysis_utils.get_noise_matrix_spin0and2(ps_model_dir,
-                                                                                     sv,
-                                                                                     arrays,
-                                                                                     lmax,
-                                                                                     nsplits[sv])
-                                                                                     
-        # we generate noise alms from the matrix, resulting in a dict with entry ["T,E,B", "0,...nsplit-1"]
-        # each element of the dict is a [narrays,lm] array
-        
-        nlms = data_analysis_utils.generate_noise_alms(nl_array_t,
-                                                       lmax,
-                                                       nsplits[sv],
-                                                       ncomp,
-                                                       nl_array_pol=nl_array_pol,
-                                                       dtype=sim_alm_dtype)
-        print(nl_array_t.shape)
-        del nl_array_t, nl_array_pol
+        if noise_sim_type == "gaussian":
+            nlms = get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, verbose=True)
+        elif noise_sim_type == "tiled" or noise_sim_type == "wavelet":
+            # use MPI task index iii as simulation number ~ random seed, since it ranges from iStart to iStop
+            nlms = get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, iii, sv, soapack_arrays, nsplits, verbose=True)
+        else:
+            print("noise_sim_type is not one of \"gaussian\", \"tiled\", or \"wavelet\"")
+            sys.exit()
 
         for ar_id, ar in enumerate(arrays):
         
@@ -210,7 +276,7 @@ for iii in subtasks:
                                                                          master_alms[sv2, ar2, s2],
                                                                          spectra=spectra)
                                                               
-                            spec_name="%s_%s_%sx%s_%s_%d%d" % (type, sv1, ar1, sv2, ar2, s1, s2)
+                            spec_name="%s_%s_%s_%sx%s_%s_%d%d" % (noise_sim_type, type, sv1, ar1, sv2, ar2, s1, s2)
                         
                             lb, ps = so_spectra.bin_spectra(l,
                                                             ps_master,
@@ -241,7 +307,7 @@ for iii in subtasks:
 
                     for spec in spectra:
                         ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
-                        spec_name_cross = "%s_%s_%sx%s_%s_cross_%05d" % (type, sv1, ar1, sv2, ar2, iii)
+                        spec_name_cross = "%s_%s_%s_%sx%s_%s_cross_%05d" % (noise_sim_type, type, sv1, ar1, sv2, ar2, iii)
                     
                         if ar1 == ar2 and sv1 == sv2:
                             # Average TE / ET so that for same array same season TE = ET
@@ -249,9 +315,9 @@ for iii in subtasks:
 
                         if sv1 == sv2:
                             ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
-                            spec_name_auto = "%s_%s_%sx%s_%s_auto_%05d" % (type, sv1, ar1, sv2, ar2, iii)
+                            spec_name_auto = "%s_%s_%s_%sx%s_%s_auto_%05d" % (noise_sim_type, type, sv1, ar1, sv2, ar2, iii)
                             ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplits[sv1]
-                            spec_name_noise = "%s_%s_%sx%s_%s_noise_%05d" % (type, sv1, ar1, sv2, ar2, iii)
+                            spec_name_noise = "%s_%s_%s_%sx%s_%s_noise_%05d" % (noise_sim_type, type, sv1, ar1, sv2, ar2, iii)
 
                     so_spectra.write_ps(spec_dir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
                 

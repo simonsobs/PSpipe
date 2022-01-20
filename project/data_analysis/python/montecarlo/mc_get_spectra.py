@@ -11,9 +11,11 @@ import data_analysis_utils
 import time
 from pixell import curvedsky, powspec
 from mnms import noise_models as nm
+import gc
+import healpy as hp
+from pixell import enmap
 
-
-def get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, verbose=True):
+def get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, sim_alm_dtype, verbose=True):
 
     # for each survey, we read the mesasured noise power spectrum from the data
     # since we want to allow for array x array noise correlation this is an
@@ -41,23 +43,38 @@ def get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, verbose
 
 
 # CURRENTLY DOES NOT HANDLE MULTIPLE SURVEYS
-def get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, sim_num, sv, soapack_arrays, nsplits, verbose=True):
+def get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, sim_num, sv, soapack_arrays, nsplits, sim_alm_dtype, lmax, verbose=True):
     nlms = {}
     n_splits = nsplits[sv]
+    n_alms = hp.sphtfunc.Alm.getsize(lmax)
+    n_arrays = len(soapack_arrays)
+    # nlms_arr = np.memmap(f'/global/cscratch1/sd/xzackli/nlm{sim_num}.mymemmap', 
+    #     dtype=sim_alm_dtype, mode='w+', shape=(n_splits, 3, n_arrays, n_alms))
+    nlms_arr = np.empty(shape=(n_splits, 3, n_arrays, n_alms), dtype=sim_alm_dtype)
+
     for split_num in range(n_splits):
         # first, generate all relevant wafer simulations
         array_sims = {}
         for wafer_name in wafer_models:
             # mnms get_sim returns (n_arrays, 1, 3, alm_size) in current implementation
             # n_arrays will always be 2 for DR6, due to dichroics
-            sim_array0, sim_array1 = wafer_models[wafer_name].get_sim(split_num, sim_num, verbose=verbose)
+            sim_array0, sim_array1 = wafer_models[wafer_name].get_sim(split_num, sim_num, keep_model=False, verbose=verbose)
             array_sims[wafer_name, 0] = sim_array0
             array_sims[wafer_name, 1] = sim_array1
 
-        # now assemble result. we want to assign each (channel, split) an array of shape (n_arrays, n_alms)
-        nlms["T", split_num] = np.vstack([array_sims[array_to_wafer_and_index[arr]][0,0,:] for arr in soapack_arrays])
-        nlms["E", split_num] = np.vstack([array_sims[array_to_wafer_and_index[arr]][0,1,:] for arr in soapack_arrays])
-        nlms["B", split_num] = np.vstack([array_sims[array_to_wafer_and_index[arr]][0,2,:] for arr in soapack_arrays])
+        for arr_i, arr in enumerate(soapack_arrays):
+            for ci in range(3):
+                nlms_arr[split_num, ci, arr_i, :] = array_sims[array_to_wafer_and_index[arr]][0,ci,:]
+        del array_sims
+        gc.collect()
+
+        nlms["T", split_num] = nlms_arr[split_num, 0, :, :]
+        nlms["E", split_num] = nlms_arr[split_num, 1, :, :]
+        nlms["B", split_num] = nlms_arr[split_num, 2, :, :]
+        # # now assemble result. we want to assign each (channel, split) an array of shape (n_arrays, n_alms)
+        # nlms["T", split_num] = np.vstack([array_sims[array_to_wafer_and_index[arr]][0,0,:] for arr in soapack_arrays])
+        # nlms["E", split_num] = np.vstack([array_sims[array_to_wafer_and_index[arr]][0,1,:] for arr in soapack_arrays])
+        # nlms["B", split_num] = np.vstack([array_sims[array_to_wafer_and_index[arr]][0,2,:] for arr in soapack_arrays])
     return nlms
 
 
@@ -70,6 +87,7 @@ niter = d["niter"]
 type = d["type"]
 binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]
+deconvolve_pixwin = d["deconvolve_pixwin"]
 sim_alm_dtype = d["sim_alm_dtype"]
 noise_sim_type = d["noise_sim_type"]  # can be "gaussian", "tiled", "wavelet"
 noise_model_parameters = d["noise_model_parameters"]
@@ -147,6 +165,17 @@ subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 subtasks = [int(iii) for iii in subtasks]  # prevent bug in pspy that makes the subtasks floats
 print(subtasks)
 
+if deconvolve_pixwin:
+    if template.pixel == "CAR":
+        wy, wx = enmap.calc_window(template.data.shape)
+        pixwin_lxly = (wy[:,None] * wx[None,:])
+        inv_pixwin_lxly = pixwin_lxly ** (-1)
+    else:
+        print("healpix noise sim with pixwin deconv is not supported")
+        sys.exit()
+else:
+    inv_pixwin_lxly = None
+
 for iii in subtasks:
     t0 = time.time()
  
@@ -167,12 +196,12 @@ for iii in subtasks:
         nsplits[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
         
         if noise_sim_type == "gaussian":
-            nlms = get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, verbose=True)
-        elif noise_sim_type == "tiled" or noise_sim_type == "wavelet":
+            nlms = get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, sim_alm_dtype, verbose=True)
+        elif (template.pixel == "CAR") and (noise_sim_type == "tiled" or noise_sim_type == "wavelet"):
             # use MPI task index iii as simulation number ~ random seed, since it ranges from iStart to iStop
-            nlms = get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, iii, sv, soapack_arrays, nsplits, verbose=True)
+            nlms = get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, iii, sv, soapack_arrays, nsplits, sim_alm_dtype, lmax, verbose=True)
         else:
-            print("noise_sim_type is not one of \"gaussian\", \"tiled\", or \"wavelet\"")
+            print("noise_sim_type is not one of \"gaussian\" (hp or car), \"tiled\" (car), or \"wavelet\" (car)")
             sys.exit()
 
         for ar_id, ar in enumerate(arrays):
@@ -192,19 +221,29 @@ for iii in subtasks:
             l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
             alms_beamed = curvedsky.almxfl(alms_beamed, bl)
 
+            beamed_signal = sph_tools.alm2map(alms_beamed, template)
+            if deconvolve_pixwin:
+                if template.pixel == "CAR":
+                    data_analysis_utils.apply_pixwin(beamed_signal, pixwin_lxly)
+
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
 
             t1 = time.time()
 
             for k in range(nsplits[sv]):
             
-                # finally we add the noise alms for each split
-                noisy_alms = alms_beamed.copy()
-                noisy_alms[0] +=  nlms["T", k][ar_id]
-                noisy_alms[1] +=  nlms["E", k][ar_id]
-                noisy_alms[2] +=  nlms["B", k][ar_id]
+                # get the map of the noise
+                split = alms_beamed.copy()
+                split[0] =  nlms["T", k][ar_id]
+                split[1] =  nlms["E", k][ar_id]
+                split[2] =  nlms["B", k][ar_id]
+                split = sph_tools.alm2map(split, template)
+                if noise_sim_type == "gaussian":
+                    # the gaussian sims need to be RE-convolved with the pixel window
+                    data_analysis_utils.apply_pixwin(beamed_signal, pixwin_lxly)
+                
+                split.data += beamed_signal.data  # add in the pixwin'd signal
 
-                split = sph_tools.alm2map(noisy_alms, template)
                 
                 # from now on the simulation pipeline is done
                 # and we are back to the get_spectra algorithm
@@ -216,7 +255,8 @@ for iii in subtasks:
                                                                      binary,
                                                                      vk_mask=d["vk_mask"],
                                                                      hk_mask=d["hk_mask"],
-                                                                     normalize=False)
+                                                                     normalize=False, 
+                                                                     inv_pixwin_lxly=inv_pixwin_lxly)
                         del binary
                 
                 if d["remove_mean"] == True:

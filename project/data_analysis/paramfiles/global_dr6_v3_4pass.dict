@@ -46,8 +46,15 @@ n_med_ivar = 3
 
 use_kspace_filter = True
 weighted_filter = False
+
+filter_type = "binary_cross"
 vk_mask = [-90, 90]
 hk_mask = [-50, 50]
+
+#filter_type = "gauss"
+#lbounds = [4000, 5]
+
+
 
 # transfer functions
 

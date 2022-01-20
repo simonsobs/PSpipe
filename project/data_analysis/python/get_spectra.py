@@ -52,8 +52,14 @@ for sv in surveys:
     template = so_map.read_map(d["window_T_%s_%s" % (sv, arrays[0])])
     if template.pixel == "CAR" and d["use_kspace_filter"]:
         shape, wcs = template.data.shape, template.data.wcs
-        filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], dtype=np.float64)
-
+        
+        if d["filter_type"] == "binary_cross":
+            filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], dtype=np.float64)
+        elif d["filter_type"] == "gauss":
+            filter = so_map_preprocessing.build_sigurd_filter(shape, wcs, d["lbounds"], dtype=np.float64)
+        else:
+            print("you need to specify a valid filter type")
+        
     for ar in arrays:
         win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
         win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])

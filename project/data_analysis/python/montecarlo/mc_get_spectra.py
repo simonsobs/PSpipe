@@ -64,6 +64,17 @@ l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lma
 template = d["maps_%s_%s" % (surveys[0], arrays[0])][0]
 template = so_map.read_map(template)
 
+if template.pixel == "CAR" and d["use_kspace_filter"]:
+    shape, wcs = template.data.shape, template.data.wcs
+    if d["filter_type"] == "binary":
+        filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], dtype=np.float64)
+    elif d["filter_type"] == "gauss":
+        filter = so_map_preprocessing.build_sigurd_filter(shape, wcs, d["lbounds"], dtype=np.float64)
+    else:
+        print("you need to specify a valid filter type")
+
+
+
 # we will use mpi over the number of simulations
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
@@ -146,11 +157,9 @@ for iii in subtasks:
                 if window_tuple[0].pixel == "CAR":
                     if d["use_kspace_filter"]:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                        split = data_analysis_utils.get_filtered_map(split,
-                                                                     binary,
-                                                                     vk_mask=d["vk_mask"],
-                                                                     hk_mask=d["hk_mask"],
-                                                                     normalize=False)
+                        norm, split = data_analysis_utils.get_filtered_map(
+                            split, binary, filter, weighted_filter=d["weighted_filter"])
+
                         del binary
                 
                 if d["remove_mean"] == True:
@@ -161,7 +170,7 @@ for iii in subtasks:
                 if d["use_kspace_filter"]:
                     # there is an extra normalisation for the FFT/IFFT bit
                     # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
-                    master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2])
+                    master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2]) ** norm
 
             print(time.time()-t1)
 

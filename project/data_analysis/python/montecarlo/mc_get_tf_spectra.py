@@ -4,7 +4,7 @@ This is essentially a much simpler version of mc_get_spectra.py, since it doesn'
 different splits of the data
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
+from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi, so_map_preprocessing
 import numpy as np
 import sys
 import data_analysis_utils
@@ -62,6 +62,15 @@ l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lma
 # the template for the simulations
 template = d["maps_%s_%s" % (surveys[0], arrays[0])][0]
 template = so_map.read_map(template)
+if template.pixel == "CAR" and d["use_kspace_filter"]:
+    shape, wcs = template.data.shape, template.data.wcs
+    if d["filter_type"] == "binary_cross":
+        filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], dtype=np.float64)
+    elif d["filter_type"] == "gauss":
+        filter = so_map_preprocessing.build_sigurd_filter(shape, wcs, d["lbounds"], dtype=np.float64)
+    else:
+        print("you need to specify a valid filter type")
+
 
 # the filter also introduce E->B leakage, in order to measure it we run the scenario where there
 # is no E or B modes
@@ -121,16 +130,14 @@ for iii in subtasks:
                 # apply the k-space filter
 
                 binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                split = data_analysis_utils.get_filtered_map(split,
-                                                            binary,
-                                                            vk_mask=d["vk_mask"],
-                                                            hk_mask=d["hk_mask"],
-                                                            normalize=False)
-                                                         
+                
+                norm, split = data_analysis_utils.get_filtered_map(
+                    split, binary, filter, weighted_filter=d["weighted_filter"])
+
                 # compute the alms of the filtered sim
 
                 master_alms[sv, ar, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
-                master_alms[sv, ar, "filter"] /= (split.data.shape[1]*split.data.shape[2])
+                master_alms[sv, ar, "filter"] /= (split.data.shape[1]*split.data.shape[2]) ** norm
                 
                 print(scenario, sv, ar, time.time()-t0)
 

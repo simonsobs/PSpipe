@@ -44,22 +44,21 @@ n_med_ivar = 3
 
 # kspace filter parameters
 
-use_kspace_filter = True
-weighted_filter = False
-
-filter_type = "binary_cross"
-vk_mask = [-90, 90]
-hk_mask = [-50, 50]
-
-#filter_type = "gauss"
-#lbounds = [4000, 5]
+k_filter_dr6 = {"apply":True, "type":"binary_cross","vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False, "tf":data_dir + "transfer_fcns/tf_smallbin_new.dat"}
 
 
+deconvolve_map_maker_tf_dr6 = False
 
-# transfer functions
+m_m_tf_dr6_pa4_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
 
 
-tf_dr6 = data_dir + "transfer_fcns/tf_smallbin_new.dat"
+# maps
+
 
 src_free_maps_dr6 = True
 

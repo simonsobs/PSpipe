@@ -337,11 +337,8 @@ def deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax=None):
         ncomp = 1 if T only
 
     """
-    if np.array_equal(tf1, tf2):
-        tf = tf1
-    else:
-        tf = np.sqrt(tf1*tf2)
-        
+    tf = tf1 * tf2
+     
     if lmax is not None:
         id = np.where(lb < lmax)
         tf = tf[id]

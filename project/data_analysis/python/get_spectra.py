@@ -42,35 +42,38 @@ ncomp = 3
 master_alms = {}
 nsplit = {}
 pixwin_l = {}
+template = {}
+filter = {}
 
-
+# compute the alms
 
 for sv in surveys:
 
     arrays = d["arrays_%s" % sv]
+    template[sv] = so_map.read_map(d["window_T_%s_%s" % (sv, arrays[0])])
     
-    template = so_map.read_map(d["window_T_%s_%s" % (sv, arrays[0])])
-    if template.pixel == "CAR" and d["use_kspace_filter"]:
-        shape, wcs = template.data.shape, template.data.wcs
+    ks_f = d["k_filter_%s" % sv]
+    if template[sv].pixel == "CAR" and ks_f["apply"]:
+        shape, wcs = template[sv].data.shape, template[sv].data.wcs
         
-        if d["filter_type"] == "binary_cross":
-            filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], dtype=np.float64)
-        elif d["filter_type"] == "gauss":
-            filter = so_map_preprocessing.build_sigurd_filter(shape, wcs, d["lbounds"], dtype=np.float64)
+        if ks_f["type"] == "binary_cross":
+            filter[sv] = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=ks_f["vk_mask"], hk_mask=ks_f["hk_mask"], dtype=np.float64)
+        elif ks_f["type"] == "gauss":
+            filter[sv] = so_map_preprocessing.build_sigurd_filter(shape, wcs, ks_f["lbounds"], dtype=np.float64)
         else:
             print("you need to specify a valid filter type")
-        
+            sys.exit()
+            
     for ar in arrays:
         win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
         win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
-        
-
         window_tuple = (win_T, win_pol)
         
         maps = d["maps_%s_%s" % (sv, ar)]
         nsplit[sv] = len(maps)
 
         cal = d["cal_%s_%s" % (sv, ar)]
+        
         print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
         
         if deconvolve_pixwin:
@@ -97,7 +100,6 @@ for sv in surveys:
         else:
             inv_pixwin_lxly = None
 
-
         t = time.time()
         for k, map in enumerate(maps):
         
@@ -112,11 +114,11 @@ for sv in surveys:
                     point_source_mask = so_map.read_map(d["ps_mask_%s_%s" % (sv, ar)])
                     split = data_analysis_utils.get_coadded_map(split, point_source_map, point_source_mask)
 
-                if d["use_kspace_filter"]:
+                if ks_f["apply"]:
                     print("apply kspace filter on %s" %map)
                     binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                     norm, split = data_analysis_utils.get_filtered_map(
-                        split, binary, filter, inv_pixwin_lxly=inv_pixwin_lxly, weighted_filter=d["weighted_filter"])
+                        split, binary, filter[sv], inv_pixwin_lxly=inv_pixwin_lxly, weighted_filter=ks_f["weighted"])
                         
                 else:
                     print("WARNING: no kspace filter is applied")
@@ -128,58 +130,65 @@ for sv in surveys:
                 split = so_map.read_map(map)
                 
             split.data *= cal
+            
             if d["remove_mean"] == True:
                 split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
-
             master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
             
-            if d["use_kspace_filter"] or deconvolve_pixwin:
+            if ks_f["apply"] or deconvolve_pixwin:
                 # there is an extra normalisation for the FFT/IFFT bit
                 # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
                 master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2]) ** norm
                 
         print(time.time()- t)
 
-ps_dict = {}
+
+# compute the transfer functions
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
+tf_array = {}
+
+for id_sv, sv in enumerate(surveys):
+
+    tf_survey = np.ones(len(lb))
+    ks_f = d["k_filter_%s" % sv]
+    
+    if ks_f["apply"]:
+        if ks_f["tf"] == "analytic":
+            print("compute analytic kspace tf %s" % sv)
+            _, kf_tf = so_map_preprocessing.analytical_tf(template[sv], filter[sv], binning_file, lmax)
+        else:
+            print("use kspace tf from file %s" % sv)
+            _, _, kf_tf, _ = np.loadtxt(ks_f["tf"], unpack=True)
+        tf_survey *= np.sqrt(np.abs(kf_tf[:len(lb)]))
+
+    if deconvolve_pixwin:
+        # this should be checked with simulations since maybe this should be done at the mcm level
+        _, pw = pspy_utils.naive_binning(np.arange(len(pixwin_l[sv])),  pixwin_l[sv], binning_file, lmax)
+        tf_survey *= pw
+
+    for id_ar, ar in enumerate(d["arrays_%s" % sv]):
+        tf_array[sv, ar] = tf_survey.copy()
+        
+        if d["deconvolve_map_maker_tf_%s" % sv]:
+            print("deconvolve map maker tf %s %s" % (sv, ar))
+            _, mm_tf = np.loadtxt("mm_tf_%s_%s.dat" % (sv, ar), unpack=True)
+            tf_array[sv, ar] *= mm_tf[:len(lb)]
+            
+        np.savetxt(specDir + "/tf_%s_%s.dat" % (sv, ar),
+                   np.transpose([lb, tf_array[sv, ar]]))
+
+# compute the power spectra
+
+ps_dict = {}
 
 for id_sv1, sv1 in enumerate(surveys):
-    arrays_1 = d["arrays_%s" % sv1]
     
-    if d["tf_%s" % sv1] is not None:
-        print("will deconvolve tf of %s" %sv1)
-        _, _, tf1, _ = np.loadtxt(d["tf_%s" % sv1], unpack=True)
-        tf1 = tf1[:len(lb)]
-    else:
-        tf1 = np.ones(len(lb))
-    
-    if deconvolve_pixwin:
-        # we have an extra correction for the 1d healpix pixel window function
-        # this should be checked with simulations since maybe this
-        # step should be done at the mcm level
-        l_pw = np.arange(len(pixwin_l[sv1]))
-        _, pw1 = pspy_utils.naive_binning(l_pw,  pixwin_l[sv1], binning_file, lmax)
-        tf1 *= pw1
-        
-    for id_ar1, ar1 in enumerate(arrays_1):
+    for id_ar1, ar1 in enumerate(d["arrays_%s" % sv1]):
     
         for id_sv2, sv2 in enumerate(surveys):
-            arrays_2 = d["arrays_%s" % sv2]
-            
-            if d["tf_%s" % sv2] is not None:
-                print("will deconvolve tf of %s" %sv2)
-                _, _, tf2, _ = np.loadtxt(d["tf_%s" % sv2], unpack=True)
-                tf2 = tf2[:len(lb)]
-            else:
-                tf2 = np.ones(len(lb))
-                
-            if deconvolve_pixwin:
-                l_pw = np.arange(len(pixwin_l[sv2]))
-                _, pw2 = pspy_utils.naive_binning(l_pw,  pixwin_l[sv2], binning_file, lmax)
-                tf2 *= pw2
-
-            for id_ar2, ar2 in enumerate(arrays_2):
+                    
+            for id_ar2, ar2 in enumerate(d["arrays_%s" % sv2]):
             
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
@@ -213,7 +222,7 @@ for id_sv1, sv1 in enumerate(surveys):
                                                         mbb_inv=mbb_inv,
                                                         spectra=spectra)
                                                         
-                        data_analysis_utils.deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax)
+                        data_analysis_utils.deconvolve_tf(lb, ps, tf_array[sv1, ar1], tf_array[sv2, ar2], ncomp, lmax)
 
                         if write_all_spectra:
                             so_spectra.write_ps(specDir + "/%s.dat" % spec_name, lb, ps, type, spectra=spectra)

@@ -2,7 +2,7 @@
 surveys = ["dr6", "planck"]
 
 arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
-arrays_Planck = ["f100", "f143", "f217"]
+arrays_planck = ["f100", "f143", "f217"]
 
 data_dir = '/global/cscratch1/sd/alaposta/act_data/'
 
@@ -13,7 +13,7 @@ map_dir_planck = data_dir + 'planck_maps/'
 
 npass = 3
 src_free_maps_dr6 = True
-src_free_maps_Planck = False
+src_free_maps_planck = False
 
 maps_dr6_pa4_f150 = [map_dir + 'cmb_night_pa4_f150_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]
 maps_dr6_pa4_f220 = [map_dir + 'cmb_night_pa4_f220_plain_%dpass_8way_set%d_map_srcfree.fits' % (npass, i) for i in range(8)]

@@ -177,16 +177,20 @@ for task in subtasks:
     # Some heuristic correction for the number of modes lost due to the transfer function
     # This should be tested against simulation and revisited
 
-    sva, _ = na.split("&")
-    svb, _ = nb.split("&")
-    svc, _ = nc.split("&")
-    svd, _ = nd.split("&")
+    sv_a, pa_a = na.split("&")
+    sv_b, pa_b = nb.split("&")
+    sv_c, pa_c = nc.split("&")
+    sv_d, pa_d = nd.split("&")
 
     tf = np.ones(len(lb))
-    for sv in [sva, svb, svc, svd]:
-        if d["tf_%s" % sv] is not None:
-            _, _, sv_tf, _ = np.loadtxt(d["tf_%s" % sv], unpack=True)
-            tf *= sv_tf[:len(lb)]**(1/4)
+    
+    for sv, pa in zip([sv_a, sv_b, sv_c, sv_d], [pa_a, pa_b, pa_c, pa_d]):
+        # so the TF here include the 1d pixwin but not the 2d pixwin
+        # we should decide weither or not to include the pixwin
+        # and do things consistently
+        _, sv_tf = np.loadtxt(spectra_dir + "/tf_%s_%s.dat" % (sv, pa), unpack=True)
+        tf *= sv_tf ** (1. / 4.)
+
 
     cov_tf = np.tile(tf, 4)
     analytic_cov /= np.outer(np.sqrt(cov_tf), np.sqrt(cov_tf))

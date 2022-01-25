@@ -32,7 +32,7 @@ for comp in ["tSZ", "cibc", "tSZxCIB"]:
 window_dir = "windows"
 mcm_dir = "mcms"
 noise_data_dir = "sim_data/noise_ps"
-specDir = "spectra"
+specDir = "spectra"      
 
 lmax_simu = lmax
 
@@ -54,7 +54,8 @@ subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 for iii in subtasks:
     #First we will generate our simulations and take their harmonics transforms
     if want_seed == True:
-        np.random.seed(iii)
+        print(iii)
+        np.random.seed(iii.astype(int))
     t0 = time.time()
 
     alms = curvedsky.rand_alm(ps_cmb, lmax=lmax_simu)

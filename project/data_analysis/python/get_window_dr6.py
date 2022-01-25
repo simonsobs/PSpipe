@@ -79,6 +79,7 @@ for task in subtasks:
     
     
     gal_mask = so_map.read_map(d["gal_mask_%s_%s" % (sv, ar)])
+    gal_mask.data = gal_mask.data.astype(np.float32)
 
     survey_mask = gal_mask.copy()
     survey_mask.data[:] = 1

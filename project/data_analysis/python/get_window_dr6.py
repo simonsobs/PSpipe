@@ -137,6 +137,7 @@ for task in subtasks:
     survey_mask.data[dist.data < skip_from_edges_degree] = 0
     survey_mask = so_window.create_apodization(survey_mask, "C1", apod_survey_degree, use_rmax=True)
     ps_mask = so_map.read_map(d["ps_mask_%s_%s" % (sv, ar)])
+    ps_mask.data = ps_mask.data.astype(np.float32)
     ps_mask = so_window.create_apodization(ps_mask, "C1", apod_pts_source_degree, use_rmax=True)
     survey_mask.data *= ps_mask.data
 

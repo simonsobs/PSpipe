@@ -57,9 +57,9 @@ for sv in surveys:
         shape, wcs = template[sv].data.shape, template[sv].data.wcs
         
         if ks_f["type"] == "binary_cross":
-            filter[sv] = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=ks_f["vk_mask"], hk_mask=ks_f["hk_mask"], dtype=np.float64)
+            filter[sv] = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=ks_f["vk_mask"], hk_mask=ks_f["hk_mask"], dtype=np.float32)
         elif ks_f["type"] == "gauss":
-            filter[sv] = so_map_preprocessing.build_sigurd_filter(shape, wcs, ks_f["lbounds"], dtype=np.float64)
+            filter[sv] = so_map_preprocessing.build_sigurd_filter(shape, wcs, ks_f["lbounds"], dtype=np.float32)
         else:
             print("you need to specify a valid filter type")
             sys.exit()
@@ -67,7 +67,10 @@ for sv in surveys:
     for ar in arrays:
         win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
         win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+        
         window_tuple = (win_T, win_pol)
+        
+        del win_T, win_pol
         
         maps = d["maps_%s_%s" % (sv, ar)]
         nsplit[sv] = len(maps)
@@ -86,6 +89,7 @@ for sv in surveys:
             if win_T.pixel == "CAR":
                 wy, wx = enmap.calc_window(win_T.data.shape)
                 inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
+                inv_pixwin_lxly = inv_pixwin_lxly.astype(np.float32)
                 pixwin_l[sv] = np.ones(2 * lmax)
                 if sv == "Planck":
                     print("Deconvolve Planck pixel window function")

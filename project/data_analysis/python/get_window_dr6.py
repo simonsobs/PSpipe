@@ -79,7 +79,6 @@ for task in subtasks:
     
     
     gal_mask = so_map.read_map(d["gal_mask_%s_%s" % (sv, ar)])
-    gal_mask.data = gal_mask.data.astype(np.float32)
 
     survey_mask = gal_mask.copy()
     survey_mask.data[:] = 1
@@ -131,16 +130,20 @@ for task in subtasks:
     # Note that we don't skip the edges as much for the binary mask
     # compared to what we will do with the final window, this should prevent some aliasing from the kspace filter to enter the data
     binary.data[dist.data < skip_from_edges_degree / 2] = 0
+    
+    
+    binary.data = binary.data.astype(np.float32)
     binary.write_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
 
     # Now we create the final window function that will be used in the analysis
     survey_mask.data[dist.data < skip_from_edges_degree] = 0
     survey_mask = so_window.create_apodization(survey_mask, "C1", apod_survey_degree, use_rmax=True)
     ps_mask = so_map.read_map(d["ps_mask_%s_%s" % (sv, ar)])
-    ps_mask.data = ps_mask.data.astype(np.float32)
     ps_mask = so_window.create_apodization(ps_mask, "C1", apod_pts_source_degree, use_rmax=True)
     survey_mask.data *= ps_mask.data
 
+
+    survey_mask.data = survey_mask.data.astype(np.float32)
     survey_mask.write_map("%s/window_%s_%s.fits" % (window_dir, sv, ar))
     
     # We also create an optional window which also include pixel weighting
@@ -152,6 +155,8 @@ for task in subtasks:
     med = np.median(ivar_all.data[id])
     ivar_all.data[ivar_all.data[:] > n_med_ivar * med] = n_med_ivar * med
     survey_mask_weighted.data[:] *= ivar_all.data[:]
+    
+    survey_mask_weighted.data = survey_mask_weighted.data.astype(np.float32)
     survey_mask_weighted.write_map("%s/window_w_%s_%s.fits" % (window_dir, sv, ar))
 
     # plot

@@ -44,7 +44,7 @@ dependencies by doing
 
 .. code:: shell
 
-   $ pip install --user git+https://simonsobs/PSpipe.git
+   $ pip install --user git+https://github.com/simonsobs/PSpipe.git
 
 If you plan to develop or want to use the different projects, it is better to checkout the latest
 version by doing

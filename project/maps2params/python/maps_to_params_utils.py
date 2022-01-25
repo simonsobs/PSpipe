@@ -256,3 +256,32 @@ def is_symmetric(mat, tol=1e-8):
 
 def is_pos_def(mat):
     return np.all(np.linalg.eigvals(mat) > 0)
+
+def calibrate_alm(alms, exp, freq, **nuis_params):
+    '''
+    Calibrates the alms for each frequency of the LAT by the appropriate calibration factor:
+    i.e.: a_lm^X_nu1  -> c^X_nu1 a_lm^X_nu1, with X=T,E
+    c^X_nu1 = nuis_params["calG_all"]*nuis_params["calX_nu1"]
+    where nuis_params is the dictionary of nuisance parameters and nuis_params["calG_all"] is a calibration factor
+    common to all frequencies.
+    '''
+    cal_alms = alms.copy()
+    cal_alms[0] *= nuis_params["calG_all"]*nuis_params["calT_" + str(freq)]
+    cal_alms[1] *= nuis_params["calG_all"]*nuis_params["calE_" + str(freq)]
+    print('Calibrating the %s alm by calT_%s = %s and calE_%s = %s'%(exp,freq,nuis_params["calT_" + str(freq)],
+                                                                     freq, nuis_params["calE_" + str(freq)]))
+    return cal_alms
+
+def rotate_alm_polang(alms, exp, freq, **nuis_params):
+    r"""
+    apply rotation of alms due to polangle miscalibration
+    each freq channel nu is rotated by its own polangle alpha_nu
+    NB: alpha must be in deg
+    """
+    alms_rot = alms.copy()
+    ca=np.cos(np.deg2rad(2.*nuis_params["alpha_" + str(freq)]))
+    sa=np.sin(np.deg2rad(2.*nuis_params["alpha_" + str(freq)]))
+    alms_rot[1] = alms[1]*ca + alms[2]*sa
+    alms_rot[2] = -alms[1]*sa + alms[2]*ca
+    print('Rotating the %s alm by alpha_%s = %s deg'%(exp,freq,nuis_params["alpha_" + str(freq)]))
+    return alms_rot

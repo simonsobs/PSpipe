@@ -226,7 +226,7 @@ fg_norm = d["fg_norm"]
 fg_components = d["fg_components"]
 fg_model =  {"normalisation":  fg_norm, "components": fg_components}
 fg_params =  d["fg_params"]
-
+nuis_params = d["nuisance_params"]
 band_integration = d["band_integration"]
 
 all_freqs = np.array([int(freq) for exp in experiments for freq in d["freqs_%s" % exp]])
@@ -243,7 +243,12 @@ ThFo.bandint_external_bandpass = band_integration["external_bandpass"]
 ThFo.foregrounds = fg_model
 ThFo._init_foreground_model()
 
+#perform band integration if needed (only if bandpass not external)
+ThFo.bandint_freqs = ThFo._bandpass_construction(**nuis_params)
+
 fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)
+
+
 
 # Plot separated components for tSZ and CIB
 fg_components["tt"].remove("tSZ_and_CIB")

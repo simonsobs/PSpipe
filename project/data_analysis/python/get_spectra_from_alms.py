@@ -52,11 +52,12 @@ for sv in surveys:
 
     tf_survey = np.ones(len(lb))
     ks_f = d["k_filter_%s" % sv]
+    template = so_map.read_map(d["window_T_%s_%s" % (sv, d["arrays_%s" % sv][0])])
+
     
     if ks_f["apply"]:
         if ks_f["tf"] == "analytic":
             print("compute analytic kspace tf %s" % sv)
-            template = so_map.read_map(d["window_T_%s_%s" % (sv, d["arrays_%s" % sv][0])])
             shape, wcs = template.data.shape, template.data.wcs
             if ks_f["type"] == "binary_cross":
                 filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=ks_f["vk_mask"], hk_mask=ks_f["hk_mask"], dtype=np.float32)
@@ -78,8 +79,7 @@ for sv in surveys:
         if sv == "Planck":
             print("Deconvolve Planck pixel window function")
             pixwin_l = hp.pixwin(2048)
-        elif template[sv].pixel == "HEALPIX":
-            template = so_map.read_map(d["window_T_%s_%s" % (sv, d["arrays_%s" % sv][0])])
+        elif template.pixel == "HEALPIX":
             pixwin_l = hp.pixwin(template.nside)
 
         # this should be checked with simulations since maybe this should be done at the mcm level

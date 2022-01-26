@@ -37,20 +37,13 @@ nsplit = {}
 # read the alms
 
 for sv in surveys:
-
     for ar in d["arrays_%s" % sv]:
-    
         maps = d["maps_%s_%s" % (sv, ar)]
-        
         nsplit[sv] = len(maps)
-        
         print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
-        
         for k, map in enumerate(maps):
-        
             master_alms[sv, ar, k] = np.load("%s/alms_%s_%s_%d.npy" % (alms_dir, sv, ar, k))
                 
-
 # compute the transfer functions
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 tf_array = {}
@@ -125,7 +118,6 @@ for id_sv1, sv1 in enumerate(surveys):
                     ps_dict[spec, "auto"] = []
                     ps_dict[spec, "cross"] = []
                     
-                    
                 nsplits_1 = nsplit[sv1]
                 nsplits_2 = nsplit[sv2]
                 
@@ -184,7 +176,6 @@ for id_sv1, sv1 in enumerate(surveys):
                         ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplit[sv1]
                         spec_name_noise = "%s_%s_%sx%s_%s_noise" % (type, sv1, ar1, sv2, ar2)
 
-                        
                 so_spectra.write_ps(spec_dir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
                 if sv1 == sv2:
                     so_spectra.write_ps(spec_dir + "/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)

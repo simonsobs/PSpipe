@@ -20,7 +20,6 @@ lmax = d["lmax"]
 deconvolve_pixwin = d["deconvolve_pixwin"]
 niter = d["niter"]
 
-
 window_dir = "windows"
 alms_dir = "alms"
 

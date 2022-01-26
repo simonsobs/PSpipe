@@ -86,7 +86,8 @@ for sv in surveys:
             print("Deconvolve Planck pixel window function")
             pixwin_l = hp.pixwin(2048)
         elif template[sv].pixel == "HEALPIX":
-            pixwin_l = hp.pixwin(template[sv].nside)
+            template = so_map.read_map(d["window_T_%s_%s" % (sv, d["arrays_%s" % sv][0])])
+            pixwin_l = hp.pixwin(template.nside)
 
         # this should be checked with simulations since maybe this should be done at the mcm level
         _, pw = pspy_utils.naive_binning(np.arange(len(pixwin_l)),  pixwin_l, binning_file, lmax)

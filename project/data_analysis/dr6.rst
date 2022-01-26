@@ -24,15 +24,7 @@ The next step is to precompute the mode coupling matrices associated with these 
     salloc -N 21 -C haswell -q interactive -t 00:30:00
     srun -n 21 -c 64 --cpu_bind=cores python get_mcm_and_bbl_mpi.py global_dr6_v3_4pass.dict
 
-Now we can compute all the power spectra, for this there are two options, either we don't use MPI, simply
-
-.. code:: shell
-
-    salloc -N 1 -C haswell -q interactive -t 04:00:00
-    srun -n 1 -c 64 --cpu_bind=cores python get_spectra.py global_dr6_v3_4pass.dict
-    
-or we use mpi, since this it takes time and memory to do it for many detector arrays.
-The mpi loop is done on all the different arrays.
+Now we can compute all the power spectra, the mpi loop is done on all the different arrays.
 If you consider six detector arrays, we first compute the alms using mpi, and then have a simple code to combine them into power spectra
 
 .. code:: shell

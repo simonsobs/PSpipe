@@ -17,7 +17,6 @@ d.read_from_file(sys.argv[1])
 
 surveys = d["surveys"]
 lmax = d["lmax"]
-deconvolve_pixwin = d["deconvolve_pixwin"]
 
 window_dir = "windows"
 alms_dir = "alms"
@@ -57,16 +56,16 @@ for task in subtasks:
             print("you need to specify a valid filter type")
             sys.exit()
             
-    maps = d["maps_%s_%s" % (sv, ar)]
-    cal = d["cal_%s_%s" % (sv, ar)]
-
-    if deconvolve_pixwin:
+    if d["deconvolve_pixwin"]:
         # deconvolve the CAR pixel function in fourier space
         if win_T.pixel == "CAR":
             wy, wx = enmap.calc_window(win_T.data.shape)
             inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
         else:
             inv_pixwin_lxly = None
+            
+    maps = d["maps_%s_%s" % (sv, ar)]
+    cal = d["cal_%s_%s" % (sv, ar)]
             
     t = time.time()
     for k, map in enumerate(maps):
@@ -87,7 +86,7 @@ for task in subtasks:
                 binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                 norm, split = data_analysis_utils.get_filtered_map(split,
                                                                    binary,
-                                                                   filter[sv],
+                                                                   filter,
                                                                    inv_pixwin_lxly=inv_pixwin_lxly,
                                                                    weighted_filter=ks_f["weighted"])
                         

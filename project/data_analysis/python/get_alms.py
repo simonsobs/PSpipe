@@ -17,6 +17,7 @@ d.read_from_file(sys.argv[1])
 
 surveys = d["surveys"]
 lmax = d["lmax"]
+deconvolve_pixwin = d["deconvolve_pixwin"]
 
 window_dir = "windows"
 alms_dir = "alms"
@@ -56,7 +57,7 @@ for task in subtasks:
             print("you need to specify a valid filter type")
             sys.exit()
             
-    if d["deconvolve_pixwin"]:
+    if deconvolve_pixwin:
         # deconvolve the CAR pixel function in fourier space
         if win_T.pixel == "CAR":
             wy, wx = enmap.calc_window(win_T.data.shape)
@@ -92,7 +93,7 @@ for task in subtasks:
                         
             else:
                 print("WARNING: no kspace filter is applied")
-                if d["deconvolve_pixwin"]:
+                if deconvolve_pixwin:
                     binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                     norm, split = data_analysis_utils.deconvolve_pixwin_CAR(split,
                                                                             binary,

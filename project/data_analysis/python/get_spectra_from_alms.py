@@ -54,7 +54,6 @@ for sv in surveys:
     ks_f = d["k_filter_%s" % sv]
     template = so_map.read_map(d["window_T_%s_%s" % (sv, d["arrays_%s" % sv][0])])
 
-    
     if ks_f["apply"]:
         if ks_f["tf"] == "analytic":
             print("compute analytic kspace tf %s" % sv)
@@ -71,6 +70,7 @@ for sv in surveys:
         else:
             print("use kspace tf from file %s" % sv)
             _, _, kf_tf, _ = np.loadtxt(ks_f["tf"], unpack=True)
+            
         tf_survey *= np.sqrt(np.abs(kf_tf[:len(lb)]))
 
     if deconvolve_pixwin:
@@ -79,7 +79,7 @@ for sv in surveys:
         if sv == "Planck":
             print("Deconvolve Planck pixel window function")
             pixwin_l = hp.pixwin(2048)
-        elif template.pixel == "HEALPIX":
+        if template.pixel == "HEALPIX":
             pixwin_l = hp.pixwin(template.nside)
 
         # this should be checked with simulations since maybe this should be done at the mcm level

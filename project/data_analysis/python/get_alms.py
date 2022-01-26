@@ -18,6 +18,8 @@ d.read_from_file(sys.argv[1])
 surveys = d["surveys"]
 lmax = d["lmax"]
 deconvolve_pixwin = d["deconvolve_pixwin"]
+niter = d["niter"]
+
 
 window_dir = "windows"
 alms_dir = "alms"

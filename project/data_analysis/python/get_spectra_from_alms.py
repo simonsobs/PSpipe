@@ -20,7 +20,6 @@ d.read_from_file(sys.argv[1])
 
 surveys = d["surveys"]
 lmax = d["lmax"]
-niter = d["niter"]
 type = d["type"]
 binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]

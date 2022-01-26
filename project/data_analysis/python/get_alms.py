@@ -111,7 +111,7 @@ for task in subtasks:
         if ks_f["apply"] or deconvolve_pixwin:
             # there is an extra normalisation for the FFT/IFFT bit
             # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
-            master_alms /= (split.data.shape[1]*split.data.shape[2]) ** norm
+            master_alms /= (split.data.shape[1] * split.data.shape[2]) ** norm
         
         np.save("%s/alms_%s_%s_%d.npy" % (alms_dir, sv, ar, k), master_alms)
         

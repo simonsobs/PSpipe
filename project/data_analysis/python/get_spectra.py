@@ -86,8 +86,8 @@ for sv in surveys:
             # In HEALPIX it's a simple 1d function in multipole space
             # we also need to take account the case where we have projected Planck into a CAR pixellisation since
             # the native pixel window function of Planck need to be deconvolved
-            if win_T.pixel == "CAR":
-                wy, wx = enmap.calc_window(win_T.data.shape)
+            if window_tuple[0].pixel == "CAR":
+                wy, wx = enmap.calc_window(window_tuple[0].data.shape)
                 inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
                 inv_pixwin_lxly = inv_pixwin_lxly.astype(np.float32)
                 pixwin_l[sv] = np.ones(2 * lmax)
@@ -98,8 +98,8 @@ for sv in surveys:
                     inv_pixwin_lxly = None
                     pixwin_l[sv] = hp.pixwin(2048)
 
-            elif win_T.pixel == "HEALPIX":
-                pixwin_l[sv] = hp.pixwin(win_T.nside)
+            elif window_tuple[0].pixel == "HEALPIX":
+                pixwin_l[sv] = hp.pixwin(window_tuple[0].nside)
                 
         else:
             inv_pixwin_lxly = None
@@ -107,8 +107,8 @@ for sv in surveys:
         t = time.time()
         for k, map in enumerate(maps):
         
-            if win_T.pixel == "CAR":
-                split = so_map.read_map(map, geometry=win_T.data.geometry)
+            if window_tuple[0].pixel == "CAR":
+                split = so_map.read_map(map, geometry=window_tuple[0].data.geometry)
                 
                 if d["src_free_maps_%s" % sv] == True:
                     point_source_map_name = map.replace("srcfree.fits", "model.fits")
@@ -130,7 +130,7 @@ for sv in surveys:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                         norm, split = data_analysis_utils.deconvolve_pixwin_CAR(split, binary, inv_pixwin_lxly)
                         
-            elif win_T.pixel == "HEALPIX":
+            elif window_tuple[0].pixel == "HEALPIX":
                 split = so_map.read_map(map)
                 
             split.data *= cal

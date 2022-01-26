@@ -92,7 +92,7 @@ for task in subtasks:
                         
             else:
                 print("WARNING: no kspace filter is applied")
-                if deconvolve_pixwin:
+                if d["deconvolve_pixwin"]:
                     binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                     norm, split = data_analysis_utils.deconvolve_pixwin_CAR(split,
                                                                             binary,

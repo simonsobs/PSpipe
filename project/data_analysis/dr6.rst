@@ -14,7 +14,7 @@ First we need to create all the window functions. In the following we will assum
 .. code:: shell
 
     salloc -N 6 -C haswell -q interactive -t 01:00:00
-    srun -n 6 -c 64 --cpu_bind=cores python get_window_dr6.py global_dr6.dict
+    srun -n 6 -c 64 --cpu_bind=cores python get_window_dr6.py global_dr6_v3_4pass.dict
 
 The next step is to precompute the mode coupling matrices associated with these window functions, we have N window functions corresponding to each (season X array a) data set, we will have to compute all the cross power spectra of the form
 (season X array 1)  x (season Y array 2) there are therefore Ns = N * (N+1)/2 independent spectra to compute
@@ -22,14 +22,27 @@ The next step is to precompute the mode coupling matrices associated with these 
 .. code:: shell
 
     salloc -N 21 -C haswell -q interactive -t 00:30:00
-    srun -n 21 -c 64 --cpu_bind=cores python get_mcm_and_bbl_mpi.py global_dr6.dict
+    srun -n 21 -c 64 --cpu_bind=cores python get_mcm_and_bbl_mpi.py global_dr6_v3_4pass.dict
 
 Now we can compute all the power spectra, for this we won't use MPI, simply
 
 .. code:: shell
 
     salloc -N 1 -C haswell -q interactive -t 04:00:00
-    srun -n 1 -c 64 --cpu_bind=cores python get_spectra.py global_dr6.dict
+    srun -n 1 -c 64 --cpu_bind=cores python get_spectra.py global_dr6_v3_4pass.dict
+    
+Note that we now also have a mpi version of this computation, since it takes time and memory to do it for many detector arrays.
+The mpi loop is done on all the different arrays.
+If you consider six detector arrays, we first compute the alms using mpi, and then have a simple code to combine them into power spectra
+
+.. code:: shell
+
+    salloc -N 6 -C haswell -q interactive -t 04:00:00
+    srun -n 6 -c 64 --cpu_bind=cores python get_alms.py global_dr6_v3_4pass.dict
+
+    salloc -N 1 -C haswell -q interactive -t 04:00:00
+    srun -n 1 -c 64 --cpu_bind=cores python get_spectra_from_alms.py global_dr6_v3_4pass.dict
+
 
 This step in the pipeline will also be used at some point to compute power spectra of the simulations, the MPI loop then be on simulation id.
 
@@ -38,8 +51,8 @@ Finally, we need to compute the associated covariances of all these spectra, for
 .. code:: shell
 
     salloc -N 1 -C haswell -q interactive -t 00:30:00
-    srun -n 1 -c 64 --cpu_bind=cores python get_best_fit_mflike.py global_dr6.dict
-    srun -n 1 -c 64 --cpu_bind=cores python get_noise_model.py global_dr6.dict
+    srun -n 1 -c 64 --cpu_bind=cores python get_best_fit_mflike.py global_dr6_v3_4pass.dict
+    srun -n 1 -c 64 --cpu_bind=cores python get_noise_model.py global_dr6_v3_4pass.dict
 
 The computation of the covariance matrices is then divided into two steps, first compute all (window1 x window2) alms needed for the covariance computation, then the actual computation, note that there is Ns(Ns+1)/2 covariance matrix block to compute, this is enormous and is therefore the bottleneck of the spectra computation.
 
@@ -47,8 +60,8 @@ The computation of the covariance matrices is then divided into two steps, first
 .. code:: shell
 
     salloc -N 21 -C haswell -q interactive -t 01:00:00
-    srun -n 21 -c 64 --cpu_bind=cores python fast_cov_get_sq_windows_alms.py global_dr6.dict
-    srun -n 21 -c 64 --cpu_bind=cores python fast_cov_get_covariance.py global_dr6.dict
+    srun -n 21 -c 64 --cpu_bind=cores python fast_cov_get_sq_windows_alms.py global_dr6_v3_4pass.dict
+    srun -n 21 -c 64 --cpu_bind=cores python fast_cov_get_covariance.py global_dr6_v3_4pass.dict
 
 
 
@@ -58,17 +71,17 @@ to run it
 .. code:: shell
 
     salloc -N 40 -C haswell -q interactive -t 04:00:00
-    srun -n 40 -c 64 --cpu_bind=cores python mc_get_spectra.py global_dr6.dict
+    srun -n 40 -c 64 --cpu_bind=cores python mc_get_spectra.py global_dr6_v3_4pass.dict
 
 then to analyze and plot the simulations
 
 .. code:: shell
 
     salloc -N 1 -C haswell -q interactive -t 01:00:00
-    srun -n 1 -c 64 --cpu_bind=cores python mc_analysis.py global_dr6.dict
-    srun -n 1 -c 64 --cpu_bind=cores python mc_cov_analysis.py global_dr6.dict
-    srun -n 1 -c 64 --cpu_bind=cores python mc_plot_spectra.py global_dr6.dict
-    srun -n 1 -c 64 --cpu_bind=cores python mc_plot_covariances.py global_dr6.dict
+    srun -n 1 -c 64 --cpu_bind=cores python mc_analysis.py global_dr6_v3_4pass.dict
+    srun -n 1 -c 64 --cpu_bind=cores python mc_cov_analysis.py global_dr6_v3_4pass.dict
+    srun -n 1 -c 64 --cpu_bind=cores python mc_plot_spectra.py global_dr6_v3_4pass.dict
+    srun -n 1 -c 64 --cpu_bind=cores python mc_plot_covariances.py global_dr6_v3_4pass.dict
 
 
 
@@ -79,9 +92,9 @@ We can now combine the data together, for this we run
 .. code:: shell
 
     salloc -N 1 -C haswell -q interactive -t 04:00:00
-    srun -n 1 -c 64 --cpu_bind=cores python get_multifrequency_covmat.py global_dr6.dict
-    srun -n 1 -c 64 --cpu_bind=cores python get_projection_matrix.py global_dr6.dict
-    srun -n 1 -c 64 --cpu_bind=cores python get_combined_spectra.py global_dr6.dict
+    srun -n 1 -c 64 --cpu_bind=cores python get_multifrequency_covmat.py global_dr6_v3_4pass.dict
+    srun -n 1 -c 64 --cpu_bind=cores python get_projection_matrix.py global_dr6_v3_4pass.dict
+    srun -n 1 -c 64 --cpu_bind=cores python get_combined_spectra.py global_dr6_v3_4pass.dict
 
 
 We are done !

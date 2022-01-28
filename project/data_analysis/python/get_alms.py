@@ -44,7 +44,9 @@ for task in subtasks:
     
     win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
     win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
-    binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+    
+    if win_T.pixel == "CAR":
+        binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
 
     window_tuple = (win_T, win_pol)
 

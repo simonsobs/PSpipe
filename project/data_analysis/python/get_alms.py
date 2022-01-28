@@ -44,6 +44,8 @@ for task in subtasks:
     
     win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
     win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+    binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+
     window_tuple = (win_T, win_pol)
 
     ks_f = d["k_filter_%s" % sv]
@@ -85,7 +87,6 @@ for task in subtasks:
 
             if ks_f["apply"]:
                 print("apply kspace filter on %s" %map)
-                binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                 norm, split = data_analysis_utils.get_filtered_map(split,
                                                                    binary,
                                                                    filter,
@@ -95,7 +96,6 @@ for task in subtasks:
             else:
                 print("WARNING: no kspace filter is applied")
                 if deconvolve_pixwin:
-                    binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                     norm, split = data_analysis_utils.deconvolve_pixwin_CAR(split,
                                                                             binary,
                                                                             inv_pixwin_lxly)

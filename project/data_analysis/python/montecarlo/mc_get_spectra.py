@@ -92,6 +92,16 @@ sim_alm_dtype = d["sim_alm_dtype"]
 noise_sim_type = d["noise_sim_type"]  # can be "gaussian", "tiled", "wavelet"
 noise_model_parameters = d["noise_model_parameters"]
 
+if len(sys.argv) == 4:
+    iStart, iStop = int(sys.argv[2]), int(sys.argv[3])
+elif len(sys.argv) == 3:
+    iIndex = int(sys.argv[2])
+    iMultiple = d["iMultiple"]
+    iStart = (iIndex * iMultiple)
+    iStop = iStart + iMultiple
+else:
+    iStart, iStop = d["iStart"], d["iStop"]
+
 if sim_alm_dtype == "complex64":
     sim_alm_dtype = np.complex64
 elif sim_alm_dtype == "complex128":
@@ -161,7 +171,7 @@ template = so_map.read_map(template)
 
 # we will use mpi over the number of simulations
 so_mpi.init(True)
-subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
+subtasks = so_mpi.taskrange(imin=iStart, imax=iStop)
 subtasks = [int(iii) for iii in subtasks]  # prevent bug in pspy that makes the subtasks floats
 print(subtasks)
 
@@ -196,6 +206,7 @@ for iii in subtasks:
         nsplits[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
         
         if noise_sim_type == "gaussian":
+            np.random.seed(iii)
             nlms = get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, sim_alm_dtype, verbose=True)
         elif (template.pixel == "CAR") and (noise_sim_type == "tiled" or noise_sim_type == "wavelet"):
             # use MPI task index iii as simulation number ~ random seed, since it ranges from iStart to iStop
@@ -221,10 +232,11 @@ for iii in subtasks:
             l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
             alms_beamed = curvedsky.almxfl(alms_beamed, bl)
 
-            beamed_signal = sph_tools.alm2map(alms_beamed, template)
+            beamed_signal = sph_tools.alm2map(alms_beamed, template.copy())
             if deconvolve_pixwin:
                 if template.pixel == "CAR":
                     data_analysis_utils.apply_pixwin(beamed_signal, pixwin_lxly)
+            # alms_beamed_pixwin = sph_tools.map2alm(beamed_signal, niter=0, lmax=lmax)
 
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
 
@@ -232,18 +244,17 @@ for iii in subtasks:
 
             for k in range(nsplits[sv]):
             
-                # get the map of the noise
-                split = alms_beamed.copy()
-                split[0] =  nlms["T", k][ar_id]
-                split[1] =  nlms["E", k][ar_id]
-                split[2] =  nlms["B", k][ar_id]
-                split = sph_tools.alm2map(split, template)
-                if noise_sim_type == "gaussian":
-                    # the gaussian sims need to be RE-convolved with the pixel window
-                    data_analysis_utils.apply_pixwin(beamed_signal, pixwin_lxly)
-                
-                split.data += beamed_signal.data  # add in the pixwin'd signal
-
+                # finally we add the noise alms for each split
+                noisy_alms = alms.copy()
+                noisy_alms[0] =  nlms["T", k][ar_id]
+                noisy_alms[1] =  nlms["E", k][ar_id]
+                noisy_alms[2] =  nlms["B", k][ar_id]
+                noise_split = sph_tools.alm2map(noisy_alms, template.copy())
+                if deconvolve_pixwin and noise_sim_type == "gaussian":
+                    if template.pixel == "CAR":
+                        data_analysis_utils.apply_pixwin(noise_split, pixwin_lxly)
+                split = noise_split
+                split.data += beamed_signal.data
                 
                 # from now on the simulation pipeline is done
                 # and we are back to the get_spectra algorithm

@@ -102,6 +102,12 @@ elif len(sys.argv) == 3:
 else:
     iStart, iStop = d["iStart"], d["iStop"]
 
+# look for noise sim type in arguments
+for (i, arg) in enumerate(sys.argv):
+    if arg == "--noisetype" and ((i+1) < len(sys.argv)):
+        noise_sim_type = arg[i+1]
+        print("Changing noise sim type to ", noise_sim_type)
+
 if sim_alm_dtype == "complex64":
     sim_alm_dtype = np.complex64
 elif sim_alm_dtype == "complex128":
@@ -169,6 +175,8 @@ l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lma
 template = {}
 filter = {}
 tf_survey = {}
+pixwin_lxly = {}
+inv_pixwin_lxly = {}
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 
 for sv in surveys:
@@ -198,6 +206,17 @@ for sv in surveys:
             
             tf_survey[sv] *= np.sqrt(np.abs(kf_tf[:len(lb)]))
 
+        if deconvolve_pixwin:
+            wy, wx = enmap.calc_window(template[sv].data.shape)
+            pixwin_lxly[sv] = (wy[:,None] * wx[None,:])
+            inv_pixwin_lxly[sv] = pixwin_lxly[sv] ** (-1)
+        else:
+            inv_pixwin_lxly[sv] = None
+    else:
+        if deconvolve_pixwin:
+            print("healpix noise sim with pixwin deconv is not supported")
+            sys.exit()
+
 
 
 # we will use mpi over the number of simulations
@@ -206,16 +225,6 @@ subtasks = so_mpi.taskrange(imin=iStart, imax=iStop)
 subtasks = [int(iii) for iii in subtasks]  # prevent bug in pspy that makes the subtasks floats
 print(subtasks)
 
-if deconvolve_pixwin:
-    if template[surveys[0]].pixel == "CAR":
-        wy, wx = enmap.calc_window(template[surveys[0]].data.shape)
-        pixwin_lxly = (wy[:,None] * wx[None,:])
-        inv_pixwin_lxly = pixwin_lxly ** (-1)
-    else:
-        print("healpix noise sim with pixwin deconv is not supported")
-        sys.exit()
-else:
-    inv_pixwin_lxly = None
 
 for iii in subtasks:
     t0 = time.time()
@@ -267,7 +276,7 @@ for iii in subtasks:
             beamed_signal = sph_tools.alm2map(alms_beamed, template[sv].copy())
             if deconvolve_pixwin:
                 if template[sv].pixel == "CAR":
-                    data_analysis_utils.apply_pixwin(beamed_signal, pixwin_lxly)
+                    data_analysis_utils.apply_pixwin(beamed_signal, pixwin_lxly[sv])
 
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
 
@@ -283,7 +292,7 @@ for iii in subtasks:
                 split = sph_tools.alm2map(noisy_alms, template[sv])
                 if deconvolve_pixwin and noise_sim_type == "gaussian":
                     if template[sv].pixel == "CAR":
-                        data_analysis_utils.apply_pixwin(split, pixwin_lxly)
+                        data_analysis_utils.apply_pixwin(split, pixwin_lxly[sv])
                 split.data += beamed_signal.data
                 
                 # from now on the simulation pipeline is done
@@ -293,7 +302,7 @@ for iii in subtasks:
                     if ks_f["apply"]:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                         norm, split = data_analysis_utils.get_filtered_map(
-                            split, binary, filter[sv], inv_pixwin_lxly, weighted_filter=ks_f["weighted"])
+                            split, binary, filter[sv], inv_pixwin_lxly[sv], weighted_filter=ks_f["weighted"])
 
                         del binary
                 

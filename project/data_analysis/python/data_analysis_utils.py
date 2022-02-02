@@ -10,61 +10,10 @@ from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 from pixell import enmap
 
-def filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys", inv_pixwin_lxly=None):
 
-    """Filter the map in Fourier space removing modes in a horizontal and vertical band
-    defined by hk_mask and vk_mask. This is a faster version that what is implemented in pspy
-    We also include an option for removing the pixel window function
-    
-    Parameters
-    ---------
-    map: ``so_map``
-        the map to be filtered
-    vk_mask: list with 2 elements
-        format is fourier modes [-lx,+lx]
-    hk_mask: list with 2 elements
-        format is fourier modes [-ly,+ly]
-    normalize: string
-        optional normalisation of the Fourier transform
-    inv_pixwin_lxly: 2d array
-        the inverse of the pixel window function in fourier space
-    """
+def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_filter=False, norm=0, tol=1e-4, ref=0.9):
 
-    lymap, lxmap = map.data.lmap()
-    ly, lx = lymap[:,0], lxmap[0,:]
-
-   # filtered_map = map.copy()
-    ft = enmap.fft(map.data, normalize=normalize)
-    
-    if vk_mask is not None:
-        id_vk = np.where((lx > vk_mask[0]) & (lx < vk_mask[1]))
-    if hk_mask is not None:
-        id_hk = np.where((ly > hk_mask[0]) & (ly < hk_mask[1]))
-
-    if map.ncomp == 1:
-        if vk_mask is not None:
-            ft[: , id_vk] = 0.
-        if hk_mask is not None:
-            ft[id_hk , :] = 0.
-    
-    if map.ncomp == 3:
-        for i in range(3):
-            if vk_mask is not None:
-                ft[i, : , id_vk] = 0.
-            if hk_mask is not None:
-                ft[i, id_hk , :] = 0.
-
-    if inv_pixwin_lxly is not None:
-        ft  *= inv_pixwin_lxly
-        
-    map.data[:] = np.real(enmap.ifft(ft, normalize=normalize))
-    return map
-
-
-def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys", inv_pixwin_lxly=None):
-
-    """Filter the map in Fourier space removing modes in a horizontal and vertical band
-    defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before
+    """Filter the map in Fourier space using a predefined filter. Note that we mutliply the maps by a binary mask before
     doing this operation in order to remove pathological pixels
     We also include an option for removing the pixel window function
 
@@ -74,26 +23,70 @@ def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys", inv_p
         the map to be filtered
     binary:  ``so_map``
         a binary mask removing pathological pixels
-    vk_mask: list with 2 elements
-        format is fourier modes [-lx,+lx]
-    hk_mask: list with 2 elements
-        format is fourier modes [-ly,+ly]
-    normalize: string
-        optional normalisation of the Fourier transform
+    filter: 2d array
+        a filter applied in fourier space
     inv_pixwin_lxly: 2d array
         the inverse of the pixel window function in fourier space
+    weighted_filter: boolean
+        wether to use weighted filter a la sigurd
+    norm: integer
+        everytime we do a FFT + IFFT operation we get a normalisation cst to take care of
+        this is counting the number of occurence of it, note that we could correct directly by
+        using normalize="physical", but dividing the map by a number is slow so we prefer to do it later
+        in the code.
+    tol, ref: floats
+        only in use in the case of the weighted filter, these arg
+        remove crazy pixels value in the weight applied
 
     """
-
-    if orig_map.ncomp == 1:
-        orig_map.data *= binary.data
+    
+    orig_map.data *= binary.data
+    if weighted_filter == False:
+        ft = enmap.fft(orig_map.data, normalize=False)
+        if inv_pixwin_lxly is not None:
+            ft  *= inv_pixwin_lxly
+        orig_map.data = enmap.ifft(ft * filter, normalize=False).real
+        norm += 1
     else:
-        orig_map.data[:] *= binary.data
-    filtered_map = filter_fast(orig_map, vk_mask, hk_mask, normalize=normalize, inv_pixwin_lxly=inv_pixwin_lxly)
-    # filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
+        rhs    = enmap.ifft((1 - filter) * enmap.fft(orig_map.data * binary.data, normalize=False), normalize=False).real
+        div    = enmap.ifft((1 - filter) * enmap.fft(binary.data, normalize=False), normalize=False).real
+        div    = np.maximum(div, np.percentile(binary.data[::10, ::10], ref * 100) * tol)
+        orig_map.data = orig_map.data - rhs / div
+        
+        if inv_pixwin_lxly is not None:
+            ft = enmap.fft(orig_map.data, normalize=False)
+            ft  *= inv_pixwin_lxly
+            orig_map.data = enmap.ifft(ft, normalize=False).real
+            norm += 1
 
-    return filtered_map
+    return norm, orig_map
+    
+def deconvolve_pixwin_CAR(orig_map, binary, inv_pixwin_lxly, norm=0):
 
+    """Deconvolve the two dimensional CAR pixel window function
+
+    Parameters
+    ---------
+    orig_map: ``so_map``
+        the map to be filtered
+    binary:  ``so_map``
+        a binary mask removing pathological pixels
+    inv_pixwin_lxly: 2d array
+        the inverse of the pixel window function in fourier space
+    norm: integer
+        everytime we do a FFT + IFFT operation we get a normalisation cst to take care of
+        this is counting the number of occurence of it, note that we could correct directly by
+        using normalize="physical", but dividing the map by a number is slow so we prefer to do it later
+        in the code.
+    """
+    orig_map.data *= binary.data
+    ft = enmap.fft(orig_map.data, normalize=False)
+    ft  *= inv_pixwin_lxly
+    orig_map.data = enmap.ifft(ft, normalize=False).real
+    norm += 1
+    
+    return norm, orig_map
+    
 
 def get_coadded_map(orig_map, coadd_map, coadd_mask):
     """Co-add a map with another map given its associated mask.
@@ -344,11 +337,8 @@ def deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax=None):
         ncomp = 1 if T only
 
     """
-    if np.array_equal(tf1, tf2):
-        tf = tf1
-    else:
-        tf = np.sqrt(tf1*tf2)
-        
+    tf = tf1 * tf2
+     
     if lmax is not None:
         id = np.where(lb < lmax)
         tf = tf[id]

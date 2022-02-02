@@ -180,7 +180,6 @@ for sv in surveys:
     tf_survey[sv] = np.ones(len(lb))
 
     if template[sv].pixel == "CAR":
-
         if ks_f["apply"]:
             shape, wcs = template[sv].data.shape, template[sv].data.wcs
             if ks_f["type"] == "binary_cross":
@@ -294,7 +293,7 @@ for iii in subtasks:
                     if ks_f["apply"]:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                         norm, split = data_analysis_utils.get_filtered_map(
-                            split, binary, filter[sv], inv_pixwin_lxl, weighted_filter=ks_f["weighted"])
+                            split, binary, filter[sv], inv_pixwin_lxly, weighted_filter=ks_f["weighted"])
 
                         del binary
                 

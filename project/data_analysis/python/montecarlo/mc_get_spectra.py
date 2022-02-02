@@ -276,7 +276,8 @@ for iii in subtasks:
             beamed_signal = sph_tools.alm2map(alms_beamed, template[sv].copy())
             if deconvolve_pixwin:
                 if template[sv].pixel == "CAR":
-                    data_analysis_utils.apply_pixwin(beamed_signal, pixwin_lxly[sv])
+                    binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+                    data_analysis_utils.deconvolve_pixwin_CAR(beamed_signal, binary, pixwin_lxly[sv])
 
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
 
@@ -290,9 +291,12 @@ for iii in subtasks:
                 noisy_alms[1] =  nlms["E", k][ar_id]
                 noisy_alms[2] =  nlms["B", k][ar_id]
                 split = sph_tools.alm2map(noisy_alms, template[sv])
-                if deconvolve_pixwin and noise_sim_type == "gaussian":
+
+                # tiled and wavelet sims need to get a pixel window, so it can be removed in the next step
+                if deconvolve_pixwin and noise_sim_type != "gaussian":
                     if template[sv].pixel == "CAR":
-                        data_analysis_utils.apply_pixwin(split, pixwin_lxly[sv])
+                        binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+                        data_analysis_utils.deconvolve_pixwin_CAR(split, binary, pixwin_lxly[sv])
                 split.data += beamed_signal.data
                 
                 # from now on the simulation pipeline is done

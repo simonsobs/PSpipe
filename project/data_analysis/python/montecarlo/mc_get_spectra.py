@@ -292,8 +292,9 @@ for iii in subtasks:
                 noisy_alms[2] =  nlms["B", k][ar_id]
                 split = sph_tools.alm2map(noisy_alms, template[sv])
 
-                # tiled and wavelet sims need to get a pixel window, so it can be removed in the next step
-                if deconvolve_pixwin and noise_sim_type != "gaussian":
+                # tiled and wavelet sims have no window. they don't need to be modified.
+                # gaussian sim was generated from unpixwin'd spectra, so must be repixwin'd
+                if deconvolve_pixwin and noise_sim_type == "gaussian":
                     if template[sv].pixel == "CAR":
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                         data_analysis_utils.deconvolve_pixwin_CAR(split, binary, pixwin_lxly[sv])

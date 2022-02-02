@@ -207,8 +207,8 @@ subtasks = [int(iii) for iii in subtasks]  # prevent bug in pspy that makes the 
 print(subtasks)
 
 if deconvolve_pixwin:
-    if template.pixel == "CAR":
-        wy, wx = enmap.calc_window(template.data.shape)
+    if template[surveys[0]].pixel == "CAR":
+        wy, wx = enmap.calc_window(template[surveys[0]].data.shape)
         pixwin_lxly = (wy[:,None] * wx[None,:])
         inv_pixwin_lxly = pixwin_lxly ** (-1)
     else:
@@ -240,7 +240,7 @@ for iii in subtasks:
         if noise_sim_type == "gaussian":
             np.random.seed(iii)
             nlms = get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, sim_alm_dtype, verbose=True)
-        elif (template.pixel == "CAR") and (noise_sim_type == "tiled" or noise_sim_type == "wavelet"):
+        elif (template[sv].pixel == "CAR") and (noise_sim_type == "tiled" or noise_sim_type == "wavelet"):
             # use MPI task index iii as simulation number ~ random seed, since it ranges from iStart to iStop
             nlms = get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, iii, sv, soapack_arrays, nsplits, sim_alm_dtype, lmax, verbose=True)
         else:
@@ -264,9 +264,9 @@ for iii in subtasks:
             l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
             alms_beamed = curvedsky.almxfl(alms_beamed, bl)
 
-            beamed_signal = sph_tools.alm2map(alms_beamed, template.copy())
+            beamed_signal = sph_tools.alm2map(alms_beamed, template[sv].copy())
             if deconvolve_pixwin:
-                if template.pixel == "CAR":
+                if template[sv].pixel == "CAR":
                     data_analysis_utils.apply_pixwin(beamed_signal, pixwin_lxly)
 
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
@@ -282,7 +282,7 @@ for iii in subtasks:
                 noisy_alms[2] =  nlms["B", k][ar_id]
                 split = sph_tools.alm2map(noisy_alms, template[sv])
                 if deconvolve_pixwin and noise_sim_type == "gaussian":
-                    if template.pixel == "CAR":
+                    if template[sv].pixel == "CAR":
                         data_analysis_utils.apply_pixwin(split, pixwin_lxly)
                 split.data += beamed_signal.data
                 

@@ -125,7 +125,7 @@ iStart = 0
 iStop = 39
 iMultiple = 8
 sim_alm_dtype = "complex64"
-noise_sim_type = "gaussian"
+noise_sim_type = "wavelet"
 noise_model_parameters = {"downgrade": 4, "lmax": 5400, "notes": "20211203", "mask_name": "dr6v3_default_union_mask", "union_sources": "20210209_sncut_10_aggressive"}
 
 

@@ -106,7 +106,7 @@ else:
 for (i, arg) in enumerate(sys.argv):
     if arg == "--noisetype" and ((i+1) < len(sys.argv)):
         noise_sim_type = arg[i+1]
-        print("Changing noise sim type to ", noise_sim_type)
+        print(f"Changing noise sim type to \"{noise_sim_type}\"")
 
 if sim_alm_dtype == "complex64":
     sim_alm_dtype = np.complex64

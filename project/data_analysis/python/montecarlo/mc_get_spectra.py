@@ -15,6 +15,8 @@ import gc
 import healpy as hp
 from pixell import enmap
 
+
+# draw a Gaussian realization of the noise a_lm
 def get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, sim_alm_dtype, verbose=True):
 
     # for each survey, we read the mesasured noise power spectrum from the data
@@ -42,7 +44,7 @@ def get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, sim_alm
     return nlms
 
 
-# CURRENTLY DOES NOT HANDLE MULTIPLE SURVEYS
+# draw a tiled or wavelet realization of the noise a_lm
 def get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, sim_num, sv, soapack_arrays, nsplits, sim_alm_dtype, lmax, verbose=True):
     nlms = {}
     n_splits = nsplits[sv]
@@ -92,9 +94,9 @@ sim_alm_dtype = d["sim_alm_dtype"]
 noise_sim_type = d["noise_sim_type"]  # can be "gaussian", "tiled", "wavelet"
 noise_model_parameters = d["noise_model_parameters"]
 
-if len(sys.argv) == 4:
+if len(sys.argv) >= 4 and sys.argv[2].isdigit():
     iStart, iStop = int(sys.argv[2]), int(sys.argv[3])
-elif len(sys.argv) == 3:
+elif len(sys.argv) == 3 and sys.argv[2].isdigit():
     iIndex = int(sys.argv[2])
     iMultiple = d["iMultiple"]
     iStart = (iIndex * iMultiple)
@@ -105,7 +107,7 @@ else:
 # look for noise sim type in arguments
 for (i, arg) in enumerate(sys.argv):
     if arg == "--noisetype" and ((i+1) < len(sys.argv)):
-        noise_sim_type = arg[i+1]
+        noise_sim_type = sys.argv[i+1]
         print(f"Changing noise sim type to \"{noise_sim_type}\"")
 
 if sim_alm_dtype == "complex64":
@@ -156,7 +158,7 @@ if (noise_sim_type == "tiled") or (noise_sim_type == "wavelet"):
         array_to_wafer_and_index[array1] = (wafer_name, 1)
         wafer_models[wafer_name] = noise_model
 
-print(array_to_wafer_and_index)
+print(noise_sim_type, array_to_wafer_and_index)
 
 id_freq = {}
 # create a list assigning an integer index to each freq (used later in the code to generate fg simulations)
@@ -258,8 +260,10 @@ for iii in subtasks:
 
         for ar_id, ar in enumerate(arrays):
         
+            gc.collect()
             win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
             win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+            binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
             
             window_tuple = (win_T, win_pol)
             
@@ -276,28 +280,27 @@ for iii in subtasks:
             beamed_signal = sph_tools.alm2map(alms_beamed, template[sv].copy())
             if deconvolve_pixwin:
                 if template[sv].pixel == "CAR":
-                    binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                     data_analysis_utils.deconvolve_pixwin_CAR(beamed_signal, binary, pixwin_lxly[sv])
-
+                    beamed_signal.data /= (beamed_signal.data.shape[1]*beamed_signal.data.shape[2])
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
 
             t1 = time.time()
 
+            noisy_alms = alms.copy()
             for k in range(nsplits[sv]):
             
                 # finally we add the noise alms for each split
-                noisy_alms = alms_beamed.copy()
-                noisy_alms[0] =  nlms["T", k][ar_id]
-                noisy_alms[1] =  nlms["E", k][ar_id]
-                noisy_alms[2] =  nlms["B", k][ar_id]
+                np.copyto(noisy_alms[0], nlms["T", k][ar_id])
+                np.copyto(noisy_alms[1], nlms["E", k][ar_id])
+                np.copyto(noisy_alms[2], nlms["B", k][ar_id])
                 split = sph_tools.alm2map(noisy_alms, template[sv])
 
                 # tiled and wavelet sims have no window. they don't need to be modified.
                 # gaussian sim was generated from unpixwin'd spectra, so must be repixwin'd
                 if deconvolve_pixwin and noise_sim_type == "gaussian":
                     if template[sv].pixel == "CAR":
-                        binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                         data_analysis_utils.deconvolve_pixwin_CAR(split, binary, pixwin_lxly[sv])
+                        split.data /= (split.data.shape[1]*split.data.shape[2])
                 split.data += beamed_signal.data
                 
                 # from now on the simulation pipeline is done
@@ -305,11 +308,8 @@ for iii in subtasks:
                                 
                 if window_tuple[0].pixel == "CAR":
                     if ks_f["apply"]:
-                        binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                         norm, split = data_analysis_utils.get_filtered_map(
                             split, binary, filter[sv], inv_pixwin_lxly[sv], weighted_filter=ks_f["weighted"])
-
-                        del binary
                 
                 if d["remove_mean"] == True:
                     split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)

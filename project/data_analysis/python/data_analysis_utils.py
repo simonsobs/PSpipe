@@ -45,7 +45,8 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_fi
         ft = enmap.fft(orig_map.data, normalize=False)
         if inv_pixwin_lxly is not None:
             ft  *= inv_pixwin_lxly
-        orig_map.data = enmap.ifft(ft * filter, normalize=False).real
+        ft *= filter
+        orig_map.data = enmap.ifft(ft, normalize=False).real
         norm += 1
     else:
         rhs    = enmap.ifft((1 - filter) * enmap.fft(orig_map.data * binary.data, normalize=False), normalize=False).real

@@ -54,10 +54,10 @@ Once you have this file, request an interactive node
 
 .. code:: shell
 
-    salloc -N 1 -C haswell -q interactive -t 03:00:00 --mem=0 --exclusive
+    salloc -N 1 -C haswell -q interactive -t 01:00:00
 
 Once you have an interactive node ready, set up the environment. 
-**You can't just paste this! You need to change some things.**
+**You can't just paste the following! You need to change some things for your own environment.**
 
 .. code:: shell
 
@@ -76,10 +76,10 @@ Now finally you can run the noise sim script,
 
 .. code:: shell
 
-    srun -n 1 -c 64 --cpu_bind=cores python -u python/montecarlo/mc_DEBUG_spectra.py paramfiles/global_dr6_v3_4pass_pa6_gaussian.dict
+    srun -n 1 -c 32 --cpu_bind=cores python -u python/montecarlo/mc_get_spectra.py paramfiles/global_dr6_v3_4pass_pa6_gaussian.dict
 
 The important parameters are ``noise_sim_type`` which can be ``gaussian``, ``tiled``, or ``wavelet``, and the 
-dictionary for ``noise_model_parameters``.
+dictionary for ``noise_model_parameters``. You can override the noise_sim_type with the command line option ``--noisetype tiled``, or ``--noisetype wavelet``.
 
 We also provide an example slurm script, ``submit_noise_sim.slurm``, which you can run with 
 

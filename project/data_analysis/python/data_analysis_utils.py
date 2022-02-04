@@ -64,7 +64,7 @@ def fourier_mult(orig_map, binary, fourier_array):
     binary:  ``so_map``
         a binary mask removing pathological pixels
     fourier_array: 2d array
-        the inverse of the pixel window function in fourier space
+        the fourier array we want to multiply the FFT of the map with
     """
     orig_map.data *= binary.data
     ft = enmap.fft(orig_map.data, normalize=True)

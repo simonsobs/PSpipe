@@ -35,14 +35,12 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_fi
 
     """
     
-    orig_map.data *= binary.data
     if weighted_filter == False:
-        ft = enmap.fft(orig_map.data, normalize=True)
         if inv_pixwin_lxly is not None:
-            ft  *= inv_pixwin_lxly
-        ft *= filter
-        orig_map.data = enmap.ifft(ft, normalize=True).real
+            filter  *= inv_pixwin_lxly
+        orig_map = fourier_mult(orig_map, binary, filter)
     else:
+        orig_map.data *= binary.data
         rhs    = enmap.ifft((1 - filter) * enmap.fft(orig_map.data * binary.data, normalize=True), normalize=True).real
         div    = enmap.ifft((1 - filter) * enmap.fft(binary.data, normalize=True), normalize=True).real
         div    = np.maximum(div, np.percentile(binary.data[::10, ::10], ref * 100) * tol)

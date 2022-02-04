@@ -281,7 +281,6 @@ for iii in subtasks:
             if deconvolve_pixwin:
                 if template[sv].pixel == "CAR":
                     data_analysis_utils.deconvolve_pixwin_CAR(beamed_signal, binary, pixwin_lxly[sv])
-                    beamed_signal.data /= (beamed_signal.data.shape[1]*beamed_signal.data.shape[2])
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
 
             t1 = time.time()
@@ -300,7 +299,6 @@ for iii in subtasks:
                 if deconvolve_pixwin and noise_sim_type == "gaussian":
                     if template[sv].pixel == "CAR":
                         data_analysis_utils.deconvolve_pixwin_CAR(split, binary, pixwin_lxly[sv])
-                        split.data /= (split.data.shape[1]*split.data.shape[2])
                 split.data += beamed_signal.data
                 
                 # from now on the simulation pipeline is done

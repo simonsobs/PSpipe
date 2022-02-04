@@ -57,7 +57,7 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_fi
     
 def fourier_mult(orig_map, binary, fourier_array):
 
-    """do a fourier multiplication of the FFT of the orig_amp with a fourier array, binary help to remove pathological pixels
+    """do a fourier multiplication of the FFT of the orig_map with a fourier array, binary help to remove pathological pixels
 
     Parameters
     ---------

@@ -127,7 +127,7 @@ for sv in surveys:
                     print("WARNING: no kspace filter is applied")
                     if deconvolve_pixwin:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                        split = data_analysis_utils.deconvolve_pixwin_CAR(split, binary, inv_pixwin_lxly)
+                        split = data_analysis_utils.fourier_mult(split, binary, inv_pixwin_lxly)
                         
             elif window_tuple[0].pixel == "HEALPIX":
                 split = so_map.read_map(map)

@@ -55,9 +55,9 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_fi
 
     return orig_map
     
-def deconvolve_pixwin_CAR(orig_map, binary, inv_pixwin_lxly):
+def fourier_mult(orig_map, binary, fourier_array):
 
-    """Deconvolve the two dimensional CAR pixel window function
+    """do a fourier multiplication of the FFT of the orig_amp with a fourier array, binary help to remove pathological pixels
 
     Parameters
     ---------
@@ -65,12 +65,12 @@ def deconvolve_pixwin_CAR(orig_map, binary, inv_pixwin_lxly):
         the map to be filtered
     binary:  ``so_map``
         a binary mask removing pathological pixels
-    inv_pixwin_lxly: 2d array
+    fourier_array: 2d array
         the inverse of the pixel window function in fourier space
     """
     orig_map.data *= binary.data
     ft = enmap.fft(orig_map.data, normalize=True)
-    ft  *= inv_pixwin_lxly
+    ft  *= fourier_array
     orig_map.data = enmap.ifft(ft, normalize=True).real
     
     return orig_map

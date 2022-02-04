@@ -98,10 +98,10 @@ for task in subtasks:
             else:
                 print("WARNING: no kspace filter is applied")
                 if deconvolve_pixwin:
-                    split = data_analysis_utils.deconvolve_pixwin_CAR(split,
-                                                                      binary,
-                                                                      inv_pixwin_lxly)
-                        
+                    split = data_analysis_utils.fourier_mult(split,
+                                                             binary,
+                                                             inv_pixwin_lxly)
+                         
         elif win_T.pixel == "HEALPIX":
             split = so_map.read_map(map)
                 

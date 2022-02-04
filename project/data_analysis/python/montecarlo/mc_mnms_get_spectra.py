@@ -280,7 +280,7 @@ for iii in subtasks:
             beamed_signal = sph_tools.alm2map(alms_beamed, template[sv].copy())
             if deconvolve_pixwin:
                 if template[sv].pixel == "CAR":
-                    data_analysis_utils.deconvolve_pixwin_CAR(beamed_signal, binary, pixwin_lxly[sv])
+                    data_analysis_utils.fourier_mult(beamed_signal, binary, pixwin_lxly[sv])
             print("%s split of survey: %s, array %s" % (nsplits[sv], sv, ar))
 
             t1 = time.time()
@@ -298,7 +298,7 @@ for iii in subtasks:
                 # gaussian sim was generated from unpixwin'd spectra, so must be repixwin'd
                 if deconvolve_pixwin and noise_sim_type == "gaussian":
                     if template[sv].pixel == "CAR":
-                        data_analysis_utils.deconvolve_pixwin_CAR(split, binary, pixwin_lxly[sv])
+                        data_analysis_utils.fourier_mult(split, binary, pixwin_lxly[sv])
                 split.data += beamed_signal.data
                 
                 # from now on the simulation pipeline is done

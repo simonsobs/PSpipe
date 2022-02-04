@@ -308,18 +308,17 @@ for iii in subtasks:
                                 
                 if window_tuple[0].pixel == "CAR":
                     if ks_f["apply"]:
-                        norm, split = data_analysis_utils.get_filtered_map(
-                            split, binary, filter[sv], inv_pixwin_lxly[sv], weighted_filter=ks_f["weighted"])
+                        split = data_analysis_utils.get_filtered_map(split,
+                                                                     binary,
+                                                                     filter[sv],
+                                                                     inv_pixwin_lxly[sv],
+                                                                     weighted_filter=ks_f["weighted"])
                 
                 if d["remove_mean"] == True:
                     split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
                 print("m_alms_dtype", master_alms[sv, ar, k].dtype)
-                if ks_f["apply"]:
-                    # there is an extra normalisation for the FFT/IFFT bit
-                    # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
-                    master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2]) ** norm
 
             print(time.time()-t1)
 

@@ -89,18 +89,18 @@ for task in subtasks:
 
             if ks_f["apply"]:
                 print("apply kspace filter on %s" %map)
-                norm, split = data_analysis_utils.get_filtered_map(split,
-                                                                   binary,
-                                                                   filter,
-                                                                   inv_pixwin_lxly=inv_pixwin_lxly,
-                                                                   weighted_filter=ks_f["weighted"])
+                split = data_analysis_utils.get_filtered_map(split,
+                                                             binary,
+                                                             filter,
+                                                             inv_pixwin_lxly=inv_pixwin_lxly,
+                                                             weighted_filter=ks_f["weighted"])
                         
             else:
                 print("WARNING: no kspace filter is applied")
                 if deconvolve_pixwin:
-                    norm, split = data_analysis_utils.deconvolve_pixwin_CAR(split,
-                                                                            binary,
-                                                                            inv_pixwin_lxly)
+                    split = data_analysis_utils.deconvolve_pixwin_CAR(split,
+                                                                      binary,
+                                                                      inv_pixwin_lxly)
                         
         elif win_T.pixel == "HEALPIX":
             split = so_map.read_map(map)
@@ -111,11 +111,6 @@ for task in subtasks:
             split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
         master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax)
-            
-        if ks_f["apply"] or deconvolve_pixwin:
-            # there is an extra normalisation for the FFT/IFFT bit
-            # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
-            master_alms /= (split.data.shape[1] * split.data.shape[2]) ** norm
         
         np.save("%s/alms_%s_%s_%d.npy" % (alms_dir, sv, ar, k), master_alms)
         

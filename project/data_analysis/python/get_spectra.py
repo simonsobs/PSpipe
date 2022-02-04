@@ -121,14 +121,13 @@ for sv in surveys:
                 if ks_f["apply"]:
                     print("apply kspace filter on %s" %map)
                     binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                    norm, split = data_analysis_utils.get_filtered_map(
-                        split, binary, filter[sv], inv_pixwin_lxly=inv_pixwin_lxly, weighted_filter=ks_f["weighted"])
+                    split = data_analysis_utils.get_filtered_map(split, binary, filter[sv], inv_pixwin_lxly=inv_pixwin_lxly, weighted_filter=ks_f["weighted"])
                         
                 else:
                     print("WARNING: no kspace filter is applied")
                     if deconvolve_pixwin:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                        norm, split = data_analysis_utils.deconvolve_pixwin_CAR(split, binary, inv_pixwin_lxly)
+                        split = data_analysis_utils.deconvolve_pixwin_CAR(split, binary, inv_pixwin_lxly)
                         
             elif window_tuple[0].pixel == "HEALPIX":
                 split = so_map.read_map(map)
@@ -139,12 +138,7 @@ for sv in surveys:
                 split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
                 
             master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax)
-            
-            if ks_f["apply"] or deconvolve_pixwin:
-                # there is an extra normalisation for the FFT/IFFT bit
-                # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
-                master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2]) ** norm
-                
+                            
         print(time.time()- t)
 
 

@@ -37,8 +37,10 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_fi
     
     if weighted_filter == False:
         if inv_pixwin_lxly is not None:
-            filter  *= inv_pixwin_lxly
-        orig_map = fourier_mult(orig_map, binary, filter)
+            orig_map = fourier_mult(orig_map, binary, filter * inv_pixwin_lxly)
+        else:
+            orig_map = fourier_mult(orig_map, binary, filter)
+
     else:
         orig_map.data *= binary.data
         rhs    = enmap.ifft((1 - filter) * enmap.fft(orig_map.data * binary.data, normalize=True), normalize=True).real

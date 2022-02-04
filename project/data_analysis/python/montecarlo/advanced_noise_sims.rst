@@ -76,7 +76,7 @@ Now finally you can run the noise sim script,
 
 .. code:: shell
 
-    srun -n 1 -c 32 --cpu_bind=cores python -u python/montecarlo/mc_get_spectra.py paramfiles/global_dr6_v3_4pass_pa6_gaussian.dict
+    srun -n 1 -c 32 --cpu_bind=cores python -u python/montecarlo/mc_mnms_get_spectra.py paramfiles/global_dr6_v3_4pass_pa6_gaussian.dict
 
 The important parameters are ``noise_sim_type`` which can be ``gaussian``, ``tiled``, or ``wavelet``, and the 
 dictionary for ``noise_model_parameters``. You can override the noise_sim_type with the command line option ``--noisetype tiled``, or ``--noisetype wavelet``.

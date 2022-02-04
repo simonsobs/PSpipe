@@ -16,4 +16,4 @@ export PYTHONPATH=/global/cscratch1/sd/xzackli/PSpipe/project/data_analysis/pyth
 export HDF5_USE_FILE_LOCKING=FALSE
 export OMP_NUM_THREADS=16
 
-srun python -u python/montecarlo/mc_get_spectra.py paramfiles/global_dr6_v3_4pass_pa6_tiled.dict $SLURM_ARRAY_TASK_ID
+srun python -u python/montecarlo/mc_mnms_get_spectra.py paramfiles/global_dr6_v3_4pass_pa6_tiled.dict $SLURM_ARRAY_TASK_ID

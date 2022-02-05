@@ -1,0 +1,9 @@
+best_fits/
+sim_spectra/
+spectra/
+mcms/
+noise_model/
+windows/
+debug/
+
+.vscode/

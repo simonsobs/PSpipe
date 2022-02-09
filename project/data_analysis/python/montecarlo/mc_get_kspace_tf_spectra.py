@@ -143,13 +143,11 @@ for iii in subtasks:
 
                 binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
                 
-                norm, split = data_analysis_utils.get_filtered_map(
-                    split, binary, filter[sv], weighted_filter=ks_f["weighted"])
+                split = data_analysis_utils.get_filtered_map(split, binary, filter[sv], weighted_filter=ks_f["weighted"])
 
                 # compute the alms of the filtered sim
 
                 master_alms[sv, ar, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
-                master_alms[sv, ar, "filter"] /= (split.data.shape[1]*split.data.shape[2]) ** norm
                 
                 print(scenario, sv, ar, time.time()-t0)
 

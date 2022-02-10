@@ -4,6 +4,7 @@ Some utility functions for the data analysis project.
 import numpy as np
 import healpy as hp
 import pylab as plt
+import os
 from pixell import curvedsky
 from pspy import pspy_utils, so_cov, so_spectra, so_mcm, so_map_preprocessing
 from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
@@ -482,8 +483,58 @@ def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, m
     
     return analytic_cov
 
+def covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax):
+    """
+    This routine compute the contribution from beam errors to the analytical covariance of the power spectra
+    We want to compute the beam covariance between the two spectra
+    C1 = Wa * Xb, C2 =  Yc * Zd
+    Here W, X, Y, Z can be either T or E and a,b,c,d will be an index
+    corresponding to the survey and array we consider so for example a = dr6_pa5_150 or a = dr6_pa4_090
+    The formula for the analytic covariance of C1, C2 is given by
+    let's denote the normalised beam covariance <BB>_ac = < delta B_a delta B_c >/np.outer(B_a, B_c)
+    
+    Cov( Wa * Xb,  Yc * Zd) = Dl^{WaXb} Dl^{YcZd} ( <BB>_ac + <BB>_ad + <BB>_bc + <BB>_bd )
+       
+       Parameters
+       ----------
+    id_element : list
+        a list of the form [a,b,c,d] where a = dr6_pa4_090, etc, this identify which pair of power spectrum we want the covariance of
+    ps_all: dict
+        this dict contains the theoretical best power spectra, convolve with the beam for example
+        ps["dr6&pa5_150", "dr6&pa4_150", "TT"] = bl_dr6_pa5_150 * bl_dr6_pa4_150 * (Dl^{CMB}_TT + fg_TT)
+    norm_beam_cov: dict
+        this dict contains the normalized beam covariance for each survey and array
+    binning_file: str
+        a binning file with three columns bin low, bin high, bin mean
+    lmax: int
+        the maximum multipole to consider
+    """
+    na, nb, nc, nd = id_element
 
+    sv_alpha, ar_alpha = na.split("&")
+    sv_beta, ar_beta = nb.split("&")
+    sv_gamma, ar_gamma = nc.split("&")
+    sv_eta, ar_eta = nd.split("&")
 
+    bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
+    nbins = len(bin_hi)
+
+    speclist = ["TT", "TE", "ET", "EE"]
+    
+    nspec = len(speclist)
+    analytic_cov_from_beam = np.zeros((nspec * nbins, nspec * nbins))
+    for i, spec1 in enumerate(speclist):
+        for j, spec2 in enumerate(speclist):
+    
+            M =  (delta2(na, nc) + delta2(na, nd)) * norm_beam_cov[sv_alpha, ar_alpha]
+            M += (delta2(nb, nc) + delta2(nb, nd)) * norm_beam_cov[sv_beta, ar_beta]
+            M *=  np.outer(ps_all[na, nb, spec1], ps_all[nc, nd, spec2])
+            
+            analytic_cov_from_beam[i * nbins: (i + 1) * nbins, j * nbins: (j + 1) * nbins] = so_cov.bin_mat(M, binning_file, lmax)
+
+    return analytic_cov_from_beam
+    
+    
 def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):
     """doc not ready yet
     """
@@ -565,62 +616,103 @@ def symm_power(Clth, mode="arithm"):
     if mode == "arithm":
         return np.add.outer(Clth, Clth) / 2
 
+def interactive_covariance_comparison(analytic_cov, mc_cov, spec_list, binning_file, lmax, cov_plot_dir, multistep_path, corr_range=0.3, log=False):
 
-def plot_vs_choi(l, cl, error, mc_std, Db, std, plot_dir, combin, spec):
-               
-    str = "%s_%s_cross.png" % (spec, combin)
+    """
+    This routine compare analytic covariance matrices with the ones from montecarlo simulation
+    For a typical covariance matrix of ACT dr6, it compare more than 3000 nbinsxnbins covariance matrix blocs.
+    This produces the plots and write a html page: covariance.html with an interactive java script interface: multistep2.js
+    you can go from one plot to the other by pressing c/v on your keyboard
+    
+    Parameters
+    ---------
+    analytic_cov: 2d array
+        the analytic covariance matrix
+    mc_cov:  2d array
+        the covariance matrix estimated with montecarlo sim
+    spec_list: list of str
+        the list of the different spectra to consider
+    binning_file: str
+        the binning file used
+    lmax: int
+        the maximum multipole to consider
+    cov_plot_dir: str
+        the directory where we write the plot to disk
+    multistep_path: str
+        the path to the javascript multistep2.js that render the html interactive
+    corr_range: float
+        should be between -1, 1 the max of the colorscale for the correlation matrix plot
+    log: boolean
+        wether to plot the diag of the cov with a log scale
+    """
 
-    plt.figure(figsize=(12,12))
-    if spec == "TT":
-        plt.semilogy()
-    plt.errorbar(l, cl, error, fmt=".", label="steve %s" % combin)
-    plt.errorbar(l, Db[spec], fmt=".", label="thibaut")
-    plt.legend()
-    plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/%s" % (plot_dir,str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
-               
-               
-    plt.figure(figsize=(12,12))
-    plt.semilogy()
-    plt.errorbar(l, std, label="master %s" % combin, color= "blue")
-    plt.errorbar(l, mc_std, fmt=".", label="montecarlo", color = "red")
-    plt.errorbar(l, error, label="Knox", color= "lightblue")
-    plt.legend()
-    plt.title(r"$\sigma^{%s}_{\ell}$" % (spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/error_%s" % (plot_dir,str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
-                         
-    plt.figure(figsize=(12,12))
-    plt.plot(l, l * 0 + 1, color="grey")
-    if std is not None:
-        plt.errorbar(l[2:], std[2:]/mc_std[2:], label="master %s" % combin, color= "blue")
-    plt.errorbar(l[2:], error[2:]/mc_std[2:], label="Knox", color= "lightblue")
-    plt.legend()
-    plt.title(r"$\sigma^{ %s}_{\ell}/\sigma^{MC, %s}_{\ell} $" % (spec, spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/error_divided_%s" % (plot_dir,str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
-               
-    plt.figure(figsize=(12,12))
-    plt.plot(l,(cl-Db[spec])/mc_std, ".")
-    plt.title(r"$\Delta D^{%s}_{\ell}/\sigma^{MC}_{\ell}$" % (spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/frac_error_%s" % (plot_dir, str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
+    pspy_utils.create_directory(cov_plot_dir)
 
-    plt.figure(figsize=(12,12))
-    plt.plot(l,(cl-Db[spec])/cl)
-    plt.title(r"$\Delta D^{%s}_{\ell}/ D^{%s}_{\ell}$" % (spec, spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/frac_%s" % (plot_dir, str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
- 
+    bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
+    nbins = len(bin_hi)
+
+    analytic_corr = so_cov.cov2corr(analytic_cov)
+    mc_corr = so_cov.cov2corr(mc_cov)
+
+    os.system("cp %s/multistep2.js %s/multistep2.js" % (multistep_path, cov_plot_dir))
+    file = "%s/covariance.html" % (cov_plot_dir)
+    g = open(file, mode="w")
+    g.write('<html>\n')
+    g.write('<head>\n')
+    g.write('<title> covariance comparison </title>\n')
+    g.write('<script src="multistep2.js"></script>\n')
+    g.write('<script> add_step("sub",  ["c","v"]) </script> \n')
+    g.write('<style> \n')
+    g.write('body { text-align: center; } \n')
+    g.write('img { width: 100%; max-width: 1200px; } \n')
+    g.write('</style> \n')
+    g.write('</head> \n')
+    g.write('<body> \n')
+    g.write('<div class=sub>\n')
+
+    n_spec = int(analytic_cov.shape[0] / nbins)
+    count = 0
+    for ispec in range(n_spec):
+        for jspec in range(ispec):
+            sub_analytic_cov = analytic_cov[ispec * nbins: (ispec + 1) * nbins, jspec * nbins: (jspec + 1) * nbins]
+            sub_mc_cov = mc_cov[ispec * nbins: (ispec + 1) * nbins, jspec * nbins: (jspec + 1) * nbins]
+
+            sub_analytic_corr = analytic_corr[ispec * nbins: (ispec + 1) * nbins, jspec * nbins: (jspec + 1) * nbins]
+            sub_mc_corr = mc_corr[ispec * nbins: (ispec + 1) * nbins, jspec * nbins: (jspec + 1) * nbins]
+
+            str = "cov_%03d.png" % (count)
+
+            fig = plt.figure(figsize=(16, 10), constrained_layout=True)
+            spec = fig.add_gridspec(2, 2)
+            ax0 = fig.add_subplot(spec[0, :])
+            plt.title("cov(%s , %s)" % (spec_list[ispec], spec_list[jspec]), fontsize=22)
+            if log == True:
+                plt.semilogy()
+            plt.plot(sub_analytic_cov.diagonal(), label = "analytic")
+            plt.plot(sub_mc_cov.diagonal(), '.', label = "montecarlo")
+            plt.legend()
+            ax10 = fig.add_subplot(spec[1, 0])
+            plt.imshow(sub_analytic_corr, vmin=-corr_range, vmax=corr_range, cmap='bwr')
+            plt.xticks(np.arange(nbins)[::15],lb[::15].astype(int))
+            plt.yticks(np.arange(nbins)[::10],lb[::10].astype(int))
+            plt.colorbar()
+            ax11 = fig.add_subplot(spec[1, 1])
+            plt.imshow(sub_mc_corr, vmin=-corr_range, vmax=corr_range, cmap='bwr')
+            plt.xticks(np.arange(nbins)[::15],lb[::15].astype(int))
+            plt.yticks(np.arange(nbins)[::10],lb[::10].astype(int))
+            plt.colorbar()
+            plt.savefig("%s/%s" % (cov_plot_dir, str))
+            plt.clf()
+            plt.close()
+
+            g.write('<div class=sub>\n')
+            g.write('<img src="' + str + '"  /> \n')
+            g.write('</div>\n')
+
+            count += 1
+
+    g.write('</body> \n')
+    g.write('</html> \n')
+    g.close()
+
 

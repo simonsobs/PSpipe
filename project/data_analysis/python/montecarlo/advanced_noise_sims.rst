@@ -85,7 +85,9 @@ We also provide an example slurm script, ``submit_noise_sim.slurm``, which you c
 
 .. code:: shell
 
-    sbatch submit_noise_sim.slurm
+    sbatch submit_noise_sim.slurm gaussian
+    sbatch submit_noise_sim.slurm tiled
+    sbatch submit_noise_sim.slurm wavelet
 
 This particular script runs 128 realizations of the chosen sim provided in the SLURM script, by 
 performing 8 sims at a time. 

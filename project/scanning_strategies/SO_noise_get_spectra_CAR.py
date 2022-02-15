@@ -2,10 +2,10 @@
 This script compute the auto and cross power spectra for the different scanning strategy
 """
 
-def downgraded_plot(map, file_name, vrange=None, down_factor=4):
+def downgraded_plot(map, file_name, color_range=None, down_factor=4):
     map_low_res = map.copy()
     map_low_res = map_low_res.downgrade(down_factor)
-    map_low_res.plot(file_name, color_range=vrange)
+    map_low_res.plot(file_name=file_name, color_range=color_range)
     
 import healpy as hp
 import pylab as plt
@@ -28,7 +28,7 @@ runs = d["runs"]
 clfile = d["clfile"]
 binning_file = d["binning_file_name"]
 bin_size = d["bin_size"]
-vrange = d["map_plot_range"]
+color_range = d["map_plot_range"]
 K_to_muK = 10**6
 
 include_cmb = True
@@ -63,7 +63,7 @@ for scan in scan_list:
         binary.data[noise_map.data[0] == 0] = 0
         noise_map.data[:] *= K_to_muK # should it be * np.sqrt(2) ?
         
-        downgraded_plot(noise_map, "%s/%s_map_%s" % (plot_dir, split, scan), vrange=vrange)
+        downgraded_plot(noise_map, "%s/%s_map_%s" % (plot_dir, split, scan), color_range=color_range)
         
         if include_cmb == True:
             sim[split] = cmb.copy()

@@ -120,17 +120,17 @@ for task in subtasks:
                 spec_name = "%s_%sx%s_%s" % (scan, s0, s1, run)
 
                 l, ps = so_spectra.get_spectra(alm[s0], alm[s1], spectra=spectra)
-                lb, Db_dict[spec_name] = so_spectra.bin_spectra(l,
-                                                                ps,
-                                                                binning_file,
-                                                                lmax,
-                                                                type="Dl",
-                                                                mbb_inv=mbb_inv,
-                                                                spectra=spectra)
+                lb, Db_dict = so_spectra.bin_spectra(l,
+                                                     ps,
+                                                     binning_file,
+                                                     lmax,
+                                                     type="Dl",
+                                                     mbb_inv=mbb_inv,
+                                                     spectra=spectra)
 
                 so_spectra.write_ps("%s/spectra_%s.dat" % (spectra_dir, spec_name),
                                     lb,
-                                    Db_dict[spec_name],
+                                    Db_dict,
                                     type="Dl",
                                     spectra=spectra)
 

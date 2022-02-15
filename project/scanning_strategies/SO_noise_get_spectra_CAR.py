@@ -58,8 +58,8 @@ for scan in scan_list:
     binary.data[:] = 1
     
     sim = {}
-    for split in split_list:
-        noise_map = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set%s_map.fits" % (map_dir, scan, split))
+    for count, split in enumerate(split_list):
+        noise_map = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set%02d_map.fits" % (map_dir, scan, count))
         binary.data[noise_map.data[0] == 0] = 0
         noise_map.data[:] *= K_to_muK # should it be * np.sqrt(2) ?
         

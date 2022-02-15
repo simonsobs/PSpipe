@@ -71,7 +71,7 @@ for scan in scan_list:
         else:
             sim[split] = noise_map.copy()
             
-    downgraded_plot(binary, "%s/binary_%s" % (plot_dir, scan), vrange=vrange)
+    downgraded_plot(binary, "%s/binary_%s" % (plot_dir, scan))
 
             
     for run in runs:
@@ -90,7 +90,7 @@ for scan in scan_list:
                 
         window.write_map("%s/window_%s_%s.fits" % (window_dir, scan, run))
         
-        downgraded_plot(window, "%s/window_%s_%s" % (plot_dir, scan, run), vrange=vrange)
+        downgraded_plot(window, "%s/window_%s_%s" % (plot_dir, scan, run))
 
 
     

@@ -11,7 +11,7 @@ import healpy as hp
 import pylab as plt
 import numpy as np
 import sys
-from pspy import so_map, so_window, sph_tools, so_mcm, pspy_utils, so_spectra, so_dict
+from pspy import so_map, so_window, sph_tools, so_mcm, pspy_utils, so_spectra, so_dict, so_mpi
 import SO_noise_utils
 
 d = so_dict.so_dict()
@@ -51,8 +51,14 @@ pspy_utils.create_directory(plot_dir)
 template = so_map.read_map("%s/lat01_s25_small_tiles_fullfp_f150_1pass_2way_set00_map.fits" % (map_dir))
 cmb = template.synfast(clfile)
 
-Db_dict = {}
-for scan in scan_list:
+n_scans = len(scan_list)
+print("number of scan to compute : %s" % n_scans)
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=0, imax=n_scans - 1)
+
+for task in subtasks:
+    task = int(task)
+    scan = scan_list[task]
 
     binary = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set00_div.fits" % (map_dir, scan))
     binary.data[:] = 1

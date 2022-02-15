@@ -14,6 +14,6 @@ bin_size = 20
 
 clfile = "bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
 
-map_plot_range = 50
+map_plot_range = [2000, 200, 200]
 
 

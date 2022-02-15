@@ -2,6 +2,11 @@
 This script compute the auto and cross power spectra for the different scanning strategy
 """
 
+def downgraded_plot(map, file_name, vrange=None, down_factor=4):
+    map_low_res = map.copy()
+    map_low_res = map_low_res.downgrade(down_factor)
+    map_low_res.plot(file_name, color_range=vrange)
+    
 import healpy as hp
 import pylab as plt
 import numpy as np
@@ -23,8 +28,7 @@ runs = d["runs"]
 clfile = d["clfile"]
 binning_file = d["binning_file_name"]
 bin_size = d["bin_size"]
-map_plot_range = d["map_plot_range"]
-vrange = 3 * [map_plot_range]
+vrange = d["map_plot_range"]
 K_to_muK = 10**6
 
 include_cmb = True
@@ -59,7 +63,7 @@ for scan in scan_list:
         binary.data[noise_map.data[0] == 0] = 0
         noise_map.data[:] *= K_to_muK # should it be * np.sqrt(2) ?
         
-        noise_map.plot(file_name="%s/%s_map_%s" % (plot_dir, split, scan), color_range=vrange)
+        downgraded_plot(noise_map, "%s/%s_map_%s" % (plot_dir, split, scan), vrange=vrange)
         
         if include_cmb == True:
             sim[split] = cmb.copy()
@@ -67,8 +71,9 @@ for scan in scan_list:
         else:
             sim[split] = noise_map.copy()
             
-    binary.plot(file_name="%s/binary_%s" % (plot_dir, scan))
+    downgraded_plot(binary, "%s/binary_%s" % (plot_dir, scan), vrange=vrange)
 
+            
     for run in runs:
 
         window = so_window.create_apodization(binary,
@@ -84,8 +89,10 @@ for scan in scan_list:
         
                 
         window.write_map("%s/window_%s_%s.fits" % (window_dir, scan, run))
+        
+        downgraded_plot(window, "%s/window_%s_%s" % (plot_dir, scan, run), vrange=vrange)
 
-        window.plot(file_name="%s/window_%s_%s" % (plot_dir, scan, run), title=scan)
+
     
         window = (window, window)
     

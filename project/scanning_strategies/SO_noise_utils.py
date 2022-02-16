@@ -1,19 +1,33 @@
 import numpy as np
 from pspy import pspy_utils
 
-def steve_effective_fsky(window):
+def HEALPIX_effective_fsky(window):
     data = window.data[:]
     npix = 12 * window.nside ** 2
     w2 = np.sum(data[data != 0] ** 2) / (npix)
     w4 = np.sum(data[data != 0] ** 4) / (npix)
     return  w2 ** 2 / w4
 
+def CAR_effective_fsky(window):
+    data = window.data[:]
+    pixsize_map = data.pixsizemap()
+    w2 = np.sum(data[data != 0] ** 2 * pixsize_map) / (4 * np.pi)
+    w4 = np.sum(data[data != 0] ** 4 * pixsize_map) / (4 * np.pi)
+    return  w2 ** 2 / w4
+
+
 
 def quick_analytic_cov(l, Clth_dict, window, binning_file, lmax):
 
     bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
     nbins = len(bin_size)
-    fsky = steve_effective_fsky(window)
+    
+    if window.pixel == "HEALPIX":
+        fsky = HEALPIX_effective_fsky(window)
+    elif window.pixel == "CAR":
+        fsky = CAR_effective_fsky(window)
+
+    
     prefac = 1 / ((2 * bin_c + 1) * fsky * bin_size)
 
     cov = {}

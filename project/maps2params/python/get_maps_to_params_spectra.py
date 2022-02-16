@@ -110,8 +110,14 @@ for iii in subtasks:
             
             #here we calibrate the T, E alms and rotate the E, B alms of each frequency, for the LAT experiment
             if exp == "LAT":
-                cal_alms = maps_to_params_utils.calibrate_alm(alms_beamed, exp, freq, **nuis_params)
-                sys_alms = maps_to_params_utils.rotate_alm_polang(cal_alms, exp, freq, **nuis_params)
+                cal_alms = maps_to_params_utils.calibrate_alm(alms_beamed, freq, **nuis_params)
+                print(f"Calibrating the {exp} alm by calT_{freq} = {nuis_params[f'calT_{freq}']} and calE_{freq} = {nuis_params[f'calE_{freq}']}")
+
+                sys_alms = maps_to_params_utils.rotate_alm_polang(cal_alms, freq, **nuis_params)
+                print(f"Rotating the {exp} alm by alpha_{freq} = {nuis_params[f'alpha_{freq}']} deg")
+
+            else: 
+                sys_alms = alms_beamed
 
             fcount += 1
 

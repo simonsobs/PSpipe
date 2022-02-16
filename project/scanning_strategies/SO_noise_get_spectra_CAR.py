@@ -29,6 +29,7 @@ clfile = d["clfile"]
 binning_file = d["binning_file_name"]
 bin_size = d["bin_size"]
 color_range = d["map_plot_range"]
+skip_from_edges = d["skip_from_edges"]
 K_to_muK = 10**6
 
 include_cmb = True
@@ -76,10 +77,15 @@ for task in subtasks:
             sim[split].data[:] += noise_map.data[:]
         else:
             sim[split] = noise_map.copy()
-            
+    
+    
     downgraded_plot(binary, "%s/binary_%s" % (plot_dir, scan))
 
-            
+    if skip_from_edges != 0:
+        dist = so_window.get_distance(binary, rmax=(2 * skip_from_edges) * np.pi / 180)
+        binary.data[dist.data < skip_from_edges] = 0
+        downgraded_plot(binary, "%s/binary_skip_%s" % (plot_dir, scan))
+
     for run in runs:
 
         window = so_window.create_apodization(binary,

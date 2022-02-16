@@ -11,8 +11,8 @@ def HEALPIX_effective_fsky(window):
 def CAR_effective_fsky(window):
     data = window.data[:]
     pixsize_map = data.pixsizemap()
-    w2 = np.sum(data[data != 0] ** 2 * pixsize_map) / (4 * np.pi)
-    w4 = np.sum(data[data != 0] ** 4 * pixsize_map) / (4 * np.pi)
+    w2 = np.sum(data ** 2 * pixsize_map) / (4 * np.pi)
+    w4 = np.sum(data ** 4 * pixsize_map) / (4 * np.pi)
     return  w2 ** 2 / w4
 
 

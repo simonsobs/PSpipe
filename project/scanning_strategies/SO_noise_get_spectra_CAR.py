@@ -82,7 +82,12 @@ for task in subtasks:
     downgraded_plot(binary, "%s/binary_%s" % (plot_dir, scan))
 
     if skip_from_edges != 0:
+    
+        binary.data[0,:] = 0
+        binary.data[-1,:] = 0
+
         dist = so_window.get_distance(binary, rmax=(2 * skip_from_edges) * np.pi / 180)
+
         binary.data[dist.data < skip_from_edges] = 0
         downgraded_plot(binary, "%s/binary_skip_%s" % (plot_dir, scan))
 

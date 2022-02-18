@@ -30,9 +30,9 @@ binning_file = d["binning_file_name"]
 bin_size = d["bin_size"]
 color_range = d["map_plot_range"]
 skip_from_edges = d["skip_from_edges"]
+cross_linking_threshold = d["cross_linking_threshold"]
 K_to_muK = 10**6
-
-include_cmb = True
+include_cmb = d["include_CMB"]
 
 lth, ps_theory = pspy_utils.ps_lensed_theory_to_dict(clfile, "Dl", lmax=lmax)
 
@@ -78,6 +78,26 @@ for task in subtasks:
         else:
             sim[split] = noise_map.copy()
     
+        if (cross_linking_threshold != 1) & (count == 0):
+            print("mask region with poor cross linking")
+            
+            xlink_car = binary.copy()
+
+            x_link_healpix = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set%02d_crosslinking.fits" % (map_dir.replace("car", "healpix"), scan, count))
+            x_link_I, x_link_Q, x_link_U = x_link_healpix.data
+            
+            temp_healpix = so_map.healpix_template(1, x_link_healpix.nside, x_link_healpix.coordinate)
+
+            temp_healpix.data = np.sqrt(x_link_Q ** 2 + x_link_U ** 2) / x_link_I
+            id = np.where(x_link_I == 0)
+            temp_healpix.data[id] = 0
+            
+            
+            xlink_car = so_map.healpix2car(temp_healpix, xlink_car)
+            downgraded_plot(xlink_car, "%s/cross_link_%s" % (plot_dir, scan))
+
+            binary.data[xlink_car.data > cross_linking_threshold] = 0
+            
     
     downgraded_plot(binary, "%s/binary_%s" % (plot_dir, scan))
 

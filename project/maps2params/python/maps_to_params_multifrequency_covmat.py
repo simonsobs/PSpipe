@@ -88,8 +88,8 @@ for sid, name in enumerate(spec_name):
         if (na == nb) & (spec == 'ET'):
             block_to_delete = np.append(block_to_delete, np.arange(id_start, id_stop))
 
-full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=1)
-full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=0)
+full_analytic_cov = np.delete(full_analytic_cov, block_to_delete.astype(int), axis=1)
+full_analytic_cov = np.delete(full_analytic_cov, block_to_delete.astype(int), axis=0)
 
 np.save("%s/truncated_analytic_cov.npy"%cov_dir, full_analytic_cov)
 

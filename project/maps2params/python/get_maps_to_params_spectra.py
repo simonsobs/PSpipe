@@ -21,6 +21,8 @@ lcut = d["lcut"]
 write_all_spectra = d["write_splits_spectra"]
 include_fg = d["include_fg"]
 fg_dir = d["fg_dir"]
+nuis_params = d["nuisance_params"]
+want_seed = d["want_seed"]
 
 fg_components = d["fg_components"]
 fg_components["tt"].remove("tSZ_and_CIB")
@@ -30,7 +32,7 @@ for comp in ["tSZ", "cibc", "tSZxCIB"]:
 window_dir = "windows"
 mcm_dir = "mcms"
 noise_data_dir = "sim_data/noise_ps"
-specDir = "spectra"
+specDir = "spectra"      
 
 lmax_simu = lmax
 
@@ -51,6 +53,9 @@ subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 
 for iii in subtasks:
     #First we will generate our simulations and take their harmonics transforms
+    if want_seed == True:
+        print(iii)
+        np.random.seed(iii.astype(int))
     t0 = time.time()
 
     alms = curvedsky.rand_alm(ps_cmb, lmax=lmax_simu)
@@ -102,11 +107,22 @@ for iii in subtasks:
                 alms_beamed[1] += fglms[2*fcount+1]
 
             alms_beamed = maps_to_params_utils.multiply_alms(alms_beamed, bl, ncomp)
+            
+            #here we calibrate the T, E alms and rotate the E, B alms of each frequency, for the LAT experiment
+            if exp == "LAT":
+                cal_alms = maps_to_params_utils.calibrate_alm(alms_beamed, freq, **nuis_params)
+                print(f"Calibrating the {exp} alm by calT_{freq} = {nuis_params[f'calT_{freq}']} and calE_{freq} = {nuis_params[f'calE_{freq}']}")
+
+                sys_alms = maps_to_params_utils.rotate_alm_polang(cal_alms, freq, **nuis_params)
+                print(f"Rotating the {exp} alm by alpha_{freq} = {nuis_params[f'alpha_{freq}']} deg")
+
+            else: 
+                sys_alms = alms_beamed
 
             fcount += 1
 
             for k in range(nsplits):
-                noisy_alms = alms_beamed.copy()
+                noisy_alms = sys_alms.copy()
 
                 noisy_alms[0] +=  nlms["T",k][fid]
                 noisy_alms[1] +=  nlms["E",k][fid]

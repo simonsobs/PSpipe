@@ -91,7 +91,7 @@ for sv in surveys:
         
         if d["deconvolve_map_maker_tf_%s" % sv]:
             print("deconvolve map maker tf %s %s" % (sv, ar))
-            _, mm_tf = np.loadtxt("mm_tf_%s_%s.dat" % (sv, ar), unpack=True)
+            _, mm_tf = np.loadtxt(d["mm_tf_%s_%s.dat" % (sv, ar)], unpack=True)
             tf_array[sv, ar] *= mm_tf[:len(lb)]
             
         np.savetxt(spec_dir + "/tf_%s_%s.dat" % (sv, ar),

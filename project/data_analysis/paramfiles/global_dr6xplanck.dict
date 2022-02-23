@@ -134,18 +134,18 @@ use_toeplitz_cov = True
 
 deconvolve_map_maker_tf_dr6 = False
 
-m_m_tf_dr6_pa4_f150 = data_dir + "transfer_fcns/tf_unity.dat"
-m_m_tf_dr6_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
-m_m_tf_dr6_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
-m_m_tf_dr6_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
-m_m_tf_dr6_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
-m_m_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa4_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
 
 deconvolve_map_maker_tf_Planck = False
 
-m_m_tf_Planck_f100 = data_dir + "transfer_fcns/tf_unity.dat"
-m_m_tf_Planck_f143 = data_dir + "transfer_fcns/tf_unity.dat"
-m_m_tf_Planck_f217 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_Planck_f100 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_Planck_f143 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_Planck_f217 = data_dir + "transfer_fcns/tf_unity.dat"
 
 #plot
 range_TT = [10, 8000]

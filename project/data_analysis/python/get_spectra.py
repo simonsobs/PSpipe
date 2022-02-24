@@ -91,7 +91,7 @@ for sv in surveys:
                 inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
                 inv_pixwin_lxly = inv_pixwin_lxly.astype(np.float32)
                 pixwin_l[sv] = np.ones(2 * lmax)
-                if sv == "Planck":
+                if "planck" in sv.lower():
                     print("Deconvolve Planck pixel window function")
                     # we include this special case for Planck projected in CAR taking into account the Planck native pixellisation
                     # we should check if the projection doesn't include an extra pixel window

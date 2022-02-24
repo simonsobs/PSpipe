@@ -76,7 +76,7 @@ for sv in surveys:
     if deconvolve_pixwin:
         # extra pixel window function deconvolution for healpix and planck projected on CAR
         pixwin_l = np.ones(2 * lmax)
-        if sv == "Planck":
+        if "planck" in sv.lower():
             print("Deconvolve Planck pixel window function")
             pixwin_l = hp.pixwin(2048)
         if template.pixel == "HEALPIX":

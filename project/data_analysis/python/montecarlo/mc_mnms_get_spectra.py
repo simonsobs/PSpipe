@@ -60,9 +60,9 @@ def get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, sim_num, sv,
         for wafer_name in wafer_models:
             # mnms get_sim returns (n_arrays, 1, 3, alm_size) in current implementation
             # n_arrays will always be 2 for DR6, due to dichroics
-            sim_array0, sim_array1 = wafer_models[wafer_name].get_sim(split_num, sim_num, keep_model=False, verbose=verbose)
-            array_sims[wafer_name, 0] = sim_array0
-            array_sims[wafer_name, 1] = sim_array1
+            sim_arrays = wafer_models[wafer_name].get_sim(split_num, sim_num, keep_model=False, verbose=verbose)
+            for i, arr in enumerate(sim_arrays):
+                array_sims[wafer_name, i] = arr
 
         for arr_i, arr in enumerate(soapack_arrays):
             for ci in range(3):
@@ -149,13 +149,14 @@ array_to_wafer_and_index = dict()
 wafer_models = dict()
 if (noise_sim_type == "tiled") or (noise_sim_type == "wavelet"):
     for wafer_name in wafers:
-        array0, array1 = wafers[wafer_name]
         if (noise_sim_type == "tiled"):
-            noise_model = nm.TiledNoiseModel(array0, array1, **noise_model_parameters)
+            noise_model = nm.TiledNoiseModel(*wafers[wafer_name], **noise_model_parameters)
         elif (noise_sim_type == "wavelet"):
-            noise_model = nm.WaveletNoiseModel(array0, array1, **noise_model_parameters)
-        array_to_wafer_and_index[array0] = (wafer_name, 0)
-        array_to_wafer_and_index[array1] = (wafer_name, 1)
+            noise_model = nm.WaveletNoiseModel(*wafers[wafer_name], **noise_model_parameters)
+
+        for i, arr in enumerate(wafers[wafer_name]):
+            array_to_wafer_and_index[arr] = (wafer_name, i)
+
         wafer_models[wafer_name] = noise_model
 
 print(noise_sim_type, array_to_wafer_and_index)

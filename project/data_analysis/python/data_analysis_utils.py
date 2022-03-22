@@ -44,16 +44,24 @@ def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_fi
 
     else:
         orig_map.data *= binary.data
-        rhs    = enmap.ifft((1 - filter) * enmap.fft(orig_map.data * binary.data, normalize=True), normalize=True).real
-        div    = enmap.ifft((1 - filter) * enmap.fft(binary.data, normalize=True), normalize=True).real
+        one_mf = (1 - filter)
+        rhs    = enmap.ifft(one_mf * enmap.fft(orig_map.data, normalize=True), normalize=True).real
+        gc.collect()
+        div    = enmap.ifft(one_mf * enmap.fft(binary.data, normalize=True), normalize=True).real
+        del one_mf
+        gc.collect()
         div    = np.maximum(div, np.percentile(binary.data[::10, ::10], ref * 100) * tol)
-        orig_map.data = orig_map.data - rhs / div
+        orig_map.data -= rhs / div
+        del rhs
+        del div
+        gc.collect()
         
         if inv_pixwin_lxly is not None:
             ft = enmap.fft(orig_map.data, normalize=True)
             ft  *= inv_pixwin_lxly
             orig_map.data = enmap.ifft(ft, normalize=True).real
 
+    gc.collect()
     return orig_map
     
 def fourier_mult(orig_map, binary, fourier_array):

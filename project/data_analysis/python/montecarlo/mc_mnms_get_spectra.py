@@ -104,11 +104,21 @@ elif len(sys.argv) == 3 and sys.argv[2].isdigit():
 else:
     iStart, iStop = d["iStart"], d["iStop"]
 
+
+nametag = ""
+filter_noise = True
+
 # look for noise sim type in arguments
 for (i, arg) in enumerate(sys.argv):
     if arg == "--noisetype" and ((i+1) < len(sys.argv)):
         noise_sim_type = sys.argv[i+1]
         print(f"Changing noise sim type to \"{noise_sim_type}\"")
+    elif arg == "--nametag" and ((i+1) < len(sys.argv)):
+        nametag = sys.argv[i+1]
+        print(f"Using nametag \"{nametag}\"")
+    elif arg == "--filter_noise" and ((i+1) < len(sys.argv)):
+        filter_noise = (sys.argv[i+1].lower() == "yes")
+        print(f"Filter noise: \"{filter_noise}\"")
 
 if sim_alm_dtype == "complex64":
     sim_alm_dtype = np.complex64
@@ -286,24 +296,38 @@ for iii in subtasks:
 
             t1 = time.time()
 
+            filtered_signal = beamed_signal.copy()
+
             noisy_alms = alms.copy()
             for k in range(nsplits[sv]):
             
                 # finally we add the noise alms for each split
+                gc.collect()
                 np.copyto(noisy_alms[0], nlms["T", k][ar_id])
                 np.copyto(noisy_alms[1], nlms["E", k][ar_id])
                 np.copyto(noisy_alms[2], nlms["B", k][ar_id])
                 split = sph_tools.alm2map(noisy_alms, template[sv])
+                noise_split = split  # if we don't filter the noise, then this will be used and `split`` reassigned
 
                 # tiled and wavelet sims have no window. they don't need to be modified.
                 # gaussian sim was generated from unpixwin'd spectra, so must be repixwin'd
                 if deconvolve_pixwin and noise_sim_type == "gaussian":
                     if template[sv].pixel == "CAR":
                         data_analysis_utils.fourier_mult(split, binary, pixwin_lxly[sv])
-                split.data += beamed_signal.data
-                
+
+                if filter_noise:
+                    split.data += beamed_signal.data  # just add everything together and filter
+                else:
+                    # split = beamed_signal.copy()  # only filter signal, add noisy alms later
+                    split = filtered_signal 
+                    np.copyto(split.data, beamed_signal.data)
+                    data_analysis_utils.fourier_mult(noise_split, binary, pixwin_lxly[sv])
+
                 # from now on the simulation pipeline is done
                 # and we are back to the get_spectra algorithm
+
+                gc.collect()
+                print("Now getting filtered map, ", k)
                                 
                 if window_tuple[0].pixel == "CAR":
                     if ks_f["apply"]:
@@ -312,6 +336,10 @@ for iii in subtasks:
                                                                      filter[sv],
                                                                      inv_pixwin_lxly[sv],
                                                                      weighted_filter=ks_f["weighted"])
+
+                gc.collect()
+                if filter_noise == False:
+                    split.data += noise_split.data
                 
                 if d["remove_mean"] == True:
                     split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
@@ -354,7 +382,7 @@ for iii in subtasks:
                                                                          master_alms[sv2, ar2, s2],
                                                                          spectra=spectra)
                                                               
-                            spec_name="%s_%s_%s_%sx%s_%s_%d%d" % (noise_sim_type, type, sv1, ar1, sv2, ar2, s1, s2)
+                            spec_name="%s%s_%s_%s_%sx%s_%s_%d%d" % (nametag, noise_sim_type, type, sv1, ar1, sv2, ar2, s1, s2)
                         
                             lb, ps = so_spectra.bin_spectra(l,
                                                             ps_master,
@@ -385,7 +413,7 @@ for iii in subtasks:
 
                     for spec in spectra:
                         ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
-                        spec_name_cross = "%s_%s_%s_%sx%s_%s_cross_%05d" % (noise_sim_type, type, sv1, ar1, sv2, ar2, iii)
+                        spec_name_cross = "%s_%s_%s_%s_%sx%s_%s_cross_%05d" % (nametag, noise_sim_type, type, sv1, ar1, sv2, ar2, iii)
                     
                         if ar1 == ar2 and sv1 == sv2:
                             # Average TE / ET so that for same array same season TE = ET
@@ -393,9 +421,9 @@ for iii in subtasks:
 
                         if sv1 == sv2:
                             ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
-                            spec_name_auto = "%s_%s_%s_%sx%s_%s_auto_%05d" % (noise_sim_type, type, sv1, ar1, sv2, ar2, iii)
+                            spec_name_auto = "%s_%s_%s_%s_%sx%s_%s_auto_%05d" % (nametag, noise_sim_type, type, sv1, ar1, sv2, ar2, iii)
                             ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplits[sv1]
-                            spec_name_noise = "%s_%s_%s_%sx%s_%s_noise_%05d" % (noise_sim_type, type, sv1, ar1, sv2, ar2, iii)
+                            spec_name_noise = "%s_%s_%s_%s_%sx%s_%s_noise_%05d" % (nametag, noise_sim_type, type, sv1, ar1, sv2, ar2, iii)
 
                     so_spectra.write_ps(spec_dir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
                 

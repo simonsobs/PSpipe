@@ -84,7 +84,8 @@ for sv in surveys:
 
 # the filter also introduce E->B leakage, in order to measure it we run the scenario where there
 # is no E or B modes
-scenarios = ["standard", "noE", "noB"]
+# scenarios = ["standard", "noE", "noB"]
+scenarios = ["noE"]
 
 
 # we will use mpi over the number of simulations

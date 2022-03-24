@@ -321,7 +321,7 @@ for iii in subtasks:
                     # split = beamed_signal.copy()  # only filter signal, add noisy alms later
                     split = filtered_signal 
                     np.copyto(split.data, beamed_signal.data)
-                    data_analysis_utils.fourier_mult(noise_split, binary, pixwin_lxly[sv])
+                    data_analysis_utils.fourier_mult(noise_split, binary, inv_pixwin_lxly[sv])
 
                 # from now on the simulation pipeline is done
                 # and we are back to the get_spectra algorithm

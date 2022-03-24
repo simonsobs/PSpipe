@@ -1,0 +1,138 @@
+surveys = ["dr6"]
+
+arrays_dr6 = ["pa6_f090"]
+soapack_arrays_dr6 = ["pa6a"]
+wafers_dr6 = {"pa6": ["pa6a"]}
+
+data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/'
+map_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/maps_dr6_v3/4pass/'
+npass_dr6 = 4
+
+
+deconvolve_pixwin = True
+binning_file = data_dir + "binning/binning_dr6_new.dat"
+niter = 0
+remove_mean = False
+lmax = 5400
+type = 'Dl'
+write_splits_spectra = True
+multistep_path = data_dir
+use_toeplitz_mcm  = False
+use_toeplitz_cov  = True
+
+#window parameters
+
+ps_mask_dr6_pa4_f150 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+ps_mask_dr6_pa4_f220 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+ps_mask_dr6_pa5_f090 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+ps_mask_dr6_pa5_f150 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+ps_mask_dr6_pa6_f090 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+ps_mask_dr6_pa6_f150 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_5.0arcmin_dust_monster.fits"
+
+gal_mask_dr6_pa4_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
+gal_mask_dr6_pa4_f220 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
+gal_mask_dr6_pa5_f090 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
+gal_mask_dr6_pa5_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
+gal_mask_dr6_pa6_f090 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
+gal_mask_dr6_pa6_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
+
+
+apod_pts_source_degree = 0.3
+apod_survey_degree = 2
+skip_from_edges_degree = 1
+cross_link_threshold = 0.97
+n_med_ivar = 3
+
+# kspace filter parameters
+
+k_filter_dr6 = {"apply":True, "type":"gauss","lbounds":(4000, 5), "weighted":True, "tf":"transfer_functions/tf_custom_test.dat"}
+
+
+deconvolve_map_maker_tf_dr6 = False
+
+mm_tf_dr6_pa4_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+
+
+# maps
+
+
+src_free_maps_dr6 = True
+
+
+
+maps_dr6_pa4_f150 = [map_dir + 'cmb_night_pa4_f150_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa4_f220 = [map_dir + 'cmb_night_pa4_f220_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa5_f090 = [map_dir + 'cmb_night_pa5_f090_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa5_f150 = [map_dir + 'cmb_night_pa5_f150_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa6_f090 = [map_dir + 'cmb_night_pa6_f090_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+maps_dr6_pa6_f150 = [map_dir + 'cmb_night_pa6_f150_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
+
+
+cal_dr6_pa4_f150 = 1.0
+cal_dr6_pa4_f220 = 1.0
+cal_dr6_pa5_f090 = 1.0
+cal_dr6_pa5_f150 = 1.0
+cal_dr6_pa6_f090 = 1.0
+cal_dr6_pa6_f150 = 1.0
+
+nu_eff_dr6_pa4_f150 = 150
+nu_eff_dr6_pa4_f220 = 220
+nu_eff_dr6_pa5_f090 = 90
+nu_eff_dr6_pa5_f150 = 150
+nu_eff_dr6_pa6_f090 = 90
+nu_eff_dr6_pa6_f150 = 150
+
+
+beam_dr6_pa4_f150 = data_dir + 'beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa4_f220 = data_dir + 'beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f090 = data_dir + 'beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f150 = data_dir + 'beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa6_f090 = data_dir + 'beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa6_f150 = data_dir + 'beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
+window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
+
+window_T_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220.fits"
+window_pol_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220.fits"
+
+window_T_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090.fits"
+window_pol_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090.fits"
+
+window_T_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150.fits"
+window_pol_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150.fits"
+
+window_T_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090.fits"
+window_pol_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090.fits"
+
+window_T_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
+window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
+
+
+# best fit params (only used for sim generation and covariances computation)
+cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+fg_components =  ["cibc", "cibp", "kSZ", "radio", "tSZ"]
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 2.79, "a_gte": 0.36, "a_gee": 0.13, "a_psee": 0.05, "a_pste": 0, "xi": 0.1, "T_d": 9.60}
+
+#sim
+iStart = 0
+iStop = 0
+iMultiple = 8
+sim_alm_dtype = "complex64"
+noise_sim_type = "gaussian"
+noise_model_parameters = {"downgrade": 4, "lmax": 5400, "notes": "20220214", "mask_name": "dr6v3_default_union_mask", "union_sources": "20210209_sncut_10_aggressive", "kfilt_lbounds":[4000.0,5.0]}
+
+
+#plot
+range_TT = [10, 8000]
+range_TE = [-150, 150]
+range_ET = [-150, 150]
+range_EE = [-20, 50]
+
+planck_data_dir = data_dir + "planck_data/"

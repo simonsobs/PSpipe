@@ -9,3 +9,5 @@ covariances/
 sq_win_alms/
 alms/
 .vscode/
+transfer_functions/
+sim_spectra_for_tf/

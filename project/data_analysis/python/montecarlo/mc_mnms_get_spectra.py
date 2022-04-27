@@ -236,8 +236,8 @@ for iii in subtasks:
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
     # fglms will be of shape (nfreq, lm) and is T only
     
-    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, dtype=sim_alm_dtype)
-    fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, dtype=sim_alm_dtype)
+    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, seed=(iii, 101), dtype=sim_alm_dtype)
+    fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, seed=(iii, 102), dtype=sim_alm_dtype)
     
     master_alms = {}
     nsplits = {}

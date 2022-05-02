@@ -138,7 +138,7 @@ for sv in surveys:
 
 
 ############ let's generate the best fits ############
-os.system("python ../get_best_fit_mflike.py global_test.dict")
+os.system("python get_best_fit_mflike.py global_test.dict")
 
 
 ############ let's generate some simulations ############

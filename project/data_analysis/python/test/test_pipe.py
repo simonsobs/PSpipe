@@ -61,7 +61,7 @@ count = 0
 for sv in surveys:
     f.write("############# \n")
     f.write("arrays_%s = %s \n"  % (sv, arrays[sv]))
-    f.write("k_filter_%s = {'apply':True, 'type':'binary_cross','vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'tf': 'analytic'} \n" % sv)
+    f.write("k_filter_%s = {'apply':True, 'type':'binary_cross','vk_mask':[-50, 50], 'hk_mask':[-50, 50], 'weighted':False, 'tf': 'analytic'} \n" % sv)
     f.write("deconvolve_map_maker_tf_%s = False \n" % sv)
     f.write("src_free_maps_%s = False \n" % sv)
     f.write(" \n")
@@ -89,7 +89,7 @@ test_dir = "test_data"
 pspy_utils.create_directory(test_dir)
 
 ############ let's generate the test binning file ############
-pspy_utils.create_binning_file(bin_size=40, n_bins=300, file_name="%s/binning_test.dat" % test_dir)
+pspy_utils.create_binning_file(bin_size=100, n_bins=300, file_name="%s/binning_test.dat" % test_dir)
 
 ############ let's generate the beams ############
 beam_fwhm = {}

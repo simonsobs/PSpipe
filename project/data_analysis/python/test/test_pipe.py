@@ -7,15 +7,15 @@ import os
 
 np.random.seed(0)
 
-# we choose to be general, so 2 seasons and 2 arrays
-# the map template for the test is a 60 x 40 sq degree CAR patch with 5 arcmin resolution
+# we choose to be general, so 2 seasons and 3 arrays
+# the map template for the test is a 40 x 40 sq degree CAR patch with 3 arcmin resolution
 
 surveys = ["sv1", "sv2"]
 arrays = {}
 arrays["sv1"] = ["pa1", "pa2"]
 arrays["sv2"]= ["pa3"]
 ra0, ra1, dec0, dec1 = -20, 20, -20, 20
-res = 6
+res = 3
 lmax = int(500 * (6 / res)) # this is adhoc but should work fine
 n_ar = 3
 nu_eff = [90, 150, 220]

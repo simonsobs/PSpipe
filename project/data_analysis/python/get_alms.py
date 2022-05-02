@@ -62,13 +62,12 @@ for task in subtasks:
             print("you need to specify a valid filter type")
             sys.exit()
             
-    if deconvolve_pixwin:
+    if (deconvolve_pixwin == True) & (win_T.pixel == "CAR"):
         # deconvolve the CAR pixel function in fourier space
-        if win_T.pixel == "CAR":
-            wy, wx = enmap.calc_window(win_T.data.shape)
-            inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
-        else:
-            inv_pixwin_lxly = None
+        wy, wx = enmap.calc_window(win_T.data.shape)
+        inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
+    else:
+        inv_pixwin_lxly = None
             
     maps = d["maps_%s_%s" % (sv, ar)]
     cal = d["cal_%s_%s" % (sv, ar)]

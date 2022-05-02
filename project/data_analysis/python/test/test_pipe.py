@@ -9,7 +9,7 @@ np.random.seed(0)
 
 # we choose to be general, so 2 seasons and 3 arrays
 # the map template for the test is a 40 x 40 sq degree CAR patch with 3 arcmin resolution
-
+plot_test = True
 surveys = ["sv1", "sv2"]
 arrays = {}
 arrays["sv1"] = ["pa1", "pa2"]
@@ -19,13 +19,13 @@ res = 3
 lmax = int(500 * (6 / res)) # this is adhoc but should work fine
 n_ar = 3
 nu_eff = [90, 150, 220]
-spectra = ['TT','TE','TB','ET','BT','EE','EB','BE','BB']
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 rms_uKarcmin = {}
 rms_uKarcmin["sv1", "pa1xpa1"] = 20
 rms_uKarcmin["sv1", "pa2xpa2"] = 40
 rms_uKarcmin["sv1", "pa1xpa2"] = 0
 rms_uKarcmin["sv2", "pa3xpa3"] = 60
-sim_alm_dtype = 'complex64'
+sim_alm_dtype = "complex64"
 nsplits = 2
 ncomp = 3
 noise_model_dir = "noise_model"
@@ -183,7 +183,7 @@ for sv in surveys:
 
         count += 1
 
-
+# for now you need to manually copy the script in the test directory
 os.system("python get_mcm_and_bbl_mpi.py global_test.dict")
 os.system("python get_alms.py global_test.dict")
 os.system("python get_spectra_from_alms.py global_test.dict")
@@ -193,3 +193,57 @@ os.system("python fast_cov_get_sq_windows_alms.py global_test.dict")
 os.system("python fast_cov_get_covariance.py global_test.dict")
 os.system("python get_beam_covariance.py global_test.dict")
 
+# now we compare the products produced with your scripts to the reference data
+spec_name = []
+for id_sv1, sv1 in enumerate(surveys):
+    for id_ar1, ar1 in enumerate(arrays[sv1]):
+        for id_sv2, sv2 in enumerate(surveys):
+            for id_ar2, ar2 in enumerate(arrays[sv2]):
+                if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
+                if  (id_sv1 > id_sv2) : continue
+                spec_name += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
+
+if plot_test == True:
+    plot_dir = "test_plot"
+    pspy_utils.create_directory("test_plot")
+
+for sid1, spec1 in enumerate(spec_name):
+
+    my_l, my_ps = so_spectra.read_ps("spectra/Dl_%s_cross.dat" % spec1, spectra=spectra)
+    l_ref, ps_ref = so_spectra.read_ps("ref_data/Dl_%s_cross.dat" % spec1, spectra=spectra)
+
+    for field in spectra:
+        print("spectra", spec1, field, np.isclose(my_ps[field], ps_ref[field], rtol=1e-05, atol=1e-08, equal_nan=False))
+        if plot_test == True:
+            plt.figure(figsize=(12,12))
+            plt.subplot(2,1,1)
+            plt.plot(my_l, my_ps[field], ".", label=" my ps %s" % spec1)
+            plt.plot(l_ref, ps_ref[field], label="reference %s" % spec1)
+            plt.legend()
+            plt.subplot(2,1,2)
+            plt.plot(my_l, my_ps[field]/ps_ref[field], label=" my ps/ps ref")
+            plt.legend()
+            plt.savefig("%s/%s_%s.png" % (plot_dir, spec1, field), bbox_inches="tight")
+            plt.clf()
+            plt.close()
+
+    for sid2, spec2 in enumerate(spec_name):
+        if sid1 > sid2: continue
+
+        my_analytic_cov = np.load("covariances/analytic_cov_%s_%s.npy" % (spec1, spec2))
+        analytic_cov_ref = np.load("ref_data/analytic_cov_%s_%s.npy" % (spec1, spec2))
+        
+        print("covariances", spec1, spec2, np.isclose(my_analytic_cov.diagonal(), analytic_cov_ref.diagonal(), rtol=1e-05, atol=1e-08, equal_nan=False))
+        if plot_test == True:
+            plt.figure(figsize=(12,12))
+            plt.subplot(2,1,1)
+            plt.semilogy()
+            plt.plot(my_analytic_cov.diagonal(), ".", label=" my cov %s %s" % (spec1, spec2))
+            plt.plot(analytic_cov_ref.diagonal(), label="reference %s %s" % (spec1, spec2))
+            plt.legend()
+            plt.subplot(2,1,2)
+            plt.plot(my_analytic_cov.diagonal()/analytic_cov_ref.diagonal(), label=" my cov/cov ref")
+            plt.legend()
+            plt.savefig("%s/analytic_cov_diag_%s_%s.png" % (plot_dir, spec1, spec2), bbox_inches="tight")
+            plt.clf()
+            plt.close()

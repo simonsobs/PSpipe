@@ -10,7 +10,7 @@ from pspy import pspy_utils, so_cov, so_spectra, so_mcm, so_map_preprocessing
 from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 from pixell import enmap
-
+import gc
 
 def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_filter=False, tol=1e-4, ref=0.9):
 

@@ -226,11 +226,10 @@ for sid1, spec1 in enumerate(spec_name):
         check = np.isclose(mcm, mcm_ref, rtol=rtol, atol=atol, equal_nan=False)
         if check.all():
             print("mcm %s" % spin, spec1, u'\u2713')
-            ntest += 1
             ntest_success += 1
         else:
             print("mcm %s" % spin, spec1, check)
-            ntest += 1
+        ntest += 1
 
     my_l, my_ps = so_spectra.read_ps("spectra/Dl_%s_cross.dat" % spec1, spectra=spectra)
     l_ref, ps_ref = so_spectra.read_ps("ref_data/Dl_%s_cross.dat" % spec1, spectra=spectra)
@@ -239,11 +238,10 @@ for sid1, spec1 in enumerate(spec_name):
         check = np.isclose(my_ps[field], ps_ref[field], rtol=rtol, atol=atol, equal_nan=False)
         if check.all():
             print("spectra", spec1, field, u'\u2713')
-            ntest += 1
             ntest_success += 1
         else:
             print("spectra", spec1, field, check)
-            ntest += 1
+        ntest += 1
 
         if plot_test == True:
             plt.figure(figsize=(12,12))
@@ -268,13 +266,10 @@ for sid1, spec1 in enumerate(spec_name):
 
         if check.all():
             print("covariances", spec1, spec2, u'\u2713')
-            ntest += 1
             ntest_success += 1
-
         else:
             print("covariances", spec1, spec2, check)
-            ntest += 1
-
+        ntest += 1
 
         if plot_test == True:
             plt.figure(figsize=(12,12))

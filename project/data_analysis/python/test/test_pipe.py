@@ -4,6 +4,7 @@ from pspy import so_map, so_window, so_mcm, sph_tools, so_spectra, pspy_utils
 from pixell import curvedsky, powspec
 import data_analysis_utils
 import os
+import pickle
 
 np.random.seed(0)
 
@@ -215,6 +216,8 @@ print("")
 print("comparison with reference data set")
 print("")
 
+ref_data = pickle.load(open("ref_data/trial_data.pkl", "rb"))
+
 ntest = 0
 ntest_success = 0
 
@@ -222,9 +225,8 @@ for sid1, spec1 in enumerate(spec_name):
 
     for spin in spin_pairs:
         mcm = np.load("mcms/%s_mbb_inv_%s.npy" % (spec1, spin))
-        mcm_ref = np.load("ref_data/%s_mbb_inv_%s.npy" % (spec1, spin))
 
-        check = np.isclose(mcm, mcm_ref, rtol=rtol, atol=atol, equal_nan=False)
+        check = np.isclose(mcm, ref_data["mcm", spec1, spin], rtol=rtol, atol=atol, equal_nan=False)
         if check.all():
             print("mcm %s" % spin, spec1, u'\u2713')
             ntest_success += 1
@@ -233,7 +235,7 @@ for sid1, spec1 in enumerate(spec_name):
         ntest += 1
 
     my_l, my_ps = so_spectra.read_ps("spectra/Dl_%s_cross.dat" % spec1, spectra=spectra)
-    l_ref, ps_ref = so_spectra.read_ps("ref_data/Dl_%s_cross.dat" % spec1, spectra=spectra)
+    ps_ref = ref_data["spectra", spec1]
 
     for field in spectra:
         check = np.isclose(my_ps[field], ps_ref[field], rtol=rtol, atol=atol, equal_nan=False)
@@ -248,7 +250,7 @@ for sid1, spec1 in enumerate(spec_name):
             plt.figure(figsize=(12,12))
             plt.subplot(2,1,1)
             plt.plot(my_l, my_ps[field], ".", label=" my ps %s" % spec1)
-            plt.plot(l_ref, ps_ref[field], label="reference %s" % spec1)
+            plt.plot(my_l, ps_ref[field], label="reference %s" % spec1)
             plt.legend()
             plt.subplot(2,1,2)
             plt.plot(my_l, my_ps[field]/ps_ref[field], label=" my ps/ps ref")
@@ -261,7 +263,7 @@ for sid1, spec1 in enumerate(spec_name):
         if sid1 > sid2: continue
 
         my_analytic_cov = np.load("covariances/analytic_cov_%s_%s.npy" % (spec1, spec2))
-        analytic_cov_ref = np.load("ref_data/analytic_cov_%s_%s.npy" % (spec1, spec2))
+        analytic_cov_ref = ref_data["analytic_cov", spec1, spec2]
         
         check = np.isclose(my_analytic_cov, analytic_cov_ref, rtol=rtol, atol=atol, equal_nan=False)
 

@@ -10,6 +10,8 @@ np.random.seed(0)
 # we choose to be general, so 2 seasons and 3 arrays
 # the map template for the test is a 40 x 40 sq degree CAR patch with 3 arcmin resolution
 plot_test = True
+rtol = 1e-05 # relative tolerance with respect to the reference data set
+atol = 1e-08 # absolute tolerance with respect to the reference data set
 surveys = ["sv1", "sv2"]
 arrays = {}
 arrays["sv1"] = ["pa1", "pa2"]
@@ -28,6 +30,7 @@ rms_uKarcmin["sv2", "pa3xpa3"] = 60
 sim_alm_dtype = "complex64"
 nsplits = 2
 ncomp = 3
+spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 noise_model_dir = "noise_model"
 bestfit_dir = "best_fits"
 window_dir = "windows"
@@ -207,13 +210,41 @@ if plot_test == True:
     plot_dir = "test_plot"
     pspy_utils.create_directory("test_plot")
 
+print("")
+print("comparison with reference data set")
+print("")
+
+ntest = 0
+ntest_success = 0
+
 for sid1, spec1 in enumerate(spec_name):
+
+    for spin in spin_pairs:
+        mcm = np.load("mcms/%s_mbb_inv_%s.npy" % (spec1, spin))
+        mcm_ref = np.load("ref_data/%s_mbb_inv_%s.npy" % (spec1, spin))
+
+        check = np.isclose(mcm, mcm_ref, rtol=rtol, atol=atol, equal_nan=False)
+        if check.all():
+            print("mcm %s" % spin, spec1, u'\u2713')
+            ntest += 1
+            ntest_success += 1
+        else:
+            print("mcm %s" % spin, spec1, check)
+            ntest += 1
 
     my_l, my_ps = so_spectra.read_ps("spectra/Dl_%s_cross.dat" % spec1, spectra=spectra)
     l_ref, ps_ref = so_spectra.read_ps("ref_data/Dl_%s_cross.dat" % spec1, spectra=spectra)
 
     for field in spectra:
-        print("spectra", spec1, field, np.isclose(my_ps[field], ps_ref[field], rtol=1e-05, atol=1e-08, equal_nan=False))
+        check = np.isclose(my_ps[field], ps_ref[field], rtol=rtol, atol=atol, equal_nan=False)
+        if check.all():
+            print("spectra", spec1, field, u'\u2713')
+            ntest += 1
+            ntest_success += 1
+        else:
+            print("spectra", spec1, field, check)
+            ntest += 1
+
         if plot_test == True:
             plt.figure(figsize=(12,12))
             plt.subplot(2,1,1)
@@ -233,7 +264,18 @@ for sid1, spec1 in enumerate(spec_name):
         my_analytic_cov = np.load("covariances/analytic_cov_%s_%s.npy" % (spec1, spec2))
         analytic_cov_ref = np.load("ref_data/analytic_cov_%s_%s.npy" % (spec1, spec2))
         
-        print("covariances", spec1, spec2, np.isclose(my_analytic_cov.diagonal(), analytic_cov_ref.diagonal(), rtol=1e-05, atol=1e-08, equal_nan=False))
+        check = np.isclose(my_analytic_cov, analytic_cov_ref, rtol=rtol, atol=atol, equal_nan=False)
+
+        if check.all():
+            print("covariances", spec1, spec2, u'\u2713')
+            ntest += 1
+            ntest_success += 1
+
+        else:
+            print("covariances", spec1, spec2, check)
+            ntest += 1
+
+
         if plot_test == True:
             plt.figure(figsize=(12,12))
             plt.subplot(2,1,1)
@@ -247,3 +289,8 @@ for sid1, spec1 in enumerate(spec_name):
             plt.savefig("%s/analytic_cov_diag_%s_%s.png" % (plot_dir, spec1, spec2), bbox_inches="tight")
             plt.clf()
             plt.close()
+
+print("")
+print("Summary of the tests")
+print("")
+print("%d tests succesful for %d tests total" % (ntest_success, ntest))

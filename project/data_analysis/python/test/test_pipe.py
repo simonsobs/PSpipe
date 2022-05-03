@@ -27,6 +27,10 @@ rms_uKarcmin["sv1", "pa1xpa1"] = 20
 rms_uKarcmin["sv1", "pa2xpa2"] = 40
 rms_uKarcmin["sv1", "pa1xpa2"] = 0
 rms_uKarcmin["sv2", "pa3xpa3"] = 60
+beam_fwhm = {}
+beam_fwhm[90] = 10
+beam_fwhm[150] = 6
+beam_fwhm[220] = 4.
 sim_alm_dtype = "complex64"
 nsplits = 2
 ncomp = 3
@@ -95,10 +99,7 @@ pspy_utils.create_directory(test_dir)
 pspy_utils.create_binning_file(bin_size=100, n_bins=300, file_name="%s/binning_test.dat" % test_dir)
 
 ############ let's generate the beams ############
-beam_fwhm = {}
-beam_fwhm[90] = 10
-beam_fwhm[150] = 6
-beam_fwhm[220] = 4.
+
 count = 0
 for sv in surveys:
     for ar in arrays[sv]:

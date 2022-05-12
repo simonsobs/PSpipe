@@ -8,11 +8,6 @@ import numpy as np
 import pylab as plt
 import sys, os
 
-def test_matrix(mat):
-    print ("is matrix positive definite:", data_analysis_utils.is_pos_def(mat))
-    print ("is matrix symmetric :", data_analysis_utils.is_symmetric(mat))
-
-
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
@@ -68,21 +63,19 @@ for spec in my_spectra:
 cov_mat = np.load("%s/truncated_analytic_cov.npy" % cov_dir)
 P_mat = np.load("%s/projection_matrix_x_ar_to_x_freq.npy" % cov_dir)
 
-print("invert cov mat")
-inv_cov_mat = np.linalg.inv(cov_mat)
 
-proj_cov_mat = np.linalg.inv(np.dot(np.dot(P_mat, inv_cov_mat), P_mat.T))
-proj_data_vec = np.dot(proj_cov_mat, np.dot(P_mat, np.dot(inv_cov_mat, data_vec)))
+proj_cov_mat, proj_data_vec = pspy_utils.maximum_likelihood_combination(cov_mat,
+                                                                        P_mat,
+                                                                        data_vec,
+                                                                        test_matrix=True)
 
 np.savetxt("%s/data_vec.dat" % like_product_dir, proj_data_vec)
-
-test_matrix(proj_cov_mat)
 np.save("%s/combined_analytic_cov.npy" % like_product_dir, proj_cov_mat)
 
 # this is a test: force the covariance matrix to be symmetric
 proj_cov_mat_forcesim = np.tril(proj_cov_mat) + np.triu(proj_cov_mat.T, 1)
 
-test_matrix(proj_cov_mat_forcesim)
+
 np.save("%s/combined_analytic_cov_forcesim.npy" % like_product_dir, proj_cov_mat_forcesim)
 print(np.max(proj_cov_mat-proj_cov_mat_forcesim))
 
@@ -110,13 +103,13 @@ for s1, spec in enumerate(my_spectra):
 # for this we need the final projection matrix
 
 P_mat_final = np.load("%s/projection_matrix_x_freq_to_final.npy" % cov_dir)
-inv_proj_cov_mat = np.linalg.inv(proj_cov_mat)
+final_cov_mat, final_data_vec = pspy_utils.maximum_likelihood_combination(proj_cov_mat,
+                                                                          P_mat_final,
+                                                                          proj_data_vec,
+                                                                          test_matrix=True)
 
-final_cov_mat = np.linalg.inv(np.dot(np.dot(P_mat_final, inv_proj_cov_mat), P_mat_final.T))
-final_data_vec = np.dot(final_cov_mat, np.dot(P_mat_final, np.dot(inv_proj_cov_mat, proj_data_vec)))
 
 np.savetxt("%s/data_vec_final.dat" % like_product_dir, final_data_vec)
-test_matrix(final_cov_mat)
 np.save("%s/final_analytic_cov.npy" % like_product_dir, final_cov_mat)
 
 count = 0

@@ -29,7 +29,7 @@ jobs:
     - name: Ubuntu dependencies
       if: matrix.os == 'ubuntu-latest'
       run: |
-        sudo apt-get install libcfitsio-dev
+        sudo apt-get install -y libcfitsio-dev libfftw3-dev
 
     - name: Install dependencies via pip
       run: |

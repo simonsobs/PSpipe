@@ -27,7 +27,7 @@ jobs:
         gfortran --version
 
     - name: Ubuntu dependencies
-      if: matrix-os == 'ubuntu'
+      if: matrix.os == 'ubuntu'
       run: |
         sudo apt-get install cfitsio
 

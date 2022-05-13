@@ -39,3 +39,4 @@ jobs:
     - name: Testing pspipe
       run: |
         python -m unittest pspipe/tests/test_pspipe.py
+        python -m unittest pspipe/tests/test_pspy_namaster.py

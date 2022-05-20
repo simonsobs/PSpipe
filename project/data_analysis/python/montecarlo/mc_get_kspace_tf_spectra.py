@@ -4,7 +4,7 @@ This is essentially a much simpler version of mc_get_spectra.py, since it doesn'
 different splits of the data
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
+from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi, so_map_preprocessing
 import numpy as np
 import sys
 import data_analysis_utils
@@ -59,9 +59,28 @@ ncomp = 3
 ps_cmb = powspec.read_spectrum("%s/lcdm.dat" % bestfit_dir)[:ncomp, :ncomp]
 l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lmax)
 
-# the template for the simulations
-template = d["maps_%s_%s" % (surveys[0], arrays[0])][0]
-template = so_map.read_map(template)
+# prepare the filters
+
+template = {}
+filter = {}
+for sv in surveys:
+
+    template_name = d["maps_%s_%s" % (sv, arrays[0])][0]
+    template[sv] = so_map.read_map(template_name)
+    ks_f = d["k_filter_%s" % sv]
+    
+    assert (template[sv].pixel == "CAR"), "we only compute kspace tf in CAR pixellisation"
+    assert (ks_f["apply"] == True), "the filter keyword apply has to be set to True"
+
+    shape, wcs = template[sv].data.shape, template[sv].data.wcs
+    if ks_f["type"] == "binary_cross":
+        filter[sv] = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=ks_f["vk_mask"], hk_mask=ks_f["hk_mask"], dtype=np.float64)
+    elif ks_f["type"] == "gauss":
+        filter[sv] = so_map_preprocessing.build_sigurd_filter(shape, wcs, ks_f["lbounds"], dtype=np.float64)
+    else:
+        print("you need to specify a valid filter type")
+
+
 
 # the filter also introduce E->B leakage, in order to measure it we run the scenario where there
 # is no E or B modes
@@ -89,6 +108,8 @@ for iii in subtasks:
         for sv in surveys:
         
             arrays = d["arrays_%s" % sv]
+            ks_f = d["k_filter_%s" % sv]
+
         
             for ar_id, ar in enumerate(arrays):
         
@@ -112,7 +133,7 @@ for iii in subtasks:
 
             
                 # generate our signal only sim
-                split = sph_tools.alm2map(alms_beamed, template)
+                split = sph_tools.alm2map(alms_beamed, template[sv])
             
                 # compute the alms of the sim
                 
@@ -121,16 +142,12 @@ for iii in subtasks:
                 # apply the k-space filter
 
                 binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                split = data_analysis_utils.get_filtered_map(split,
-                                                            binary,
-                                                            vk_mask=d["vk_mask"],
-                                                            hk_mask=d["hk_mask"],
-                                                            normalize=False)
-                                                         
+                
+                split = data_analysis_utils.get_filtered_map(split, binary, filter[sv], weighted_filter=ks_f["weighted"])
+
                 # compute the alms of the filtered sim
 
                 master_alms[sv, ar, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
-                master_alms[sv, ar, "filter"] /= (split.data.shape[1]*split.data.shape[2])
                 
                 print(scenario, sv, ar, time.time()-t0)
 

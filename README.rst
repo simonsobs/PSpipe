@@ -16,7 +16,7 @@ The package
 telescope of the Simons Observatory. It contains tools for estimating power spectra and a
 multi-frequency likelihood interfaced with the ``cobaya`` MCMC sampler.
 
-The pipelines are mainly written in python and make use of three different codes
+The pipelines are mainly written in python and make use of three different codes,
 
 * ``pspy`` : python library for power spectrum estimation (https://github.com/simonsobs/pspy)
 * ``namaster`` : C library + python wrapper for power spectrum estimation (https://github.com/LSSTDESC/NaMaster)
@@ -44,7 +44,7 @@ dependencies by doing
 
 .. code:: shell
 
-   $ pip install --user git+https://simonsobs/PSpipe.git
+   $ pip install --user git+https://github.com/simonsobs/PSpipe.git
 
 If you plan to develop or want to use the different projects, it is better to checkout the latest
 version by doing

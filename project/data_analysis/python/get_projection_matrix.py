@@ -118,16 +118,41 @@ for c_id, cross_freq in enumerate(cross_freq_list):
 
 # We then glue together the TT - TE - EE projectors
 
-shape_x = Pmat.shape[0]
-shape_y = Pmat.shape[1]
-shape_TE_x = Pmat_TE.shape[0]
-shape_TE_y = Pmat_TE.shape[1]
+shape_x, shape_y = Pmat.shape
+shape_TE_x, shape_TE_y = Pmat_TE.shape
 
 full_Pmat = np.zeros((2 * shape_x + shape_TE_x, 2 * shape_y + shape_TE_y))
 full_Pmat[:shape_x,:shape_y] = Pmat
 full_Pmat[shape_x: shape_x + shape_TE_x, shape_y: shape_y + shape_TE_y] = Pmat_TE
 full_Pmat[shape_x + shape_TE_x: 2 * shape_x + shape_TE_x, shape_y + shape_TE_y: 2 * shape_y + shape_TE_y] = Pmat
 
-so_cov.plot_cov_matrix(full_Pmat, file_name="%s/P_mat" % cov_plot_dir)
+so_cov.plot_cov_matrix(full_Pmat, file_name="%s/P_mat_x_ar_to_x_freq" % cov_plot_dir)
 
-np.save("%s/projection_matrix.npy" % cov_dir, full_Pmat)
+np.save("%s/projection_matrix_x_ar_to_x_freq.npy" % cov_dir, full_Pmat)
+
+
+# once the different cross arrays spectra are combined, we might want to combine all TE and EE together
+# at least for plotting since fg are small, here we build the corresponding P matrix to do so
+# it will be used to combine the different cross frequency spectra for TE and EE in a single spectrum
+
+Pmat_TT = np.zeros((n_cross_freq * n_bins, n_cross_freq * n_bins))
+Pmat_EE = np.zeros((n_bins, n_cross_freq * n_bins))
+Pmat_TE = np.zeros((n_bins, n_cross_freq_TE * n_bins))
+
+for i in range(n_cross_freq):
+    Pmat_EE[:, n_bins * i:n_bins * (i + 1)] = np.identity(n_bins)
+    Pmat_TT[n_bins * i:n_bins * (i + 1), n_bins * i:n_bins * (i + 1)] = np.identity(n_bins)
+for i in range(n_cross_freq_TE):
+    Pmat_TE[:, n_bins * i:n_bins * (i + 1)] = np.identity(n_bins)
+
+s_TT_x, s_TT_y = Pmat_TT.shape
+s_EE_x, s_EE_y = Pmat_EE.shape
+s_TE_x, s_TE_y = Pmat_TE.shape
+
+full_Pmat = np.zeros((s_TT_x + s_TE_x + s_EE_x, s_TT_y + s_TE_y + s_EE_y))
+full_Pmat[:s_TT_x,:s_TT_y] = Pmat_TT
+full_Pmat[s_TT_x: s_TT_x + s_TE_x, s_TT_y: s_TT_y + s_TE_y] = Pmat_TE
+full_Pmat[s_TT_x + s_TE_x: s_TT_x + s_TE_x + s_EE_x, s_TT_y + s_TE_y: s_TT_y + s_TE_y + s_EE_y] = Pmat_EE
+
+so_cov.plot_cov_matrix(full_Pmat, file_name="%s/P_mat_x_freq_to_final" % cov_plot_dir)
+np.save("%s/projection_matrix_x_freq_to_final.npy" % cov_dir, full_Pmat)

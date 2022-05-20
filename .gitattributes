@@ -1,1 +1,3 @@
 pspipe/_version.py export-subst
+notebooks/* linguist-vendored
+*.ipynb linguist-vendored

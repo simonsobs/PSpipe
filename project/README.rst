@@ -25,7 +25,7 @@ This folder contains codes that can be used for the reproduction of the planck r
 It also contains different scripts generating and analysing simulations of the Planck data.
 
 
-correlation_coeff 
+old/correlation_coeff 
 =================
 
 This folder contains the code used for this analysis: https://arxiv.org/abs/1909.03967 (now published in PRD).

@@ -1,0 +1,44 @@
+
+scratch = "/tigress/zequnl/planck"
+
+[debug]
+[general]
+name = "pr3"
+nside = 2048
+
+[map]
+"P100hm1" = "HFI_SkyMap_100_2048_R3.01_halfmission-1.fits"
+"P100hm2" = "HFI_SkyMap_100_2048_R3.01_halfmission-2.fits"
+"P143hm1" = "HFI_SkyMap_143_2048_R3.01_halfmission-1.fits"
+"P143hm2" = "HFI_SkyMap_143_2048_R3.01_halfmission-2.fits"
+"P217hm1" = "HFI_SkyMap_217_2048_R3.01_halfmission-1.fits"
+"P217hm2" = "HFI_SkyMap_217_2048_R3.01_halfmission-2.fits"
+
+[maskT]
+"P100hm1" = "COM_Mask_Likelihood-temperature-100-hm1_2048_R3.00.fits"
+"P100hm2" = "COM_Mask_Likelihood-temperature-100-hm2_2048_R3.00.fits"
+"P143hm1" = "COM_Mask_Likelihood-temperature-143-hm1_2048_R3.00.fits"
+"P143hm2" = "COM_Mask_Likelihood-temperature-143-hm2_2048_R3.00.fits"
+"P217hm1" = "COM_Mask_Likelihood-temperature-217-hm1_2048_R3.00.fits"
+"P217hm2" = "COM_Mask_Likelihood-temperature-217-hm2_2048_R3.00.fits"
+
+[maskP]
+"P100hm1" = "COM_Mask_Likelihood-polarization-100-hm1_2048_R3.00.fits"
+"P100hm2" = "COM_Mask_Likelihood-polarization-100-hm2_2048_R3.00.fits"
+"P143hm1" = "COM_Mask_Likelihood-polarization-143-hm1_2048_R3.00.fits"
+"P143hm2" = "COM_Mask_Likelihood-polarization-143-hm2_2048_R3.00.fits"
+"P217hm1" = "COM_Mask_Likelihood-polarization-217-hm1_2048_R3.00.fits"
+"P217hm2" = "COM_Mask_Likelihood-polarization-217-hm2_2048_R3.00.fits"
+
+[poleff]
+"P100hm1" = 0.9995 
+"P143hm1" = 0.999
+"P217hm1" = 0.999
+"P100hm2" = 0.9995 
+"P143hm2" = 0.999
+"P217hm2" = 0.999
+
+[url]
+maps = "https://irsa.ipac.caltech.edu/data/Planck/release_3/all-sky-maps/maps/"
+masks = "https://irsa.ipac.caltech.edu/data/Planck/release_3/ancillary-data/masks/"
+beams = "https://irsa.ipac.caltech.edu/data/Planck/release_3/ancillary-data/"

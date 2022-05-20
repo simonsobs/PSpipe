@@ -143,7 +143,7 @@ for exp in ["LAT", "Planck"]:
     for f in my_freqs:
         l, bl[exp + f] = pspy_utils.beam_from_fwhm(beam_fwhm[exp + '_' + f], ell_max)
         np.savetxt("sim_data/beams/beam_%s_%s.dat" % (exp,f), np.transpose([l, bl[exp + f] ]))
-        
+
         plt.plot(l, bl[exp + f] , linestyle=linestyle[exp], label="%s_%s" % (exp, f))
         plt.xlabel(r"$\ell$", fontsize=22)
         plt.ylabel(r"$b_{\ell}$", fontsize=22)
@@ -162,7 +162,12 @@ cosmo_params =  d["cosmo_params"]
 camb_cosmo = {k: v for k, v in cosmo_params.items()
               if k not in ["logA", "As"]}
 camb_cosmo.update({"As": 1e-10*np.exp(cosmo_params["logA"]),
-                   "lmax": ell_max, "lens_potential_accuracy": 1})
+                   "lmax": ell_max,
+                   "lens_potential_accuracy": d["lens_potential_accuracy"],
+                   "lens_margin": d["lens_margin"],
+                   "AccuracyBoost": d["AccuracyBoost"],
+                   "lSampleBoost": d["lSampleBoost"],
+                   "lAccuracyBoost": d["lAccuracyBoost"]})
 pars = camb.set_params(**camb_cosmo)
 results = camb.get_results(pars)
 
@@ -179,98 +184,112 @@ cosmo_fg_dir=("sim_data/cosmo_and_fg")
 pspy_utils.create_directory(cosmo_fg_dir)
 np.savetxt("%s/cosmo_spectra.dat"% cosmo_fg_dir, np.transpose([ell, dls["tt"], dls["ee"], dls["bb"], dls["te"]]))
 
-print(ell)
-
-plt.figure(figsize=(12, 12))
+fig, ax = plt.subplots(2, 1, figsize = (12, 12))
 for exp in ["LAT", "Planck"]:
     my_freqs = freqs[exp]
     for cross in cwr(my_freqs, 2):
         f1, f2 = cross
         name = "%s_%sx%s_%s"%(exp,f1,exp,f2)
-        
+
         fac = ell * (ell + 1) / (2 * np.pi)
-        
+
         if (len(np.nonzero(n_ell_t[name])[0])) != 0:  # plot only the spectra that are non zero
 
-            plt.subplot(2, 1, 1)
-            plt.semilogy()
-            plt.ylim(1, 10**5)
-            plt.plot(ell, dls["tt"], color='black')
-            print(ell.shape)
-            print(n_ell_t[name].shape)
-            print(bl[exp + f1].shape)
-            plt.plot(ell, n_ell_t[name] * fac / (bl[exp + f1] * bl[exp + f2]),
+            ax[0].set_yscale("symlog")
+            ax[0].set_ylim(1, 10**5)
+            ax[0].plot(ell, dls["tt"], color = "black")
+            ax[0].plot(ell, n_ell_t[name] * fac / (bl[exp + f1] * bl[exp + f2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
-                 
-            plt.xlabel(r"$\ell$", fontsize=22)
-            plt.ylabel(r"$N^{T}_{\ell}$", fontsize=22)
-        
-            plt.subplot(2, 1, 2)
-            plt.semilogy()
-            plt.ylim(5 * 10**-2, 10**3)
-            plt.plot(ell, dls["ee"], color='black')
-            plt.plot(ell, n_ell_pol[name] * fac / (bl[exp + f1] * bl[exp + f2]),
+            ax[0].set_xlabel(r"$\ell$", fontsize=22)
+            ax[0].set_ylabel(r"$N^{T}_{\ell}$", fontsize=22)
+            ax[1].set_yscale("symlog")
+            ax[1].set_ylim(5e-2, 1e3)
+            ax[1].plot(ell, dls["ee"], color = "black")
+            ax[1].plot(ell, n_ell_pol[name] * fac / (bl[exp + f1] * bl[exp + f2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
-                 
-            plt.xlabel(r"$\ell$", fontsize=22)
-            plt.ylabel(r"$N^{P}_{\ell}$", fontsize=22)
+            ax[1].set_xlabel(r"$\ell$", fontsize=22)
+            ax[1].set_ylabel(r"$N^{P}_{\ell}$", fontsize=22)
 
-plt.legend()
+
+ax[0].legend()
 plt.savefig("%s/noise_ps_plot.pdf"%plot_dir)
-plt.clf()
 plt.close()
 
 
 # We now compare the signal power spectra with foreground power spectra
 
-import mflike as mfl
-
 experiments = d["experiments"]
 
 fg_norm = d["fg_norm"]
-components = {"tt": d["fg_components"], "ee": [], "te": []}
-fg_model =  {"normalisation":  fg_norm, "components": components}
+fg_components = d["fg_components"]
+fg_model =  {"normalisation":  fg_norm, "components": fg_components}
 fg_params =  d["fg_params"]
+nuis_params = d["nuisance_params"]
+band_integration = d["band_integration"]
 
-all_freqs = [float(freq) for exp in experiments for freq in d["freqs_%s" % exp]]
+all_freqs = np.array([int(freq) for exp in experiments for freq in d["freqs_%s" % exp]])
 nfreqs = len(all_freqs)
-fg_dict = mfl.get_foreground_model(fg_params, fg_model, all_freqs, ell)
 
-mode = "tt"
-fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))
-from itertools import product
-for i, cross in enumerate(product(all_freqs, all_freqs)):
-    f0, f1 = cross
-    idx = (i%nfreqs, i//nfreqs)
-    ax = axes[idx]
-    if idx in zip(*np.triu_indices(nfreqs, k=1)):
-        fig.delaxes(ax)
-        continue
-    for compo in fg_model["components"][mode]:
-        ax.plot(l, fg_dict[mode, compo, f0, f1])
-        np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, compo, f0, f1),
-                   np.transpose([l,fg_dict[mode, compo, f0, f1]]))
+from mflike import theoryforge_MFLike as th_mflike
 
-    ax.plot(l, fg_dict[mode, "all", f0, f1], color="k")
-    ax.plot(l, dls[mode], color="gray")
-    np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, "all", f0, f1),
-               np.transpose([l,fg_dict[mode, "all", f0, f1]]))
+ThFo = th_mflike.TheoryForge_MFLike()
+ThFo.freqs = all_freqs
+ThFo.bandint_nsteps = band_integration["nsteps"]
+ThFo.bandint_width = band_integration["bandwidth"]
+ThFo.bandint_external_bandpass = band_integration["external_bandpass"]
 
-    ax.legend([], title="{}x{} GHz".format(*cross))
-    if mode == "tt":
-        ax.set_yscale("log")
-        ax.set_ylim(10**-1, 10**4)
+ThFo.foregrounds = fg_model
+ThFo._init_foreground_model()
 
-for i in range(nfreqs):
-    axes[-1, i].set_xlabel("$\ell$")
-    axes[i, 0].set_ylabel("$D_\ell$")
-fig.legend(fg_model["components"][mode] + ["all"], title=mode.upper(), bbox_to_anchor=(1,1))
-plt.tight_layout()
-plt.savefig("%s/foregrounds.pdf"%plot_dir)
-plt.clf()
-plt.close()
+#perform band integration if needed (only if bandpass not external)
+ThFo.bandint_freqs = ThFo._bandpass_construction(**nuis_params)
+
+fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)
+
+
+
+# Plot separated components for tSZ and CIB
+fg_components["tt"].remove("tSZ_and_CIB")
+for comp in ["tSZ", "cibc", "tSZxCIB"]:
+    fg_components["tt"].append(comp)
+
+for mode in ["tt", "te", "ee"]:
+    fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))
+    from itertools import product
+    for i, cross in enumerate(product(all_freqs, all_freqs)):
+        f0, f1 = cross
+        f0, f1 = int(f0), int(f1)
+        idx = (i%nfreqs, i//nfreqs)
+        ax = axes[idx]
+        if idx in zip(*np.triu_indices(nfreqs, k=1)) and mode != "te":
+            fig.delaxes(ax)
+            continue
+        for compo in fg_model["components"][mode]:
+            ax.plot(l, fg_dict[mode, compo, f0, f1])
+            np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, compo, f0, f1),
+                       np.transpose([l,fg_dict[mode, compo, f0, f1]]))
+
+        ax.plot(l, fg_dict[mode, "all", f0, f1], color="k")
+        ax.plot(l, dls[mode], color="gray")
+        np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, "all", f0, f1),
+                   np.transpose([l,fg_dict[mode, "all", f0, f1]]))
+
+        ax.legend([], title="{}x{} GHz".format(*cross))
+        if mode == "tt":
+            ax.set_yscale("log")
+            ax.set_ylim(10**-1, 10**4)
+        if mode == "ee":
+            ax.set_yscale("log")
+
+    for i in range(nfreqs):
+        axes[-1, i].set_xlabel("$\ell$")
+        axes[i, 0].set_ylabel("$D_\ell$")
+    fig.legend(fg_model["components"][mode] + ["all"], title=mode.upper(), bbox_to_anchor=(1,1))
+    plt.tight_layout()
+    plt.savefig("%s/foregrounds_%s.pdf"%(plot_dir,mode))
+    plt.close()
 
 
 
@@ -293,9 +312,3 @@ for i in range(n_bins):
     g.write("%f %f %f\n" % (bin_min, bin_max, bin_mean))
     bin_min += bin_size[i] + 1
 g.close()
-
-
-
-
-
-

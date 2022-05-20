@@ -1,0 +1,22 @@
+scan_list = ["small_tiles", "large_tiles", "high_cadence_constant_scan_1_el", "high_cadence_constant_scan_3_el", "high_cadence_variable_scan"]
+
+map_dir = "/global/cfs/cdirs/sobs/sims/scan-s0002/v1/car/"
+apo_type = "C1"
+skip_from_edges = 1
+apo_radius_degree = 2
+lmax = 4000
+niter = 0
+split_list = ["split0", "split1"]
+runs = ["weighted", "uniform"]
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
+binning_file_name = "binning.dat"
+bin_size = 20
+cross_linking_threshold = 1
+include_CMB = True
+
+clfile = "bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
+
+map_plot_range = [2000, 200, 200]
+
+

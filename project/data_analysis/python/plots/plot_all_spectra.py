@@ -58,7 +58,7 @@ for id_sv1, sv1 in enumerate(surveys):
 
                             lth, bfth = np.loadtxt("%s/best_fit_%sx%s_%s.dat"%(bestfit_dir, freq1, freq2, spec), unpack=True)
 
-                            plt.plot(lth[:lmax], bfth[:lmax],color="grey")
+                            #plt.plot(lth[:lmax], bfth[:lmax],color="grey")
 
 
                             for s1 in range(nsplits_1):

@@ -46,23 +46,32 @@ for id_sv1, sv1 in enumerate(surveys):
 # and store then in a dictionnary file
 
 nspec = len(spec_name)
-analytic_dict= {}
+analytic_cov_dict= {}
+analytic_beam_cov_dict = {}
+
 spectra = ["TT", "TE", "ET", "EE"]
 for sid1, name1 in enumerate(spec_name):
     for sid2, name2 in enumerate(spec_name):
         if sid1 > sid2: continue
         print (name1, name2)
         analytic_cov = np.load("%s/analytic_cov_%s_%s.npy" % (cov_dir, name1, name2))
+        analytic_beam_cov = np.load("%s/analytic_beam_cov_%s_%s.npy" % (cov_dir, name1, name2))
+
         for s1, spec1 in enumerate(spectra):
             for s2, spec2 in enumerate(spectra):
                 sub_cov = analytic_cov[s1 * nbins:(s1 + 1) * nbins, s2 * nbins:(s2 + 1) * nbins]
-                analytic_dict[sid1, sid2, s1, s2] = sub_cov
-
+                sub_beam_cov = analytic_beam_cov[s1 * nbins:(s1 + 1) * nbins, s2 * nbins:(s2 + 1) * nbins]
+                
+                analytic_cov_dict[sid1, sid2, s1, s2] = sub_cov
+                analytic_beam_cov_dict[sid1, sid2, s1, s2] = sub_beam_cov
+                
 # We fill the full covariance matrix with our elements
 # The cov mat format is [block TT, block TE, block ET, block EE]
 # the block contain all cross array and season spectra
 
 full_analytic_cov = np.zeros((4 * nspec * nbins, 4 * nspec * nbins))
+full_analytic_beam_cov = np.zeros((4 * nspec * nbins, 4 * nspec * nbins))
+
 for sid1, name1 in enumerate(spec_name):
     for sid2, name2 in enumerate(spec_name):
         if sid1 > sid2: continue
@@ -72,14 +81,24 @@ for sid1, name1 in enumerate(spec_name):
                 id_stop_1 = (sid1 + 1) * nbins + s1 * nspec * nbins
                 id_start_2 = sid2 * nbins + s2 * nspec * nbins
                 id_stop_2 = (sid2 + 1) * nbins + s2 * nspec * nbins
-                full_analytic_cov[id_start_1:id_stop_1, id_start_2: id_stop_2] = analytic_dict[sid1, sid2, s1, s2]
+                full_analytic_cov[id_start_1:id_stop_1, id_start_2: id_stop_2] = analytic_cov_dict[sid1, sid2, s1, s2]
+                full_analytic_beam_cov[id_start_1:id_stop_1, id_start_2: id_stop_2] = analytic_beam_cov_dict[sid1, sid2, s1, s2]
 
-# We make the matrix symmetric and save it
+# We make the matrices symmetrics and save them
 
 transpose = full_analytic_cov.copy().T
 transpose[full_analytic_cov != 0] = 0
 full_analytic_cov += transpose
-np.save("%s/full_analytic_cov.npy"%cov_dir, full_analytic_cov)
+
+transpose_beam = full_analytic_beam_cov.copy().T
+transpose_beam[full_analytic_beam_cov != 0] = 0
+full_analytic_beam_cov += transpose_beam
+
+full_analytic_cov_with_beam = full_analytic_cov + full_analytic_beam_cov
+
+np.save("%s/full_analytic_cov.npy" % cov_dir, full_analytic_cov)
+np.save("%s/full_analytic_beam_cov.npy" % cov_dir, full_analytic_beam_cov)
+np.save("%s/full_analytic_cov_with_beam.npy" % cov_dir, full_analytic_cov_with_beam)
 
 
 # for spectra with the same survey and the same array (sv1 = sv2 and ar1 = ar2) TE = ET
@@ -95,13 +114,27 @@ for sid, name in enumerate(spec_name):
             block_to_delete = np.append(block_to_delete, np.arange(id_start, id_stop))
 
 block_to_delete = block_to_delete.astype(int)
+
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=1)
 full_analytic_cov = np.delete(full_analytic_cov, block_to_delete, axis=0)
+full_analytic_beam_cov = np.delete(full_analytic_beam_cov, block_to_delete, axis=1)
+full_analytic_beam_cov = np.delete(full_analytic_beam_cov, block_to_delete, axis=0)
+full_analytic_cov_with_beam = np.delete(full_analytic_cov_with_beam, block_to_delete, axis=1)
+full_analytic_cov_with_beam = np.delete(full_analytic_cov_with_beam, block_to_delete, axis=0)
 
 np.save("%s/truncated_analytic_cov.npy" % cov_dir, full_analytic_cov)
+np.save("%s/truncated_analytic_beam_cov.npy" % cov_dir, full_analytic_beam_cov)
+np.save("%s/truncated_analytic_cov_with_beam.npy" % cov_dir, full_analytic_cov_with_beam)
 
+print("check if S+N matrix is well behaved")
 print ("is matrix positive definite:", data_analysis_utils.is_pos_def(full_analytic_cov))
 print ("is matrix symmetric :", data_analysis_utils.is_symmetric(full_analytic_cov))
+
+print("check if S+N+Beam matrix is well behaved")
+print ("is matrix positive definite:", data_analysis_utils.is_pos_def(full_analytic_cov_with_beam))
+print ("is matrix symmetric :", data_analysis_utils.is_symmetric(full_analytic_cov_with_beam))
+
+
 
 
 # This part compare the analytic covariance with the montecarlo covariance
@@ -127,7 +160,7 @@ g.write('</head> \n')
 g.write('<body> \n')
 g.write('<div class=sub>\n')
 
-size=int(full_analytic_cov.shape[0]/nbins)
+size=int(full_analytic_cov.shape[0] / nbins)
 count=0
 for ispec in range(-size+1, size):
     
@@ -141,17 +174,17 @@ for ispec in range(-size+1, size):
 
     plt.figure(figsize=(12,8))
     plt.subplot(1,2,1)
-    plt.plot(np.log(np.abs(full_analytic_cov.diagonal(ispec*nbins))))
-    plt.plot(np.log(np.abs(full_mc_cov.diagonal(ispec*nbins))), '.')
+    plt.plot(np.log(np.abs(full_analytic_cov.diagonal(ispec * nbins))))
+    plt.plot(np.log(np.abs(full_mc_cov.diagonal(ispec * nbins))), '.')
     plt.legend()
     plt.subplot(1,2,2)
-    plt.imshow(np.log(np.abs(full_analytic_cov*mat)))
-    plt.savefig("%s/%s"%(cov_plot_dir,str))
+    plt.imshow(np.log(np.abs(full_analytic_cov * mat)))
+    plt.savefig("%s/%s"%(cov_plot_dir, str))
     plt.clf()
     plt.close()
     
     g.write('<div class=sub>\n')
-    g.write('<img src="'+str+'"  /> \n')
+    g.write('<img src="' + str + '"  /> \n')
     g.write('</div>\n')
     
     count+=1

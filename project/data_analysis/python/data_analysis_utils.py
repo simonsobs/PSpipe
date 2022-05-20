@@ -1,68 +1,20 @@
 """
 Some utility functions for the data analysis project.
 """
-import numpy as np, healpy as hp, pylab as plt
+import numpy as np
+import healpy as hp
+import pylab as plt
+import os
 from pixell import curvedsky
 from pspy import pspy_utils, so_cov, so_spectra, so_mcm, so_map_preprocessing
 from pspy.cov_fortran.cov_fortran import cov_compute as cov_fortran
 from pspy.mcm_fortran.mcm_fortran import mcm_compute as mcm_fortran
 from pixell import enmap
+import gc
 
-def filter_fast(map, vk_mask=None, hk_mask=None, normalize="phys", inv_pixwin_lxly=None):
+def get_filtered_map(orig_map, binary, filter, inv_pixwin_lxly=None, weighted_filter=False, tol=1e-4, ref=0.9):
 
-    """Filter the map in Fourier space removing modes in a horizontal and vertical band
-    defined by hk_mask and vk_mask. This is a faster version that what is implemented in pspy
-    We also include an option for removing the pixel window function
-    
-    Parameters
-    ---------
-    map: ``so_map``
-        the map to be filtered
-    vk_mask: list with 2 elements
-        format is fourier modes [-lx,+lx]
-    hk_mask: list with 2 elements
-        format is fourier modes [-ly,+ly]
-    normalize: string
-        optional normalisation of the Fourier transform
-    inv_pixwin_lxly: 2d array
-        the inverse of the pixel window function in fourier space
-    """
-
-    lymap, lxmap = map.data.lmap()
-    ly, lx = lymap[:,0], lxmap[0,:]
-
-   # filtered_map = map.copy()
-    ft = enmap.fft(map.data, normalize=normalize)
-    
-    if vk_mask is not None:
-        id_vk = np.where((lx > vk_mask[0]) & (lx < vk_mask[1]))
-    if hk_mask is not None:
-        id_hk = np.where((ly > hk_mask[0]) & (ly < hk_mask[1]))
-
-    if map.ncomp == 1:
-        if vk_mask is not None:
-            ft[: , id_vk] = 0.
-        if hk_mask is not None:
-            ft[id_hk , :] = 0.
-    
-    if map.ncomp == 3:
-        for i in range(3):
-            if vk_mask is not None:
-                ft[i, : , id_vk] = 0.
-            if hk_mask is not None:
-                ft[i, id_hk , :] = 0.
-
-    if inv_pixwin_lxly is not None:
-        ft  *= inv_pixwin_lxly
-        
-    map.data[:] = np.real(enmap.ifft(ft, normalize=normalize))
-    return map
-
-
-def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys", inv_pixwin_lxly=None):
-
-    """Filter the map in Fourier space removing modes in a horizontal and vertical band
-    defined by hk_mask and vk_mask. Note that we mutliply the maps by a binary mask before
+    """Filter the map in Fourier space using a predefined filter. Note that we mutliply the maps by a binary mask before
     doing this operation in order to remove pathological pixels
     We also include an option for removing the pixel window function
 
@@ -72,26 +24,66 @@ def get_filtered_map(orig_map, binary, vk_mask, hk_mask, normalize="phys", inv_p
         the map to be filtered
     binary:  ``so_map``
         a binary mask removing pathological pixels
-    vk_mask: list with 2 elements
-        format is fourier modes [-lx,+lx]
-    hk_mask: list with 2 elements
-        format is fourier modes [-ly,+ly]
-    normalize: string
-        optional normalisation of the Fourier transform
+    filter: 2d array
+        a filter applied in fourier space
     inv_pixwin_lxly: 2d array
         the inverse of the pixel window function in fourier space
+    weighted_filter: boolean
+        wether to use weighted filter a la sigurd
+    tol, ref: floats
+        only in use in the case of the weighted filter, these arg
+        remove crazy pixels value in the weight applied
 
     """
+    
+    if weighted_filter == False:
+        if inv_pixwin_lxly is not None:
+            orig_map = fourier_mult(orig_map, binary, filter * inv_pixwin_lxly)
+        else:
+            orig_map = fourier_mult(orig_map, binary, filter)
 
-    if orig_map.ncomp == 1:
-        orig_map.data *= binary.data
     else:
-        orig_map.data[:] *= binary.data
-    filtered_map = filter_fast(orig_map, vk_mask, hk_mask, normalize=normalize, inv_pixwin_lxly=inv_pixwin_lxly)
-    # filtered_map = so_map_preprocessing.kspace_filter(orig_map, vk_mask, hk_mask)
+        orig_map.data *= binary.data
+        one_mf = (1 - filter)
+        rhs    = enmap.ifft(one_mf * enmap.fft(orig_map.data, normalize=True), normalize=True).real
+        gc.collect()
+        div    = enmap.ifft(one_mf * enmap.fft(binary.data, normalize=True), normalize=True).real
+        del one_mf
+        gc.collect()
+        div    = np.maximum(div, np.percentile(binary.data[::10, ::10], ref * 100) * tol)
+        orig_map.data -= rhs / div
+        del rhs
+        del div
+        gc.collect()
+        
+        if inv_pixwin_lxly is not None:
+            ft = enmap.fft(orig_map.data, normalize=True)
+            ft  *= inv_pixwin_lxly
+            orig_map.data = enmap.ifft(ft, normalize=True).real
 
-    return filtered_map
+    gc.collect()
+    return orig_map
+    
+def fourier_mult(orig_map, binary, fourier_array):
 
+    """do a fourier multiplication of the FFT of the orig_map with a fourier array, binary help to remove pathological pixels
+
+    Parameters
+    ---------
+    orig_map: ``so_map``
+        the map to be filtered
+    binary:  ``so_map``
+        a binary mask removing pathological pixels
+    fourier_array: 2d array
+        the fourier array we want to multiply the FFT of the map with
+    """
+    orig_map.data *= binary.data
+    ft = enmap.fft(orig_map.data, normalize=True)
+    ft  *= fourier_array
+    orig_map.data = enmap.ifft(ft, normalize=True).real
+    
+    return orig_map
+    
 
 def get_coadded_map(orig_map, coadd_map, coadd_mask):
     """Co-add a map with another map given its associated mask.
@@ -342,11 +334,8 @@ def deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax=None):
         ncomp = 1 if T only
 
     """
-    if np.array_equal(tf1, tf2):
-        tf = tf1
-    else:
-        tf = np.sqrt(tf1*tf2)
-        
+    tf = tf1 * tf2
+     
     if lmax is not None:
         id = np.where(lb < lmax)
         tf = tf[id]
@@ -441,95 +430,59 @@ def fast_cov_coupling(sq_win_alms_dir,
     return coupling_dict
 
 
-
 def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, mbb_inv_ab, mbb_inv_cd):
+    """
+    This routine deserves some explanation
+    We want to compute the covariance between two power spectra
+    C1 = Wa * Xb, C2 =  Yc * Zd
+    Here W, X, Y, Z can be either T or E and a,b,c,d will be an index
+    corresponding to the survey and array we consider so for example a = s17_pa5_150 or a = dr6_pa4_090
+    The formula for the analytic covariance of C1, C2 is given by
+    Cov( Wa * Xb,  Yc * Zd) = < Wa Yc> <Xb Zd>  + < Wa Zd> <Xb Yc> (this is just from the wick theorem)
+    In practice we need to include the effect of the mask (so we have to introduce the coupling dict D)
+    and we need to take into account that we use only the cross power spectra, that is why we use the chi function
+    Cov( Wa * Xb,  Yc * Zd) = D(Wa*Yc,Xb Zd) chi(Wa,Yc,Xb Zd) +  D(Wa*Zd,Xb*Yc) chi(Wa,Zd,Xb,Yc)
     
+    Parameters
+    ----------
+    coupling : dictionnary
+      a dictionnary that countains the coupling terms arising from the window functions
+    id_element : list
+      a list of the form [a,b,c,d] where a = dr6_pa4_090, etc, this identify which pair of power spectrum we want the covariance of
+    ns: dict
+      this dictionnary contains the number of split we consider for each of the survey
+    ps_all: dict
+      this dict contains the theoretical best power spectra, convolve with the beam for example
+      ps["dr6&pa5_150", "dr6&pa4_150", "TT"] = bl_dr6_pa5_150 * bl_dr6_pa4_150 * (Dl^{CMB}_TT + fg_TT)
+    nl_all: dict
+      this dict contains the estimated noise power spectra, note that it correspond to the noise power spectrum per split
+      e.g nl["dr6&pa5_150", "dr6&pa4_150", "TT"]
+    binning_file:
+      a binning file with three columns bin low, bin high, bin mean
+    mbb_inv_ab and mbb_inv_cd:
+      the inverse mode coupling matrices corresponding to the C1 = Wa * Xb and C2 =  Yc * Zd power spectra
+    """
+
     na, nb, nc, nd = id_element
-    
+
     lmax = coupling["TaTcTbTd"].shape[0]
     bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
     nbins = len(bin_hi)
-    analytic_cov = np.zeros((4*nbins, 4*nbins))
-
-    # TaTbTcTd
-    M_00 = coupling["TaTcTbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTTT")
-    M_00 += coupling["TaTdTbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTTT")
-    analytic_cov[0*nbins:1*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_00, binning_file, lmax)
-
-    # TaEbTcEd
-    M_11 = coupling["TaTcPbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTEE")
-    M_11 += coupling["TaPdPbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TEET")
-    analytic_cov[1*nbins:2*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_11, binning_file, lmax)
-
-    # EaTbEcTd
-    M_22 = coupling["PaPcTbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "EETT")
-    M_22 += coupling["PaTdTbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETTE")
-    analytic_cov[2*nbins:3*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_22, binning_file, lmax)
-
-    # EaEbEcEd
-    M_33 = coupling["PaPcPbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEEE")
-    M_33 += coupling["PaPdPbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEEE")
-    analytic_cov[3*nbins:4*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_33, binning_file, lmax)
-
-    # TaTbTcEd
-    M_01 = coupling["TaTcTbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTTE")
-    M_01 += coupling["TaPdTbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TETT")
-    analytic_cov[0*nbins:1*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_01, binning_file, lmax)
-
-    # TaTbEcTd
-    M_02 = coupling["TaPcTbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TETT")
-    M_02 += coupling["TaTdTbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTTE")
-    analytic_cov[0*nbins:1*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_02, binning_file, lmax)
-
-    # TaTbEcEd
-    M_03 = coupling["TaPcTbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TETE")
-    M_03 += coupling["TaPdTbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TETE")
-    analytic_cov[0*nbins:1*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_03, binning_file, lmax)
-
-    # TaEbEcTd
-    M_12 = coupling["TaPcPbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TEET")
-    M_12 += coupling["TaTdPbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTEE")
-    analytic_cov[1*nbins:2*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_12, binning_file, lmax)
-
-    # TaEbEcEd
-    M_13 = coupling["TaPcPbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TEEE")
-    M_13 += coupling["TaPdPbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TEEE")
-    analytic_cov[1*nbins:2*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_13, binning_file, lmax)
-
-    # EaTbEcEd
-    M_23 = coupling["PaPcTbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "EETE")
-    M_23 += coupling["PaPdTbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "EETE")
-    analytic_cov[2*nbins:3*nbins, 3*nbins:4*nbins] = so_cov.bin_mat(M_23, binning_file, lmax)
-
-    # TaEbTcTd
-    M_10 = coupling["TaTcPbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "TTET")
-    M_10 += coupling["TaTdPbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "TTET")
-    analytic_cov[1*nbins:2*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_10, binning_file, lmax)
-
-    # EaTbTcTd
-    M_20 = coupling["PaTcTbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETTT")
-    M_20 += coupling["PaTdTbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETTT")
-    analytic_cov[2*nbins:3*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_20, binning_file, lmax)
-
-    # EaEbTcTd
-    M_30 = coupling["PaTcPbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETET")
-    M_30 += coupling["PaTdPbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETET")
-    analytic_cov[3*nbins:4*nbins, 0*nbins:1*nbins] = so_cov.bin_mat(M_30, binning_file, lmax)
-
-    # EaTbTcEd
-    M_21 = coupling["PaTcTbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETTE")
-    M_21 += coupling["PaPdTbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "EETT")
-    analytic_cov[2*nbins:3*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_21, binning_file, lmax)
-
-    # EaEbTcEd
-    M_31 = coupling["PaTcPbPd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "ETEE")
-    M_31 += coupling["PaPdPbTc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "EEET")
-    analytic_cov[3*nbins:4*nbins, 1*nbins:2*nbins] = so_cov.bin_mat(M_31, binning_file, lmax)
-
-    # EaEbEcTd
-    M_32 = coupling["PaPcPbTd"] * chi(na, nc, nb, nd, ns, ps_all, nl_all, "EEET")
-    M_32 += coupling["PaTdPbPc"] * chi(na, nd, nb, nc, ns, ps_all, nl_all, "ETEE")
-    analytic_cov[3*nbins:4*nbins, 2*nbins:3*nbins] = so_cov.bin_mat(M_32, binning_file, lmax)
+    
+    speclist = ["TT", "TE", "ET", "EE"]
+    nspec = len(speclist)
+    analytic_cov = np.zeros((nspec * nbins, nspec * nbins))
+    for i, (W, X) in enumerate(speclist):
+        for j, (Y, Z) in enumerate(speclist):
+        
+            id0 = W + "a" + Y + "c"
+            id1 = X + "b" + Z + "d"
+            id2 = W + "a" + Z + "d"
+            id3 = X + "b" + Y + "c"
+            
+            M = coupling[id0.replace("E","P") + id1.replace("E","P")] * chi(na, nc, nb, nd, ns, ps_all, nl_all, W + Y + X + Z)
+            M += coupling[id2.replace("E","P") + id3.replace("E","P")] * chi(na, nd, nb, nc, ns, ps_all, nl_all, W + Z + X + Y)
+            analytic_cov[i * nbins: (i + 1) * nbins, j * nbins: (j + 1) * nbins] = so_cov.bin_mat(M, binning_file, lmax)
 
     mbb_inv_ab = so_cov.extract_TTTEEE_mbb(mbb_inv_ab)
     mbb_inv_cd = so_cov.extract_TTTEEE_mbb(mbb_inv_cd)
@@ -538,7 +491,58 @@ def covariance_element(coupling, id_element, ns, ps_all, nl_all, binning_file, m
     
     return analytic_cov
 
+def covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax):
+    """
+    This routine compute the contribution from beam errors to the analytical covariance of the power spectra
+    We want to compute the beam covariance between the two spectra
+    C1 = Wa * Xb, C2 =  Yc * Zd
+    Here W, X, Y, Z can be either T or E and a,b,c,d will be an index
+    corresponding to the survey and array we consider so for example a = dr6_pa5_150 or a = dr6_pa4_090
+    The formula for the analytic covariance of C1, C2 is given by
+    let's denote the normalised beam covariance <BB>_ac = < delta B_a delta B_c >/np.outer(B_a, B_c)
+    
+    Cov( Wa * Xb,  Yc * Zd) = Dl^{WaXb} Dl^{YcZd} ( <BB>_ac + <BB>_ad + <BB>_bc + <BB>_bd )
+       
+       Parameters
+       ----------
+    id_element : list
+        a list of the form [a,b,c,d] where a = dr6_pa4_090, etc, this identify which pair of power spectrum we want the covariance of
+    ps_all: dict
+        this dict contains the theoretical best power spectra, convolve with the beam for example
+        ps["dr6&pa5_150", "dr6&pa4_150", "TT"] = bl_dr6_pa5_150 * bl_dr6_pa4_150 * (Dl^{CMB}_TT + fg_TT)
+    norm_beam_cov: dict
+        this dict contains the normalized beam covariance for each survey and array
+    binning_file: str
+        a binning file with three columns bin low, bin high, bin mean
+    lmax: int
+        the maximum multipole to consider
+    """
+    na, nb, nc, nd = id_element
 
+    sv_alpha, ar_alpha = na.split("&")
+    sv_beta, ar_beta = nb.split("&")
+    sv_gamma, ar_gamma = nc.split("&")
+    sv_eta, ar_eta = nd.split("&")
+
+    bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
+    nbins = len(bin_hi)
+
+    speclist = ["TT", "TE", "ET", "EE"]
+    
+    nspec = len(speclist)
+    analytic_cov_from_beam = np.zeros((nspec * nbins, nspec * nbins))
+    for i, spec1 in enumerate(speclist):
+        for j, spec2 in enumerate(speclist):
+    
+            M =  (delta2(na, nc) + delta2(na, nd)) * norm_beam_cov[sv_alpha, ar_alpha]
+            M += (delta2(nb, nc) + delta2(nb, nd)) * norm_beam_cov[sv_beta, ar_beta]
+            M *=  np.outer(ps_all[na, nb, spec1], ps_all[nc, nd, spec2])
+            
+            analytic_cov_from_beam[i * nbins: (i + 1) * nbins, j * nbins: (j + 1) * nbins] = so_cov.bin_mat(M, binning_file, lmax)
+
+    return analytic_cov_from_beam
+    
+    
 def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):
     """doc not ready yet
     """
@@ -548,12 +552,12 @@ def chi(alpha, gamma, beta, eta, ns, Dl, DNl, id="TTTT"):
     sv_gamma, ar_gamma = gamma.split("&")
     sv_eta, ar_eta = eta.split("&")
     
-    RX = id[0] + id[1]
-    SY = id[2] + id[3]
-    chi = Dl[alpha, gamma, RX] * Dl[beta, eta, SY]
-    chi += Dl[alpha, gamma, RX] * DNl[beta, eta, SY] * f(sv_beta, sv_eta, sv_alpha, sv_gamma, ns)
-    chi += Dl[beta, eta, SY] * DNl[alpha, gamma, RX] * f(sv_alpha, sv_gamma, sv_beta, sv_eta, ns)
-    chi += g(sv_alpha, sv_gamma, sv_beta, sv_eta, ns) * DNl[alpha, gamma, RX] * DNl[beta, eta, SY]
+    AB = id[0] + id[1]
+    CD = id[2] + id[3]
+    chi = Dl[alpha, gamma, AB] * Dl[beta, eta, CD]
+    chi += Dl[alpha, gamma, AB] * DNl[beta, eta, CD] * f(sv_beta, sv_eta, sv_alpha, sv_gamma, ns)
+    chi += Dl[beta, eta, CD] * DNl[alpha, gamma, AB] * f(sv_alpha, sv_gamma, sv_beta, sv_eta, ns)
+    chi += g(sv_alpha, sv_gamma, sv_beta, sv_eta, ns) * DNl[alpha, gamma, AB] * DNl[beta, eta, CD]
     chi= symm_power(chi, mode="arithm")
 
     return chi
@@ -620,62 +624,103 @@ def symm_power(Clth, mode="arithm"):
     if mode == "arithm":
         return np.add.outer(Clth, Clth) / 2
 
+def interactive_covariance_comparison(analytic_cov, mc_cov, spec_list, binning_file, lmax, cov_plot_dir, multistep_path, corr_range=0.3, log=False):
 
-def plot_vs_choi(l, cl, error, mc_std, Db, std, plot_dir, combin, spec):
-               
-    str = "%s_%s_cross.png" % (spec, combin)
+    """
+    This routine compare analytic covariance matrices with the ones from montecarlo simulation
+    For a typical covariance matrix of ACT dr6, it compare more than 3000 nbinsxnbins covariance matrix blocs.
+    This produces the plots and write a html page: covariance.html with an interactive java script interface: multistep2.js
+    you can go from one plot to the other by pressing c/v on your keyboard
+    
+    Parameters
+    ---------
+    analytic_cov: 2d array
+        the analytic covariance matrix
+    mc_cov:  2d array
+        the covariance matrix estimated with montecarlo sim
+    spec_list: list of str
+        the list of the different spectra to consider
+    binning_file: str
+        the binning file used
+    lmax: int
+        the maximum multipole to consider
+    cov_plot_dir: str
+        the directory where we write the plot to disk
+    multistep_path: str
+        the path to the javascript multistep2.js that render the html interactive
+    corr_range: float
+        should be between -1, 1 the max of the colorscale for the correlation matrix plot
+    log: boolean
+        wether to plot the diag of the cov with a log scale
+    """
 
-    plt.figure(figsize=(12,12))
-    if spec == "TT":
-        plt.semilogy()
-    plt.errorbar(l, cl, error, fmt=".", label="steve %s" % combin)
-    plt.errorbar(l, Db[spec], fmt=".", label="thibaut")
-    plt.legend()
-    plt.title(r"$D^{%s}_{\ell}$" % (spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/%s" % (plot_dir,str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
-               
-               
-    plt.figure(figsize=(12,12))
-    plt.semilogy()
-    plt.errorbar(l, std, label="master %s" % combin, color= "blue")
-    plt.errorbar(l, mc_std, fmt=".", label="montecarlo", color = "red")
-    plt.errorbar(l, error, label="Knox", color= "lightblue")
-    plt.legend()
-    plt.title(r"$\sigma^{%s}_{\ell}$" % (spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/error_%s" % (plot_dir,str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
-                         
-    plt.figure(figsize=(12,12))
-    plt.plot(l, l * 0 + 1, color="grey")
-    if std is not None:
-        plt.errorbar(l[2:], std[2:]/mc_std[2:], label="master %s" % combin, color= "blue")
-    plt.errorbar(l[2:], error[2:]/mc_std[2:], label="Knox", color= "lightblue")
-    plt.legend()
-    plt.title(r"$\sigma^{ %s}_{\ell}/\sigma^{MC, %s}_{\ell} $" % (spec, spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/error_divided_%s" % (plot_dir,str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
-               
-    plt.figure(figsize=(12,12))
-    plt.plot(l,(cl-Db[spec])/mc_std, ".")
-    plt.title(r"$\Delta D^{%s}_{\ell}/\sigma^{MC}_{\ell}$" % (spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/frac_error_%s" % (plot_dir, str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
+    pspy_utils.create_directory(cov_plot_dir)
 
-    plt.figure(figsize=(12,12))
-    plt.plot(l,(cl-Db[spec])/cl)
-    plt.title(r"$\Delta D^{%s}_{\ell}/ D^{%s}_{\ell}$" % (spec, spec), fontsize=20)
-    plt.xlabel(r"$\ell$", fontsize=20)
-    plt.savefig("%s/frac_%s" % (plot_dir, str), bbox_inches="tight")
-    plt.clf()
-    plt.close()
- 
+    bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
+    nbins = len(bin_hi)
+
+    analytic_corr = so_cov.cov2corr(analytic_cov)
+    mc_corr = so_cov.cov2corr(mc_cov)
+
+    os.system("cp %s/multistep2.js %s/multistep2.js" % (multistep_path, cov_plot_dir))
+    file = "%s/covariance.html" % (cov_plot_dir)
+    g = open(file, mode="w")
+    g.write('<html>\n')
+    g.write('<head>\n')
+    g.write('<title> covariance comparison </title>\n')
+    g.write('<script src="multistep2.js"></script>\n')
+    g.write('<script> add_step("sub",  ["c","v"]) </script> \n')
+    g.write('<style> \n')
+    g.write('body { text-align: center; } \n')
+    g.write('img { width: 100%; max-width: 1200px; } \n')
+    g.write('</style> \n')
+    g.write('</head> \n')
+    g.write('<body> \n')
+    g.write('<div class=sub>\n')
+
+    n_spec = int(analytic_cov.shape[0] / nbins)
+    count = 0
+    for ispec in range(n_spec):
+        for jspec in range(ispec):
+            sub_analytic_cov = analytic_cov[ispec * nbins: (ispec + 1) * nbins, jspec * nbins: (jspec + 1) * nbins]
+            sub_mc_cov = mc_cov[ispec * nbins: (ispec + 1) * nbins, jspec * nbins: (jspec + 1) * nbins]
+
+            sub_analytic_corr = analytic_corr[ispec * nbins: (ispec + 1) * nbins, jspec * nbins: (jspec + 1) * nbins]
+            sub_mc_corr = mc_corr[ispec * nbins: (ispec + 1) * nbins, jspec * nbins: (jspec + 1) * nbins]
+
+            str = "cov_%03d.png" % (count)
+
+            fig = plt.figure(figsize=(16, 10), constrained_layout=True)
+            spec = fig.add_gridspec(2, 2)
+            ax0 = fig.add_subplot(spec[0, :])
+            plt.title("cov(%s , %s)" % (spec_list[ispec], spec_list[jspec]), fontsize=22)
+            if log == True:
+                plt.semilogy()
+            plt.plot(sub_analytic_cov.diagonal(), label = "analytic")
+            plt.plot(sub_mc_cov.diagonal(), '.', label = "montecarlo")
+            plt.legend()
+            ax10 = fig.add_subplot(spec[1, 0])
+            plt.imshow(sub_analytic_corr, vmin=-corr_range, vmax=corr_range, cmap='bwr')
+            plt.xticks(np.arange(nbins)[::15],lb[::15].astype(int))
+            plt.yticks(np.arange(nbins)[::10],lb[::10].astype(int))
+            plt.colorbar()
+            ax11 = fig.add_subplot(spec[1, 1])
+            plt.imshow(sub_mc_corr, vmin=-corr_range, vmax=corr_range, cmap='bwr')
+            plt.xticks(np.arange(nbins)[::15],lb[::15].astype(int))
+            plt.yticks(np.arange(nbins)[::10],lb[::10].astype(int))
+            plt.colorbar()
+            plt.savefig("%s/%s" % (cov_plot_dir, str))
+            plt.clf()
+            plt.close()
+
+            g.write('<div class=sub>\n')
+            g.write('<img src="' + str + '"  /> \n')
+            g.write('</div>\n')
+
+            count += 1
+
+    g.write('</body> \n')
+    g.write('</html> \n')
+    g.close()
+
 

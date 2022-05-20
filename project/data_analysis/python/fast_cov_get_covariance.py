@@ -19,14 +19,25 @@ bestfit_dir = "best_fits"
 sq_win_alms_dir = "sq_win_alms"
 
 pspy_utils.create_directory(cov_dir)
-
 surveys = d["surveys"]
 binning_file = d["binning_file"]
 lmax = d["lmax"]
 niter = d["niter"]
 
+fast_coupling = True
+if fast_coupling:
+    # This option is designed to be fast but is not for general usage
+    # In particular we assume that the same window function is used in T and Pol
+    # This loop check that this is what was specified in the dictfile
+    for sv in surveys:
+        arrays = d["arrays_%s" % sv]
+        for ar in arrays:
+            assert d["window_T_%s_%s" % (sv, ar)] == d["window_pol_%s_%s" % (sv, ar)], "T and pol windows have to be the same"
+
+
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
+
 
 ps_all = {}
 nl_all = {}
@@ -111,15 +122,37 @@ for task in subtasks:
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
     print("cov element (%s x %s, %s x %s)" % (na_r, nb_r, nc_r, nd_r))
 
-    coupling = data_analysis_utils.fast_cov_coupling(sq_win_alms_dir,
-                                                     na_r,
-                                                     nb_r,
-                                                     nc_r,
-                                                     nd_r,
-                                                     lmax,
-                                                     l_exact=l_exact,
-                                                     l_band=l_band,
-                                                     l_toep=l_toep)
+
+    if fast_coupling:
+    
+        coupling = data_analysis_utils.fast_cov_coupling(sq_win_alms_dir,
+                                                         na_r,
+                                                         nb_r,
+                                                         nc_r,
+                                                         nd_r,
+                                                         lmax,
+                                                         l_exact=l_exact,
+                                                         l_band=l_band,
+                                                         l_toep=l_toep)
+                                                         
+    else:
+        win = {}
+        win["Ta"] = so_map.read_map(d["window_T_%s" % na_r])
+        win["Tb"] = so_map.read_map(d["window_T_%s" % nb_r])
+        win["Tc"] = so_map.read_map(d["window_T_%s" % nc_r])
+        win["Td"] = so_map.read_map(d["window_T_%s" % nd_r])
+        win["Pa"] = so_map.read_map(d["window_pol_%s" % na_r])
+        win["Pb"] = so_map.read_map(d["window_pol_%s" % nb_r])
+        win["Pc"] = so_map.read_map(d["window_pol_%s" % nc_r])
+        win["Pd"] = so_map.read_map(d["window_pol_%s" % nd_r])
+        coupling = so_cov.cov_coupling_spin0and2_simple(win,
+                                                        lmax,
+                                                        niter=niter,
+                                                        l_exact=l_exact,
+                                                        l_band=l_band,
+                                                        l_toep=l_toep)
+
+    
 
     try:
         mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, na_r, nb_r), spin_pairs=spin_pairs)
@@ -144,16 +177,20 @@ for task in subtasks:
     # Some heuristic correction for the number of modes lost due to the transfer function
     # This should be tested against simulation and revisited
 
-    sva, _ = na.split("&")
-    svb, _ = nb.split("&")
-    svc, _ = nc.split("&")
-    svd, _ = nd.split("&")
+    sv_a, pa_a = na.split("&")
+    sv_b, pa_b = nb.split("&")
+    sv_c, pa_c = nc.split("&")
+    sv_d, pa_d = nd.split("&")
 
     tf = np.ones(len(lb))
-    for sv in [sva, svb, svc, svd]:
-        if d["tf_%s" % sv] is not None:
-            _, _, sv_tf, _ = np.loadtxt(d["tf_%s" % sv], unpack=True)
-            tf *= sv_tf[:len(lb)]**(1/4)
+    
+    for sv, pa in zip([sv_a, sv_b, sv_c, sv_d], [pa_a, pa_b, pa_c, pa_d]):
+        # so the TF here include the 1d pixwin but not the 2d pixwin
+        # we should decide weither or not to include the pixwin
+        # and do things consistently
+        _, sv_tf = np.loadtxt(spectra_dir + "/tf_%s_%s.dat" % (sv, pa), unpack=True)
+        tf *= sv_tf ** (1. / 4.)
+
 
     cov_tf = np.tile(tf, 4)
     analytic_cov /= np.outer(np.sqrt(cov_tf), np.sqrt(cov_tf))

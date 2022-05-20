@@ -4,7 +4,7 @@ it generates gaussian simulations of cmb, fg and noise
 the fg is based on fgspectra, and the noise is based on the 1d noise power spectra measured on the data
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
+from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi, so_map_preprocessing
 import numpy as np
 import sys
 import data_analysis_utils
@@ -60,9 +60,41 @@ ncomp = 3
 ps_cmb = powspec.read_spectrum("%s/lcdm.dat" % bestfit_dir)[:ncomp, :ncomp]
 l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lmax)
 
-# the template for the simulations
-template = d["maps_%s_%s" % (surveys[0], arrays[0])][0]
-template = so_map.read_map(template)
+# prepare the filter and the transfer function
+template = {}
+filter = {}
+tf_survey = {}
+_, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
+
+for sv in surveys:
+
+    template_name = d["maps_%s_%s" % (sv, arrays[0])][0]
+    template[sv] = so_map.read_map(template_name)
+    ks_f = d["k_filter_%s" % sv]
+    
+    tf_survey[sv] = np.ones(len(lb))
+
+    if template[sv].pixel == "CAR":
+    
+        if ks_f["apply"]:
+            shape, wcs = template[sv].data.shape, template[sv].data.wcs
+            if ks_f["type"] == "binary_cross":
+                filter[sv] = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=ks_f["vk_mask"], hk_mask=ks_f["hk_mask"], dtype=np.float64)
+            elif ks_f["type"] == "gauss":
+                filter[sv] = so_map_preprocessing.build_sigurd_filter(shape, wcs, ks_f["lbounds"], dtype=np.float64)
+            else:
+                print("you need to specify a valid filter type")
+
+            if ks_f["tf"] == "analytic":
+                print("compute analytic kspace tf %s" % sv)
+                _, kf_tf = so_map_preprocessing.analytical_tf(template[sv], filter[sv], binning_file, lmax)
+            else:
+                print("use kspace tf from file %s" % sv)
+                _, _, kf_tf, _ = np.loadtxt(ks_f["tf"], unpack=True)
+            
+            tf_survey[sv] *= np.sqrt(np.abs(kf_tf[:len(lb)]))
+
+
 
 # we will use mpi over the number of simulations
 so_mpi.init(True)
@@ -75,14 +107,15 @@ for iii in subtasks:
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
     # fglms will be of shape (nfreq, lm) and is T only
     
-    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, dtype=sim_alm_dtype)
-    fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, dtype=sim_alm_dtype)
+    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, seed=(iii, 101), dtype=sim_alm_dtype)
+    fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, seed=(iii, 102), dtype=sim_alm_dtype)
     
     master_alms = {}
     nsplits = {}
     
     for sv in surveys:
     
+        ks_f = d["k_filter_%s" % sv]
         arrays = d["arrays_%s" % sv]
         nsplits[sv] = len(d["maps_%s_%s" % (sv, arrays[0])])
         
@@ -138,19 +171,16 @@ for iii in subtasks:
                 noisy_alms[1] +=  nlms["E", k][ar_id]
                 noisy_alms[2] +=  nlms["B", k][ar_id]
 
-                split = sph_tools.alm2map(noisy_alms, template)
+                split = sph_tools.alm2map(noisy_alms, template[sv])
                 
                 # from now on the simulation pipeline is done
                 # and we are back to the get_spectra algorithm
                                 
                 if window_tuple[0].pixel == "CAR":
-                    if d["use_kspace_filter"]:
+                    if ks_f["apply"]:
                         binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                        split = data_analysis_utils.get_filtered_map(split,
-                                                                     binary,
-                                                                     vk_mask=d["vk_mask"],
-                                                                     hk_mask=d["hk_mask"],
-                                                                     normalize=False)
+                        split = data_analysis_utils.get_filtered_map(split, binary, filter[sv], weighted_filter=ks_f["weighted"])
+
                         del binary
                 
                 if d["remove_mean"] == True:
@@ -158,10 +188,6 @@ for iii in subtasks:
                 
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
                 print("m_alms_dtype", master_alms[sv, ar, k].dtype)
-                if d["use_kspace_filter"]:
-                    # there is an extra normalisation for the FFT/IFFT bit
-                    # note that we apply it here rather than at the FFT level because correcting the alm is faster than correcting the maps
-                    master_alms[sv, ar, k] /= (split.data.shape[1]*split.data.shape[2])
 
             print(time.time()-t1)
 
@@ -172,24 +198,12 @@ for iii in subtasks:
         arrays_1 = d["arrays_%s" % sv1]
         nsplits_1 = nsplits[sv1]
     
-        if d["tf_%s" % sv1] is not None:
-            print("will deconvolve tf of %s" %sv1)
-            _, _, tf1, _ = np.loadtxt(d["tf_%s" % sv1], unpack=True)
-        else:
-            tf1 = np.ones(len(lb))
-
         for id_ar1, ar1 in enumerate(arrays_1):
     
             for id_sv2, sv2 in enumerate(surveys):
                 arrays_2 = d["arrays_%s" % sv2]
                 nsplits_2 = nsplits[sv2]
             
-                if d["tf_%s" % sv2] is not None:
-                    print("will deconvolve tf of %s" %sv2)
-                    _, _, tf2, _ = np.loadtxt(d["tf_%s" % sv2], unpack=True)
-                else:
-                    tf2 = np.ones(len(lb))
-
                 for id_ar2, ar2 in enumerate(arrays_2):
 
                     if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
@@ -220,7 +234,7 @@ for iii in subtasks:
                                                             mbb_inv=mbb_inv,
                                                             spectra=spectra)
                                                         
-                            data_analysis_utils.deconvolve_tf(lb, ps, tf1, tf2, ncomp, lmax)
+                            data_analysis_utils.deconvolve_tf(lb, ps, tf_survey[sv1], tf_survey[sv2], ncomp, lmax)
 
                             if write_all_spectra:
                                 so_spectra.write_ps(spec_dir + "/%s_%05d.dat" % (spec_name,iii), lb, ps, type, spectra=spectra)

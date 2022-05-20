@@ -18,6 +18,7 @@ binary.data[:] = 1
 if "point_source_file" in d:
     print("Adding point sources...")
     df = pd.read_table(d["point_source_file"], escapechar="#", sep="\s+")
+    df = df.sort_values(by="Tflux", ascending=False)[: d.get("point_source_only_keep_nth_brighest")]
     high_flux_good_SNR = (df.Tflux > d.get("point_source_Tflux", 15)) & (
         df.SNR > d.get("point_source_SNR", 5)
     )

@@ -80,6 +80,7 @@ then to analyze and plot the simulations
 
     salloc -N 1 -C haswell -q interactive -t 01:00:00
     python mc_analysis.py global_s171819.dict
+    python mc_cov_analysis.py global_s171819.dict
     python mc_plot_spectra.py global_s171819.dict
     python mc_plot_covariances.py global_s171819.dict
 

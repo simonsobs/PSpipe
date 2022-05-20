@@ -50,6 +50,7 @@ for bl in ["TTTT", "TETE", "EEEE"]:
 
             var = cov_select.diagonal()
             
+            plt.semilogy()
             plt.plot(lb, np.sqrt(var), label = run)
             
         plt.title(r"$\sigma^{%s}_{\ell}$, %s" % (bl, scan), fontsize=14)
@@ -79,6 +80,8 @@ for bl in ["TTTT", "TETE", "EEEE"]:
             var = cov_select.diagonal()
             quick_var = quick_cov_select.diagonal()
             
+            plt.semilogy()
+
             plt.plot(lb, np.sqrt(var), ".", label = run, color = "blue")
             plt.plot(lb, np.sqrt(quick_var), "-", label = "approx %s" % run, color = "blue")
 
@@ -109,6 +112,8 @@ for bl in ["TTTT", "TETE", "EEEE"]:
             cov_select = so_cov.selectblock(cov, ["TT", "TE", "ET", "EE"], n_bins, block=bl)
 
             var = cov_select.diagonal()
+            
+            plt.semilogy()
             plt.plot(lb, np.sqrt(var), fmt[c_run], label = "%s %s" % (scan, run), color = colors[c_scan])
     
     

@@ -1,0 +1,83 @@
+surveys = ["dr6"]
+
+arrays_dr6 = ["pa7_f030", "pa7_f040"]
+
+data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/'
+map_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/maps_dr6/'
+npass = 1
+deconvolve_pixwin = True
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
+niter = 0
+remove_mean = False
+lmax = 3000
+type = 'Dl'
+write_splits_spectra = True
+multistep_path = data_dir
+use_toeplitz_mcm  = False
+use_toeplitz_cov  = True
+
+#window parameters
+
+ps_mask_dr6_pa7_f030 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_8.0arcmin_dust_monster_lowres.fits"
+ps_mask_dr6_pa7_f040 = data_dir + "masks/act_planck_mask_s08s19_0.150mJy_8.0arcmin_dust_monster_lowres.fits"
+
+gal_mask_dr6_pa7_f030 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_lowres.fits"
+gal_mask_dr6_pa7_f040 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_lowres.fits"
+
+
+apod_pts_source_degree = 0.3
+apod_survey_degree = 2
+skip_from_edges_degree = 1
+cross_link_threshold = 0.97
+n_med_ivar = 3
+
+# kspace filter parameters
+
+use_kspace_filter = True
+vk_mask = [-90, 90]
+hk_mask = [-50, 50]
+
+# transfer functions
+
+tf_dr6 = data_dir + "transfer_fcns/tf.dat"
+
+src_free_maps_dr6 = True
+
+maps_dr6_pa7_f030 = [map_dir + 'cmb_night_pa7_f030_%dpass_2way_set%d_map_srcfree.fits' % (npass, i) for i in range(2)]
+maps_dr6_pa7_f040 = [map_dir + 'cmb_night_pa7_f040_%dpass_2way_set%d_map_srcfree.fits' % (npass, i) for i in range(2)]
+
+cal_dr6_pa7_f030 = 1.0
+cal_dr6_pa7_f040 = 1.0
+
+nu_eff_dr6_pa7_f030 = 30
+nu_eff_dr6_pa7_f040 = 40
+
+beam_dr6_pa7_f030 = data_dir + 'beams/beam_transform_pa7_f030_201203.txt'
+beam_dr6_pa7_f040 = data_dir + 'beams/beam_transform_pa7_f040_201203.txt'
+
+window_T_dr6_pa7_f030 =  "windows/window_dr6_pa7_f030.fits"
+window_pol_dr6_pa7_f030 =  "windows/window_dr6_pa7_f030.fits"
+
+window_T_dr6_pa7_f040 =  "windows/window_dr6_pa7_f040.fits"
+window_pol_dr6_pa7_f040 =  "windows/window_dr6_pa7_f040.fits"
+
+
+# best fit params (only used for sim generation and covariances computation)
+cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+fg_components =  ["cibc", "cibp", "kSZ", "radio", "tSZ"]
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "n_CIBC": 1.20,"a_s": 3.10, "T_d": 9.60}
+
+#sim
+iStart = 0
+iStop = 39
+sim_alm_dtype = "complex64"
+
+
+#plot
+range_TT = [10, 8000]
+range_TE = [-150, 150]
+range_ET = [-150, 150]
+range_EE = [-20, 50]
+
+planck_data_dir = data_dir + "planck_data/"

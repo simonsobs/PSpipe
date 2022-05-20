@@ -1,0 +1,11 @@
+best_fits/
+sim_spectra/
+spectra/
+mcms/
+noise_model/
+windows/
+debug/
+covariances/
+sq_win_alms/
+alms/
+.vscode/

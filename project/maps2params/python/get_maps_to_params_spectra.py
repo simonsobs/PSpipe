@@ -29,6 +29,16 @@ fg_components["tt"].remove("tSZ_and_CIB")
 for comp in ["tSZ", "cibc", "tSZxCIB"]:
     fg_components["tt"].append(comp)
 
+map_dir = d["mbs_dir"]
+use_mbs = d["use_mbs"]
+
+freq2chan = {27: "LF1",
+             39: "LF2",
+             93: "MFF1",
+             145: "MFF2",
+             225: "UHF1",
+             280: "UHF2"}
+
 window_dir = "windows"
 mcm_dir = "mcms"
 noise_data_dir = "sim_data/noise_ps"
@@ -58,7 +68,10 @@ for iii in subtasks:
         np.random.seed(iii.astype(int))
     t0 = time.time()
 
-    alms = curvedsky.rand_alm(ps_cmb, lmax=lmax_simu)
+    if use_mbs:
+        alms = np.zeros((3, (lmax_simu + 1) * (lmax_simu + 2) // 2), dtype = "complex128")
+    else:
+        alms = curvedsky.rand_alm(ps_cmb, lmax=lmax_simu)
 
     if include_fg == True:
         fglms = curvedsky.rand_alm(ps_fg, lmax=lmax_simu)
@@ -121,6 +134,11 @@ for iii in subtasks:
 
             fcount += 1
 
+            if use_mbs:
+                map = so_map.read_map(
+                    "%s/%04d/simonsobs_cmb_uKCMB_la%s_nside4096_%04d.fits" % (
+                    map_dir, iii, freq2chan[freq], iii))
+
             for k in range(nsplits):
                 noisy_alms = sys_alms.copy()
 
@@ -129,6 +147,9 @@ for iii in subtasks:
                 noisy_alms[2] +=  nlms["B",k][fid]
 
                 split = sph_tools.alm2map(noisy_alms, template)
+
+                if use_mbs:
+                    split.data += map.data
 
                 # Now that we have generated a split of data of experiment exp
                 # and frequency freq, we take its harmonic transform

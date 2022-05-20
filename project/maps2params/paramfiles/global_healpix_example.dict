@@ -27,6 +27,10 @@ fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4
 band_integration = {"external_bandpass": False, "nsteps": 1, "bandwidth": 0}
 nuisance_params = {"bandint_shift_93": 0, "bandint_shift_145": 0, "bandint_shift_225": 0}
 
+# Use map based simulations
+# /!\ Only works with HEALPIX pixellisation
+use_mbs = False
+mbs_dir = "/global/project/projectdirs/sobs/v4_sims/mbs/201911_lensed_cmb/4096/cmb"
 
 # map pixellisation
 pixel_LAT = "HEALPIX"

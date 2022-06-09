@@ -7,8 +7,8 @@ import sys
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-specDir = "../test_spectra_poleff"
-covDir = "../test_covariances_poleff"
+specDir = "../spectra"
+covDir = "../covariances"
 
 specFile = "Dl_%sx%s_cross.dat"
 covFile = "analytic_cov_%sx%s_%sx%s.npy"
@@ -37,12 +37,12 @@ pspy_utils.create_directory(chainsDir)
 
 # Define the multipole range used to obtain
 # the polarization efficiencies
-multipoleRange = {"dr6_pa4_f150": [850, 3000],
-                  "dr6_pa4_f220": [850, 3000],
-                  "dr6_pa5_f090": [850, 3000],
-                  "dr6_pa5_f150": [850, 3000],
-                  "dr6_pa6_f090": [850, 3000],
-                  "dr6_pa6_f150": [850, 3000]}
+multipoleRange = {"dr6_pa4_f150": [300, 3000],
+                  "dr6_pa4_f220": [300, 3000],
+                  "dr6_pa5_f090": [300, 3000],
+                  "dr6_pa5_f150": [300, 3000],
+                  "dr6_pa6_f090": [300, 3000],
+                  "dr6_pa6_f150": [300, 3000]}
 pickle.dump(multipoleRange, open(f"{outputDir}/multipole_range.pkl", "wb"))
 
 # Define the reference arrays
@@ -75,8 +75,8 @@ for ar in d["arrays_dr6"]:
                                  usedMode, array, f"{residualOutputDir}/residual_{array}_before")
 
     calMean, calStd = so_consistency.get_calibration_amplitudes(specVec, fullCov,
-                                                                projPattern, id,
-                                                                f"{chainsDir}/{array}")
+                                                                projPattern, usedMode,
+                                                                id, f"{chainsDir}/{array}")
     calibDict[array] = [calMean, calStd]
 
     if usedMode == "EE":

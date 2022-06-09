@@ -71,7 +71,8 @@ for task in subtasks:
             
     maps = d["maps_%s_%s" % (sv, ar)]
     cal = d["cal_%s_%s" % (sv, ar)]
-            
+    pol_eff = d["pol_eff_%s_%s" % (sv, ar)]
+
     t = time.time()
     for k, map in enumerate(maps):
         
@@ -104,7 +105,7 @@ for task in subtasks:
         elif win_T.pixel == "HEALPIX":
             split = so_map.read_map(map)
                 
-        split.data *= cal
+        split = split.calibrate(cal=cal, pol_eff=pol_eff)
             
         if d["remove_mean"] == True:
             split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)

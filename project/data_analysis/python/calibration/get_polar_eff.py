@@ -1,4 +1,4 @@
-from pspy import pspy_utils, so_dict, so_consistency
+from pspy import pspy_utils, so_dict, so_consistency, so_spectra, so_cov
 import numpy as np
 import pickle
 import sys
@@ -7,87 +7,109 @@ import sys
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-specDir = "../spectra"
-covDir = "../covariances"
+spec_dir = "../spectra"
+cov_dir = "../covariances"
 
-specFile = "Dl_%sx%s_cross.dat"
-covFile = "analytic_cov_%sx%s_%sx%s.npy"
+spec_file = "Dl_%sx%s_cross.dat"
+cov_file = "analytic_cov_%sx%s_%sx%s.npy"
 
 _, _, lb, _ = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
-nBins = len(lb)
+n_bins = len(lb)
+
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+modes = ["TT", "TE", "ET", "EE"]
 
 # Define the projection pattern - i.e. which
 # spectra combination will be used to compute
 # the residuals
-projPattern = np.array([1, 0, -1])
+proj_pattern = np.array([1, 0, -1])
 
 # Mode to use to get the
 # polarization efficiency
-usedMode = "EE"
+used_mode = "EE"
 
 # Create output dirs
-outputDir = f"polar_efficiency_results_{usedMode}"
-pspy_utils.create_directory(outputDir)
+output_dir = f"polar_efficiency_results_{used_mode}"
+pspy_utils.create_directory(output_dir)
 
-residualOutputDir = f"{outputDir}/residuals"
-pspy_utils.create_directory(residualOutputDir)
+residual_output_dir = f"{output_dir}/residuals"
+pspy_utils.create_directory(residual_output_dir)
 
-chainsDir = f"{outputDir}/chains"
-pspy_utils.create_directory(chainsDir)
+chains_dir = f"{output_dir}/chains"
+pspy_utils.create_directory(chains_dir)
 
 # Define the multipole range used to obtain
 # the polarization efficiencies
-multipoleRange = {"dr6_pa4_f150": [300, 3000],
-                  "dr6_pa4_f220": [300, 3000],
-                  "dr6_pa5_f090": [300, 3000],
-                  "dr6_pa5_f150": [300, 3000],
-                  "dr6_pa6_f090": [300, 3000],
-                  "dr6_pa6_f150": [300, 3000]}
-pickle.dump(multipoleRange, open(f"{outputDir}/multipole_range.pkl", "wb"))
+multipole_range = {"dr6_pa4_f150": [300, 3000],
+                   "dr6_pa4_f220": [300, 3000],
+                   "dr6_pa5_f090": [300, 3000],
+                   "dr6_pa5_f150": [300, 3000],
+                   "dr6_pa6_f090": [300, 3000],
+                   "dr6_pa6_f150": [300, 3000]}
+pickle.dump(multipole_range, open(f"{output_dir}/multipole_range.pkl", "wb"))
 
 # Define the reference arrays
-refArrays = {"dr6_pa4_f150": "dr6_pa6_f150",
-             "dr6_pa4_f220": "dr6_pa4_f220",
-             "dr6_pa5_f090": "dr6_pa6_f090",
-             "dr6_pa5_f150": "dr6_pa6_f150",
-             "dr6_pa6_f090": "dr6_pa6_f090",
-             "dr6_pa6_f150": "dr6_pa6_f150"}
-pickle.dump(refArrays, open(f"{outputDir}/reference_arrays.pkl", "wb"))
+ref_arrays = {"dr6_pa4_f150": "dr6_pa6_f150",
+              "dr6_pa4_f220": "dr6_pa4_f220",
+              "dr6_pa5_f090": "dr6_pa6_f090",
+              "dr6_pa5_f150": "dr6_pa6_f150",
+              "dr6_pa6_f090": "dr6_pa6_f090",
+              "dr6_pa6_f150": "dr6_pa6_f150"}
+pickle.dump(ref_arrays, open(f"{output_dir}/reference_arrays.pkl", "wb"))
 
-calibDict = {}
+calib_dict = {}
 for ar in d["arrays_dr6"]:
     array = f"dr6_{ar}"
-    if array == refArrays[array]: continue
-    refArray = refArrays[array]
+    if array == ref_arrays[array]: continue
+    ref_array = ref_arrays[array]
 
-    lb, specVec, fullCov = so_consistency.get_spectraVec_and_fullCov(f"{specDir}/{specFile}",
-                                                                     f"{covDir}/{covFile}",
-                                                                     array, refArray, usedMode, nBins)
+    spectra_order = [(array, array),
+                     (array, ref_array),
+                     (ref_array, ref_array)]
+
+    # Load spectra and cov
+    spectra_list = []
+    cov_list = []
+    for i, (ar1, ar2) in enumerate(spectra_order):
+        _, ps = so_spectra.read_ps(f"{spec_dir}/{spec_file}" % (ar1, ar2),
+                                   spectra = spectra)
+        spectra_list.append(ps[used_mode])
+        for j, (ar3, ar4) in enumerate(spectra_order):
+            if j < i: continue
+            cov = np.load(f"{cov_dir}/{cov_file}" % (ar1, ar2, ar3, ar4))
+            cov = so_cov.selectblock(cov, modes, n_bins = n_bins, block = used_mode + used_mode)
+            cov_list.append(cov)
+
+    # Concatenation
+    spec_vec, full_cov = so_consistency.append_spectra_and_cov(spectra_list, cov_list)
+    #lb, specVec, fullCov = so_consistency.get_spectraVec_and_fullCov(f"{specDir}/{specFile}",
+    #                                                                 f"{covDir}/{covFile}",
+    #                                                                 array, refArray, usedMode, nBins)
 
     # Save and plot residuals before calibration
-    resSpectrum, resCov = so_consistency.get_residual_spectra_and_cov(specVec, fullCov, projPattern)
-    np.savetxt(f"{residualOutputDir}/residual_{array}_before.dat", np.array([lb, resSpectrum]).T)
-    np.savetxt(f"{residualOutputDir}/residual_cov_{array}.dat", resCov)
+    res_spectrum, res_cov = so_consistency.project_spectra_vec_and_cov(spec_vec, full_cov, proj_pattern)
+    np.savetxt(f"{residual_output_dir}/residual_{array}_before.dat", np.array([lb, res_spectrum]).T)
+    np.savetxt(f"{residual_output_dir}/residual_cov_{array}.dat", res_cov)
 
-    lmin, lmax = multipoleRange[array]
+    lmin, lmax = multipole_range[array]
     id = np.where((lb >= lmin) & (lb <= lmax))
-    so_consistency.plot_residual(lb[id], resSpectrum[id], resCov[np.ix_(id[0], id[0])],
-                                 usedMode, array, f"{residualOutputDir}/residual_{array}_before")
+    so_consistency.plot_residual(lb[id], res_spectrum[id], res_cov[np.ix_(id[0], id[0])],
+                                 used_mode, array, f"{residual_output_dir}/residual_{array}_before")
 
-    calMean, calStd = so_consistency.get_calibration_amplitudes(specVec, fullCov,
-                                                                projPattern, usedMode,
-                                                                id, f"{chainsDir}/{array}")
-    calibDict[array] = [calMean, calStd]
+    cal_mean, cal_std = so_consistency.get_calibration_amplitudes(spec_vec, full_cov,
+                                                                proj_pattern, used_mode,
+                                                                id, f"{chains_dir}/{array}")
+    calib_dict[array] = [cal_mean, cal_std]
 
-    if usedMode == "EE":
-        calibVec = np.array([calMean**2, calMean, 1])
-    elif usedMode == "TE":
-        calibVec = np.array([calMean, 1, 1])
+    if used_mode == "EE":
+        calib_vec = np.array([cal_mean**2, cal_mean, 1])
+    elif used_mode == "TE":
+        calib_vec = np.array([cal_mean, 1, 1])
 
-    resSpectrum, resCov = so_consistency.get_residual_spectra_and_cov(specVec, fullCov,
-                                                                      projPattern, calibVec = calibVec)
-    np.savetxt(f"{residualOutputDir}/residual_{array}_after.dat", np.array([lb, resSpectrum]).T)
-    so_consistency.plot_residual(lb[id], resSpectrum[id], resCov[np.ix_(id[0], id[0])],
-                                 usedMode, array, f"{residualOutputDir}/residual_{array}_after")
+    res_spectrum, res_cov = so_consistency.project_spectra_vec_and_cov(spec_vec, full_cov,
+                                                                      proj_pattern, calib_vec = calib_vec)
+    np.savetxt(f"{residual_output_dir}/residual_{array}_after.dat", np.array([lb, res_spectrum]).T)
+    so_consistency.plot_residual(lb[id], res_spectrum[id], res_cov[np.ix_(id[0], id[0])],
+                                 used_mode, array, f"{residual_output_dir}/residual_{array}_after")
 
-pickle.dump(calibDict, open(f"{outputDir}/polareff_dict.pkl", "wb"))
+pickle.dump(calib_dict, open(f"{output_dir}/polareff_dict.pkl", "wb"))

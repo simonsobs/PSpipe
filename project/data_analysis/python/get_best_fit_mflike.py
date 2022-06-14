@@ -55,7 +55,6 @@ ell = np.arange(ell_min, ell_max)
 np.savetxt("%s/lcdm.dat" % bestfit_dir, np.transpose([ell, clth["TT"], clth["EE"], clth["BB"], clth["TE"]]))
 
 # we will now use mflike (and in particular the fg module) to get the best fit foreground model
-# we will only include foreground in tt, note that for now only extragalactic foreground are present
 from mflike import theoryforge_MFLike as th_mflike
 ThFo = th_mflike.TheoryForge_MFLike()
 ThFo.bandint_freqs = np.array(freq_list, dtype = "float")
@@ -80,13 +79,20 @@ for spec in spectra:
 
             if spec == "TT":
                 plt.semilogy()
-                cl_th_and_fg = cl_th_and_fg + fg_dict["tt", "all", freq1, freq2]
-                np.savetxt("%s/fg_%s.dat" % (bestfit_dir, name),
-                                    np.transpose([ell, fg_dict["tt", "all", freq1, freq2]]))
 
+            if spec.lower() in d["fg_components"].keys():
+                fg = fg_dict[spec.lower(), "all", freq1, freq2]
+            elif spec == "ET":
+                fg = fg_dict["te", "all", freq2, freq1]
+            else:
+                fg = np.zeros(cl_th_and_fg.shape)
+
+            cl_th_and_fg = cl_th_and_fg + fg
+            np.savetxt("%s/fg_%s.dat" % (bestfit_dir, name),
+                       np.transpose([ell, fg]))
 
             np.savetxt("%s/best_fit_%s.dat" % (bestfit_dir, name),
-                                np.transpose([ell, cl_th_and_fg]))
+                       np.transpose([ell, cl_th_and_fg]))
 
             plt.plot(ell, cl_th_and_fg, label= "%s x %s" %(freq1, freq2) )
     plt.legend()

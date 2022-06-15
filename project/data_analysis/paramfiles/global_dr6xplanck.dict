@@ -156,8 +156,8 @@ range_EE = [-20, 50]
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
-fg_components =  ["cibc", "cibp", "kSZ", "radio", "tSZ"]
-fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 2.79, "a_gte": 0.36, "a_gee": 0.13, "a_psee": 0.05, "a_pste": 0, "xi": 0.1, "T_d": 9.60}
+fg_components = {"tt": ["tSZ_and_CIB", "cibp", "kSZ", "radio", "dust"], "te": ["radio", "dust"], "ee": ["radio", "dust"]}
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.7, "a_gte": 0.355, "a_gee": 0.13, "a_psee": 0.05, "a_pste": 0, "xi": 0.1, "T_d": 9.60}
 
 
 #sim

@@ -13,6 +13,7 @@ deconvolve_pixwin = True
 binning_file = data_dir + "binning/binning_dr6_new.dat"
 niter = 0
 remove_mean = False
+binned_mcm = True
 lmax = 5400
 type = 'Dl'
 write_splits_spectra = True

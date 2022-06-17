@@ -10,10 +10,12 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 mcm_dir = "mcms"
+
 pspy_utils.create_directory(mcm_dir)
 
 surveys = d["surveys"]
 lmax = d["lmax"]
+binned_mcm = d["binned_mcm"]
 
 if d["use_toeplitz_mcm"] == True:
     print("we will use the toeplitz approximation")
@@ -68,6 +70,7 @@ for task in subtasks:
                                                 l_exact=l_exact,
                                                 l_band=l_band,
                                                 l_toep=l_toep,
+                                                binned_mcm=binned_mcm,
                                                 save_file="%s/%s_%sx%s_%s"%(mcm_dir, sv1, ar1, sv2, ar2))
 
 

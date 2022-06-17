@@ -5,7 +5,7 @@ import sys
 
 import data_analysis_utils
 import numpy as np
-from pspy import pspy_utils, so_dict, so_mpi
+from pspy import pspy_utils, so_dict, so_mpi, so_cov
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -78,7 +78,7 @@ for task in subtasks:
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     id_element = [na, nb, nc, nd]
         
-    analytic_beam_cov = data_analysis_utils.covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax)
+    analytic_beam_cov = so_cov.covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax)
         
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
        

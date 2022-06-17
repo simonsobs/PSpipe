@@ -24,6 +24,7 @@ type = d["type"]
 binning_file = d["binning_file"]
 write_all_spectra = d["write_splits_spectra"]
 deconvolve_pixwin = d["deconvolve_pixwin"]
+binned_mcm = d["binned_mcm"]
 
 mcm_dir = "mcms"
 spec_dir = "spectra"
@@ -141,7 +142,8 @@ for id_sv1, sv1 in enumerate(surveys):
                                                         lmax,
                                                         type=type,
                                                         mbb_inv=mbb_inv,
-                                                        spectra=spectra)
+                                                        spectra=spectra,
+                                                        binned_mcm=binned_mcm)
                                                         
                         data_analysis_utils.deconvolve_tf(lb, ps, tf_array[sv1, ar1], tf_array[sv2, ar2], 3, lmax)
 

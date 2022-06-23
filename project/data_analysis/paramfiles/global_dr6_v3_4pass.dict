@@ -10,6 +10,7 @@ deconvolve_pixwin = True
 binning_file = data_dir + "binning/binning_dr6_small_bin.dat"
 niter = 0
 remove_mean = False
+binned_mcm = True
 lmax = 7000
 type = 'Dl'
 write_splits_spectra = True
@@ -63,12 +64,6 @@ maps_dr6_pa5_f150 = [map_dir + 'cmb_night_pa5_f150_%dpass_8way_set%d_map_srcfree
 maps_dr6_pa6_f090 = [map_dir + 'cmb_night_pa6_f090_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
 maps_dr6_pa6_f150 = [map_dir + 'cmb_night_pa6_f150_%dpass_8way_set%d_map_srcfree.fits' % (npass_dr6, i) for i in range(8)]
 
-#cal_dr6_pa4_f150 = 0.9851
-#cal_dr6_pa4_f220 = 1.0614
-#cal_dr6_pa5_f090 = 0.9804
-#cal_dr6_pa5_f150 = 1.0013
-#cal_dr6_pa6_f090 = 0.9782
-#cal_dr6_pa6_f150 = 0.9841
 
 cal_dr6_pa4_f150 = 0.98539
 cal_dr6_pa4_f220 = 1.06922

@@ -23,6 +23,7 @@ surveys = d["surveys"]
 binning_file = d["binning_file"]
 lmax = d["lmax"]
 niter = d["niter"]
+binned_mcm = d["binned_mcm"]
 
 fast_coupling = True
 if fast_coupling:
@@ -52,7 +53,7 @@ for id_sv1, sv1 in enumerate(surveys):
 
     for id_ar1, ar1 in enumerate(arrays_1):
         _, bl1 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv1, ar1)])
-        bl1 = bl1[2:lmax + 2]
+        bl1 = bl1[2:lmax]
         freq1 = d["nu_eff_%s_%s" % (sv1, ar1)]
 
         for id_sv2, sv2 in enumerate(surveys):
@@ -60,7 +61,7 @@ for id_sv1, sv1 in enumerate(surveys):
 
             for id_ar2, ar2 in enumerate(arrays_2):
                 _, bl2 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv2, ar2)])
-                bl2 = bl2[2:lmax + 2]
+                bl2 = bl2[2:lmax]
                 freq2 = d["nu_eff_%s_%s" % (sv2, ar2)]
 
 
@@ -77,14 +78,14 @@ for id_sv1, sv1 in enumerate(surveys):
                     _, ps_th = np.loadtxt("%s/best_fit_%s.dat"%(bestfit_dir, name), unpack=True)
 
 
-                    ps_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = bl1 * bl2 * ps_th[:lmax]
+                    ps_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = bl1 * bl2 * ps_th[:lmax - 2]
 
                     if (sv1 == sv2) & (ar1 == ar2):
                         ns[sv1] = len(d["maps_%s_%s" % (sv1, ar1)])
 
-                        nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = Nl[spec][:lmax] * ns[sv1]
+                        nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = Nl[spec][:lmax - 2] * ns[sv1]
                     else:
-                        nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = np.zeros(lmax)
+                        nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = np.zeros(lmax - 2)
 
                     ps_all["%s&%s" % (sv2, ar2), "%s&%s"%(sv1, ar1), spec] = ps_all["%s&%s"%(sv1, ar1), "%s&%s"%(sv2, ar2), spec]
                     nl_all["%s&%s" % (sv2, ar2), "%s&%s"%(sv1, ar1), spec] = nl_all["%s&%s"%(sv1, ar1), "%s&%s"%(sv2, ar2), spec]
@@ -125,15 +126,12 @@ for task in subtasks:
 
     if fast_coupling:
     
-        coupling = data_analysis_utils.fast_cov_coupling(sq_win_alms_dir,
-                                                         na_r,
-                                                         nb_r,
-                                                         nc_r,
-                                                         nd_r,
-                                                         lmax,
-                                                         l_exact=l_exact,
-                                                         l_band=l_band,
-                                                         l_toep=l_toep)
+        coupling = so_cov.fast_cov_coupling_spin0and2(sq_win_alms_dir,
+                                                     [na_r, nb_r, nc_r, nd_r],
+                                                     lmax,
+                                                     l_exact=l_exact,
+                                                     l_band=l_band,
+                                                     l_toep=l_toep)
                                                          
     else:
         win = {}
@@ -145,6 +143,7 @@ for task in subtasks:
         win["Pb"] = so_map.read_map(d["window_pol_%s" % nb_r])
         win["Pc"] = so_map.read_map(d["window_pol_%s" % nc_r])
         win["Pd"] = so_map.read_map(d["window_pol_%s" % nd_r])
+        
         coupling = so_cov.cov_coupling_spin0and2_simple(win,
                                                         lmax,
                                                         niter=niter,
@@ -154,25 +153,23 @@ for task in subtasks:
 
     
 
-    try:
-        mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, na_r, nb_r), spin_pairs=spin_pairs)
-    except:
-        mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nb_r, na_r), spin_pairs=spin_pairs)
+    try: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, na_r, nb_r), spin_pairs=spin_pairs)
+    except: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nb_r, na_r), spin_pairs=spin_pairs)
 
-    try:
-        mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nc_r, nd_r), spin_pairs=spin_pairs)
-    except:
-        mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nd_r, nc_r), spin_pairs=spin_pairs)
+    try: mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nc_r, nd_r), spin_pairs=spin_pairs)
+    except:  mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nd_r, nc_r), spin_pairs=spin_pairs)
 
 
-    analytic_cov = data_analysis_utils.covariance_element(coupling,
-                                                          [na, nb, nc, nd],
-                                                          ns,
-                                                          ps_all,
-                                                          nl_all,
-                                                          binning_file,
-                                                          mbb_inv_ab,
-                                                          mbb_inv_cd)
+    analytic_cov = so_cov.generalized_cov_spin0and2(coupling,
+                                                    [na, nb, nc, nd],
+                                                    ns,
+                                                    ps_all,
+                                                    nl_all,
+                                                    lmax,
+                                                    binning_file,
+                                                    mbb_inv_ab,
+                                                    mbb_inv_cd,
+                                                    binned_mcm=binned_mcm)
 
     # Some heuristic correction for the number of modes lost due to the transfer function
     # This should be tested against simulation and revisited

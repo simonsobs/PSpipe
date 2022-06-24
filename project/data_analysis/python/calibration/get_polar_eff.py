@@ -1,4 +1,4 @@
-consistencyfrom pspy import pspy_utils, so_dict, so_spectra, so_cov
+from pspy import pspy_utils, so_dict, so_spectra, so_cov
 from pspipe_utils import consistency
 import numpy as np
 import pickle

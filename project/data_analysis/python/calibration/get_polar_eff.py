@@ -7,8 +7,8 @@ import sys
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-spec_dir = "../spectra"
-cov_dir = "../covariances"
+spec_dir = "spectra"
+cov_dir = "covariances"
 
 spec_file = "Dl_%sx%s_cross.dat"
 cov_file = "analytic_cov_%sx%s_%sx%s.npy"

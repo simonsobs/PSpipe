@@ -11,8 +11,8 @@ modes = ["TT", "TE", "ET", "EE"]
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-spec_dir = "../spectra"
-cov_dir = "../covariances"
+spec_dir = "spectra"
+cov_dir = "covariances"
 
 output_dir = "plots/nulls"
 pspy_utils.create_directory(output_dir)

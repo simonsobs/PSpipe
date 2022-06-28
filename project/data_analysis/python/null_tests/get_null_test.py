@@ -59,10 +59,19 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
         if f1 != f3 or f2 != f4: continue
 
         for m in modes:
+
+            m0, m1 = m[0], m[1]
+            lmin0, lmax0 = multipole_range[f1][m0]
+            lmin1, lmax1 = multipole_range[f2][m1]
+            lmin = max(lmin0, lmin1)
+            lmax = min(lmax0, lmax1)
+            lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
+
             ps_order = [(ar1, ar2, m), (ar3, ar4, m)]
             ps_vec, full_cov = consistency.append_spectra_and_cov(ps_dict, cov_dict, ps_order)
             ps_res, cov_res = consistency.project_spectra_vec_and_cov(ps_vec, full_cov, [1, -1])
 
             consistency.plot_residual(lb, ps_res, cov_res, m,
                                          f"{ar1}x{ar2} - {ar3}x{ar4}",
-                                         f"{output_dir}/residual_{ar1}x{ar2}_{ar3}x{ar4}_{m}")
+                                         f"{output_dir}/residual_{ar1}x{ar2}_{ar3}x{ar4}_{m}",
+                                         lrange = lrange)

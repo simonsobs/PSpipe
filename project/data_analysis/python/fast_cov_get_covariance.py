@@ -68,7 +68,7 @@ for id_sv1, sv1 in enumerate(surveys):
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
 
-                if (sv1 == sv2) & (ar1 == ar2):
+                if (sv1 == sv2):
                     spec_name_noise = "mean_%sx%s_%s_noise" % (ar1, ar2, sv1)
                     _, Nl = so_spectra.read_ps(ps_model_dir + "/%s.dat" % spec_name_noise, spectra=spectra)
 
@@ -80,7 +80,7 @@ for id_sv1, sv1 in enumerate(surveys):
 
                     ps_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = bl1 * bl2 * ps_th[:lmax - 2]
 
-                    if (sv1 == sv2) & (ar1 == ar2):
+                    if (sv1 == sv2):
                         ns[sv1] = len(d["maps_%s_%s" % (sv1, ar1)])
 
                         nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = Nl[spec][:lmax - 2] * ns[sv1]

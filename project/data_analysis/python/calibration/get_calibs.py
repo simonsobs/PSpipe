@@ -10,9 +10,6 @@ d.read_from_file(sys.argv[1])
 spec_dir = "spectra"
 cov_dir = "covariances"
 
-spec_file = "Dl_%sx%s_cross.dat"
-cov_file = "analytic_cov_%sx%s_%sx%s.npy"
-
 _, _, lb, _ = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
 n_bins = len(lb)
 
@@ -85,12 +82,12 @@ for ar in d["arrays_dr6"]:
     ps_dict = {}
     cov_dict = {}
     for i, (ar1, ar2, m1) in enumerate(spectra_order):
-        _, ps = so_spectra.read_ps(f"{spec_dir}/{spec_file}" % (ar1, ar2),
+        _, ps = so_spectra.read_ps(f"{spec_dir}/Dl_{ar1}x{ar2}_cross.dat",
                                    spectra = spectra)
         ps_dict[ar1, ar2, m1] = ps[m1]
         for j, (ar3, ar4, m2) in enumerate(spectra_order):
             if j < i: continue
-            cov = np.load(f"{cov_dir}/{cov_file}" % (ar1, ar2, ar3, ar4))
+            cov = np.load(f"{cov_dir}/analytic_cov_{ar1}x{ar2}_{ar3}x{ar4}.npy")
             cov = so_cov.selectblock(cov, modes, n_bins = n_bins, block = m1 + m2)
             cov_dict[(ar1, ar2, m1), (ar3, ar4, m2)] = cov
 

@@ -17,9 +17,6 @@ cov_dir = "covariances"
 output_dir = "plots/nulls"
 pspy_utils.create_directory(output_dir)
 
-cov_file = "analytic_cov_%sx%s_%sx%s.npy"
-spec_file = "Dl_%sx%s_cross.dat"
-
 surveys = d["surveys"]
 arrays = []
 for sv in surveys:
@@ -31,11 +28,11 @@ cov_dict = {}
 
 for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
 
-    lb, ps = so_spectra.read_ps(f"{spec_dir}/{spec_file}" % (ar1, ar2),
+    lb, ps = so_spectra.read_ps(f"{spec_dir}/Dl_{ar1}x{ar2}_cross.dat",
                                 spectra = spectra)
     for j, (ar3, ar4) in enumerate(cwr(arrays, 2)):
         if j < i: continue
-        cov = np.load(f"{cov_dir}/{cov_file}" % (ar1, ar2, ar3, ar4))
+        cov = np.load(f"{cov_dir}/analytic_cov_{ar1}x{ar2}_{ar3}x{ar4}.npy")
 
         for m in modes:
 

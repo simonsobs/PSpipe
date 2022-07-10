@@ -184,7 +184,8 @@ for iii in subtasks:
                                                             lmax,
                                                             type=type,
                                                             mbb_inv=mbb_inv,
-                                                            spectra=spectra)
+                                                            spectra=spectra,
+                                                            binned_mcm=binned_mcm)
                                         
 
                             so_spectra.write_ps(tf_dir + "/%s_%s_%s_%05d.dat" % (spec_name, filt, scenario, iii), lb, ps, type, spectra=spectra)

@@ -21,6 +21,7 @@ niter = d["niter"]
 type = d["type"]
 binning_file = d["binning_file"]
 sim_alm_dtype = d["sim_alm_dtype"]
+binned_mcm = d["binned_mcm"]
 
 if sim_alm_dtype == "complex64":
     sim_alm_dtype = np.complex64

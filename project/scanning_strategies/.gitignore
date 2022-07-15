@@ -1,0 +1,7 @@
+sim_spectra/
+spectra/
+windows/
+simrun*
+mcms/
+debug/
+binning.dat

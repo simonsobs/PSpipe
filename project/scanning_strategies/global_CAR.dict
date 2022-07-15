@@ -12,7 +12,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 binning_file_name = "binning.dat"
 bin_size = 20
-cross_linking_threshold = 1
+cross_linking_threshold = 0.7
 include_CMB = True
 
 clfile = "bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
@@ -20,3 +20,5 @@ clfile = "bode_almost_wmap5_lmax_1e4_lensedCls_startAt2.dat"
 map_plot_range = [2000, 200, 200]
 
 
+downgrade = 4
+sim_idx = 0

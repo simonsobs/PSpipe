@@ -1,0 +1,11 @@
+#qid,season,region,array,freq,daynight,nsplits
+ss2_01,s25,small_tiles,lat01,f150,night,2
+ss2_02,s25,large_tiles,lat01,f150,night,2
+ss2_03,s25,high_cadence_constant_scan_1_el,lat01,f150,night,2
+ss2_03_dt,s25,high_cadence_constant_scan_1_el_doubletime,lat01,f150,night,2
+ss2_03_dfp,s25,high_cadence_constant_scan_1_el_thinfp4,lat01,f150,night,2
+ss2_03_ds,s25,high_cadence_constant_scan_1_el_200Hz,lat01,f150,night,2
+ss2_03_rfp,s25,high_cadence_constant_scan_1_el_thinfpRandom,lat01,f150,night,2
+ss2_04,s25,high_cadence_constant_scan_3_el,lat01,f150,night,2
+ss2_05,s25,high_cadence_variable_scan,lat01,f150,night,2
+ss2_06,s25,high_cadence_variable_scan_oscillating_el,lat01,f150,night,2

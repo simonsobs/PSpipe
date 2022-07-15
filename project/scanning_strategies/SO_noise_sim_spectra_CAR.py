@@ -14,6 +14,17 @@ import sys
 from pspy import so_map, so_window, sph_tools, so_mcm, pspy_utils, so_spectra, so_dict, so_mpi
 import SO_noise_utils
 
+from soapack import interfaces
+from mnms import noise_models as nm
+
+# map regions to qids
+from astropy.io import ascii
+strats = ascii.read("so_scan_strategies.csv")
+strats.add_index("region")
+def getqid(region):
+    return strats.loc[region]["qid"]
+
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
@@ -33,7 +44,14 @@ skip_from_edges = d["skip_from_edges"]
 cross_linking_threshold = d["cross_linking_threshold"]
 K_to_muK = 10**6
 include_cmb = d["include_CMB"]
-sim_idx = d["sim_idx"]
+
+if len(sys.argv) > 2:
+    sim_idx = int(sys.argv[2])
+else:
+    sim_idx = int(d["sim_idx"])
+print("SIMULATING   ", sim_idx)
+
+dg = d["downgrade"]
 
 lth, ps_theory = pspy_utils.ps_lensed_theory_to_dict(clfile, "Dl", lmax=lmax)
 
@@ -42,15 +60,17 @@ pspy_utils.create_binning_file(bin_size=bin_size, n_bins=300, file_name=binning_
 map_dir = d["map_dir"]
 mcm_dir = "mcms"
 spectra_dir = "spectra"
+sim_spectra_dir = "sim_spectra"
 plot_dir = "plot/map"
 window_dir = "windows"
 
 pspy_utils.create_directory(window_dir)
 pspy_utils.create_directory(mcm_dir)
 pspy_utils.create_directory(spectra_dir)
+pspy_utils.create_directory(sim_spectra_dir)
 pspy_utils.create_directory(plot_dir)
 
-template = so_map.read_map("%s/lat01_s25_small_tiles_fullfp_f150_1pass_2way_set00_map.fits" % (map_dir))
+template = so_map.read_map("%s/lat01_s25_small_tiles_fullfp_f150_1pass_2way_set00_map.fits" % (map_dir)) #downgrade(dg)
 np.random.seed((sim_idx, 2022))  # set seed for cmb
 cmb = template.synfast(clfile)
 
@@ -60,19 +80,38 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_scans - 1)
 
 for task in subtasks:
+
     task = int(task)
     scan = scan_list[task]
 
-    binary = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set00_div.fits" % (map_dir, scan))
+    data_model = interfaces.SOScanS0002()
+    downgrade = dg
+    sim_type = "tile"
+    qid = getqid(scan)
+    print("QID: ", qid)
+
+    if sim_type == 'wav':
+        model = nm.WaveletNoiseModel(qid, data_model=data_model, downgrade=downgrade)
+    elif sim_type == 'tile':
+        model = nm.TiledNoiseModel(qid, data_model=data_model, downgrade=downgrade,
+                                fwhm_ivar=1, delta_ell_smooth=100, 
+                                width_deg=3., height_deg=3.)
+
+    binary = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set00_div.fits" % (map_dir, scan)) #.downgrade(dg)
     binary.data[:] = 1
     
     sim = {}
     for count, split in enumerate(split_list):
-        noise_map = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set%02d_map.fits" % (map_dir, scan, count))
+
+        model.get_model(check_on_disk=True, keep_model=True, verbose=True)
+        alm = model.get_sim(count, sim_idx, check_on_disk=False, alm=True)[0,0,:,:]
+        noise_map = template.copy()
+        noise_map = sph_tools.alm2map(alm, noise_map)
+
+        # noise_map = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set%02d_map.fits" % (map_dir, scan, count)).downgrade(dg)
         binary.data[noise_map.data[0] == 0] = 0
         noise_map.data[:] *= K_to_muK # should it be * np.sqrt(2) ?
         
-        downgraded_plot(noise_map, "%s/%s_map_%s" % (plot_dir, split, scan), color_range=color_range)
         
         if include_cmb == True:
             sim[split] = cmb.copy()
@@ -80,56 +119,11 @@ for task in subtasks:
         else:
             sim[split] = noise_map.copy()
     
-        if (cross_linking_threshold != 1) & (count == 0):
-            print("mask region with poor cross linking")
-            
-            xlink_car = binary.copy()
-
-            x_link_healpix = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set%02d_crosslinking.fits" % (map_dir.replace("car", "healpix"), scan, count))
-            x_link_I, x_link_Q, x_link_U = x_link_healpix.data
-            
-            temp_healpix = so_map.healpix_template(1, x_link_healpix.nside, x_link_healpix.coordinate)
-
-            temp_healpix.data = np.sqrt(x_link_Q ** 2 + x_link_U ** 2) / x_link_I  # this will complain
-            id = np.where(x_link_I == 0)  # fix the cause of the complaint
-            temp_healpix.data[id] = 0
-            
-            
-            xlink_car = so_map.healpix2car(temp_healpix, xlink_car)
-            downgraded_plot(xlink_car, "%s/cross_link_%s" % (plot_dir, scan))
-
-            binary.data[xlink_car.data > cross_linking_threshold] = 0
-            
-    
-    downgraded_plot(binary, "%s/binary_%s" % (plot_dir, scan))
-
-    if skip_from_edges != 0:
-    
-        binary.data[0,:] = 0
-        binary.data[-1,:] = 0
-
-        dist = so_window.get_distance(binary, rmax=(2 * skip_from_edges) * np.pi / 180)
-
-        binary.data[dist.data < skip_from_edges] = 0
-        downgraded_plot(binary, "%s/binary_skip_%s" % (plot_dir, scan))
 
     for run in runs:
-
-        window = so_window.create_apodization(binary,
-                                              apo_type=apo_type,
-                                              apo_radius_degree=apo_radius_degree)
-    
-        if run == "weighted":
-            print("Use hits maps")
-            hmap = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set00_div.fits" % (map_dir, scan))
-            window.data *= hmap.data
-        else:
-            print("Uniform weighting")
-        
                 
-        window.write_map("%s/window_%s_%s.fits" % (window_dir, scan, run))
-        
-        downgraded_plot(window, "%s/window_%s_%s" % (plot_dir, scan, run))
+        # window.write_map("%s/window_%s_%s.fits" % (window_dir, scan, run))
+        window = so_map.read_map("%s/window_%s_%s.fits" % (window_dir, scan, run)) #.downgrade(dg)
 
 
     
@@ -161,7 +155,7 @@ for task in subtasks:
                                                      mbb_inv=mbb_inv,
                                                      spectra=spectra)
 
-                so_spectra.write_ps("%s/spectra_%s.dat" % (spectra_dir, spec_name),
+                so_spectra.write_ps("%s/spectra_%s_%s.dat" % (sim_spectra_dir, spec_name, sim_idx),
                                     lb,
                                     Db_dict,
                                     type="Dl",

@@ -72,7 +72,7 @@ for task in subtasks:
         binary.data[noise_map.data[0] == 0] = 0
         noise_map.data[:] *= K_to_muK # should it be * np.sqrt(2) ?
         
-        downgraded_plot(noise_map, "%s/%s_map_%s" % (plot_dir, split, scan), color_range=color_range)
+        downgraded_plot(noise_map, "%s/%s_map_%s_xlink%s" % (plot_dir, split, scan, str(cross_linking_threshold)), color_range=color_range)
         
         if include_cmb == True:
             sim[split] = cmb.copy()
@@ -101,7 +101,7 @@ for task in subtasks:
             binary.data[xlink_car.data > cross_linking_threshold] = 0
             
     
-    downgraded_plot(binary, "%s/binary_%s" % (plot_dir, scan))
+    downgraded_plot(binary, "%s/binary_%s_xlink%s" % (plot_dir, scan, str(cross_linking_threshold)))
 
     if skip_from_edges != 0:
     
@@ -111,7 +111,7 @@ for task in subtasks:
         dist = so_window.get_distance(binary, rmax=(2 * skip_from_edges) * np.pi / 180)
 
         binary.data[dist.data < skip_from_edges] = 0
-        downgraded_plot(binary, "%s/binary_skip_%s" % (plot_dir, scan))
+        downgraded_plot(binary, "%s/binary_skip_%s_xlink%s" % (plot_dir, scan, str(cross_linking_threshold)))
 
     for run in runs:
 
@@ -127,9 +127,9 @@ for task in subtasks:
             print("Uniform weighting")
         
                 
-        window.write_map("%s/window_%s_%s.fits" % (window_dir, scan, run))
+        window.write_map("%s/window_%s_%s_xlink%s.fits" % (window_dir, scan, run, str(cross_linking_threshold)))
         
-        downgraded_plot(window, "%s/window_%s_%s" % (plot_dir, scan, run))
+        downgraded_plot(window, "%s/window_%s_%s_xlink%s" % (plot_dir, scan, run, str(cross_linking_threshold)))
 
 
     
@@ -140,7 +140,7 @@ for task in subtasks:
                                                     lmax=lmax,
                                                     type="Dl",
                                                     niter=niter,
-                                                    save_file="%s/%s_%s"%(mcm_dir, scan, run))
+                                                    save_file="%s/%s_%s_%s"%(mcm_dir, scan, run, str(cross_linking_threshold)))
     
         alm = {}
         for split in split_list:
@@ -150,7 +150,7 @@ for task in subtasks:
             for c1, s1 in enumerate(split_list):
                 if c1 > c0: continue
 
-                spec_name = "%s_%sx%s_%s" % (scan, s0, s1, run)
+                spec_name = "%s_%sx%s_%s_xlink%s" % (scan, s0, s1, run, str(cross_linking_threshold))
 
                 l, ps = so_spectra.get_spectra(alm[s0], alm[s1], spectra=spectra)
                 lb, Db_dict = so_spectra.bin_spectra(l,

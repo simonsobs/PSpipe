@@ -6,7 +6,8 @@ import data_analysis_utils
 import os
 import pickle
 
-np.random.seed(0)
+my_seed = 0
+np.random.seed(my_seed)
 
 # we choose to be general, so 2 seasons and 3 arrays
 # the map template for the test is a 40 x 40 sq degree CAR patch with 3 arcmin resolution
@@ -61,7 +62,7 @@ f.write("fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'],
 f.write("fg_params = {'a_tSZ': 3.30, 'a_kSZ': 1.60, 'a_p': 6.90, 'beta_p': 2.08, 'a_c': 4.90, 'beta_c': 2.20, 'a_s': 3.10, 'a_gtt': 2.79, 'a_gte': 0.36, 'a_gee': 0.13, 'a_psee': 0.05, 'a_pste': 0, 'xi': 0.1, 'T_d': 9.60}  \n")
 
 f.write("iStart = 0 \n")
-f.write("iStop = 1 \n")
+f.write("iStop = 2 \n")
 f.write("sim_alm_dtype = '%s' \n" % sim_alm_dtype)
 
 f.write(" \n")
@@ -198,6 +199,10 @@ os.system("python get_noise_model.py global_test.dict")
 os.system("python fast_cov_get_sq_windows_alms.py global_test.dict")
 os.system("python fast_cov_get_covariance.py global_test.dict")
 os.system("python get_beam_covariance.py global_test.dict")
+os.system(f"python mc_get_kspace_tf_spectra.py global_test.dict {my_seed}")
+os.system("python mc_tf_analysis.py global_test.dict")
+
+
 
 # now we compare the products produced with your scripts to the reference data
 spec_name = []
@@ -237,7 +242,8 @@ for sid1, spec1 in enumerate(spec_name):
 
     my_l, my_ps = so_spectra.read_ps("spectra/Dl_%s_cross.dat" % spec1, spectra=spectra)
     ps_ref = ref_data["spectra", spec1]
-
+    
+    
     for field in spectra:
         check = np.isclose(my_ps[field], ps_ref[field], rtol=rtol, atol=atol, equal_nan=False)
         if check.all():
@@ -259,6 +265,23 @@ for sid1, spec1 in enumerate(spec_name):
             plt.savefig("%s/%s_%s.png" % (plot_dir, spec1, field), bbox_inches="tight")
             plt.clf()
             plt.close()
+            
+            
+    for my_key1 in ["filter", "nofilter"]:
+        for my_key2 in  ["standard", "noE", "noB"]:
+            _, my_ps = so_spectra.read_ps(f"sim_spectra_for_tf/Dl_{spec1}_{my_key1}_{my_key2}_00000.dat", spectra=spectra)
+            ps_ref = ref_data[f"sim_spectra_{my_key1}_{my_key2}", spec1]
+
+            for field in spectra:
+            
+                check = np.isclose(my_ps[field], ps_ref[field], rtol=rtol, atol=atol, equal_nan=False)
+                if check.all():
+                    print(f"sim spectra {my_key1} {my_key2} {spec1} {field}", u'\u2713')
+                    ntest_success += 1
+                else:
+                    print(f"sim spectra {my_key1} {my_key2} {spec1} {field}", check)
+                ntest += 1
+
 
     for sid2, spec2 in enumerate(spec_name):
         if sid1 > sid2: continue

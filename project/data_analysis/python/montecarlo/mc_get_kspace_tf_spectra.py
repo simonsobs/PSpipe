@@ -14,6 +14,8 @@ from pixell import curvedsky, powspec
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+if len(sys.argv) > 2:
+    np.random.seed(int(sys.argv[2]))
 
 surveys = d["surveys"]
 lmax = d["lmax"]

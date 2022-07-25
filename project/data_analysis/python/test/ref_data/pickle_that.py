@@ -23,14 +23,20 @@ data = {}
 for sid1, spec1 in enumerate(spec_name):
 
     for spin in spin_pairs:
-        data["mcm", spec1, spin] = np.load("%s_mbb_inv_%s.npy" % (spec1, spin))
+        data["mcm", spec1, spin] = np.load("../mcms/%s_mode_coupling_inv_%s.npy" % (spec1, spin))
 
-    l_ref, data["spectra", spec1]  = so_spectra.read_ps("Dl_%s_cross.dat" % spec1, spectra=spectra)
+    l_ref, data["spectra", spec1]  = so_spectra.read_ps("../spectra/Dl_%s_cross.dat" % spec1, spectra=spectra)
+    
+    
+    for my_key1 in ["filter", "nofilter"]:
+        for my_key2 in  ["standard", "noE", "noB"]:
+            _, data[f"sim_spectra_{my_key1}_{my_key2}", spec1]  = so_spectra.read_ps(f"../sim_spectra_for_tf/Dl_{spec1}_{my_key1}_{my_key2}_00000.dat", spectra=spectra)
 
+    
     for sid2, spec2 in enumerate(spec_name):
         if sid1 > sid2: continue
 
-        data["analytic_cov", spec1, spec2] = np.load("analytic_cov_%s_%s.npy" % (spec1, spec2))
+        data["analytic_cov", spec1, spec2] = np.load("../covariances/analytic_cov_%s_%s.npy" % (spec1, spec2))
     
 f = open("trial_data.pkl","wb")
 pickle.dump(data,f)

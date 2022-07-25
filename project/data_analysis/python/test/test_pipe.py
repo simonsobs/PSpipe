@@ -48,6 +48,7 @@ f.write("deconvolve_pixwin = False \n")
 f.write("binning_file = 'test_data/binning_test.dat' \n")
 f.write("niter = 0 \n")
 f.write("remove_mean = False \n")
+f.write("binned_mcm = True \n")
 f.write("lmax = %d  \n" % lmax)
 f.write("type = 'Dl'  \n")
 f.write("write_splits_spectra = True \n")
@@ -56,7 +57,7 @@ f.write("use_toeplitz_cov  = True \n")
 
 f.write("cosmo_params = {'cosmomc_theta':0.0104085, 'logA': 3.044, 'ombh2': 0.02237, 'omch2': 0.1200, 'ns': 0.9649, 'Alens': 1.0, 'tau': 0.0544} \n")
 f.write("fg_norm = {'nu_0': 150.0, 'ell_0': 3000, 'T_CMB': 2.725}  \n")
-f.write("fg_components =  ['cibc', 'cibp', 'kSZ', 'radio', 'tSZ']  \n")
+f.write("fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust']} \n")
 f.write("fg_params = {'a_tSZ': 3.30, 'a_kSZ': 1.60, 'a_p': 6.90, 'beta_p': 2.08, 'a_c': 4.90, 'beta_c': 2.20, 'a_s': 3.10, 'a_gtt': 2.79, 'a_gte': 0.36, 'a_gee': 0.13, 'a_psee': 0.05, 'a_pste': 0, 'xi': 0.1, 'T_d': 9.60}  \n")
 
 f.write("iStart = 0 \n")
@@ -79,6 +80,7 @@ for sv in surveys:
         f.write("mm_tf_%s_%s  = 'test_data/tf_unity.dat' \n" % (sv, ar))
         f.write("maps_%s_%s  = ['test_data/maps_test_%s_%s_0.fits', 'test_data/maps_test_%s_%s_1.fits'] \n" % (sv, ar, sv, ar, sv, ar))
         f.write("cal_%s_%s  = 1 \n" % (sv, ar))
+        f.write("pol_eff_%s_%s  = 1 \n" % (sv, ar))
         f.write("nu_eff_%s_%s  = %d \n" % (sv, ar, nu_eff[count]))
         f.write("beam_%s_%s  = 'test_data/beam_test_%s_%s.dat' \n" % (sv, ar, sv, ar))
         f.write("window_T_%s_%s =  'windows/window_test_%s_%s.fits' \n" % (sv, ar, sv, ar))
@@ -136,8 +138,7 @@ for sv in surveys:
         for id_ar2, ar2 in enumerate(arrays[sv]):
             if id_ar1 > id_ar2: continue
 
-            l = np.arange(2, lmax + 2)
-            nl = pspy_utils.get_nlth_dict(rms_uKarcmin[sv, "%sx%s" % (ar1, ar2)], "Dl", lmax, spectra=spectra)
+            l, nl = pspy_utils.get_nlth_dict(rms_uKarcmin[sv, "%sx%s" % (ar1, ar2)], "Dl", lmax, spectra=spectra)
             spec_name_noise_mean = "mean_%sx%s_%s_noise" % (ar1, ar2, sv)
             so_spectra.write_ps("%s/%s.dat" % (noise_model_dir, spec_name_noise_mean), l, nl, "Dl", spectra=spectra)
 
@@ -224,7 +225,7 @@ ntest_success = 0
 for sid1, spec1 in enumerate(spec_name):
 
     for spin in spin_pairs:
-        mcm = np.load("mcms/%s_mbb_inv_%s.npy" % (spec1, spin))
+        mcm = np.load("mcms/%s_mode_coupling_inv_%s.npy" % (spec1, spin))
 
         check = np.isclose(mcm, ref_data["mcm", spec1, spin], rtol=rtol, atol=atol, equal_nan=False)
         if check.all():

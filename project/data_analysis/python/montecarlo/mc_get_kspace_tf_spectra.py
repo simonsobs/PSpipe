@@ -65,7 +65,7 @@ l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lma
 template = {}
 filter = {}
 for sv in surveys:
-
+    arrays = d["arrays_%s" % sv]
     template_name = d["maps_%s_%s" % (sv, arrays[0])][0]
     template[sv] = so_map.read_map(template_name)
     ks_f = d["k_filter_%s" % sv]

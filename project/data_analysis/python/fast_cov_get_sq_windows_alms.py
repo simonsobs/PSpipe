@@ -2,6 +2,7 @@
 This script compute all alms squared windows, it's a necessary step of covariance computation.
 """
 from pspy import so_dict, so_map, sph_tools, so_spectra, pspy_utils, so_mpi
+from pspipe_utils import pspipe_list
 import numpy as np
 import sys
 
@@ -38,26 +39,12 @@ sq_win_alms_dir = "sq_win_alms"
 
 pspy_utils.create_directory(sq_win_alms_dir)
 
-sv1_list, ar1_list, sv2_list, ar2_list = [], [], [], []
-n_alms = 0
-for id_sv1, sv1 in enumerate(surveys):
-    arrays_1 = d["arrays_%s" % sv1]
-    for id_ar1, ar1 in enumerate(arrays_1):
-        for id_sv2, sv2 in enumerate(surveys):
-            arrays_2 = d["arrays_%s" % sv2]
-            for id_ar2, ar2 in enumerate(arrays_2):
-                # This ensures that we do not repeat redundant computations
-                if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                if  (id_sv1 > id_sv2) : continue
-                sv1_list += [sv1]
-                ar1_list += [ar1]
-                sv2_list += [sv2]
-                ar2_list += [ar2]
-                n_alms += 1
+n_sq_alms, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
 
-print("number of sq win alms to compute : %s" % n_alms)
+
+print("number of sq win alms to compute : %s" % n_sq_alms)
 so_mpi.init(True)
-subtasks = so_mpi.taskrange(imin=0, imax=n_alms - 1)
+subtasks = so_mpi.taskrange(imin=0, imax=n_sq_alms - 1)
 print(subtasks)
 for task in subtasks:
     task = int(task)

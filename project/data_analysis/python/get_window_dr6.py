@@ -1,14 +1,16 @@
-# This script create the window functions used in the PS computation
-# They consist of a point source mask, a galactic mask and a mask based on the amount of cross linking in the data, we also produce a window that include the pixel weighting.
-# The different masks are apodized.
-# We also produce a binary mask that will later be used for the kspace filtering operation, in order to remove the edges and avoid nasty pixels before
-# this not so well defined Fourier operation.
+"""
+This script create the window functions used in the PS computation
+They consist of a point source mask, a galactic mask and a mask based on the amount of cross linking in the data, we also produce a window that include the pixel weighting.
+The different masks are apodized.
+We also produce a binary mask that will later be used for the kspace filtering operation, in order to remove the edges and avoid nasty pixels before
+this not so well defined Fourier operation.
+"""
 
 import sys
 
 import numpy as np
 from pspy import pspy_utils, so_dict, so_map, so_mpi, so_window
-
+from pspipe_utils import pspipe_list
 
 def create_crosslink_mask(xlink_map, cross_link_threshold):
     # remove pixels with very little amount of cross linking
@@ -46,7 +48,6 @@ cross_link_threshold = d["cross_link_threshold"]
 # this ensure that the window is not totally dominated by few pixels with too much weight
 n_med_ivar = d["n_med_ivar"]
 
-
 window_dir = "windows"
 surveys = d["surveys"]
 
@@ -56,18 +57,10 @@ patch = None
 if "patch" in d:
     patch = so_map.read_map(d["patch"])
 
-
 # here we list the different windows that need to be computed, we will then do a MPI loops over this list
-sv_list, ar_list = [], []
-n_wins = 0
-for sv in surveys:
-    arrays = d["arrays_%s" % sv]
-    for ar in arrays:
-        sv_list += [sv]
-        ar_list += [ar]
-        n_wins += 1
+n_wins, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 
-print("number of windows to compute : %s" % n_wins)
+print(f"number of windows to compute : {n_wins}")
 so_mpi.init(True)
 
 subtasks = so_mpi.taskrange(imin=0, imax=n_wins - 1)
@@ -77,21 +70,19 @@ for task in subtasks:
     task = int(task)
     sv, ar = sv_list[task], ar_list[task]
     
-    
-    gal_mask = so_map.read_map(d["gal_mask_%s_%s" % (sv, ar)])
+    gal_mask = so_map.read_map(d[f"gal_mask_{sv}_{ar}"])
 
     survey_mask = gal_mask.copy()
     survey_mask.data[:] = 1
 
-    maps = d["maps_%s_%s" % (sv, ar)]
-    
+    maps = d[f"maps_{sv}_{ar}"]
     
     ivar_all = gal_mask.copy()
     ivar_all.data[:] = 0
 
     for k, map in enumerate(maps):
 
-        if d["src_free_maps_%s" % sv] == True:
+        if d[f"src_free_maps_{sv}"] == True:
             index = map.find("map_srcfree.fits")
         else:
             index = map.find("map.fits")
@@ -106,7 +97,7 @@ for task in subtasks:
 
     for k, map in enumerate(maps):
 
-        if d["src_free_maps_%s" % sv] == True:
+        if d[f"src_free_maps_{sv}"] == True:
             index = map.find("map_srcfree.fits")
         else:
             index = map.find("map.fits")
@@ -131,20 +122,18 @@ for task in subtasks:
     # compared to what we will do with the final window, this should prevent some aliasing from the kspace filter to enter the data
     binary.data[dist.data < skip_from_edges_degree / 2] = 0
     
-    
     binary.data = binary.data.astype(np.float32)
-    binary.write_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+    binary.write_map(f"{window_dir}/binary_{sv}_{ar}.fits")
 
     # Now we create the final window function that will be used in the analysis
     survey_mask.data[dist.data < skip_from_edges_degree] = 0
     survey_mask = so_window.create_apodization(survey_mask, "C1", apod_survey_degree, use_rmax=True)
-    ps_mask = so_map.read_map(d["ps_mask_%s_%s" % (sv, ar)])
+    ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
     ps_mask = so_window.create_apodization(ps_mask, "C1", apod_pts_source_degree, use_rmax=True)
     survey_mask.data *= ps_mask.data
-
-
+    
     survey_mask.data = survey_mask.data.astype(np.float32)
-    survey_mask.write_map("%s/window_%s_%s.fits" % (window_dir, sv, ar))
+    survey_mask.write_map(f"{window_dir}/window_{sv}_{ar}.fits")
     
     # We also create an optional window which also include pixel weighting
     # Note that with use the threshold n_ivar * med so that pixels with very high
@@ -157,14 +146,14 @@ for task in subtasks:
     survey_mask_weighted.data[:] *= ivar_all.data[:]
     
     survey_mask_weighted.data = survey_mask_weighted.data.astype(np.float32)
-    survey_mask_weighted.write_map("%s/window_w_%s_%s.fits" % (window_dir, sv, ar))
+    survey_mask_weighted.write_map(f"{window_dir}/window_w_{sv}_{ar}.fits")
 
     # plot
     binary = binary.downgrade(4)
-    binary.plot(file_name="%s/binary_%s_%s" % (window_dir, sv, ar))
+    binary.plot(file_name=f"{window_dir}/binary_{sv}_{ar}")
     
     survey_mask = survey_mask.downgrade(4)
-    survey_mask.plot(file_name="%s/window_%s_%s" % (window_dir, sv, ar))
+    survey_mask.plot(file_name=f"{window_dir}/window_{sv}_{ar}")
 
     survey_mask_weighted = survey_mask_weighted.downgrade(4)
-    survey_mask_weighted.plot(file_name="%s/window_w_%s_%s" % (window_dir, sv, ar))
+    survey_mask_weighted.plot(file_name=f"{window_dir}/window_w_{sv}_{ar}")

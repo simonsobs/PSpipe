@@ -10,7 +10,7 @@ from pspy import pspy_utils, so_dict, so_cov
 import  numpy as np
 import pylab as plt
 import os, sys
-
+from pspipe_utils import pspipe_list
 
 def write_html(filename, spec_list, multistep_path, cov_plot_dir):
 
@@ -59,20 +59,7 @@ multistep_path = d["multistep_path"]
 
 pspy_utils.create_directory(cov_plot_dir)
 
-spec_list = []
-
-for id_sv1, sv1 in enumerate(surveys):
-    arrays_1 = d["arrays_%s" % sv1]
-    for id_ar1, ar1 in enumerate(arrays_1):
-        for id_sv2, sv2 in enumerate(surveys):
-            arrays_2 = d["arrays_%s" % sv2]
-            for id_ar2, ar2 in enumerate(arrays_2):
-
-                if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                if  (id_sv1 > id_sv2) : continue
-
-                spec_list += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
-
+spec_list = pspipe_list.get_spec_name_list(d, char="_")
 
 
 for sid1, spec1 in enumerate(spec_list):
@@ -82,14 +69,14 @@ for sid1, spec1 in enumerate(spec_list):
         n1, n2 = spec1.split("x")
         n3, n4 = spec2.split("x")
         
-        analytic_cov = np.load("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, n1, n2, n3, n4) )
-        mc_cov = np.load("%s/mc_cov_%sx%s_%sx%s.npy" % (cov_dir, n1, n2, n3, n4))
+        analytic_cov = np.load(f"{cov_dir}/analytic_cov_{n1}x{n2}_{n3}x{n4}.npy")
+        mc_cov = np.load(f"{cov_dir}/mc_cov_{n1}x{n2}_{n3}x{n4}.npy")
         
         bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
         n_bins = len(bin_hi)
 
         plt.figure(figsize=(15, 15))
-        plt.suptitle("%s %s (press c/v to switch between covariance matrix elements)" % (spec1, spec2), fontsize=30)
+        plt.suptitle(f"{spec1} {spec2} (press c/v to switch between covariance matrix elements)", fontsize=30)
         count = 1
         for bl in ["TTTT", "TETE", "ETET", "EEEE",
                    "TTTE", "TTEE", "TTET", "TEET",
@@ -114,12 +101,12 @@ for sid1, spec1 in enumerate(spec_list):
                 plt.xlabel(r"$\ell$", fontsize=22)
             plt.legend()
             count += 1
-        plt.savefig("%s/covariance_pseudo_diagonal_%s_%s.png"% (cov_plot_dir, spec1, spec2), bbox_inches="tight")
+        plt.savefig(f"{cov_plot_dir}/covariance_pseudo_diagonal_{spec1}_{spec2}.png", bbox_inches="tight")
         plt.clf()
         plt.close()
         
         plt.figure(figsize=(15, 15))
-        plt.suptitle("%s %s (press c/v to switch between covariance matrix elements)" % (spec1, spec2), fontsize=30)
+        plt.suptitle(f"{spec1} {spec2} (press c/v to switch between covariance matrix elements)", fontsize=30)
         count = 1
         for bl in ["TTTT", "TETE", "ETET", "EEEE"]:
             
@@ -137,7 +124,7 @@ for sid1, spec1 in enumerate(spec_list):
                 plt.xlabel(r"$\ell$", fontsize=22)
             plt.legend()
             count += 1
-        plt.savefig("%s/covariance_pseudo_diagonal_ratio_%s_%s.png"% (cov_plot_dir, spec1, spec2), bbox_inches="tight")
+        plt.savefig(f"{cov_plot_dir}/covariance_pseudo_diagonal_ratio_{spec1}_{spec2}.png", bbox_inches="tight")
         plt.clf()
         plt.close()
         
@@ -146,7 +133,7 @@ for sid1, spec1 in enumerate(spec_list):
         mc_corr=so_cov.cov2corr(mc_cov)
 
         plt.figure(figsize=(15, 15))
-        plt.suptitle("%s %s (press c/v to switch between covariance matrix elements)" % (spec1, spec2), fontsize=30)
+        plt.suptitle(f"{spec1} {spec2} (press c/v to switch between covariance matrix elements)", fontsize=30)
         count = 1
         for bl in ["TTTT", "TETE", "ETET", "EEEE",
                     "TTTE", "TTEE", "TTET", "TEET",
@@ -169,7 +156,7 @@ for sid1, spec1 in enumerate(spec_list):
                 plt.xlabel(r"$\ell$", fontsize=22)
             plt.legend()
             count += 1
-        plt.savefig("%s/covariance_off_diagonal_%s_%s.png"% (cov_plot_dir, spec1, spec2), bbox_inches="tight")
+        plt.savefig(f"{cov_plot_dir}/covariance_off_diagonal_{spec1}_{spec2}.png", bbox_inches="tight")
         plt.clf()
         plt.close()
 

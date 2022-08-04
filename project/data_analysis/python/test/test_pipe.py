@@ -2,7 +2,7 @@ import numpy as np
 import pylab as plt
 from pspy import so_map, so_window, so_mcm, sph_tools, so_spectra, pspy_utils
 from pixell import curvedsky, powspec
-import data_analysis_utils
+from pspipe_utils import simulation, pspipe_list, best_fits
 import os
 import pickle
 
@@ -22,19 +22,25 @@ ra0, ra1, dec0, dec1 = -20, 20, -20, 20
 res = 3
 lmax = int(500 * (6 / res)) # this is adhoc but should work fine
 n_ar = 3
-nu_eff = [90, 150, 220]
+nu_eff = {}
+nu_eff["sv1", "pa1"] = 90
+nu_eff["sv1", "pa2"] = 150
+nu_eff["sv2", "pa3"] = 220
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 rms_uKarcmin = {}
 rms_uKarcmin["sv1", "pa1xpa1"] = 20
 rms_uKarcmin["sv1", "pa2xpa2"] = 40
 rms_uKarcmin["sv1", "pa1xpa2"] = 0
+rms_uKarcmin["sv1", "pa2xpa1"] = 0
 rms_uKarcmin["sv2", "pa3xpa3"] = 60
 beam_fwhm = {}
 beam_fwhm[90] = 10
 beam_fwhm[150] = 6
 beam_fwhm[220] = 4.
 sim_alm_dtype = "complex64"
-nsplits = 2
+n_splits = {}
+n_splits["sv1"] = 2
+n_splits["sv2"] = 2
 ncomp = 3
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 noise_model_dir = "noise_model"
@@ -53,16 +59,19 @@ f.write("binned_mcm = True \n")
 f.write("lmax = %d  \n" % lmax)
 f.write("type = 'Dl'  \n")
 f.write("write_splits_spectra = True \n")
+f.write("multistep_path = './' \n")
 f.write("use_toeplitz_mcm  = False \n")
 f.write("use_toeplitz_cov  = True \n")
+f.write("apply_kspace_filter  = True \n")
+f.write("kspace_tf_path  = 'analytical' \n")
 
 f.write("cosmo_params = {'cosmomc_theta':0.0104085, 'logA': 3.044, 'ombh2': 0.02237, 'omch2': 0.1200, 'ns': 0.9649, 'Alens': 1.0, 'tau': 0.0544} \n")
 f.write("fg_norm = {'nu_0': 150.0, 'ell_0': 3000, 'T_CMB': 2.725}  \n")
-f.write("fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust']} \n")
-f.write("fg_params = {'a_tSZ': 3.30, 'a_kSZ': 1.60, 'a_p': 6.90, 'beta_p': 2.08, 'a_c': 4.90, 'beta_c': 2.20, 'a_s': 3.10, 'a_gtt': 2.79, 'a_gte': 0.36, 'a_gee': 0.13, 'a_psee': 0.05, 'a_pste': 0, 'xi': 0.1, 'T_d': 9.60}  \n")
+f.write("fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []} \n")
+f.write("fg_params = {'a_tSZ': 3.30, 'a_kSZ': 1.60, 'a_p': 6.90, 'beta_p': 2.08, 'a_c': 4.90, 'beta_c': 2.20, 'a_s': 3.10, 'a_gtt': 2.79, 'a_gte': 0.36, 'a_gtb': 0, 'a_gee': 0.13, 'a_gbb': 0, 'a_psee': 0.05, 'a_psbb': 0, 'a_pste': 0, 'a_pstb': 0, 'xi': 0.1, 'T_d': 9.60}  \n")
 
 f.write("iStart = 0 \n")
-f.write("iStop = 2 \n")
+f.write("iStop = 10 \n")
 f.write("sim_alm_dtype = '%s' \n" % sim_alm_dtype)
 
 f.write(" \n")
@@ -71,7 +80,7 @@ count = 0
 for sv in surveys:
     f.write("############# \n")
     f.write("arrays_%s = %s \n"  % (sv, arrays[sv]))
-    f.write("k_filter_%s = {'apply':True, 'type':'binary_cross','vk_mask':[-50, 50], 'hk_mask':[-50, 50], 'weighted':False, 'tf': 'analytic'} \n" % sv)
+    f.write("k_filter_%s = {'type':'binary_cross','vk_mask':[-50, 50], 'hk_mask':[-50, 50], 'weighted':False} \n" % sv)
     f.write("deconvolve_map_maker_tf_%s = False \n" % sv)
     f.write("src_free_maps_%s = False \n" % sv)
     f.write(" \n")
@@ -82,7 +91,7 @@ for sv in surveys:
         f.write("maps_%s_%s  = ['test_data/maps_test_%s_%s_0.fits', 'test_data/maps_test_%s_%s_1.fits'] \n" % (sv, ar, sv, ar, sv, ar))
         f.write("cal_%s_%s  = 1 \n" % (sv, ar))
         f.write("pol_eff_%s_%s  = 1 \n" % (sv, ar))
-        f.write("nu_eff_%s_%s  = %d \n" % (sv, ar, nu_eff[count]))
+        f.write("nu_eff_%s_%s  = %d \n" % (sv, ar, nu_eff[sv, ar]))
         f.write("beam_%s_%s  = 'test_data/beam_test_%s_%s.dat' \n" % (sv, ar, sv, ar))
         f.write("window_T_%s_%s =  'windows/window_test_%s_%s.fits' \n" % (sv, ar, sv, ar))
         f.write("window_pol_%s_%s =  'windows/window_test_%s_%s.fits' \n" % (sv, ar, sv, ar))
@@ -100,15 +109,17 @@ test_dir = "test_data"
 pspy_utils.create_directory(test_dir)
 
 ############ let's generate the test binning file ############
-pspy_utils.create_binning_file(bin_size=100, n_bins=300, file_name="%s/binning_test.dat" % test_dir)
+pspy_utils.create_binning_file(bin_size=100, n_bins=300, file_name=f"{test_dir}/binning_test.dat")
 
 ############ let's generate the beams ############
 
 count = 0
 for sv in surveys:
     for ar in arrays[sv]:
-        l, bl = pspy_utils.beam_from_fwhm(beam_fwhm[nu_eff[count]], lmax + 200)
-        np.savetxt("test_data/beam_test_%s_%s.dat" % (sv, ar), np.transpose([l, bl]))
+        l, bl = pspy_utils.beam_from_fwhm(beam_fwhm[nu_eff[sv, ar]], lmax + 200)
+        l = np.append(np.array([0, 1]), l)
+        bl = np.append(np.array([1, 1]), bl)
+        np.savetxt(f"test_data/beam_test_{sv}_{ar}.dat", np.transpose([l, bl]))
         count += 1
 
 ############ let's generate the window function ############
@@ -126,8 +137,8 @@ for sv in surveys:
         pts_src_mask = so_map.simulate_source_mask(binary, n_holes=80, hole_radius_arcmin=3*res)
         pts_src_mask = so_window.create_apodization(pts_src_mask, apo_type="C1", apo_radius_degree=10*res_deg)
         pts_src_mask.data *= window.data
-        pts_src_mask.write_map("%s/window_test_%s_%s.fits" % (window_dir, sv, ar))
-        binary.write_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+        pts_src_mask.write_map(f"{window_dir}/window_test_{sv}_{ar}.fits")
+        binary.write_map(f"{window_dir}/binary_{sv}_{ar}.fits")
 
 
 ############ let's simulate some fake noise curve ############
@@ -137,58 +148,60 @@ pspy_utils.create_directory(noise_model_dir)
 for sv in surveys:
     for id_ar1, ar1 in enumerate(arrays[sv]):
         for id_ar2, ar2 in enumerate(arrays[sv]):
-            if id_ar1 > id_ar2: continue
 
-            l, nl = pspy_utils.get_nlth_dict(rms_uKarcmin[sv, "%sx%s" % (ar1, ar2)], "Dl", lmax, spectra=spectra)
-            spec_name_noise_mean = "mean_%sx%s_%s_noise" % (ar1, ar2, sv)
-            so_spectra.write_ps("%s/%s.dat" % (noise_model_dir, spec_name_noise_mean), l, nl, "Dl", spectra=spectra)
+            l, nl = pspy_utils.get_nlth_dict(rms_uKarcmin[sv, f"{ar1}x{ar2}"], "Dl", lmax, spectra=spectra)
+            spec_name_noise_mean = f"mean_{ar1}x{ar2}_{sv}_noise"
+            so_spectra.write_ps(f"{noise_model_dir}/{spec_name_noise_mean}.dat", l, nl, "Dl", spectra=spectra)
 
 
 ############ let's generate the best fits ############
+
 os.system("python get_best_fit_mflike.py global_test.dict")
 
 
 ############ let's generate some simulations ############
 
-ps_cmb = powspec.read_spectrum("%s/lcdm.dat" % bestfit_dir)[:ncomp, :ncomp]
-l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, nu_eff, lmax)
-alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, dtype=sim_alm_dtype)
-fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, dtype=sim_alm_dtype)
+
+f_name_cmb = bestfit_dir + "/cmb.dat"
+f_name_noise = noise_model_dir + "/mean_{}x{}_{}_noise.dat"
+f_name_fg = bestfit_dir + "/fg_{}x{}.dat"
+
+ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax, spectra)
+
+freq_list = []
+for sv in surveys:
+    for ar in arrays[sv]:
+        freq_list += [nu_eff[sv, ar]]
+# remove doublons
+freq_list = list(dict.fromkeys(freq_list))
+
+
+l, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, freq_list, lmax, spectra)
+noise_mat = {}
+for sv in surveys:
+    l, noise_mat[sv] = simulation.noise_matrix_from_files(f_name_noise,
+                                                          sv,
+                                                          arrays[sv],
+                                                          lmax,
+                                                          n_splits[sv],
+                                                          spectra)
+
+alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
+fglms = simulation.generate_fg_alms(fg_mat, freq_list, lmax)
 
 binary = so_map.car_template(ncomp, ra0, ra1, dec0, dec1, res)
-count = 0
 for sv in surveys:
-    array_list = arrays[sv]
+    signal_alms = {}
+    for ar in arrays[sv]:
+        signal_alms[ar] = alms_cmb + fglms[nu_eff[sv, ar]]
+        l, bl = pspy_utils.read_beam_file(f"test_data/beam_test_{sv}_{ar}.dat")
+        signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
+    for k in range(n_splits[sv]):
+        noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax)
+        for ar in arrays[sv]:
+            split = sph_tools.alm2map(signal_alms[ar] + noise_alms[ar], binary)
+            split.write_map(f"{test_dir}/maps_test_{sv}_{ar}_{k}.fits")
 
-    l, nl_array_t, nl_array_pol = data_analysis_utils.get_noise_matrix_spin0and2(noise_model_dir,
-                                                                                 sv,
-                                                                                 array_list,
-                                                                                 lmax,
-                                                                                 nsplits=nsplits)
-
-    nlms = data_analysis_utils.generate_noise_alms(nl_array_t,
-                                                   lmax,
-                                                   n_splits=nsplits,
-                                                   ncomp=ncomp,
-                                                   nl_array_pol=nl_array_pol,
-                                                   dtype=sim_alm_dtype)
-    
-    for ar_id, ar in enumerate(array_list):
-        alms_beamed = alms.copy()
-        alms_beamed[0] += fglms[count]
-        l, bl = pspy_utils.read_beam_file("test_data/beam_test_%s_%s.dat" % (sv, ar))
-        alms_beamed = curvedsky.almxfl(alms_beamed, bl)
-
-        for k in range(nsplits):
-            noisy_alms = alms_beamed.copy()
-            noisy_alms[0] +=  nlms["T", k][ar_id]
-            noisy_alms[1] +=  nlms["E", k][ar_id]
-            noisy_alms[2] +=  nlms["B", k][ar_id]
-            
-            split = sph_tools.alm2map(noisy_alms, binary)
-            split.write_map("%s/maps_test_%s_%s_%d.fits" % (test_dir, sv, ar, k))
-
-        count += 1
 
 # for now you need to manually copy the script in the test directory
 os.system("python get_mcm_and_bbl_mpi.py global_test.dict")
@@ -203,16 +216,20 @@ os.system(f"python mc_get_kspace_tf_spectra.py global_test.dict {my_seed}")
 os.system("python mc_tf_analysis.py global_test.dict")
 
 
-
 # now we compare the products produced with your scripts to the reference data
+
 spec_name = []
 for id_sv1, sv1 in enumerate(surveys):
     for id_ar1, ar1 in enumerate(arrays[sv1]):
         for id_sv2, sv2 in enumerate(surveys):
             for id_ar2, ar2 in enumerate(arrays[sv2]):
+                # This ensures that we do not repeat redundant computations
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
-                spec_name += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
+                
+                spec_name += [f"{sv1}_{ar1}x{sv2}_{ar2}" ]
+
+
 
 if plot_test == True:
     plot_dir = "test_plot"
@@ -230,17 +247,17 @@ ntest_success = 0
 for sid1, spec1 in enumerate(spec_name):
 
     for spin in spin_pairs:
-        mcm = np.load("mcms/%s_mode_coupling_inv_%s.npy" % (spec1, spin))
+        mcm = np.load(f"mcms/{spec1}_mode_coupling_inv_{spin}.npy")
 
         check = np.isclose(mcm, ref_data["mcm", spec1, spin], rtol=rtol, atol=atol, equal_nan=False)
         if check.all():
-            print("mcm %s" % spin, spec1, u'\u2713')
+            print(f"mcm {spin}", spec1, u'\u2713')
             ntest_success += 1
         else:
-            print("mcm %s" % spin, spec1, check)
+            print(f"mcm {spin}", spec1, check)
         ntest += 1
 
-    my_l, my_ps = so_spectra.read_ps("spectra/Dl_%s_cross.dat" % spec1, spectra=spectra)
+    my_l, my_ps = so_spectra.read_ps(f"spectra/Dl_{spec1}_cross.dat", spectra=spectra)
     ps_ref = ref_data["spectra", spec1]
     
     
@@ -256,37 +273,21 @@ for sid1, spec1 in enumerate(spec_name):
         if plot_test == True:
             plt.figure(figsize=(12,12))
             plt.subplot(2,1,1)
-            plt.plot(my_l, my_ps[field], ".", label=" my ps %s" % spec1)
-            plt.plot(my_l, ps_ref[field], label="reference %s" % spec1)
+            plt.plot(my_l, my_ps[field], ".", label=f"my ps {spec1}")
+            plt.plot(my_l, ps_ref[field], label=f"reference {spec1}")
             plt.legend()
             plt.subplot(2,1,2)
             plt.plot(my_l, my_ps[field]/ps_ref[field], label=" my ps/ps ref")
             plt.legend()
-            plt.savefig("%s/%s_%s.png" % (plot_dir, spec1, field), bbox_inches="tight")
+            plt.savefig(f"{plot_dir}/{spec1}_{field}.png", bbox_inches="tight")
             plt.clf()
             plt.close()
             
-            
-    for my_key1 in ["filter", "nofilter"]:
-        for my_key2 in  ["standard", "noE", "noB"]:
-            _, my_ps = so_spectra.read_ps(f"sim_spectra_for_tf/Dl_{spec1}_{my_key1}_{my_key2}_00000.dat", spectra=spectra)
-            ps_ref = ref_data[f"sim_spectra_{my_key1}_{my_key2}", spec1]
-
-            for field in spectra:
-            
-                check = np.isclose(my_ps[field], ps_ref[field], rtol=rtol, atol=atol, equal_nan=False)
-                if check.all():
-                    print(f"sim spectra {my_key1} {my_key2} {spec1} {field}", u'\u2713')
-                    ntest_success += 1
-                else:
-                    print(f"sim spectra {my_key1} {my_key2} {spec1} {field}", check)
-                ntest += 1
-
 
     for sid2, spec2 in enumerate(spec_name):
         if sid1 > sid2: continue
 
-        my_analytic_cov = np.load("covariances/analytic_cov_%s_%s.npy" % (spec1, spec2))
+        my_analytic_cov = np.load(f"covariances/analytic_cov_{spec1}_{spec2}.npy")
         analytic_cov_ref = ref_data["analytic_cov", spec1, spec2]
         
         check = np.isclose(my_analytic_cov, analytic_cov_ref, rtol=rtol, atol=atol, equal_nan=False)
@@ -302,17 +303,17 @@ for sid1, spec1 in enumerate(spec_name):
             plt.figure(figsize=(12,12))
             plt.subplot(2,1,1)
             plt.semilogy()
-            plt.plot(my_analytic_cov.diagonal(), ".", label=" my cov %s %s" % (spec1, spec2))
-            plt.plot(analytic_cov_ref.diagonal(), label="reference %s %s" % (spec1, spec2))
+            plt.plot(my_analytic_cov.diagonal(), ".", label=f"my cov {spec1} {spec2}")
+            plt.plot(analytic_cov_ref.diagonal(), label="reference {spec1} {spec2}")
             plt.legend()
             plt.subplot(2,1,2)
-            plt.plot(my_analytic_cov.diagonal()/analytic_cov_ref.diagonal(), label=" my cov/cov ref")
+            plt.plot(my_analytic_cov.diagonal()/analytic_cov_ref.diagonal(), label="my cov/cov ref")
             plt.legend()
-            plt.savefig("%s/analytic_cov_diag_%s_%s.png" % (plot_dir, spec1, spec2), bbox_inches="tight")
+            plt.savefig(f"{plot_dir}/analytic_cov_diag_{spec1}_{spec2}.png", bbox_inches="tight")
             plt.clf()
             plt.close()
 
 print("")
 print("Summary of the tests")
 print("")
-print("%d tests succesful for %d tests total" % (ntest_success, ntest))
+print(f"{ntest_success} tests succesful for {ntest} tests total")

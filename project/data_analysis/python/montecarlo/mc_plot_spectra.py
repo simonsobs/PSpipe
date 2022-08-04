@@ -11,6 +11,7 @@ from matplotlib.pyplot import cm
 import numpy as np
 import pylab as plt
 import os, sys
+from pspipe_utils import pspipe_list, best_fits
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -22,14 +23,20 @@ iStop = d["iStop"]
 lmax = d["lmax"]
 multistep_path = d["multistep_path"]
 
-noise_dir = "noise_model"
+noise_model_dir = "noise_model"
 mcm_dir = "mcms"
 plot_dir = "plots/mc_spectra/"
 mc_dir = "montecarlo"
 bestfit_dir = "best_fits"
 
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
-clfile = "%s/lcdm.dat" % bestfit_dir
+freq_list = pspipe_list.get_freq_list(d)
+lth, cmb_and_fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat",
+                                                    freq_list,
+                                                    lmax + 2,
+                                                    spectra,
+                                                    f_name_cmb=bestfit_dir + "/cmb.dat")
 
 
 pspy_utils.create_directory(plot_dir)
@@ -38,27 +45,27 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 nsims = iStop - iStart
 
-
-lth, Dlth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type=type, lmax=lmax, start_at_zero=False)
-
 theory = {}
 bin_theory = {}
 
 for id_sv1, sv1 in enumerate(surveys):
-    arrays_1 = d["arrays_%s" % sv1]
+    arrays_1 = d[f"arrays_{sv1}"]
     for id_ar1, ar1 in enumerate(arrays_1):
         for id_sv2, sv2 in enumerate(surveys):
-            arrays_2 = d["arrays_%s" % sv2]
+            arrays_2 = d[f"arrays_{sv2}"]
             for id_ar2, ar2 in enumerate(arrays_2):
 
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
 
-                l, bl1 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv1, ar1)], lmax=lmax)
-                l, bl2 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv2, ar2)], lmax=lmax)
+                l, bl1 = pspy_utils.read_beam_file(d[f"beam_{sv1}_{ar1}"], lmax=lmax)
+                l, bl2 = pspy_utils.read_beam_file(d[f"beam_{sv2}_{ar2}"], lmax=lmax)
+
+                nu_eff_1 = d[f"nu_eff_{sv1}_{ar1}"]
+                nu_eff_2 = d[f"nu_eff_{sv2}_{ar2}"]
 
                 if sv1 == sv2:
-                    lb, nlth = so_spectra.read_ps("%s/mean_%sx%s_%s_noise.dat" % (noise_dir, ar1, ar2, sv1), spectra=spectra)
+                    lb, nlth = so_spectra.read_ps(f"{noise_model_dir}/mean_{ar1}x{ar2}_{sv1}_noise.dat", spectra=spectra)
                     for spec in spectra:
                         nlth[spec]  /= (bl1 * bl2)
                 else:
@@ -66,7 +73,7 @@ for id_sv1, sv1 in enumerate(surveys):
                     for spec in spectra:
                         nlth[spec] = np.zeros(lmax)
 
-                prefix= "%s/%s_%sx%s_%s" % (mcm_dir, sv1, ar1, sv2, ar2)
+                prefix= f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}"
                 
                 mbb_inv, Bbl = so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
 
@@ -77,31 +84,21 @@ for id_sv1, sv1 in enumerate(surveys):
 
                     ps_th = {}
                     for spec in spectra:
-                        ps=Dlth[spec].copy()
-                        if spec == "TT":
-                        
-                            nu_eff_1 = d["nu_eff_%s_%s" % (sv1, ar1)]
-                            nu_eff_2 = d["nu_eff_%s_%s" % (sv2, ar2)]
-                            
-                            _, flth = np.loadtxt("%s/fg_%sx%s_TT.dat" %(bestfit_dir, nu_eff_1, nu_eff_2), unpack=True)
-                            
-                            ps = Dlth[spec] + flth[:lmax]
                     
                         if kind == "cross":
-                            ps_th[spec] = ps
+                            ps_th[spec] = cmb_and_fg_dict[nu_eff_1, nu_eff_2][spec]
                         elif kind == "noise":
                             ps_th[spec] = nlth[spec]
                         elif kind == "auto":
-                            ns = len( d["maps_%s_%s" % (sv1, ar1)])
-
-                            ps_th[spec] = ps + nlth[spec] * ns
+                            n_splits = len(d[f"maps_{sv1}_{ar1}"])
+                            ps_th[spec] = cmb_and_fg_dict[nu_eff_1, nu_eff_2][spec] + nlth[spec] * n_splits
     
                     theory[sv1, ar1, sv2, ar2, kind] = ps_th
                     bin_theory[sv1, ar1, sv2, ar2, kind] = so_mcm.apply_Bbl(Bbl, ps_th, spectra=spectra)
 
 
-os.system("cp %s/multistep2.js %s/multistep2.js" % (multistep_path, plot_dir))
-filename = "%s/SO_spectra.html" % plot_dir
+os.system(f"cp {multistep_path}/multistep2.js {plot_dir}/multistep2.js")
+filename = f"{plot_dir}/SO_spectra.html"
 g = open(filename, mode='w')
 g.write('<html>\n')
 g.write('<head>\n')
@@ -124,10 +121,10 @@ for kind in ["cross", "noise", "auto"]:
     for spec in spectra:
         n_spec[kind] = 0
         for id_sv1, sv1 in enumerate(surveys):
-            arrays_1 = d["arrays_%s" % sv1]
+            arrays_1 = d[f"arrays_{sv1}"]
             for id_ar1, ar1 in enumerate(arrays_1):
                 for id_sv2, sv2 in enumerate(surveys):
-                    arrays_2 = d["arrays_%s" % sv2]
+                    arrays_2 = d[f"arrays_{sv2}"]
                     for id_ar2, ar2 in enumerate(arrays_2):
 
                         if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
@@ -135,9 +132,10 @@ for kind in ["cross", "noise", "auto"]:
                         if (sv1 != sv2) & (kind == "noise"): continue
                         if (sv1 != sv2) & (kind == "auto"): continue
 
-                        spec_name = "spectra_%s_%s_%sx%s_%s_%s" % (spec, sv1, ar1, sv2, ar2, kind)
+                        
+                        spec_name = f"spectra_{spec}_{sv1}_{ar1}x{sv2}_{ar2}_{kind}"
 
-                        lb, mean, std = np.loadtxt("%s/%s.dat" % (mc_dir, spec_name), unpack=True)
+                        lb, mean, std = np.loadtxt(f"{mc_dir}/{spec_name}.dat", unpack=True)
                         
                         mean_dict[kind, spec, sv1, ar1, sv2, ar2] = mean
                         std_dict[kind, spec, sv1, ar1, sv2, ar2] = std
@@ -203,10 +201,10 @@ for fig in ["log", "linear"]:
 
         exp_name = ""
         for id_sv1, sv1 in enumerate(surveys):
-            arrays_1 = d["arrays_%s" % sv1]
+            arrays_1 = d[f"arrays_{sv1}"]
             for id_ar1, ar1 in enumerate(arrays_1):
                 for id_sv2, sv2 in enumerate(surveys):
-                    arrays_2 = d["arrays_%s" % sv2]
+                    arrays_2 = d[f"arrays_{sv2}"]
                     for id_ar2, ar2 in enumerate(arrays_2):
                         if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                         if  (id_sv1 > id_sv2) : continue
@@ -218,10 +216,10 @@ for fig in ["log", "linear"]:
                         ps_th = theory[sv1, ar1, sv2, ar2, "cross"][spec]
                     
                         if (fig == "linear") and (spec == "TT"):
-                            plt.errorbar(lb, mean * lb**2, std * lb**2, fmt='.', color=c, label="%s%s x %s%s" % (sv1, ar1, sv2, ar2), alpha=0.6)
+                            plt.errorbar(lb, mean * lb**2, std * lb**2, fmt='.', color=c, label=f"{sv1}{ar1} x {sv2}{ar2}", alpha=0.6)
                             plt.errorbar(lth, ps_th * lth**2, color=c, alpha=0.4)
                         else:
-                            plt.errorbar(lb, mean, std, fmt='.', color=c, label="%s%s x %s%s" % (sv1, ar1, sv2, ar2), alpha=0.6)
+                            plt.errorbar(lb, mean, std, fmt='.', color=c, label=f"{sv1}{ar1} x {sv2}{ar2}", alpha=0.6)
                             plt.errorbar(lth, ps_th, color=c, alpha=0.4)
 
             exp_name += "%s_" % sv1
@@ -243,7 +241,7 @@ for fig in ["log", "linear"]:
         else:
             plt.ylabel(r"$D^{%s}_\ell$" % spec, fontsize=20)
 
-        plt.savefig("%s/all_%s_spectra_%s_all_%scross.png" % (plot_dir, fig, spec, exp_name), bbox_inches="tight")
+        plt.savefig(f"{plot_dir}/all_{fig}_spectra_{spec}_all_{exp_name}cross.png", bbox_inches="tight")
         plt.clf()
         plt.close()
 

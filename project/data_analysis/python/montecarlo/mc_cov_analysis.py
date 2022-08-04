@@ -5,6 +5,7 @@ it estimates block numerical covariances from the simulations
 
 
 from pspy import pspy_utils, so_dict, so_spectra
+from pspipe_utils import pspipe_list
 import numpy as np
 import sys
 
@@ -23,18 +24,8 @@ pspy_utils.create_directory(cov_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
+spec_list = pspipe_list.get_spec_name_list(d, char="_")
 
-spec_list = []
-for id_sv1, sv1 in enumerate(surveys):
-    arrays_1 = d["arrays_%s" % sv1]
-    for id_ar1, ar1 in enumerate(arrays_1):
-        for id_sv2, sv2 in enumerate(surveys):
-            arrays_2 = d["arrays_%s" % sv2]
-            for id_ar2, ar2 in enumerate(arrays_2):
-                if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                if  (id_sv1 > id_sv2) : continue
-                spec_list += ["%s_%sx%s_%s" % (sv1, ar1, sv2, ar2)]
-            
 for sid1, spec1 in enumerate(spec_list):
     for sid2, spec2 in enumerate(spec_list):
         if sid1 > sid2 : continue
@@ -44,11 +35,11 @@ for sid1, spec1 in enumerate(spec_list):
         ps_list_ab = []
         ps_list_cd = []
         for iii in range(iStart, iStop):
-            spec_name_cross_ab = "%s_%sx%s_cross_%05d" % (type, na, nb, iii)
-            spec_name_cross_cd = "%s_%sx%s_cross_%05d" % (type, nc, nd, iii)
+            spec_name_cross_ab = f"{type}_{na}x{nb}_cross_%05d" % iii
+            spec_name_cross_cd = f"{type}_{nc}x{nd}_cross_%05d" % iii
         
-            lb, ps_ab = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_cross_ab, spectra=spectra)
-            lb, ps_cd = so_spectra.read_ps(spec_dir + "/%s.dat" % spec_name_cross_cd, spectra=spectra)
+            lb, ps_ab = so_spectra.read_ps(spec_dir + f"/{spec_name_cross_ab}.dat", spectra=spectra)
+            lb, ps_cd = so_spectra.read_ps(spec_dir + f"/{spec_name_cross_cd}.dat", spectra=spectra)
     
             vec_ab = []
             vec_cd = []
@@ -65,6 +56,6 @@ for sid1, spec1 in enumerate(spec_list):
 
         cov_mc = cov_mc / (iStop-iStart) - np.outer(np.mean(ps_list_ab, axis=0), np.mean(ps_list_cd, axis=0))
 
-        np.save("%s/mc_cov_%sx%s_%sx%s.npy"%(cov_dir, na, nb, nc, nd), cov_mc)
+        np.save(f"{cov_dir}/mc_cov_{na}x{nb}_{nc}x{nd}.npy", cov_mc)
 
 

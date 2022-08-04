@@ -8,7 +8,6 @@ from pspy import so_dict, so_spectra, pspy_utils
 import sys
 import scipy.interpolate
 
-
 def interpolate_dict(lb, cb, lth, spectra, force_positive=True, l_inf_lmin_equal_lmin=True, discard_cross=True):
        cl_dict = {}
        for spec in spectra:
@@ -43,18 +42,18 @@ binning_file = d["binning_file"]
 lth = np.arange(2, lmax+2)
 
 for sv in surveys:
-    arrays = d["arrays_%s" % sv]
+    arrays = d[f"arrays_{sv}"]
     for id_ar1, ar1 in enumerate(arrays):
         for id_ar2, ar2 in enumerate(arrays):
             if id_ar1 > id_ar2: continue
             
-            l, bl_ar1 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar1)])
-            l, bl_ar2 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar2)])
+            l, bl_ar1 = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar1}"])
+            l, bl_ar2 = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar2}"])
 
             
-            lb, nbs_ar1xar1 = so_spectra.read_ps("%s/%s_%s_%sx%s_%s_noise.dat" % (spectra_dir, type, sv, ar1, sv, ar1), spectra=spectra)
-            lb, nbs_ar1xar2 = so_spectra.read_ps("%s/%s_%s_%sx%s_%s_noise.dat" % (spectra_dir, type, sv, ar1, sv, ar2), spectra=spectra)
-            lb, nbs_ar2xar2 = so_spectra.read_ps("%s/%s_%s_%sx%s_%s_noise.dat" % (spectra_dir, type, sv, ar2, sv, ar2), spectra=spectra)
+            lb, nbs_ar1xar1 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar1}_noise.dat", spectra=spectra)
+            lb, nbs_ar1xar2 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar2}_noise.dat", spectra=spectra)
+            lb, nbs_ar2xar2 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar2}x{sv}_{ar2}_noise.dat", spectra=spectra)
             
             lb, bb_ar1 = pspy_utils.naive_binning(l, bl_ar1, binning_file, lmax)
             lb, bb_ar2 = pspy_utils.naive_binning(l, bl_ar2, binning_file, lmax)
@@ -91,15 +90,18 @@ for sv in surveys:
                 plt.plot(lb,
                          nbs,
                          ".",
-                         label = "%s %sx%s" % (sv, ar1, ar2),
+                         label = f"{sv} {ar1}x{ar2}",
                          color="red")
                 plt.legend(fontsize=20)
-                plt.savefig("%s/noise_interpolate_%sx%s_%s_%s.png" % (plot_dir, ar1, ar2, sv, spec), bbox_inches="tight")
+                plt.savefig(f"{plot_dir}/noise_interpolate_{ar1}x{ar2}_{sv}_{spec}.png", bbox_inches="tight")
                 plt.clf()
                 plt.close()
 
-            spec_name_noise_mean = "mean_%sx%s_%s_noise" % (ar1, ar2, sv)
-            so_spectra.write_ps(ps_model_dir + "/%s.dat" % spec_name_noise_mean, lth, nlth, type, spectra=spectra)
+            spec_name_noise_mean = f"mean_{ar1}x{ar2}_{sv}_noise"
+            so_spectra.write_ps(ps_model_dir + f"/{spec_name_noise_mean}.dat", lth, nlth, type, spectra=spectra)
 
-                
-
+            if ar2 != ar1:
+                spec_name_noise_mean = f"mean_{ar2}x{ar1}_{sv}_noise"
+                TE, ET, TB, BT, EB, BE = nlth["ET"], nlth["TE"], nlth["BT"], nlth["TB"], nlth["BE"], nlth["EB"]
+                nlth["TE"], nlth["ET"], nlth["TB"], nlth["BT"], nlth["EB"], nlth["BE"] = TE, ET, TB, BT, EB, BE
+                so_spectra.write_ps(ps_model_dir + f"/{spec_name_noise_mean}.dat", lth, nlth, type, spectra=spectra)

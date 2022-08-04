@@ -5,11 +5,11 @@ Optionally, it applies a calibration to the maps, a kspace filter and deconvolve
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_map_preprocessing, so_mpi
+from pspipe_utils import pspipe_list, kspace
 from pixell import enmap
 import numpy as np
 import healpy as hp
 import sys
-import data_analysis_utils
 import time
 
 d = so_dict.so_dict()
@@ -19,21 +19,17 @@ surveys = d["surveys"]
 lmax = d["lmax"]
 deconvolve_pixwin = d["deconvolve_pixwin"]
 niter = d["niter"]
+apply_kspace_filter = d["apply_kspace_filter"]
+
 
 window_dir = "windows"
 alms_dir = "alms"
 
 pspy_utils.create_directory(alms_dir)
+        
+n_ar, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 
-sv_list, ar_list = [], []
-n_ar = 0
-for sv in surveys:
-    for ar in  d["arrays_%s" % sv]:
-        sv_list += [sv]
-        ar_list += [ar]
-        n_ar += 1
-
-print("number of arrays for the mpi loop : %s" % n_ar)
+print(f"number of arrays for the mpi loop : {n_ar}")
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_ar-1)
 print(subtasks)
@@ -42,36 +38,29 @@ for task in subtasks:
     task = int(task)
     sv, ar = sv_list[task], ar_list[task]
     
-    win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
-    win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+    win_T = so_map.read_map(d[f"window_T_{sv}_{ar}"])
+    win_pol = so_map.read_map(d[f"window_pol_{sv}_{ar}"])
     
-    if win_T.pixel == "CAR":
-        binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-
     window_tuple = (win_T, win_pol)
 
-    ks_f = d["k_filter_%s" % sv]
-    if win_T.pixel == "CAR" and ks_f["apply"]:
-        shape, wcs = win_T.data.shape, win_T.data.wcs
+
+    if win_T.pixel == "CAR":
+        binary = so_map.read_map(f"{window_dir}/binary_{sv}_{ar}.fits")
         
-        if ks_f["type"] == "binary_cross":
-            filter = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=ks_f["vk_mask"], hk_mask=ks_f["hk_mask"], dtype=np.float32)
-        elif ks_f["type"] == "gauss":
-            filter = so_map_preprocessing.build_sigurd_filter(shape, wcs, ks_f["lbounds"], dtype=np.float32)
+        if apply_kspace_filter:
+            ks_f = d[f"k_filter_{sv}"]
+            filter = kspace.get_kspace_filter(win_T, ks_f)
+                    
+        if (deconvolve_pixwin == True):
+            # deconvolve the CAR pixel function in fourier space
+            wy, wx = enmap.calc_window(win_T.data.shape)
+            inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
         else:
-            print("you need to specify a valid filter type")
-            sys.exit()
+            inv_pixwin_lxly = None
             
-    if (deconvolve_pixwin == True) & (win_T.pixel == "CAR"):
-        # deconvolve the CAR pixel function in fourier space
-        wy, wx = enmap.calc_window(win_T.data.shape)
-        inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
-    else:
-        inv_pixwin_lxly = None
             
-    maps = d["maps_%s_%s" % (sv, ar)]
-    cal = d["cal_%s_%s" % (sv, ar)]
-    pol_eff = d["pol_eff_%s_%s" % (sv, ar)]
+    maps = d[f"maps_{sv}_{ar}"]
+    cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]
 
     t = time.time()
     for k, map in enumerate(maps):
@@ -79,28 +68,29 @@ for task in subtasks:
         if win_T.pixel == "CAR":
             split = so_map.read_map(map, geometry=win_T.data.geometry)
                 
-            if d["src_free_maps_%s" % sv] == True:
-                point_source_map_name = map.replace("srcfree.fits", "model.fits")
-                if point_source_map_name == map:
+            if d[f"src_free_maps_{sv}"] == True:
+                ps_map_name = map.replace("srcfree.fits", "model.fits")
+                if ps_map_name == map:
                     raise ValueError("No model map is provided! Check map names!")
-                point_source_map = so_map.read_map(point_source_map_name)
-                point_source_mask = so_map.read_map(d["ps_mask_%s_%s" % (sv, ar)])
-                split = data_analysis_utils.get_coadded_map(split, point_source_map, point_source_mask)
+                ps_map = so_map.read_map(ps_map_name)
+                ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
+                ps_map.data *= ps_mask.data
+                split.data += ps_map.data
 
-            if ks_f["apply"]:
-                print("apply kspace filter on %s" %map)
-                split = data_analysis_utils.get_filtered_map(split,
-                                                             binary,
-                                                             filter,
-                                                             inv_pixwin_lxly=inv_pixwin_lxly,
-                                                             weighted_filter=ks_f["weighted"])
+            if apply_kspace_filter:
+                print(f"apply kspace filter on {map}")
+                split = kspace.filter_map(split,
+                                          filter,
+                                          binary,
+                                          inv_pixwin=inv_pixwin_lxly,
+                                          weighted_filter=ks_f["weighted"])
                         
             else:
                 print("WARNING: no kspace filter is applied")
                 if deconvolve_pixwin:
-                    split = data_analysis_utils.fourier_mult(split,
-                                                             binary,
-                                                             inv_pixwin_lxly)
+                    split = so_map.fourier_convolution(split,
+                                                       inv_pixwin_lxly,
+                                                       binary=binary)
                          
         elif win_T.pixel == "HEALPIX":
             split = so_map.read_map(map)
@@ -108,11 +98,11 @@ for task in subtasks:
         split = split.calibrate(cal=cal, pol_eff=pol_eff)
             
         if d["remove_mean"] == True:
-            split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
+            split = split.subtract_mean(window_tuple)
                 
         master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax)
         
-        np.save("%s/alms_%s_%s_%d.npy" % (alms_dir, sv, ar, k), master_alms)
+        np.save(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy", master_alms)
         
     print(time.time()- t)
 

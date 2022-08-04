@@ -78,6 +78,14 @@ to run it
     salloc -N 40 -C haswell -q interactive -t 04:00:00
     srun -n 40 -c 64 --cpu_bind=cores python mc_get_spectra.py global_dr6_v3_4pass.dict
 
+if you wants to rather use mnms sims:
+
+.. code:: shell
+
+    salloc -N 40 -C haswell -q interactive -t 04:00:00
+    srun -n 40 -c 64 --cpu_bind=cores python mc_mnms_get_spectra.py global_dr6_v3_4pass.dict
+
+
 then to analyze and plot the simulations
 
 .. code:: shell

@@ -3,8 +3,9 @@ This script compute the analytical covariance matrix elements.
 """
 import sys
 
-import data_analysis_utils
-import numpy as np
+import numpy as np, pylab as plt
+from pspipe_utils import pspipe_list, best_fits
+
 from pspy import pspy_utils, so_cov, so_dict, so_map, so_mcm, so_mpi, so_spectra
 
 d = so_dict.so_dict()
@@ -13,7 +14,7 @@ d.read_from_file(sys.argv[1])
 windows_dir = "windows"
 mcms_dir = "mcms"
 spectra_dir = "spectra"
-ps_model_dir = "noise_model"
+noise_dir = "noise_model"
 cov_dir = "covariances"
 bestfit_dir = "best_fits"
 sq_win_alms_dir = "sq_win_alms"
@@ -24,88 +25,47 @@ binning_file = d["binning_file"]
 lmax = d["lmax"]
 niter = d["niter"]
 binned_mcm = d["binned_mcm"]
-
-fast_coupling = True
-if fast_coupling:
-    # This option is designed to be fast but is not for general usage
-    # In particular we assume that the same window function is used in T and Pol
-    # This loop check that this is what was specified in the dictfile
-    for sv in surveys:
-        arrays = d["arrays_%s" % sv]
-        for ar in arrays:
-            assert d["window_T_%s_%s" % (sv, ar)] == d["window_pol_%s_%s" % (sv, ar)], "T and pol windows have to be the same"
-
+apply_kspace_filter = d["apply_kspace_filter"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
+# fast_coupling is designed to be fast but is not for general usage
+# In particular we assume that the same window function is used in T and Pol
+fast_coupling = True
 
-ps_all = {}
-nl_all = {}
-spec_name = []
-ns = {}
+arrays, n_splits, bl_dict, nu_eff = {}, {}, {}, {}
+for sv in surveys:
+    arrays[sv] = d[f"arrays_{sv}"]
+    for ar in arrays[sv]:
+        l_beam, bl_dict[sv, ar] = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
+        id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
+        bl_dict[sv, ar] = bl_dict[sv, ar][id_beam]
+        nu_eff[sv, ar] = d[f"nu_eff_{sv}_{ar}"]
+        n_splits[sv] = len(d[f"maps_{sv}_{ar}"])
+        if fast_coupling:
+            # This loop check that this is what was specified in the dictfile
+            assert d[f"window_T_{sv}_{ar}"] == d[f"window_pol_{sv}_{ar}"], "T and pol windows have to be the same"
 
-_, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
+l_cmb, cmb_dict = best_fits.cmb_dict_from_file(bestfit_dir + "/cmb.dat", lmax, spectra)
 
+freq_list = pspipe_list.get_freq_list(d)
+l_fg, fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat", freq_list, lmax, spectra)
 
-for id_sv1, sv1 in enumerate(surveys):
-    arrays_1 = d["arrays_%s" % sv1]
+f_name_noise = noise_dir + "/mean_{}x{}_{}_noise.dat"
+l_noise, nl_dict = best_fits.noise_dict_from_files(f_name_noise,  surveys, arrays, lmax, spectra, n_splits=n_splits)
 
-    for id_ar1, ar1 in enumerate(arrays_1):
-        _, bl1 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv1, ar1)])
-        bl1 = bl1[2:lmax]
-        freq1 = d["nu_eff_%s_%s" % (sv1, ar1)]
-
-        for id_sv2, sv2 in enumerate(surveys):
-            arrays_2 = d["arrays_%s" % sv2]
-
-            for id_ar2, ar2 in enumerate(arrays_2):
-                _, bl2 = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv2, ar2)])
-                bl2 = bl2[2:lmax]
-                freq2 = d["nu_eff_%s_%s" % (sv2, ar2)]
-
-
-                if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                if  (id_sv1 > id_sv2) : continue
-
-                if (sv1 == sv2):
-                    spec_name_noise = "mean_%sx%s_%s_noise" % (ar1, ar2, sv1)
-                    _, Nl = so_spectra.read_ps(ps_model_dir + "/%s.dat" % spec_name_noise, spectra=spectra)
-
-                for spec in ["TT", "TE", "ET", "EE"]:
-                        
-                    name = "%sx%s_%s" % (freq1, freq2, spec)
-                    _, ps_th = np.loadtxt("%s/best_fit_%s.dat"%(bestfit_dir, name), unpack=True)
-
-
-                    ps_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = bl1 * bl2 * ps_th[:lmax - 2]
-
-                    if (sv1 == sv2):
-                        ns[sv1] = len(d["maps_%s_%s" % (sv1, ar1)])
-
-                        nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = Nl[spec][:lmax - 2] * ns[sv1]
-                    else:
-                        nl_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = np.zeros(lmax - 2)
-
-                    ps_all["%s&%s" % (sv2, ar2), "%s&%s"%(sv1, ar1), spec] = ps_all["%s&%s"%(sv1, ar1), "%s&%s"%(sv2, ar2), spec]
-                    nl_all["%s&%s" % (sv2, ar2), "%s&%s"%(sv1, ar1), spec] = nl_all["%s&%s"%(sv1, ar1), "%s&%s"%(sv2, ar2), spec]
-
-                spec_name += ["%s&%sx%s&%s" % (sv1, ar1, sv2, ar2)]
-
-na_list, nb_list, nc_list, nd_list = [], [], [], []
-ncovs = 0
-
-for sid1, spec1 in enumerate(spec_name):
-    for sid2, spec2 in enumerate(spec_name):
-        if sid1 > sid2: continue
-        na, nb = spec1.split("x")
-        nc, nd = spec2.split("x")
-        na_list += [na]
-        nb_list += [nb]
-        nc_list += [nc]
-        nd_list += [nd]
-        ncovs += 1
-
+spec_name_list = pspipe_list.get_spec_name_list(d)
+l, ps_all, nl_all = best_fits.get_all_best_fit(spec_name_list,
+                                               l_cmb,
+                                               cmb_dict,
+                                               fg_dict,
+                                               nu_eff,
+                                               spectra,
+                                               nl_dict=nl_dict,
+                                               bl_dict=bl_dict)
+                                               
+ncovs, na_list, nb_list, nc_list, nd_list = pspipe_list.get_covariances_list(d)
 
 if d["use_toeplitz_cov"] == True:
     print("we will use the toeplitz approximation")
@@ -113,7 +73,7 @@ if d["use_toeplitz_cov"] == True:
 else:
     l_exact, l_band, l_toep = None, None, None
 
-print("number of covariance matrices to compute : %s" % ncovs)
+print(f"number of covariance matrices to compute : {ncovs}")
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=ncovs - 1)
 print(subtasks)
@@ -121,7 +81,7 @@ for task in subtasks:
     task = int(task)
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
-    print("cov element (%s x %s, %s x %s)" % (na_r, nb_r, nc_r, nd_r))
+    print(f"cov element ({na_r} x {nb_r}, {nc_r} x {nd_r})")
 
 
     if fast_coupling:
@@ -135,14 +95,14 @@ for task in subtasks:
                                                          
     else:
         win = {}
-        win["Ta"] = so_map.read_map(d["window_T_%s" % na_r])
-        win["Tb"] = so_map.read_map(d["window_T_%s" % nb_r])
-        win["Tc"] = so_map.read_map(d["window_T_%s" % nc_r])
-        win["Td"] = so_map.read_map(d["window_T_%s" % nd_r])
-        win["Pa"] = so_map.read_map(d["window_pol_%s" % na_r])
-        win["Pb"] = so_map.read_map(d["window_pol_%s" % nb_r])
-        win["Pc"] = so_map.read_map(d["window_pol_%s" % nc_r])
-        win["Pd"] = so_map.read_map(d["window_pol_%s" % nd_r])
+        win["Ta"] = so_map.read_map(d[f"window_T_{na_r}"])
+        win["Tb"] = so_map.read_map(d[f"window_T_{nb_r}"])
+        win["Tc"] = so_map.read_map(d[f"window_T_{nc_r}"])
+        win["Td"] = so_map.read_map(d[f"window_T_{nd_r}"])
+        win["Pa"] = so_map.read_map(d[f"window_pol_{na_r}"])
+        win["Pb"] = so_map.read_map(d[f"window_pol_{nb_r}"])
+        win["Pc"] = so_map.read_map(d[f"window_pol_{nc_r}"])
+        win["Pd"] = so_map.read_map(d[f"window_pol_{nd_r}"])
         
         coupling = so_cov.cov_coupling_spin0and2_simple(win,
                                                         lmax,
@@ -153,16 +113,16 @@ for task in subtasks:
 
     
 
-    try: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, na_r, nb_r), spin_pairs=spin_pairs)
-    except: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nb_r, na_r), spin_pairs=spin_pairs)
+    try: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix=f"{mcms_dir}/{na_r}x{nb_r}", spin_pairs=spin_pairs)
+    except: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix=f"{mcms_dir}/{nb_r}x{na_r}", spin_pairs=spin_pairs)
 
-    try: mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nc_r, nd_r), spin_pairs=spin_pairs)
-    except:  mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix="%s/%sx%s" % (mcms_dir, nd_r, nc_r), spin_pairs=spin_pairs)
+    try: mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix=f"{mcms_dir}/{nc_r}x{nd_r}", spin_pairs=spin_pairs)
+    except:  mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix=f"{mcms_dir}/{nd_r}x{nc_r}", spin_pairs=spin_pairs)
 
 
     analytic_cov = so_cov.generalized_cov_spin0and2(coupling,
                                                     [na, nb, nc, nd],
-                                                    ns,
+                                                    n_splits,
                                                     ps_all,
                                                     nl_all,
                                                     lmax,
@@ -171,25 +131,15 @@ for task in subtasks:
                                                     mbb_inv_cd,
                                                     binned_mcm=binned_mcm)
 
-    # Some heuristic correction for the number of modes lost due to the transfer function
-    # This should be tested against simulation and revisited
+    if apply_kspace_filter == True:
+        # Some heuristic correction for the number of modes lost due to the transfer function
+        # This should be tested against simulation and revisited
 
-    sv_a, pa_a = na.split("&")
-    sv_b, pa_b = nb.split("&")
-    sv_c, pa_c = nc.split("&")
-    sv_d, pa_d = nd.split("&")
+        one_d_tf_ab = np.loadtxt(f"{spectra_dir}/one_dimension_kspace_tf_{na_r}x{nb_r}.dat")
+        one_d_tf_cd = np.loadtxt(f"{spectra_dir}/one_dimension_kspace_tf_{nc_r}x{nd_r}.dat")
+        one_d_tf = np.minimum(one_d_tf_ab, one_d_tf_cd)
+        # sqrt(tf) is an approx for the number of modes masked in a given map so (2l+1)*fsky*sqrt(tf)
+        # is our proxy for the number of modes
+        analytic_cov /= np.outer(one_d_tf ** (1./4.), one_d_tf ** (1./4.))
 
-    tf = np.ones(len(lb))
-    
-    for sv, pa in zip([sv_a, sv_b, sv_c, sv_d], [pa_a, pa_b, pa_c, pa_d]):
-        # so the TF here include the 1d pixwin but not the 2d pixwin
-        # we should decide weither or not to include the pixwin
-        # and do things consistently
-        _, sv_tf = np.loadtxt(spectra_dir + "/tf_%s_%s.dat" % (sv, pa), unpack=True)
-        tf *= sv_tf ** (1. / 4.)
-
-
-    cov_tf = np.tile(tf, 4)
-    analytic_cov /= np.outer(np.sqrt(cov_tf), np.sqrt(cov_tf))
-
-    np.save("%s/analytic_cov_%sx%s_%sx%s.npy" % (cov_dir, na_r, nb_r, nc_r, nd_r), analytic_cov)
+    np.save(f"{cov_dir}/analytic_cov_{na_r}x{nb_r}_{nc_r}x{nd_r}.npy", analytic_cov)

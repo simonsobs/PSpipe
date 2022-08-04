@@ -2,6 +2,8 @@
 Computing DR6 spectra
 **************************
 
+dependency: pspy, pspipe_utils
+
 Here are some specific instructions to compute spectra for DR6 at NERSC.
 Since it is a lot of spectra computation, we are going to make full use of MPI capacities.
 The current dictionnary is called ``global_dr6.dict`` and is given in the ``paramfiles`` folder.
@@ -31,10 +33,7 @@ If you consider six detector arrays, we first compute the alms using mpi, and th
 
     salloc -N 6 -C haswell -q interactive -t 04:00:00
     srun -n 6 -c 64 --cpu_bind=cores python get_alms.py global_dr6_v3_4pass.dict
-
-    salloc -N 1 -C haswell -q interactive -t 04:00:00
-    srun -n 1 -c 64 --cpu_bind=cores python get_spectra_from_alms.py global_dr6_v3_4pass.dict
-
+    srun -n 6 -c 64 --cpu_bind=cores python get_spectra_from_alms.py global_dr6_v3_4pass.dict
 
 
 Finally, we need to compute the associated covariances of all these spectra, for this we need a model for the signal and noise power spectra
@@ -61,8 +60,14 @@ Uncertainties in the beam of the telescope need to be propagated, the covariance
     salloc -N 6 -C haswell -q interactive -t 04:00:00
     srun -n 6 -c 64 --cpu_bind=cores python get_beam_covariance.py global_dr6_v3_4pass.dict
 
+To get accurate transfer function estimated from simulation
 
+.. code:: shell
 
+    salloc -N 40 -C haswell -q interactive -t 04:00:00
+    srun -n 40 -c 64 --cpu_bind=cores python mc_get_kspace_tf_spectra.py global_dr6_v3_4pass.dict
+    salloc -N 1 -C haswell -q interactive -t 01:00:00
+    srun -n 1 -c 64 --cpu_bind=cores python mc_tf_analysis.py global_dr6_v3_4pass.dict
 
 
 We have also implemented a simple simulation pipeline to check if the pipeline produce unbiased spectra and accurate analytical covariance matrices

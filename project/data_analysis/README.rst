@@ -49,9 +49,9 @@ The computation of the covariance matrices is then divided into two steps, first
 
 .. code:: shell
 
-    salloc -N 21 -C haswell -q interactive -t 01:00:00
-    srun -n 21 -c 64 --cpu_bind=cores python fast_cov_get_sq_windows_alms.py global_dr6_v3_4pass.dict
-    srun -n 21 -c 64 --cpu_bind=cores python fast_cov_get_covariance.py global_dr6_v3_4pass.dict
+    salloc -N 40 -C haswell -q interactive -t 01:00:00
+    srun -n 40 -c 64 --cpu_bind=cores python fast_cov_get_sq_windows_alms.py global_dr6_v3_4pass.dict
+    srun -n 40 -c 64 --cpu_bind=cores python fast_cov_get_covariance.py global_dr6_v3_4pass.dict
 
 Uncertainties in the beam of the telescope need to be propagated, the covariance matrix associated to beam errors can be computed analytically as
 

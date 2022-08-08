@@ -1,126 +1,116 @@
 """
-This script plot all maps before and after filtering
+This script compute all alms write them to disk.
+It uses the window function provided in the dictionnary file.
+Optionally, it applies a calibration to the maps, a kspace filter and deconvolve the CAR pixel window function.
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra
+from pspy import pspy_utils, so_dict, so_map, sph_tools, so_map_preprocessing, so_mpi
+from pspipe_utils import pspipe_list, kspace, misc
 from pixell import enmap
 import numpy as np
 import healpy as hp
 import sys
-import data_analysis_utils
 import time
-
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 surveys = d["surveys"]
-lmax = d["lmax"]
-type = d["type"]
-binning_file = d["binning_file"]
-write_all_spectra = d["write_splits_spectra"]
 deconvolve_pixwin = d["deconvolve_pixwin"]
+apply_kspace_filter = d["apply_kspace_filter"]
+
 
 window_dir = "windows"
-mcm_dir = "mcms"
-specDir = "spectra"
 plot_dir = "plots/maps/"
 
 pspy_utils.create_directory(plot_dir)
-pspy_utils.create_directory(specDir)
 
-spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
+n_ar, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 
-ncomp = 3
+print(f"number of arrays for the mpi loop : {n_ar}")
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=0, imax=n_ar-1)
+print(subtasks)
 
-nsplit = {}
-pixwin_l = {}
 color_range = [500, 150, 150]
 
-for sv in surveys:
-    arrays = d["arrays_%s" % sv]
 
-    for ar in arrays:
-        win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
-        win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+for task in subtasks:
+    task = int(task)
+    sv, ar = sv_list[task], ar_list[task]
+    
+    win_T = so_map.read_map(d[f"window_T_{sv}_{ar}"])
+    win_pol = so_map.read_map(d[f"window_pol_{sv}_{ar}"])
+    
+    window_tuple = (win_T, win_pol)
 
-        window_tuple = (win_T, win_pol)
+
+    if win_T.pixel == "CAR":
+        binary_file = misc.str_replace(d["window_T_{sv}_{ar}"], "window_", "binary_")
+        binary = so_map.read_map(binary_file)
         
-        maps = d["maps_%s_%s" % (sv, ar)]
-        nsplit[sv] = len(maps)
-
-        cal = d["cal_%s_%s" % (sv, ar)]
-        print("%s split of survey: %s, array %s"%(nsplit[sv], sv, ar))
-        
-        if deconvolve_pixwin:
-            # ok so this is a bit overcomplicated because we need to take into account CAR and HEALPIX
-            # for CAR the pixel window function deconvolution is done in Fourier space and take into account
-            # the anisotropy if the pixwin
-            # In HEALPIX it's a simple 1d function in multipole space
-            # we also need to take account the case where we have projected Planck into a CAR pixellisation since
-            # the native pixel window function of Planck need to be deconvolved
-            if win_T.pixel == "CAR":
-                wy, wx = enmap.calc_window(win_T.data.shape)
-                inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
-                pixwin_l[sv] = np.ones(2 * lmax)
-                if sv == "Planck":
-                    print("Deconvolve Planck pixel window function")
-                    # we include this special case for Planck projected in CAR taking into account the Planck native pixellisation
-                    # we should check if the projection doesn't include an extra pixel window
-                    inv_pixwin_lxly = None
-                    pixwin_l[sv] = hp.pixwin(2048)
-
-            elif win_T.pixel == "HEALPIX":
-                pixwin_l[sv] = hp.pixwin(win_T.nside)
-                
+        if apply_kspace_filter:
+            ks_f = d[f"k_filter_{sv}"]
+            filter = kspace.get_kspace_filter(win_T, ks_f)
+                    
+        if (deconvolve_pixwin == True):
+            # deconvolve the CAR pixel function in fourier space
+            wy, wx = enmap.calc_window(win_T.data.shape)
+            inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
         else:
             inv_pixwin_lxly = None
+            
+            
+    maps = d[f"maps_{sv}_{ar}"]
+    cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]
 
-
-        t = time.time()
-        for k, map in enumerate(maps):
+    t = time.time()
+    for k, map in enumerate(maps):
         
-            if win_T.pixel == "CAR":
+        if win_T.pixel == "CAR":
+            split = so_map.read_map(map, geometry=win_T.data.geometry)
+                
+            if d[f"src_free_maps_{sv}"] == True:
             
-                split = so_map.read_map(map, geometry=win_T.data.geometry)
                 
-                if d["src_free_maps_%s" % sv] == True:
-                    point_source_map_name = map.replace("srcfree.fits", "model.fits")
-                    if point_source_map_name == map:
-                        raise ValueError("No model map is provided! Check map names!")
-                    point_source_map = so_map.read_map(point_source_map_name)
-                    point_source_mask = so_map.read_map(d["ps_mask"])
-                    split = data_analysis_utils.get_coadded_map(split, point_source_map, point_source_mask)
+                ps_map_name = map.replace("srcfree.fits", "model.fits")
+                if ps_map_name == map:
+                    raise ValueError("No model map is provided! Check map names!")
+                ps_map = so_map.read_map(ps_map_name)
+                ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
+                ps_map.data *= ps_mask.data
+                split.data += ps_map.data
 
-                split_copy = split.copy()
-                split_copy = split_copy.downgrade(4)
-                split_copy.plot(file_name="%s/no_filter_split_%s_%s_%d" % (plot_dir, sv, ar, k), color_range=color_range)
 
-                
-                if d["use_kspace_filter"]:
-                    print("apply kspace filter on %s" %map)
-                    binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
-                    split = data_analysis_utils.get_filtered_map(
-                        split, binary, vk_mask=d["vk_mask"], hk_mask=d["hk_mask"], normalize=False, inv_pixwin_lxly=inv_pixwin_lxly)
-                else:
-                    print("WARNING: no kspace filter is applied")
-                    if deconvolve_pixwin:
-                        print("WARNING: pixwin deconvolution in CAR WITHOUT kspace filter is not implemented")
-                        sys.exit()
+            down_split = split.copy()
+            down_split = down_split.downgrade(4)
+            down_split.plot(file_name="{plot_dir}/no_filter_split_{sv}_{ar}_{k}", color_range=color_range)
+
+
+            if apply_kspace_filter:
+                print(f"apply kspace filter on {map}")
+                split = kspace.filter_map(split,
+                                          filter,
+                                          binary,
+                                          inv_pixwin=inv_pixwin_lxly,
+                                          weighted_filter=ks_f["weighted"])
                         
-            elif win_T.pixel == "HEALPIX":
-                split = so_map.read_map(map)
+            else:
+                print("WARNING: no kspace filter is applied")
+                if deconvolve_pixwin:
+                    split = so_map.fourier_convolution(split,
+                                                       inv_pixwin_lxly,
+                                                       binary=binary)
+                         
+        elif win_T.pixel == "HEALPIX":
+            split = so_map.read_map(map)
                 
-            split.data *= cal
-            if d["remove_mean"] == True:
-                split = data_analysis_utils.remove_mean(split, window_tuple, ncomp)
+        split = split.calibrate(cal=cal, pol_eff=pol_eff)
             
-            if d["use_kspace_filter"]:
-                split.data /= (split.data.shape[1]*split.data.shape[2])
-                
-            split = split.downgrade(4)
-            split.plot(file_name="%s/split_%s_%s_%d" % (plot_dir, sv, ar, k), color_range=color_range)
+        if d["remove_mean"] == True:
+            split = split.subtract_mean(window_tuple)
 
-            print(time.time()- t)
+        down_split = split.copy()
+        down_split = down_split.downgrade(4)
+        down_split.plot(file_name="{plot_dir}/split_{sv}_{ar}_{k}", color_range=color_range)
 

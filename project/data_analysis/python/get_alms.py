@@ -5,7 +5,7 @@ Optionally, it applies a calibration to the maps, a kspace filter and deconvolve
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_map_preprocessing, so_mpi
-from pspipe_utils import pspipe_list, kspace
+from pspipe_utils import pspipe_list, kspace, misc
 from pixell import enmap
 import numpy as np
 import healpy as hp
@@ -45,7 +45,8 @@ for task in subtasks:
 
 
     if win_T.pixel == "CAR":
-        binary = so_map.read_map(f"{window_dir}/binary_{sv}_{ar}.fits")
+        binary_file = misc.str_replace(d["window_T_{sv}_{ar}"], "window_", "binary_")
+        binary = so_map.read_map(binary_file)
         
         if apply_kspace_filter:
             ks_f = d[f"k_filter_{sv}"]

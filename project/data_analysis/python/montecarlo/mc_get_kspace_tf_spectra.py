@@ -5,7 +5,7 @@ different splits of the data
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi, so_map_preprocessing
-from pspipe_utils import pspipe_list, kspace, simulation
+from pspipe_utils import pspipe_list, kspace, simulation, misc
 import numpy as np
 import sys
 import time
@@ -121,7 +121,8 @@ for iii in subtasks:
             
                 # apply the k-space filter
 
-                binary = so_map.read_map(f"{window_dir}/binary_{sv}_{ar}.fits")
+                binary_file = misc.str_replace(d["window_T_{sv}_{ar}"], "window_", "binary_")
+                binary = so_map.read_map(binary_file)
                 
                 split = kspace.filter_map(split,
                                           filter[sv],

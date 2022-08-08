@@ -49,7 +49,7 @@ The computation of the covariance matrices is then divided into two steps, first
 
 .. code:: shell
 
-    salloc -N 40 -C haswell -q interactive -t 01:00:00
+    salloc -N 40 -C haswell -q interactive -t 04:00:00
     srun -n 40 -c 64 --cpu_bind=cores python fast_cov_get_sq_windows_alms.py global_dr6_v3_4pass.dict
     srun -n 40 -c 64 --cpu_bind=cores python fast_cov_get_covariance.py global_dr6_v3_4pass.dict
 

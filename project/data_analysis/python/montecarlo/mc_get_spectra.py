@@ -136,7 +136,7 @@ for iii in subtasks:
                 t1 = time.time()
                 if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
                 
-                        binary_file = misc.str_replace(d["window_T_{sv}_{ar}"], "window_", "binary_")
+                        binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
                         binary = so_map.read_map(binary_file)
                         split = kspace.filter_map(split,
                                                   filters[sv],

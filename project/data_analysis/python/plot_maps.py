@@ -46,7 +46,7 @@ for task in subtasks:
 
 
     if win_T.pixel == "CAR":
-        binary_file = misc.str_replace(d["window_T_{sv}_{ar}"], "window_", "binary_")
+        binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
         binary = so_map.read_map(binary_file)
         
         if apply_kspace_filter:

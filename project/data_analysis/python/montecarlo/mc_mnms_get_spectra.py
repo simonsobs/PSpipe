@@ -134,7 +134,7 @@ for iii in subtasks:
             signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
             # since the mnms noise sim include a pixwin, we convolve the signal ones
             signal = sph_tools.alm2map(signal_alms[ar], templates[sv])
-            binary_file = misc.str_replace(d["window_T_{sv}_{ar}"], "window_", "binary_")
+            binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
             binary = so_map.read_map(binary_file)
             signal = signal.convolve_with_pixwin(niter=niter, pixwin=pixwin[sv], binary=binary)
             signal_alms[ar] = sph_tools.map2alm(signal, niter, lmax)
@@ -168,7 +168,7 @@ for iii in subtasks:
                 t1 = time.time()
                 if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
                         
-                        binary_file = misc.str_replace(d["window_T_{sv}_{ar}"], "window_", "binary_")
+                        binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
                         binary = so_map.read_map(binary_file)
                         split = kspace.filter_map(split,
                                                   filters[sv],

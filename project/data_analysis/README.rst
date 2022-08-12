@@ -2,6 +2,15 @@
 Computing DR6 spectra
 **************************
 
+
+Requirements
+============
+
+* pspy >= 1.5.10
+* pspipe_utils 
+
+
+
 dependency: pspy, pspipe_utils
 
 Here are some specific instructions to compute spectra for DR6 at NERSC.

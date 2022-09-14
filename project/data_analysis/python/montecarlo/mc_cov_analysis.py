@@ -5,7 +5,7 @@ it estimates block numerical covariances from the simulations
 
 
 from pspy import pspy_utils, so_dict, so_spectra
-from pspipe_utils import pspipe_list
+from pspipe_utils import pspipe_list, covariance
 import numpy as np
 import sys
 
@@ -23,6 +23,7 @@ cov_dir = "covariances"
 pspy_utils.create_directory(cov_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+modes_for_cov = ["TT", "TE", "ET", "EE"]
 
 spec_list = pspipe_list.get_spec_name_list(d, char="_")
 
@@ -31,31 +32,41 @@ for sid1, spec1 in enumerate(spec_list):
         if sid1 > sid2 : continue
         na, nb = spec1.split("x")
         nc, nd = spec2.split("x")
-        
+
         ps_list_ab = []
         ps_list_cd = []
-        for iii in range(iStart, iStop):
+        for iii in range(iStart, iStop + 1):
             spec_name_cross_ab = f"{type}_{na}x{nb}_cross_%05d" % iii
             spec_name_cross_cd = f"{type}_{nc}x{nd}_cross_%05d" % iii
-        
+
             lb, ps_ab = so_spectra.read_ps(spec_dir + f"/{spec_name_cross_ab}.dat", spectra=spectra)
             lb, ps_cd = so_spectra.read_ps(spec_dir + f"/{spec_name_cross_cd}.dat", spectra=spectra)
-    
+
             vec_ab = []
             vec_cd = []
             for spec in ["TT", "TE", "ET", "EE"]:
                 vec_ab = np.append(vec_ab, ps_ab[spec])
                 vec_cd = np.append(vec_cd, ps_cd[spec])
-    
+
             ps_list_ab += [vec_ab]
             ps_list_cd += [vec_cd]
 
         cov_mc = 0
-        for iii in range(iStart, iStop):
+        for iii in range(iStart, iStop + 1):
             cov_mc += np.outer(ps_list_ab[iii], ps_list_cd[iii])
 
-        cov_mc = cov_mc / (iStop-iStart) - np.outer(np.mean(ps_list_ab, axis=0), np.mean(ps_list_cd, axis=0))
+        cov_mc = cov_mc / (iStop + 1 - iStart) - np.outer(np.mean(ps_list_ab, axis=0), np.mean(ps_list_cd, axis=0))
 
         np.save(f"{cov_dir}/mc_cov_{na}x{nb}_{nc}x{nd}.npy", cov_mc)
 
 
+n_bins = len(lb)
+
+mc_full_cov = covariance.get_full_cov_from_files(spec_list, modes_for_cov, n_bins, cov_dir, cov_type = "mc")
+an_full_cov = covariance.get_full_cov_from_files(spec_list, modes_for_cov, n_bins, cov_dir, cov_type = "analytic")
+
+mc_corrected_full_cov = covariance.correct_analytical_cov(an_full_cov, mc_full_cov)
+mc_corrected_cov_dict = covariance.get_cov_dict_from_full_cov(mc_corrected_full_cov, spec_list, modes_for_cov, n_bins)
+
+for (na, nb, nc, nd), cov in mc_corrected_cov_dict.items():
+    np.save(f"{cov_dir}/mc_corr_cov_{na}x{nb}_{nc}x{nd}.npy", cov)

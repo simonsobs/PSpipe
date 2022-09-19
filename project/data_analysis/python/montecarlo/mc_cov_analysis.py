@@ -62,11 +62,10 @@ for sid1, spec1 in enumerate(spec_list):
 
 n_bins = len(lb)
 
-mc_full_cov = covariance.get_full_cov_from_files(spec_list, modes_for_cov, n_bins, cov_dir, cov_type = "mc")
-an_full_cov = covariance.get_full_cov_from_files(spec_list, modes_for_cov, n_bins, cov_dir, cov_type = "analytic")
+mc_full_cov = covariance.read_cov_block_and_build_full_cov(spec_list, cov_dir, cov_type = "mc_cov")
+an_full_cov = covariance.read_cov_block_and_build_full_cov(spec_list, cov_dir, cov_type = "analytic_cov")
 
 mc_corrected_full_cov = covariance.correct_analytical_cov(an_full_cov, mc_full_cov)
-mc_corrected_cov_dict = covariance.get_cov_dict_from_full_cov(mc_corrected_full_cov, spec_list, modes_for_cov, n_bins)
+mc_corrected_cov_dict = covariance.full_cov_to_cov_dict(mc_corrected_full_cov, spec_list, n_bins)
 
-for (na, nb, nc, nd), cov in mc_corrected_cov_dict.items():
-    np.save(f"{cov_dir}/mc_corr_cov_{na}x{nb}_{nc}x{nd}.npy", cov)
+covariance.cov_dict_to_file(mc_corrected_cov_dict, spec_list, cov_dir, cov_type = "mc_corr_cov")

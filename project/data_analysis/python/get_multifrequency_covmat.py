@@ -1,11 +1,13 @@
-# This script use the covariance matrix elements to form a multifrequency covariance matrix
-# with block TT - TE - ET - EE
-# Note that for the ET block, we do not include any same array, same survey spectra, since for
-# these guys TE = ET
+"""
+This script use the covariance matrix block to form a cross array covariance matrix
+with block TT - TE - ET - EE
+Note that for the ET block, we do not include any same array, same survey spectra, since for
+these guys TE = ET
+"""
 
 import matplotlib
 matplotlib.use("Agg")
-from pspy import so_dict, pspy_utils
+from pspy import so_dict, pspy_utils, so_cov
 from pspipe_utils import covariance, pspipe_list
 import numpy as np
 import pylab as plt
@@ -15,7 +17,9 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 cov_dir = "covariances"
-mc_dir = "montecarlo"
+plot_dir = "plots/combined_cov"
+
+pspy_utils.create_directory(plot_dir)
 
 spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
 
@@ -38,8 +42,14 @@ analytic_cov_with_beam = analytic_cov + beam_cov
 pspy_utils.is_pos_def(analytic_cov_with_beam)
 pspy_utils.is_symmetric(analytic_cov_with_beam)
 
-np.save("%s/truncated_analytic_cov.npy" % cov_dir, analytic_cov)
-np.save("%s/truncated_analytic_cov_with_beam.npy" % cov_dir, analytic_cov_with_beam)
+np.save("%s/x_ar_analytic_cov.npy" % cov_dir, analytic_cov)
+np.save("%s/x_ar_analytic_cov_with_beam.npy" % cov_dir, analytic_cov_with_beam)
+
+corr_analytic = so_cov.cov2corr(analytic_cov, remove_diag=True)
+corr_analytic_cov_with_beam = so_cov.cov2corr(analytic_cov_with_beam, remove_diag=True)
+so_cov.plot_cov_matrix(corr_analytic, file_name=f"{plot_dir}/corr_xar")
+so_cov.plot_cov_matrix(corr_analytic_cov_with_beam, file_name=f"{plot_dir}/corr_xar_with_beam")
+
 
 # This part compare the analytic covariance with the montecarlo covariance
 # In particular it produce plot of all diagonals of the matrix with MC vs analytics
@@ -47,6 +57,7 @@ np.save("%s/truncated_analytic_cov_with_beam.npy" % cov_dir, analytic_cov_with_b
 
 compare_with_sims = False
 if compare_with_sims:
+    mc_dir = "montecarlo"
 
     cov_plot_dir = "plots/full_covariance"
     pspy_utils.create_directory(cov_plot_dir)

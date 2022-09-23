@@ -3,7 +3,8 @@ This script combine the cross array spectra into cross freq spectra that could b
 it also combine together all TE and EE spectra (since fg are subdominant)
 """
 
-
+import matplotlib
+matplotlib.use("Agg")
 from pspy import so_dict, pspy_utils, so_spectra, so_cov
 from itertools import combinations_with_replacement as cwr
 from itertools import product
@@ -90,6 +91,7 @@ for comb in combin_level:
     
     for skip_220 in [True, False]:
         for spec in ["TT", "TE", "EE"]:
+            plt.figure(figsize=(12, 8))
             for block in block_order[comb][spec]:
                 D_b = spec_dict[spec, block]
                 sigma_b = std_dict[spec, block]
@@ -101,4 +103,8 @@ for comb in combin_level:
                 plt.errorbar(lb, D_b, sigma_b, fmt=".", label=block)
             
             plt.legend()
-            plt.show()
+            plt.savefig(f"{plot_dir}/{comb}_{spec}_{block}_skip220={skip_220}.png", bbox_inches="tight")
+            plt.clf()
+            plt.close()
+                        
+                      

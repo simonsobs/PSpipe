@@ -74,13 +74,12 @@ cal_dr6_pa5_f150 = 1.00053
 cal_dr6_pa6_f090 = 0.98115
 cal_dr6_pa6_f150 = 0.98381
 
-# the pol_eff is relative, we calibrate with respect to pa6
-pol_eff_dr6_pa4_f150 = 0.98328
+pol_eff_dr6_pa4_f150 = 0.9584
 pol_eff_dr6_pa4_f220 = 1.0
-pol_eff_dr6_pa5_f090 = 0.98232
-pol_eff_dr6_pa5_f150 = 0.97656
-pol_eff_dr6_pa6_f090 = 1.0
-pol_eff_dr6_pa6_f150 = 1.0
+pol_eff_dr6_pa5_f090 = 0.9646
+pol_eff_dr6_pa5_f150 = 0.9488
+pol_eff_dr6_pa6_f090 = 0.9789
+pol_eff_dr6_pa6_f150 = 0.9656
 
 
 nu_eff_dr6_pa4_f150 = 150

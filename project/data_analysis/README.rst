@@ -114,8 +114,8 @@ We can now combine the data together, for this we run
 .. code:: shell
 
     salloc -N 1 -C haswell -q interactive -t 04:00:00
-    srun -n 1 -c 64 --cpu_bind=cores python get_multifrequency_covmat.py global_dr6_v3_4pass.dict
-    srun -n 1 -c 64 --cpu_bind=cores python get_combined_spectra.py global_dr6_v3_4pass.dict
+    srun -n 1 -c 64 --cpu_bind=cores python get_xarrays_covmat.py global_dr6_v3_4pass.dict
+    srun -n 1 -c 64 --cpu_bind=cores python get_xfreq_spectra.py global_dr6_v3_4pass.dict
 
 
 We are done !

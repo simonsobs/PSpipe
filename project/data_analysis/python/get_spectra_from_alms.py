@@ -131,11 +131,12 @@ for task in subtasks:
                                             mbb_inv=mbb_inv,
                                             spectra=spectra,
                                             binned_mcm=binned_mcm)
-                                                        
-            lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
-                                                            ps,
-                                                            kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
-                                                            spectra)
+            if apply_kspace_filter:
+                lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
+                                                                ps,
+                                                                kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
+                                                                spectra)
+                                                                
                                                             
             lb, ps = transfer_function.deconvolve_xtra_tf(lb,
                                                           ps,

@@ -16,6 +16,7 @@ import SO_noise_utils
 
 from soapack import interfaces
 from mnms import noise_models as nm
+from mnms import utils
 
 # map regions to qids
 from astropy.io import ascii
@@ -44,6 +45,7 @@ skip_from_edges = d["skip_from_edges"]
 cross_linking_threshold = d["cross_linking_threshold"]
 K_to_muK = 10**6
 include_cmb = d["include_CMB"]
+sim_type = d["sim_type"]
 
 if len(sys.argv) > 2:
     sim_idx = int(sys.argv[2])
@@ -76,6 +78,7 @@ cmb = template.synfast(clfile)
 
 n_scans = len(scan_list)
 print("number of scan to compute : %s" % n_scans)
+print("sim type", sim_type)
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_scans - 1)
 
@@ -86,7 +89,6 @@ for task in subtasks:
 
     data_model = interfaces.SOScanS0002()
     downgrade = dg
-    sim_type = "tile"
     qid = getqid(scan)
     print("QID: ", qid)
 
@@ -96,6 +98,8 @@ for task in subtasks:
         model = nm.TiledNoiseModel(qid, data_model=data_model, downgrade=downgrade,
                                 fwhm_ivar=1, delta_ell_smooth=100, 
                                 width_deg=3., height_deg=3.)
+    elif sim_type == "dfw":  
+        pass  # do nothing because we are just loading from disk
 
     binary = so_map.read_map("%s/lat01_s25_%s_fullfp_f150_1pass_2way_set00_div.fits" % (map_dir, scan)) #.downgrade(dg)
     binary.data[:] = 1
@@ -103,8 +107,14 @@ for task in subtasks:
     sim = {}
     for count, split in enumerate(split_list):
 
-        model.get_model(check_on_disk=True, keep_model=True, verbose=True)
-        alm = model.get_sim(count, sim_idx, check_on_disk=False, alm=True)[0,0,:,:]
+        if sim_type == "fdw":
+            filedir = "/global/homes/a/adriaand/scratch/so/20220630_scan_s0002_fdw/"
+            fname_part1 = f"{qid}_so_scan_s0002_masks_20200723_bin_apod_cal_True_dg4_lamb1.6_n36_p2_fwhm_fact_pt1_1350"
+            fname_part2 = f"_10.0_fwhm_fact_pt2_5400_16.0_lmax5400_220630_set{count}_alm{task:04}.fits"
+            alm = utils.read_alm(filedir + fname_part1 + fname_part2)[0,0]
+        else:
+            model.get_model(check_on_disk=True, keep_model=True, verbose=True)
+            alm = model.get_sim(count, sim_idx, check_on_disk=False, alm=True)[0,0,:,:]
         noise_map = template.copy()
         noise_map = sph_tools.alm2map(alm, noise_map)
 

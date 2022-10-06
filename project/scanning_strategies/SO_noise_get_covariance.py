@@ -25,6 +25,7 @@ runs = d["runs"]
 spin_pairs = d["spin_pairs"]
 binning_file = d["binning_file_name"]
 clfile = d["clfile"]
+cross_linking_threshold = d["cross_linking_threshold"]
 
 lth, ps_theory = pspy_utils.ps_lensed_theory_to_dict(clfile, "Dl", lmax=lmax)
 
@@ -51,9 +52,9 @@ for scan in scan_list:
             spec_name_11 = "%s_%sx%s_%s" % (scan, "split1", "split1", run)
             spec_name_10 = "%s_%sx%s_%s" % (scan, "split1", "split0", run)
 
-            lb, Db_dict_00 = so_spectra.read_ps("%s/spectra_%s.dat" % (spectra_dir, spec_name_00), spectra=spectra)
-            lb, Db_dict_11 = so_spectra.read_ps("%s/spectra_%s.dat" % (spectra_dir, spec_name_11), spectra=spectra)
-            lb, Db_dict_10 = so_spectra.read_ps("%s/spectra_%s.dat" % (spectra_dir, spec_name_10), spectra=spectra)
+            lb, Db_dict_00 = so_spectra.read_ps("%s/spectra_%s_xlink%s.dat" % (spectra_dir, spec_name_00, str(cross_linking_threshold)), spectra=spectra)
+            lb, Db_dict_11 = so_spectra.read_ps("%s/spectra_%s_xlink%s.dat" % (spectra_dir, spec_name_11, str(cross_linking_threshold)), spectra=spectra)
+            lb, Db_dict_10 = so_spectra.read_ps("%s/spectra_%s_xlink%s.dat" % (spectra_dir, spec_name_10, str(cross_linking_threshold)), spectra=spectra)
 
             nb = (Db_dict_00[spec] + Db_dict_11[spec])/2 - Db_dict_10[spec]
             
@@ -69,7 +70,7 @@ for scan in scan_list:
             plt.plot(lb, nb, ".")
             plt.plot(lth, nl_th[spec], label="interpolate", color="lightblue")
             plt.legend(fontsize=20)
-            plt.savefig("%s/noise_interpolate_%s_%s_%s.png" % (plot_dir, scan, run, spec), bbox_inches="tight")
+            plt.savefig("%s/noise_interpolate_%s_%s_%s_xlink%s.png" % (plot_dir, scan, run, spec, str(cross_linking_threshold)), bbox_inches="tight")
             plt.clf()
             plt.close()
         
@@ -90,11 +91,11 @@ for scan in scan_list:
         for name1, id1 in zip(name_list, id_list):
             for name2, id2 in zip(name_list, id_list):
                 spec = id1[0] + id2[0]
-                Clth_dict[id1 + id2] = ps_theory[spec] + nl_th[spec] * so_cov.delta2(name1, name2)
+                Clth_dict[id1 + id2] = (ps_theory[spec] + nl_th[spec] * so_cov.delta2(name1, name2))[2:]
         
-        window = so_map.read_map("%s/window_%s_%s.fits" % (window_dir, scan, run))
+        window = so_map.read_map("%s/window_%s_%s_xlink%s.fits" % (window_dir, scan, run, str(cross_linking_threshold)))
         
-        mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%s" % (mcm_dir, scan, run), spin_pairs=spin_pairs)
+        mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%s_%s" % (mcm_dir, scan, run, str(cross_linking_threshold)), spin_pairs=spin_pairs)
 
 
         coupling_dict = so_cov.cov_coupling_spin0and2_simple(window, lmax, niter=niter, planck=False)
@@ -103,8 +104,8 @@ for scan in scan_list:
         fsky[scan, run], quick_cov = SO_noise_utils.quick_analytic_cov(lth, Clth_dict, window, binning_file, lmax)
         
         
-        np.save("%s/analytic_cov_%s_%s.npy" % (cov_dir, scan, run), analytic_cov)
-        np.save("%s/quick_cov_%s_%s.npy" % (cov_dir, scan, run), quick_cov)
+        np.save("%s/analytic_cov_%s_%s_xlink%s.npy" % (cov_dir, scan, run, str(cross_linking_threshold)), analytic_cov)
+        np.save("%s/quick_cov_%s_%s_xlink%s.npy" % (cov_dir, scan, run, str(cross_linking_threshold)), quick_cov)
 
 for run in runs:
     print("")

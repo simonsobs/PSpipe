@@ -22,3 +22,4 @@ map_plot_range = [2000, 200, 200]
 
 downgrade = 4
 sim_idx = 0
+sim_type = "fdw"

@@ -17,6 +17,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 cov_dir = "covariances"
+like_product_dir = "like_product"
 plot_dir = "plots/combined_cov"
 
 pspy_utils.create_directory(plot_dir)
@@ -42,8 +43,8 @@ analytic_cov_with_beam = analytic_cov + beam_cov
 pspy_utils.is_pos_def(analytic_cov_with_beam)
 pspy_utils.is_symmetric(analytic_cov_with_beam)
 
-np.save("%s/x_ar_analytic_cov.npy" % cov_dir, analytic_cov)
-np.save("%s/x_ar_analytic_cov_with_beam.npy" % cov_dir, analytic_cov_with_beam)
+np.save("%s/x_ar_analytic_cov.npy" % like_product_dir, analytic_cov)
+np.save("%s/x_ar_analytic_cov_with_beam.npy" % like_product_dir, analytic_cov_with_beam)
 
 corr_analytic = so_cov.cov2corr(analytic_cov, remove_diag=True)
 corr_analytic_cov_with_beam = so_cov.cov2corr(analytic_cov_with_beam, remove_diag=True)

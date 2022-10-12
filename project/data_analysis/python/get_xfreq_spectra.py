@@ -45,7 +45,7 @@ vec["xar"] = covariance.read_x_ar_spectra_vec(spec_dir,
                                              spectra_order = ["TT", "TE", "ET", "EE"],
                                              type="Dl")
 
-cov["xar"] = np.load("%s/x_ar_analytic_cov_with_beam.npy" % cov_dir)
+cov["xar"] = np.load("%s/x_ar_analytic_cov_with_beam.npy" % like_product_dir)
 inv_cov_xar = np.linalg.inv(cov["xar"])
 
 P_mat = covariance.get_x_ar_to_x_freq_P_mat(freq_list, spec_name_list, nu_eff_list, binning_file, lmax)

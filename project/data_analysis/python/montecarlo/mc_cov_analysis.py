@@ -68,4 +68,4 @@ an_full_cov = covariance.read_cov_block_and_build_full_cov(spec_list, cov_dir, c
 mc_corrected_full_cov = covariance.correct_analytical_cov(an_full_cov, mc_full_cov)
 mc_corrected_cov_dict = covariance.full_cov_to_cov_dict(mc_corrected_full_cov, spec_list, n_bins)
 
-covariance.cov_dict_to_file(mc_corrected_cov_dict, spec_list, cov_dir, cov_type = "mc_corr_cov")
+covariance.cov_dict_to_file(mc_corrected_cov_dict, spec_list, cov_dir, cov_type = "analytic_cov_with_mc_corrections")

@@ -14,8 +14,6 @@ d.read_from_file(sys.argv[1])
 like_product_dir = "like_product"
 freq_list = pspipe_list.get_freq_list(d)
 
-lp, clp, errorp = {}, {}, {}
-
 pl_data_path = os.path.join(os.path.dirname(os.path.abspath(pspipe_utils.__file__)), "data/spectra/planck")
 
 fp_act = ["90x90", "150x150", "220x220"]

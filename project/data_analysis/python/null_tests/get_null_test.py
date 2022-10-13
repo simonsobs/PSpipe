@@ -23,22 +23,16 @@ for sv in surveys:
     for ar in d[f"arrays_{sv}"]:
         arrays.append(f"{sv}_{ar}")
 
-ps_dict = {}
+covariances_type = ["analytic_cov", "analytic_cov_with_mc_corrections"]
+
+ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
 cov_dict = {}
+for cov_type in covariances_type:
+    cov_template = f"{cov_dir}/{cov_type}" + "_{}x{}_{}x{}.npy"
+    ps_dict, cov = consistency.get_ps_and_cov_dict(arrays, ps_template, cov_template)
+    cov_dict[cov_type] = cov
 
-for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
-
-    lb, ps = so_spectra.read_ps(f"{spec_dir}/Dl_{ar1}x{ar2}_cross.dat",
-                                spectra = spectra)
-    for j, (ar3, ar4) in enumerate(cwr(arrays, 2)):
-        if j < i: continue
-        cov = np.load(f"{cov_dir}/analytic_cov_{ar1}x{ar2}_{ar3}x{ar4}.npy")
-
-        for m in modes:
-
-            subcov = so_cov.selectblock(cov, modes, len(lb), block = m + m)
-            ps_dict[ar1, ar2, m] = ps[m]
-            cov_dict[(ar1, ar2, m), (ar3, ar4, m)] = subcov
+lb = ps_dict["ell"]
 
 multipole_range = {90: {"T": [800, 7000],
                         "E": [300, 7000]},
@@ -46,6 +40,10 @@ multipole_range = {90: {"T": [800, 7000],
                          "E": [300, 7000]},
                    220: {"T": [1500, 7000],
                          "E": [300, 7000]}}
+
+operations = {"diff": "ab-cd",
+              "ratio": "ab/cd"}
+
 
 for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
     for j, (ar3, ar4) in enumerate(cwr(arrays, 2)):
@@ -55,6 +53,8 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
         f3, f4 = d[f"nu_eff_{ar3}"], d[f"nu_eff_{ar4}"]
         if f1 != f3 or f2 != f4: continue
 
+        ar_list = [ar1, ar2, ar3, ar4]
+
         for m in modes:
 
             m0, m1 = m[0], m[1]
@@ -62,13 +62,29 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
             lmin1, lmax1 = multipole_range[f2][m1]
             lmin = max(lmin0, lmin1)
             lmax = min(lmax0, lmax1)
-            lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
 
-            ps_order = [(ar1, ar2, m), (ar3, ar4, m)]
-            ps_vec, full_cov = consistency.append_spectra_and_cov(ps_dict, cov_dict, ps_order)
-            ps_res, cov_res = consistency.project_spectra_vec_and_cov(ps_vec, full_cov, [1, -1])
 
-            consistency.plot_residual(lb, ps_res, cov_res, m,
-                                         f"{ar1}x{ar2} - {ar3}x{ar4}",
-                                         f"{output_dir}/residual_{ar1}x{ar2}_{ar3}x{ar4}_{m}",
-                                         lrange = lrange)
+            for op_label, op in operations.items():
+
+                if (m in ["TE", "ET"]) & (op_label == "ratio"): continue
+                if ((ar1 != ar2) or (ar3 != ar4)) & (op_label == "ratio"): continue
+
+                res_cov_dict = {}
+                for cov_type in covariances_type:
+                    lb, res_ps, res_cov, _, _ = consistency.compare_spectra(ar_list, op, ps_dict, cov_dict[cov_type], mode = m)
+
+                    res_cov_dict[cov_type] = res_cov
+
+                if op_label == "diff":
+                    plot_title = f"{ar1}x{ar2} - {ar3}x{ar4}"
+                    expected_res = 0.
+                elif op_label == "ratio":
+                    plot_title = f"{ar1}x{ar2} / {ar3}x{ar4}"
+                    expected_res = 1.0
+
+                lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
+                consistency.plot_residual(lb, res_ps, res_cov_dict, mode = m,
+                                          title = plot_title,
+                                          file_name = f"{output_dir}/{op_label}_{ar1}x{ar2}_{ar3}x{ar4}_{m}",
+                                          expected_res = expected_res,
+                                          lrange = lrange)

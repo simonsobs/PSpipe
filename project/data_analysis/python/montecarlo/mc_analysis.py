@@ -39,12 +39,12 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 # the mean and covariances of these vectors is computed and written to disc
 
 for kind in ["cross", "noise", "auto"]:
-    
+
     vec_list = []
     vec_list_restricted = []
     vec_list_EB = []
 
-    for iii in range(iStart, iStop):
+    for iii in range(iStart, iStop + 1):
         vec = []
         vec_restricted = []
         vec_EB = []
@@ -68,15 +68,15 @@ for kind in ["cross", "noise", "auto"]:
 
                             n_bins = len(lb)
                             vec = np.append(vec, Db[spec])
-                            
-                            
+
+
                             if (sv1 == sv2) & (ar1 == ar2):
                                 if spec == "TT" or spec == "EE" or spec == "TE" :
                                     vec_restricted = np.append(vec_restricted, Db[spec])
                             else:
                                 if spec == "TT" or spec == "EE" or spec == "TE" or spec == "ET":
                                     vec_restricted = np.append(vec_restricted, Db[spec])
-                            
+
                             if spec == "EB":
                                 vec_EB = np.append(vec_EB, (Db["EB"] + Db["BE"])/2 )
 
@@ -94,14 +94,14 @@ for kind in ["cross", "noise", "auto"]:
     cov_restricted = 0
     cov_EB = 0
 
-    for iii in range(iStart, iStop):
+    for iii in range(iStart, iStop + 1):
         cov += np.outer(vec_list[iii], vec_list[iii])
         cov_restricted += np.outer(vec_list_restricted[iii], vec_list_restricted[iii])
         cov_EB += np.outer(vec_list_EB[iii], vec_list_EB[iii])
 
-    cov = cov / (iStop-iStart) - np.outer(mean_vec, mean_vec)
-    cov_restricted = cov_restricted / (iStop-iStart) - np.outer(mean_vec_restricted, mean_vec_restricted)
-    cov_EB = cov_EB / (iStop-iStart) - np.outer(mean_vec_EB, mean_vec_EB)
+    cov = cov / (iStop + 1 - iStart) - np.outer(mean_vec, mean_vec)
+    cov_restricted = cov_restricted / (iStop + 1 - iStart) - np.outer(mean_vec_restricted, mean_vec_restricted)
+    cov_EB = cov_EB / (iStop + 1 - iStart) - np.outer(mean_vec_EB, mean_vec_EB)
 
     np.save(f"{mc_dir}/cov_all_{kind}.npy", cov)
     np.save(f"{mc_dir}/cov_restricted_all_{kind}.npy", cov_restricted)
@@ -115,8 +115,8 @@ for kind in ["cross", "noise", "auto"]:
                 for id_sv2, sv2 in enumerate(surveys):
                     arrays_2 = d[f"arrays_{sv2}"]
                     for id_ar2, ar2 in enumerate(arrays_2):
-                    
-                    
+
+
                         if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                         if  (id_sv1 > id_sv2) : continue
                         if (sv1 != sv2) & (kind == "noise"): continue
@@ -124,8 +124,7 @@ for kind in ["cross", "noise", "auto"]:
 
                         mean = mean_vec[id_spec * n_bins:(id_spec + 1) * n_bins]
                         std = np.sqrt(cov[id_spec * n_bins:(id_spec + 1) * n_bins, id_spec * n_bins:(id_spec + 1) * n_bins].diagonal())
-                        
-                        np.savetxt(f"{mc_dir}/spectra_{spec}_{sv1}_{ar1}x{sv2}_{ar2}_{kind}.dat", np.array([lb, mean, std]).T)
-                                   
-                        id_spec += 1
 
+                        np.savetxt(f"{mc_dir}/spectra_{spec}_{sv1}_{ar1}x{sv2}_{ar2}_{kind}.dat", np.array([lb, mean, std]).T)
+
+                        id_spec += 1

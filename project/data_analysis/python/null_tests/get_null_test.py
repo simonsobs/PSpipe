@@ -23,9 +23,15 @@ for sv in surveys:
     for ar in d[f"arrays_{sv}"]:
         arrays.append(f"{sv}_{ar}")
 
+covariances_type = ["analytic_cov", "analytic_cov_with_mc_corrections"]
+
 ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
-cov_template = cov_dir + "/analytic_cov_{}x{}_{}x{}.npy"
-ps_dict, cov_dict = consistency.get_ps_and_cov_dict(arrays, ps_template, cov_template)
+cov_dict = {}
+for cov_type in covariances_type:
+    cov_template = f"{cov_dir}/{cov_type}" + "_{}x{}_{}x{}.npy"
+    ps_dict, cov = consistency.get_ps_and_cov_dict(arrays, ps_template, cov_template)
+    cov_dict[cov_type] = cov
+
 lb = ps_dict["ell"]
 
 multipole_range = {90: {"T": [800, 7000],
@@ -63,7 +69,11 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
                 if (m in ["TE", "ET"]) & (op_label == "ratio"): continue
                 if ((ar1 != ar2) or (ar3 != ar4)) & (op_label == "ratio"): continue
 
-                lb, res_ps, res_cov, _, _ = consistency.compare_spectra(ar_list, op, ps_dict, cov_dict, mode = m)
+                res_cov_dict = {}
+                for cov_type in covariances_type:
+                    lb, res_ps, res_cov, _, _ = consistency.compare_spectra(ar_list, op, ps_dict, cov_dict[cov_type], mode = m)
+
+                    res_cov_dict[cov_type] = res_cov
 
                 if op_label == "diff":
                     plot_title = f"{ar1}x{ar2} - {ar3}x{ar4}"
@@ -73,7 +83,7 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
                     expected_res = 1.0
 
                 lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
-                consistency.plot_residual(lb, res_ps, {"analytic": res_cov}, mode = m,
+                consistency.plot_residual(lb, res_ps, res_cov_dict, mode = m,
                                           title = plot_title,
                                           file_name = f"{output_dir}/{op_label}_{ar1}x{ar2}_{ar3}x{ar4}_{m}",
                                           expected_res = expected_res,

@@ -1,5 +1,6 @@
 """
 This script compare ACT spectra computed using planck window function and binning file to Planck spectra
+/global/cscratch1/sd/tlouis/data_analysis_final/dr6_alaPlanck
 """
 import numpy as np
 import pylab as plt

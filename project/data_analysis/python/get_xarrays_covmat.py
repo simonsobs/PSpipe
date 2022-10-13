@@ -20,6 +20,7 @@ cov_dir = "covariances"
 like_product_dir = "like_product"
 plot_dir = "plots/combined_cov"
 
+pspy_utils.create_directory(like_product_dir)
 pspy_utils.create_directory(plot_dir)
 
 spec_name_list = pspipe_list.get_spec_name_list(d, char="_")

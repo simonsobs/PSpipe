@@ -36,8 +36,7 @@ n_bins = len(bin_hi)
 beams = {wafer: pspy_utils.read_beam_file(d[f"beam_dr6_{wafer}"]) for wafer in wafers}
 
 # Reading passbands : the passband file should be within the dict file
-passbands_file = "passbands/AdvACT_Passbands.h5"
-passbands = external_data.get_passband_dict_dr6(passbands_file, wafers)
+passbands = external_data.get_passband_dict_dr6(wafers)
 
 # Reading covariance
 cov_dir = "covariances"

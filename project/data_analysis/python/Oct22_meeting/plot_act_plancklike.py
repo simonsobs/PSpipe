@@ -1,6 +1,5 @@
 """
 This script compare ACT spectra computed using planck window function and binning file to Planck spectra
-/global/cscratch1/sd/tlouis/data_analysis_final/dr6_alaPlanck
 """
 import numpy as np
 import pylab as plt
@@ -15,13 +14,14 @@ d.read_from_file(sys.argv[1])
 like_product_dir = "like_product"
 freq_list = pspipe_list.get_freq_list(d)
 
-pl_data_path = os.path.join(os.path.dirname(os.path.abspath(pspipe_utils.__file__)), "data/spectra/planck")
+lp, clp, errorp = {}, {}, {}
+
 
 fp_act = ["90x90", "150x150", "220x220"]
 fp_pl = ["100x100", "143x143", "217x217"]
 
 for spec in ["TT","EE"]:
-    _, l_pl_dict, Db_pl_dict, err_pl_dict = external_data.get_planck_spectra(pl_data_path, spec, return_Dl=True)
+    _, l_pl_dict, Db_pl_dict, err_pl_dict = external_data.get_planck_spectra(spec, return_Dl=True)
 
     for fpa, fpp in zip(fp_act, fp_pl):
 

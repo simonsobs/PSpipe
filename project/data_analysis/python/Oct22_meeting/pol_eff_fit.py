@@ -1,6 +1,7 @@
 """
 This script extract pol efficiency by comparing the EE power spectra to
 a theory file, this is only used by lensers
+not that for it to works as expected, the spectra should be computed with pol_eff = 1 in the global file
 """
 
 import numpy as np
@@ -29,7 +30,6 @@ def compute_loglike_cov(a_gee, pol_eff):
     diff = ps_EE[id] - bin_model[id]
     chi2 = diff @ inv_cov @ diff
     return -0.5 * chi2
-
 
 def fit_pol_eff(ps_EE, err_EE, Bbl_EE, l_th, ps_th_EE, dust_th_ee, nu, chain_name, pol_eff_name, inv_cov=None):
 

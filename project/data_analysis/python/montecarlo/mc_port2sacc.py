@@ -8,7 +8,7 @@ import sys
 
 import numpy as np
 import sacc
-from pspipe_utils import covariance, external_data, pspipe_list
+from pspipe_utils import external_data, pspipe_list, covariance
 from pspy import pspy_utils, so_dict
 
 d = so_dict.so_dict()
@@ -19,12 +19,16 @@ cov_name = "analytic_cov"
 if use_mc_corrected_cov:
     cov_name += "_with_mc_corrections"
 
+mcm_dir = "mcms"
+bestfit_dir = "best_fits"
+sim_spec_dir = "sim_spectra"
 sim_sacc_dir = "sim_sacc"
+
+
 pspy_utils.create_directory(sim_sacc_dir)
 
 
-spec_dir = "sim_spectra"
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list, nu_eff_list = pspipe_list.get_spec_name_list(d, char="_", return_nueff=True)
 spectra_order = ["TT", "TE", "ET", "EE"]
 cov_order = pspipe_list.x_ar_cov_order(spec_name_list, spectra_order=spectra_order)
 
@@ -51,6 +55,8 @@ passbands = external_data.get_passband_dict_dr6(wafers)
 # Reading covariance
 like_product_dir = "like_product"
 analytic_cov = np.load(os.path.join(like_product_dir, f"x_ar_{cov_name}_with_beam.npy"))
+inv_analytic_cov = np.linalg.inv(analytic_cov)
+
 
 iStart = d["iStart"]
 iStop = d["iStop"]
@@ -78,7 +84,7 @@ for i in range(iStart, iStop):
 
     # Reading the flat data vector
     data_vec = covariance.read_x_ar_spectra_vec(
-        spec_dir, spec_name_list, f"cross_{i:05d}", spectra_order=spectra_order, type=d["type"]
+        sim_spec_dir, spec_name_list, f"cross_{i:05d}", spectra_order=spectra_order, type=d["type"]
     )
 
     for count, (spec, s1, s2) in enumerate(blocks):
@@ -110,3 +116,15 @@ for i in range(iStart, iStop):
 
     print("Writing sacc file")
     act_sacc.save_fits(f"{sim_sacc_dir}/act_simu_sacc_{i:05d}.fits", overwrite=True)
+
+    print("Check chi2")
+    theory_vec = covariance.read_x_ar_theory_vec(bestfit_dir,
+                                                 mcm_dir,
+                                                 spec_name_list,
+                                                 nu_eff_list,
+                                                 lmax,
+                                                 spectra_order = ["TT", "TE", "ET", "EE"])
+
+    res = data_vec - theory_vec
+    chi2 = res @ inv_analytic_cov @ res
+    print(r"$\chi^{2}$/DoF = %.2f/%d" % (chi2, len(data_vec)))

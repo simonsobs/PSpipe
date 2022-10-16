@@ -16,9 +16,16 @@ import sys, os
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+use_mc_corrected_cov = True
+cov_name = "analytic_cov"
+if use_mc_corrected_cov:
+    cov_name += "_with_mc_corrections"
+
+
 cov_dir = "covariances"
 like_product_dir = "like_product"
 plot_dir = "plots/combined_cov"
+
 
 pspy_utils.create_directory(like_product_dir)
 pspy_utils.create_directory(plot_dir)
@@ -27,7 +34,7 @@ spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
 
 analytic_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
                                                             cov_dir,
-                                                            "analytic_cov",
+                                                            cov_name,
                                                             spectra_order=["TT", "TE", "ET", "EE"],
                                                             remove_doublon=True,
                                                             check_pos_def=True)
@@ -44,8 +51,8 @@ analytic_cov_with_beam = analytic_cov + beam_cov
 pspy_utils.is_pos_def(analytic_cov_with_beam)
 pspy_utils.is_symmetric(analytic_cov_with_beam)
 
-np.save("%s/x_ar_analytic_cov.npy" % like_product_dir, analytic_cov)
-np.save("%s/x_ar_analytic_cov_with_beam.npy" % like_product_dir, analytic_cov_with_beam)
+np.save(f"{like_product_dir}/x_ar_{cov_name}.npy", analytic_cov)
+np.save(f"{like_product_dir}/x_ar_{cov_name}_with_beam.npy", analytic_cov_with_beam)
 
 corr_analytic = so_cov.cov2corr(analytic_cov, remove_diag=True)
 corr_analytic_cov_with_beam = so_cov.cov2corr(analytic_cov_with_beam, remove_diag=True)

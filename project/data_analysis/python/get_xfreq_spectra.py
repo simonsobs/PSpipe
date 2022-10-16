@@ -16,10 +16,17 @@ import sys, os
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+use_mc_corrected_cov = True
+cov_name = "analytic_cov"
+if use_mc_corrected_cov:
+    cov_name += "_with_mc_corrections"
+
+
 cov_dir = "covariances"
 spec_dir = "spectra"
 like_product_dir = "like_product"
 plot_dir = "plots/combined_cov"
+
 
 pspy_utils.create_directory(like_product_dir)
 pspy_utils.create_directory(plot_dir)
@@ -45,7 +52,7 @@ vec["xar"] = covariance.read_x_ar_spectra_vec(spec_dir,
                                              spectra_order = ["TT", "TE", "ET", "EE"],
                                              type="Dl")
 
-cov["xar"] = np.load("%s/x_ar_analytic_cov_with_beam.npy" % like_product_dir)
+cov["xar"] = np.load(f"{like_product_dir}/x_ar_{cov_name}_with_beam.npy")
 inv_cov_xar = np.linalg.inv(cov["xar"])
 
 P_mat = covariance.get_x_ar_to_x_freq_P_mat(freq_list, spec_name_list, nu_eff_list, binning_file, lmax)

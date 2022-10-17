@@ -20,6 +20,8 @@ iStop = d["iStop"]
 spec_dir = "sim_spectra"
 cov_dir = "covariances"
 
+only_diag_corrections = False
+
 pspy_utils.create_directory(cov_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -65,7 +67,12 @@ n_bins = len(lb)
 mc_full_cov = covariance.read_cov_block_and_build_full_cov(spec_list, cov_dir, cov_type = "mc_cov")
 an_full_cov = covariance.read_cov_block_and_build_full_cov(spec_list, cov_dir, cov_type = "analytic_cov")
 
-mc_corrected_full_cov = covariance.correct_analytical_cov(an_full_cov, mc_full_cov)
+mc_corrected_full_cov = covariance.correct_analytical_cov(an_full_cov, mc_full_cov,
+                                                          only_diag_corrections = only_diag_corrections)
 mc_corrected_cov_dict = covariance.full_cov_to_cov_dict(mc_corrected_full_cov, spec_list, n_bins)
 
-covariance.cov_dict_to_file(mc_corrected_cov_dict, spec_list, cov_dir, cov_type = "analytic_cov_with_mc_corrections")
+if only_diag_corrections:
+    corrected_cov_name = "analytic_cov_with_diag_mc_corrections"
+else:
+    corrected_cov_name = "analytic_cov_with_mc_corrections"
+covariance.cov_dict_to_file(mc_corrected_cov_dict, spec_list, cov_dir, cov_type = corrected_cov_name)

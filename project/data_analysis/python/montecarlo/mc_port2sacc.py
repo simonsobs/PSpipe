@@ -15,9 +15,14 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 use_mc_corrected_cov = True
+only_diag_corrections = False
+
 cov_name = "analytic_cov"
 if use_mc_corrected_cov:
-    cov_name += "_with_mc_corrections"
+    if only_diag_corrections:
+        cov_name += "_with_diag_mc_corrections"
+    else:
+        cov_name += "_with_mc_corrections"
 
 mcm_dir = "mcms"
 bestfit_dir = "best_fits"

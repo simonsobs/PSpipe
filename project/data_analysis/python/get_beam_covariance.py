@@ -1,11 +1,12 @@
 """
 This script compute the analytical beam covariance matrix elements.
+(TO BE TESTED AGAINS MONTECARLO)
 """
 import sys
 
-import data_analysis_utils
 import numpy as np
-from pspy import pspy_utils, so_dict, so_mpi
+from pspy import pspy_utils, so_dict, so_mpi, so_cov
+from pspipe_utils import pspipe_list, best_fits
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -17,58 +18,47 @@ pspy_utils.create_directory(cov_dir)
 surveys = d["surveys"]
 binning_file = d["binning_file"]
 lmax = d["lmax"]
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
-ps_all = {}
-norm_beam_cov = {}
 
-spec_name = []
+freq_list = pspipe_list.get_freq_list(d)
+lth, cmb_and_fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat",
+                                                    freq_list,
+                                                    lmax,
+                                                    spectra,
+                                                    f_name_cmb=bestfit_dir + "/cmb.dat")
 
-_, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
+
+ps_all, norm_beam_cov = {}, {}
 
 for id_sv1, sv1 in enumerate(surveys):
-    for id_ar1, ar1 in enumerate(d["arrays_%s" % sv1]):
+    for id_ar1, ar1 in enumerate(d[f"arrays_{sv1}"]):
     
-        data = np.loadtxt(d["beam_%s_%s" % (sv1, ar1)])
+        data = np.loadtxt(d[f"beam_{sv1}_{ar1}"])
         
-        _, bl, error_modes  = data[2: lmax + 2, 0], data[2: lmax + 2, 1], data[2: lmax + 2, 2:]
+        _, bl, error_modes  = data[2: lmax, 0], data[2: lmax, 1], data[2: lmax, 2:]
         beam_cov =  error_modes.dot(error_modes.T)
         
         norm_beam_cov[sv1, ar1] = beam_cov / np.outer(bl, bl)
         
-        freq1 = d["nu_eff_%s_%s" % (sv1, ar1)]
+        freq1 = d[f"nu_eff_{sv1}_{ar1}"]
 
         for id_sv2, sv2 in enumerate(surveys):
-            for id_ar2, ar2 in enumerate(d["arrays_%s" % sv2]):
+            for id_ar2, ar2 in enumerate(d[f"arrays_{sv2}"]):
             
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
                 
-                freq2 = d["nu_eff_%s_%s" % (sv2, ar2)]
+                freq2 = d[f"nu_eff_{sv2}_{ar2}"]
 
-                
                 for spec in ["TT", "TE", "ET", "EE"]:
                         
-                    name = "%sx%s_%s" % (freq1, freq2, spec)
-                    _, ps_th = np.loadtxt("%s/best_fit_%s.dat"%(bestfit_dir, name), unpack=True)
+                    ps_all[f"{sv1}&{ar1}", f"{sv2}&{ar2}", spec] = cmb_and_fg_dict[freq1, freq2][spec]
+                    ps_all[f"{sv2}&{ar2}", f"{sv1}&{ar1}", spec] = ps_all[f"{sv1}&{ar1}", f"{sv2}&{ar2}", spec]
 
-                    ps_all["%s&%s" % (sv1, ar1), "%s&%s" % (sv2, ar2), spec] = ps_th[:lmax]
-                    ps_all["%s&%s" % (sv2, ar2), "%s&%s" % (sv1, ar1), spec] = ps_th[:lmax]
-
-                spec_name += ["%s&%sx%s&%s" % (sv1, ar1, sv2, ar2)]
 
 # prepare the mpi computation
-na_list, nb_list, nc_list, nd_list = [], [], [], []
-ncovs = 0
-for sid1, spec1 in enumerate(spec_name):
-    for sid2, spec2 in enumerate(spec_name):
-        if sid1 > sid2: continue
-        na, nb = spec1.split("x")
-        nc, nd = spec2.split("x")
-        na_list += [na]
-        nb_list += [nb]
-        nc_list += [nc]
-        nd_list += [nd]
-        ncovs += 1
+ncovs, na_list, nb_list, nc_list, nd_list = pspipe_list.get_covariances_list(d)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=ncovs - 1)
@@ -78,8 +68,8 @@ for task in subtasks:
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     id_element = [na, nb, nc, nd]
         
-    analytic_beam_cov = data_analysis_utils.covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax)
+    analytic_beam_cov = so_cov.covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax)
         
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
        
-    np.save("%s/analytic_beam_cov_%sx%s_%sx%s.npy" % (cov_dir, na_r, nb_r, nc_r, nd_r), analytic_beam_cov)
+    np.save(f"{cov_dir}/analytic_beam_cov_{na_r}x{nb_r}_{nc_r}x{nd_r}.npy", analytic_beam_cov)

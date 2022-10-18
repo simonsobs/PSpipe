@@ -5,15 +5,15 @@ different splits of the data
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi, so_map_preprocessing
+from pspipe_utils import pspipe_list, kspace, simulation, misc
 import numpy as np
 import sys
-import data_analysis_utils
 import time
 from pixell import curvedsky, powspec
 
-
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+if len(sys.argv) > 2: np.random.seed(int(sys.argv[2]))
 
 surveys = d["surveys"]
 lmax = d["lmax"]
@@ -21,6 +21,8 @@ niter = d["niter"]
 type = d["type"]
 binning_file = d["binning_file"]
 sim_alm_dtype = d["sim_alm_dtype"]
+binned_mcm = d["binned_mcm"]
+apply_kspace_filter = d["apply_kspace_filter"]
 
 if sim_alm_dtype == "complex64":
     sim_alm_dtype = np.complex64
@@ -39,53 +41,35 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
 # let's list the different frequencies used in the code
-freq_list = []
-for sv in surveys:
-    arrays = d["arrays_%s" % sv]
-    for ar in arrays:
-        freq_list += [d["nu_eff_%s_%s" % (sv, ar)]]
-freq_list = list(dict.fromkeys(freq_list)) # this bit removes doublons
-
-id_freq = {}
-# create a list assigning an integer index to each freq (used later in the code to generate fg simulations)
-for count, freq in enumerate(freq_list):
-    id_freq[freq] = count
+freq_list = pspipe_list.get_freq_list(d)
     
 # we read cmb and fg best fit power spectrum
 # we put the best fit power spectrum in a matrix [nfreqs, nfreqs, lmax]
 # taking into account the correlation of the fg between different frequencies
 
-ncomp = 3
-ps_cmb = powspec.read_spectrum("%s/lcdm.dat" % bestfit_dir)[:ncomp, :ncomp]
-l, ps_fg = data_analysis_utils.get_foreground_matrix(bestfit_dir, freq_list, lmax)
+f_name_cmb = bestfit_dir + "/cmb.dat"
+f_name_fg = bestfit_dir + "/fg_{}x{}.dat"
+
+ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax, spectra)
+l, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, freq_list, lmax, spectra)
+
+assert (apply_kspace_filter == True), "this has to be set to True"
 
 # prepare the filters
 
 template = {}
 filter = {}
 for sv in surveys:
-
-    template_name = d["maps_%s_%s" % (sv, arrays[0])][0]
+    arrays = d[f"arrays_{sv}"]
+    template_name = d[f"maps_{sv}_{arrays[0]}"][0]
     template[sv] = so_map.read_map(template_name)
-    ks_f = d["k_filter_%s" % sv]
-    
     assert (template[sv].pixel == "CAR"), "we only compute kspace tf in CAR pixellisation"
-    assert (ks_f["apply"] == True), "the filter keyword apply has to be set to True"
-
-    shape, wcs = template[sv].data.shape, template[sv].data.wcs
-    if ks_f["type"] == "binary_cross":
-        filter[sv] = so_map_preprocessing.build_std_filter(shape, wcs, vk_mask=ks_f["vk_mask"], hk_mask=ks_f["hk_mask"], dtype=np.float64)
-    elif ks_f["type"] == "gauss":
-        filter[sv] = so_map_preprocessing.build_sigurd_filter(shape, wcs, ks_f["lbounds"], dtype=np.float64)
-    else:
-        print("you need to specify a valid filter type")
-
-
+    ks_f = d[f"k_filter_{sv}"]
+    filter[sv] = kspace.get_kspace_filter(template[sv], ks_f)
 
 # the filter also introduce E->B leakage, in order to measure it we run the scenario where there
 # is no E or B modes
 scenarios = ["standard", "noE", "noB"]
-
 
 # we will use mpi over the number of simulations
 so_mpi.init(True)
@@ -93,28 +77,25 @@ subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 
 for iii in subtasks:
     t0 = time.time()
- 
+    
+    alms = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
+    fglms = simulation.generate_fg_alms(fg_mat, freq_list, lmax)
+
     for scenario in scenarios:
 
-        # generate cmb alms and foreground alms
-        # cmb alms will be of shape (3, lm) 3 standing for T,E,B
-        # fglms will be of shape (nfreq, lm) and is T only
-    
-        alms = curvedsky.rand_alm(ps_cmb, lmax=lmax, dtype=sim_alm_dtype)
-        fglms = curvedsky.rand_alm(ps_fg, lmax=lmax, dtype=sim_alm_dtype)
-    
         master_alms = {}
 
         for sv in surveys:
         
-            arrays = d["arrays_%s" % sv]
-            ks_f = d["k_filter_%s" % sv]
+            arrays = d[f"arrays_{sv}"]
+            ks_f = d[f"k_filter_{sv}"]
 
-        
             for ar_id, ar in enumerate(arrays):
+            
+                nu_eff = d[f"nu_eff_{sv}_{ar}"]
         
-                win_T = so_map.read_map(d["window_T_%s_%s" % (sv, ar)])
-                win_pol = so_map.read_map(d["window_pol_%s_%s" % (sv, ar)])
+                win_T = so_map.read_map(d[f"window_T_{sv}_{ar}"])
+                win_pol = so_map.read_map(d[f"window_pol_{sv}_{ar}"])
     
                 window_tuple = (win_T, win_pol)
             
@@ -122,16 +103,15 @@ for iii in subtasks:
         
                 # we add fg alms to cmb alms in temperature
                 alms_beamed = alms.copy()
-                alms_beamed[0] += fglms[id_freq[d["nu_eff_%s_%s" % (sv, ar)]]]
+                alms_beamed += fglms[nu_eff]
             
                 # we convolve signal + foreground with the beam of the array
-                l, bl = pspy_utils.read_beam_file(d["beam_%s_%s" % (sv, ar)])
+                l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
                 alms_beamed = curvedsky.almxfl(alms_beamed, bl)
                 
                 if scenario == "noE": alms_beamed[1] *= 0
                 if scenario == "noB": alms_beamed[2] *= 0
 
-            
                 # generate our signal only sim
                 split = sph_tools.alm2map(alms_beamed, template[sv])
             
@@ -141,9 +121,13 @@ for iii in subtasks:
             
                 # apply the k-space filter
 
-                binary = so_map.read_map("%s/binary_%s_%s.fits" % (window_dir, sv, ar))
+                binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
+                binary = so_map.read_map(binary_file)
                 
-                split = data_analysis_utils.get_filtered_map(split, binary, filter[sv], weighted_filter=ks_f["weighted"])
+                split = kspace.filter_map(split,
+                                          filter[sv],
+                                          binary,
+                                          weighted_filter=ks_f["weighted"])
 
                 # compute the alms of the filtered sim
 
@@ -155,19 +139,18 @@ for iii in subtasks:
         _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 
         for id_sv1, sv1 in enumerate(surveys):
-            arrays_1 = d["arrays_%s" % sv1]
+            arrays_1 = d[f"arrays_{sv1}"]
             for id_ar1, ar1 in enumerate(arrays_1):
                 for id_sv2, sv2 in enumerate(surveys):
-                    arrays_2 = d["arrays_%s" % sv2]
+                    arrays_2 = d[f"arrays_{sv2}"]
                     for id_ar2, ar2 in enumerate(arrays_2):
 
                         if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                         if  (id_sv1 > id_sv2) : continue
 
-                        spec_name="%s_%s_%sx%s_%s" % (type, sv1, ar1, sv2, ar2)
+                        spec_name = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}"
 
-                    
-                        mbb_inv, Bbl = so_mcm.read_coupling(prefix="%s/%s_%sx%s_%s" % (mcm_dir, sv1, ar1, sv2, ar2),
+                        mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}",
                                                             spin_pairs=spin_pairs)
                                                         
                         # we  compute the power spectra of the sim (with and without the k-space filter applied)
@@ -184,10 +167,11 @@ for iii in subtasks:
                                                             lmax,
                                                             type=type,
                                                             mbb_inv=mbb_inv,
-                                                            spectra=spectra)
+                                                            spectra=spectra,
+                                                            binned_mcm=binned_mcm)
                                         
 
-                            so_spectra.write_ps(tf_dir + "/%s_%s_%s_%05d.dat" % (spec_name, filt, scenario, iii), lb, ps, type, spectra=spectra)
+                            so_spectra.write_ps(tf_dir + f"/{spec_name}_{filt}_{scenario}_%05d.dat" % iii, lb, ps, type, spectra=spectra)
 
     print("sim number %05d done in %.02f s" % (iii, time.time()-t0))
 

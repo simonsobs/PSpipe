@@ -1,103 +1,135 @@
-#PRELIM
+"""
+This script store data such as spectra, covmat, bandpasses into a sacc file
+"""
 
 import os
+import re
 import sys
-from itertools import combinations_with_replacement as cwr
-from itertools import product
 
 import numpy as np
 import sacc
-from pspy import pspy_utils, so_dict, so_mcm
+from pspipe_utils import external_data, pspipe_list, covariance
+from pspy import pspy_utils, so_dict
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+use_mc_corrected_cov = True
+only_diag_corrections = False
+
+cov_name = "analytic_cov"
+if use_mc_corrected_cov:
+    if only_diag_corrections:
+        cov_name += "_with_diag_mc_corrections"
+    else:
+        cov_name += "_with_mc_corrections"
+
 mcm_dir = "mcms"
-like_product_dir = "sim_like_product"
+bestfit_dir = "best_fits"
+sim_spec_dir = "sim_spectra"
+sim_sacc_dir = "sim_sacc"
 
+
+pspy_utils.create_directory(sim_sacc_dir)
+
+
+spec_name_list, nu_eff_list = pspipe_list.get_spec_name_list(d, char="_", return_nueff=True)
+spectra_order = ["TT", "TE", "ET", "EE"]
+cov_order = pspipe_list.x_ar_cov_order(spec_name_list, spectra_order=spectra_order)
+
+# Regex to filter cov order
+regex = re.compile("([TEB]{2})_(.*)x(.*)")
+blocks = [regex.match(block).groups() for block in cov_order]
+
+# Retrieving the wafer names
+*_, wafers = pspipe_list.get_arrays_list(d)
+
+# Reading binning file
 lmax = d["lmax"]
-iStart = d["iStart"]
-iStop = d["iStop"]
 binning_file = d["binning_file"]
-
 bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(bin_hi)
 
-# let's get a list of all frequencies we plan to study
-surveys = d["surveys"]
-frequencies = []
-for sv in surveys:
-    arrays = d["arrays_%s" % sv]
-    for ar in arrays:
-        frequencies += [int(d["nu_eff_%s_%s" % (sv, ar)])]
-frequencies = np.sort(list(dict.fromkeys(frequencies)))
+# Reading beams
+beams = {wafer: pspy_utils.read_beam_file(d[f"beam_dr6_{wafer}"]) for wafer in wafers}
 
-for iii in range(iStart,iStop):
+# Reading passbands : the passband file should be within the dict file
+passbands_file = "passbands/AdvACT_Passbands.h5"
+passbands = external_data.get_passband_dict_dr6(wafers)
+
+# Reading covariance
+like_product_dir = "like_product"
+analytic_cov = np.load(os.path.join(like_product_dir, f"x_ar_{cov_name}_with_beam.npy"))
+inv_analytic_cov = np.linalg.inv(analytic_cov)
+
+
+iStart = d["iStart"]
+iStop = d["iStop"]
+for i in range(iStart, iStop):
+    print(f"Storing simulation n°{i}...")
+
     # Saving into sacc format
     act_sacc = sacc.Sacc()
-    for freq in frequencies:
+    for wafer in wafers:
         for spin, quantity in zip([0, 2], ["temperature", "polarization"]):
-            # dummies file: not in used
-            data_beams = {"l": np.arange(10000), "bl": np.ones(10000)}
+
+            nus, passband = passbands.get(wafer)
+            ell, beam = beams.get(wafer)
 
             act_sacc.add_tracer(
                 "NuMap",
-                f"ACT_{freq}_s{spin}",
+                f"dr6_{wafer}_s{spin}",
                 quantity=f"cmb_{quantity}",
                 spin=spin,
-                nu=[freq],
-                bandpass=[1.0],
-                ell=data_beams.get("l"),
-                beam=data_beams.get("bl"),
+                nu=nus,
+                bandpass=passband,
+                ell=ell,
+                beam=beam,
             )
 
-    proj_data_vec = np.loadtxt("%s/data_vec_%05d.dat" % (like_product_dir, iii))
+    # Reading the flat data vector
+    data_vec = covariance.read_x_ar_spectra_vec(
+        sim_spec_dir, spec_name_list, f"cross_{i:05d}", spectra_order=spectra_order, type=d["type"]
+    )
 
-    count = 0
-    for spec in ["TT", "TE", "EE"]:
-        spec_frequencies = cwr(frequencies, 2) if spec != "TE" else product(frequencies, frequencies)
-        for f1, f2 in spec_frequencies:
-            print(f"Adding {f1}x{f2} GHz - {spec} spectra")
-            # Set sacc tracer type and names
-            pa, pb = spec
-            ta_name = f"ACT_{f1}_s0" if pa == "T" else f"ACT_{f1}_s2"
-            tb_name = f"ACT_{f2}_s0" if pb == "T" else f"ACT_{f2}_s2"
+    for count, (spec, s1, s2) in enumerate(blocks):
+        print(f"Adding {s1}x{s2}, {spec} spectrum")
 
-            map_types = {"T": "0", "E": "e", "B": "b"}
-            if pb == "T":
-                cl_type = "cl_" + map_types[pb] + map_types[pa]
-            else:
-                cl_type = "cl_" + map_types[pa] + map_types[pb]
+        # Get Bbl
+        mcm_dir = "mcms"
+        Bbl = np.load(os.path.join(mcm_dir, f"{s1}x{s2}_Bbl_spin0xspin0.npy"))
+        ls_w = np.arange(2, Bbl.shape[-1] + 2)
+        bp_window = sacc.BandpowerWindow(ls_w, Bbl.T)
 
-            # Get Bbl
-            mbb_inv, Bbl = so_mcm.read_coupling(
-                os.path.join(mcm_dir, f"dr6_pa4_f150xdr6_pa4_f150"),
-                spin_pairs=["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"],
-            )
-            Bbl_TT = Bbl["spin0xspin0"]
-            Bbl_TE = Bbl["spin0xspin2"]
-            Bbl_EE = Bbl["spin2xspin2"][: Bbl_TE.shape[0], : Bbl_TE.shape[1]]
+        # Define tracer names and cl type
+        pa, pb = spec
+        ta_name = f"{s1}_s0" if pa == "T" else f"{s1}_s2"
+        tb_name = f"{s2}_s0" if pb == "T" else f"{s2}_s2"
 
-            if spec in ["EE", "EB", "BE", "BB"]:
-                Bbl = Bbl_EE
-            elif spec in ["TE", "TB", "ET", "BT"]:
-                Bbl = Bbl_TE
-            else:
-                Bbl = Bbl_TT
-            ls_w = np.arange(2, Bbl.shape[-1] + 2)
-            bp_window = sacc.BandpowerWindow(ls_w, Bbl.T)
+        map_types = {"T": "0", "E": "e", "B": "b"}
+        if pb == "T":
+            cl_type = "cl_" + map_types[pb] + map_types[pa]
+        else:
+            cl_type = "cl_" + map_types[pa] + map_types[pb]
 
-            # Add ell/cl to sacc
-            Db = proj_data_vec[count * n_bins : (count + 1) * n_bins]
-            act_sacc.add_ell_cl(cl_type, ta_name, tb_name, lb, Db, window=bp_window)
-
-            count += 1
+        # Add ell/cl to sacc
+        Db = data_vec[count * n_bins : (count + 1) * n_bins]
+        act_sacc.add_ell_cl(cl_type, ta_name, tb_name, lb, Db, window=bp_window)
 
     print("Adding covariance")
-    proj_cov_mat = np.load("%s/combined_analytic_cov.npy" % like_product_dir)
-    act_sacc.add_covariance(proj_cov_mat)
+    act_sacc.add_covariance(analytic_cov)
+
     print("Writing sacc file")
-    act_sacc.save_fits(
-        os.path.join(like_product_dir, f"act_simu_sacc_%05d.fits" % iii),
-        overwrite=True,
-    )
+    act_sacc.save_fits(f"{sim_sacc_dir}/act_simu_sacc_{i:05d}.fits", overwrite=True)
+
+    print("Check chi2")
+    theory_vec = covariance.read_x_ar_theory_vec(bestfit_dir,
+                                                 mcm_dir,
+                                                 spec_name_list,
+                                                 nu_eff_list,
+                                                 lmax,
+                                                 spectra_order = ["TT", "TE", "ET", "EE"])
+
+    res = data_vec - theory_vec
+    chi2 = res @ inv_analytic_cov @ res
+    print(r"$\chi^{2}$/DoF = %.2f/%d" % (chi2, len(data_vec)))

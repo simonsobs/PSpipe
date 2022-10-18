@@ -261,13 +261,12 @@ def calibrate_alm(alms, freq, **nuis_params):
     """
     Calibrates the alms for each frequency of the LAT by the appropriate calibration factor:
     i.e.: a_lm^X_nu1  -> c^X_nu1 a_lm^X_nu1, with X=T,E
-    c^X_nu1 = nuis_params["calG_all"]*nuis_params["calX_nu1"]
-    where nuis_params is the dictionary of nuisance parameters and nuis_params["calG_all"] is a calibration factor
-    common to all frequencies.
+    c^X_nu1 = nuis_params["calG_all"]*nuis_params["cal_nu1"]*nuis_params["calX_nu1"]
+    where nuis_params is the dictionary of nuisance parameters, nuis_params["calG_all"] is a calibration factor common to all frequencies and nuis_params["cal_nu1"] is the calibration factor per channel.
     """
     cal_alms = alms.copy()
-    cal_alms[0] *= nuis_params["calG_all"]*nuis_params[f"calT_{freq}"]
-    cal_alms[1] *= nuis_params["calG_all"]*nuis_params[f"calE_{freq}"]
+    cal_alms[0] *= nuis_params["calG_all"]*nuis_params[f"cal_{freq}"]*nuis_params[f"calT_{freq}"]
+    cal_alms[1] *= nuis_params["calG_all"]*nuis_params[f"cal_{freq}"]*nuis_params[f"calE_{freq}"]
     
     return cal_alms
 

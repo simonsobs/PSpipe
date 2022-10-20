@@ -77,24 +77,27 @@ for spec in ["TT", "TE", "EE"]:
         
         
         plt.figure(figsize=(12,8))
-        plt.suptitle(f"{f0}x{f1}")
+        plt.suptitle(f"{f0}x{f1}", fontsize=24)
         plt.subplot(2, 1, 1)
         if spec == "TT":
             plt.semilogy()
         plt.errorbar(lb, Db, sigmab, fmt=".-", label="DR6", alpha=0.5)
         plt.errorbar(l,  cl_choi, err_choi, fmt=".-", label=dr4_label, alpha=0.5)
-        plt.ylabel(r"$D_{\ell}$", fontsize=15)
-        plt.xlabel(r"$\ell$", fontsize=15)
+        if spec == "EE":
+            plt.errorbar(l,  l*0, fmt="--",  alpha=0.5, color="gray")
+
+        plt.ylabel(r"$D_{\ell}$", fontsize=18)
+        plt.xlabel(r"$\ell$", fontsize=18)
         try:
             ylim0 = ylim[spec, fp][0]
             ylim1 = ylim[spec, fp][1]
             plt.ylim(ylim0, ylim1)
         except:
             pass
-        plt.legend()
+        plt.legend(fontsize=15)
         plt.subplot(2, 1, 2)
         plt.ylabel(r"$ell^{%s} (D^{DR6}_{\ell} - D^{DR4}_{\ell}) \ $" % pow_res[spec], fontsize=15)
-        plt.xlabel(r"$\ell$", fontsize=15)
+        plt.xlabel(r"$\ell$", fontsize=18)
         plt.errorbar(l,  res * l ** pow_res[spec], err_res * l ** pow_res[spec], fmt=".", label=r"$\chi^{2}$/Dof= %.02f/%d"% (chi2, ndof))
         try:
             ylim0 = ylim_res[spec, fp][0]
@@ -103,5 +106,7 @@ for spec in ["TT", "TE", "EE"]:
         except:
             pass
         plt.plot(l, l * 0, color="gray")
-        plt.legend()
-        plt.show()
+        plt.legend(fontsize=15)
+        plt.savefig(f"dr6_choi_{spec}_{fp}.png", bbox_inches="tight")
+        plt.clf()
+        plt.close()

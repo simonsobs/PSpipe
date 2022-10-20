@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=64
 #SBATCH --constraint=haswell
-#SBATCH --array=0-31
+#SBATCH --array=200-299
 
 cd /global/cscratch1/sd/xzackli/PSpipe/project/data_analysis/
 

@@ -1,8 +1,8 @@
 surveys = ["dr6"]
 
-arrays_dr6 = ["pa6_f090", "pa6_f150"]
-soapack_arrays_dr6 = ["pa6a", "pa6b"]
-wafers_dr6 = {"pa6": ("pa6a", "pa6b")}
+arrays_dr6 = ["pa6_f150"]
+soapack_arrays_dr6 = ["pa6b"]
+wafers_dr6 = {"pa6": ("pa6b",)}
 
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/'
 map_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/maps_dr6_v3/4pass/'
@@ -88,12 +88,12 @@ nu_eff_dr6_pa6_f090 = 90
 nu_eff_dr6_pa6_f150 = 150
 
 
-beam_dr6_pa4_f150 = data_dir + 'beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa4_f220 = data_dir + 'beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa5_f090 = data_dir + 'beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa5_f150 = data_dir + 'beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa6_f090 = data_dir + 'beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa6_f150 = data_dir + 'beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa4_f150 = data_dir + 'beams/20220517_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa4_f220 = data_dir + 'beams/20220517_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f090 = data_dir + 'beams/20220517_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f150 = data_dir + 'beams/20220517_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa6_f090 = data_dir + 'beams/20220517_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa6_f150 = data_dir + 'beams/20220517_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
 
 window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
 window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
@@ -126,7 +126,7 @@ iStop = 39
 iMultiple = 8
 sim_alm_dtype = "complex64"
 noise_sim_type = "gaussian"
-noise_model_parameters = {"downgrade": 4, "lmax": 5400, "notes": "20211203", "mask_name": "dr6v3_default_union_mask", "union_sources": "20210209_sncut_10_aggressive"}
+noise_model_parameters = {"downgrade": 4, "lmax": 5400, "notes": "20220919", "mask_est_name":"dr6v3_20220316_baseline_union_mask", "mask_obs_name":"dr6v3_xlink_union_mask_0.001", "union_sources": "regular_20220316"}
 
 
 #plot

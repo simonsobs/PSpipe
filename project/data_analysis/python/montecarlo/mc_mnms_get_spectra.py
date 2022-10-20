@@ -147,12 +147,14 @@ for sv in surveys:
 
 array_to_wafer_and_index = dict()
 wafer_models = dict()
-if (noise_sim_type == "tiled") or (noise_sim_type == "wavelet"):
+if noise_sim_type in ("tiled", "wavelet", "fdw"):
     for wafer_name in wafers:
         if (noise_sim_type == "tiled"):
             noise_model = nm.TiledNoiseModel(*wafers[wafer_name], **noise_model_parameters)
         elif (noise_sim_type == "wavelet"):
             noise_model = nm.WaveletNoiseModel(*wafers[wafer_name], **noise_model_parameters)
+        elif (noise_sim_type == "fdw"):
+            noise_model = nm.FDWNoiseModel(*wafers[wafer_name], **noise_model_parameters)
 
         for i, arr in enumerate(wafers[wafer_name]):
             array_to_wafer_and_index[arr] = (wafer_name, i)
@@ -252,7 +254,7 @@ for iii in subtasks:
         if noise_sim_type == "gaussian":
             np.random.seed(iii)
             nlms = get_simulated_gaussian_alms(ps_model_dir, sv, arrays, lmax, nsplits, sim_alm_dtype, verbose=True)
-        elif (template[sv].pixel == "CAR") and (noise_sim_type == "tiled" or noise_sim_type == "wavelet"):
+        elif (template[sv].pixel == "CAR") and (noise_sim_type in ("tiled", "wavelet", "fdw")):
             # use MPI task index iii as simulation number ~ random seed, since it ranges from iStart to iStop
             nlms = get_simulated_mnms_alms(wafer_models, array_to_wafer_and_index, iii, sv, soapack_arrays, nsplits, sim_alm_dtype, lmax, verbose=True)
         else:

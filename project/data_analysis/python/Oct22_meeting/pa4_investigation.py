@@ -18,6 +18,7 @@ spec_dir = "spectra"
 cov_dir = "covariances"
 arrays = ["pa4_f150", "pa5_f150", "pa6_f150"]
 
+test_name = ["150_150", "150_220", "90_150"]
 spec_150_150 = ["dr6_pa4_f150xdr6_pa4_f150", "dr6_pa5_f150xdr6_pa5_f150", "dr6_pa6_f150xdr6_pa6_f150"]
 spec_150_220 = ["dr6_pa4_f150xdr6_pa4_f220", "dr6_pa4_f220xdr6_pa5_f150", "dr6_pa4_f220xdr6_pa6_f150"]
 spec_90_150 = ["dr6_pa4_f150xdr6_pa5_f090",  "dr6_pa5_f090xdr6_pa5_f150", "dr6_pa6_f090xdr6_pa6_f150"]
@@ -25,7 +26,7 @@ spec_90_150 = ["dr6_pa4_f150xdr6_pa5_f090",  "dr6_pa5_f090xdr6_pa5_f150", "dr6_p
 ref_spec = ["dr6_pa4_f150xdr6_pa4_f150", "dr6_pa4_f150xdr6_pa4_f220", "dr6_pa4_f150xdr6_pa5_f090"]
 Dl_spec = {}
 
-for spec_comb, ref in zip([spec_150_150, spec_150_220, spec_90_150], ref_spec):
+for test, spec_comb, ref in zip(test_name, [spec_150_150, spec_150_220, spec_90_150], ref_spec):
     plt.figure(figsize=(16, 8))
     plt.semilogy()
     for spec in spec_comb:
@@ -44,12 +45,16 @@ for spec_comb, ref in zip([spec_150_150, spec_150_220, spec_90_150], ref_spec):
     plt.xlabel(r"$\ell$", fontsize=22)
     plt.ylim(30, 4500)
     plt.legend()
-    plt.show()
-    
+    plt.savefig(f"pa4_{test}.png", bbox_inches="tight")
+    plt.clf()
+    plt.close()
+
     plt.figure(figsize=(16, 8))
 
     for spec in spec_comb:
         plt.errorbar(l, Dl_spec[ref]/Dl_spec[spec], label=f"{ref}/{spec}")
-    plt.ylim(0.5, 1.5)
+    plt.ylim(0.7, 1.3)
     plt.legend()
-    plt.show()
+    plt.savefig(f"pa4_ratio_{test}.png", bbox_inches="tight")
+    plt.clf()
+    plt.close()

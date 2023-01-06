@@ -31,9 +31,10 @@ bestfit_dir = "best_fits"
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
-freq_list = pspipe_list.get_freq_list(d)
+_, sv_list, ar_list = pspipe_list.get_arrays_list(d)
+array_list = [f"{sv}_{ar}" for (sv, ar) in zip(sv_list, ar_list)]
 lth, cmb_and_fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat",
-                                                    freq_list,
+                                                    array_list,
                                                     lmax + 2,
                                                     spectra,
                                                     f_name_cmb=bestfit_dir + "/cmb.dat")
@@ -61,9 +62,6 @@ for id_sv1, sv1 in enumerate(surveys):
                 l, bl1 = pspy_utils.read_beam_file(d[f"beam_{sv1}_{ar1}"], lmax=lmax)
                 l, bl2 = pspy_utils.read_beam_file(d[f"beam_{sv2}_{ar2}"], lmax=lmax)
 
-                nu_eff_1 = d[f"nu_eff_{sv1}_{ar1}"]
-                nu_eff_2 = d[f"nu_eff_{sv2}_{ar2}"]
-
                 if sv1 == sv2:
                     lb, nlth = so_spectra.read_ps(f"{noise_model_dir}/mean_{ar1}x{ar2}_{sv1}_noise.dat", spectra=spectra)
                     for spec in spectra:
@@ -74,25 +72,25 @@ for id_sv1, sv1 in enumerate(surveys):
                         nlth[spec] = np.zeros(lmax)
 
                 prefix= f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}"
-                
+
                 mbb_inv, Bbl = so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
 
                 for kind in ["cross", "noise", "auto"]:
-                
+
                     if (sv1 != sv2) & (kind == "noise"): continue
                     if (sv1 != sv2) & (kind == "auto"): continue
 
                     ps_th = {}
                     for spec in spectra:
-                    
+
                         if kind == "cross":
-                            ps_th[spec] = cmb_and_fg_dict[nu_eff_1, nu_eff_2][spec]
+                            ps_th[spec] = cmb_and_fg_dict[f"{sv1}_{ar1}", f"{sv2}_{ar2}"][spec]
                         elif kind == "noise":
                             ps_th[spec] = nlth[spec]
                         elif kind == "auto":
                             n_splits = len(d[f"maps_{sv1}_{ar1}"])
-                            ps_th[spec] = cmb_and_fg_dict[nu_eff_1, nu_eff_2][spec] + nlth[spec] * n_splits
-    
+                            ps_th[spec] = cmb_and_fg_dict[f"{sv1}_{ar1}", f"{sv2}_{ar2}"][spec] + nlth[spec] * n_splits
+
                     theory[sv1, ar1, sv2, ar2, kind] = ps_th
                     bin_theory[sv1, ar1, sv2, ar2, kind] = so_mcm.apply_Bbl(Bbl, ps_th, spectra=spectra)
 
@@ -132,22 +130,22 @@ for kind in ["cross", "noise", "auto"]:
                         if (sv1 != sv2) & (kind == "noise"): continue
                         if (sv1 != sv2) & (kind == "auto"): continue
 
-                        
+
                         spec_name = f"spectra_{spec}_{sv1}_{ar1}x{sv2}_{ar2}_{kind}"
 
                         lb, mean, std = np.loadtxt(f"{mc_dir}/{spec_name}.dat", unpack=True)
-                        
+
                         mean_dict[kind, spec, sv1, ar1, sv2, ar2] = mean
                         std_dict[kind, spec, sv1, ar1, sv2, ar2] = std
-                        
+
                         ps_th = theory[sv1, ar1, sv2, ar2, kind][spec]
                         ps_th_binned = bin_theory[sv1, ar1, sv2, ar2, kind][spec]
-                        
+
                         plt.figure(figsize=(8, 7))
-                
+
                         if spec == "TT":
                             plt.semilogy()
-                
+
                         plt.plot(lth, ps_th, color="grey", alpha=0.4)
                         plt.plot(lb, ps_th_binned)
                         plt.errorbar(lb, mean, std, fmt=".", color="red")
@@ -156,7 +154,7 @@ for kind in ["cross", "noise", "auto"]:
                         plt.savefig("%s/%s.png" % (plot_dir, spec_name), bbox_inches="tight")
                         plt.clf()
                         plt.close()
-                        
+
                         plt.errorbar(lb, mean - ps_th_binned, std / np.sqrt(nsims), fmt=".", color="red")
                         plt.title(r"$\Delta D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}$" % (spec, sv1, ar1, sv2, ar2, kind), fontsize=20)
                         plt.xlabel(r"$\ell$", fontsize=20)
@@ -170,9 +168,9 @@ for kind in ["cross", "noise", "auto"]:
                         plt.savefig("%s/frac_%s.png" % (plot_dir, spec_name), bbox_inches="tight")
                         plt.clf()
                         plt.close()
-                        
+
                         str = "%s.png" % (spec_name)
-                        
+
                         g.write('<div class=type>\n')
                         g.write('<img src="' + str + '" width="50%" /> \n')
                         g.write('<img src="' + 'diff_' + str + '" width="50%" /> \n')
@@ -195,7 +193,7 @@ for fig in ["log", "linear"]:
 
         plt.figure(figsize=(12, 12))
         color = iter(cm.rainbow(np.linspace(0, 1, n_spec["cross"] + 1)))
-    
+
         if fig == "log":
             plt.semilogy()
 
@@ -208,13 +206,13 @@ for fig in ["log", "linear"]:
                     for id_ar2, ar2 in enumerate(arrays_2):
                         if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                         if  (id_sv1 > id_sv2) : continue
-                
+
                         c = next(color)
-                        
+
                         mean = mean_dict["cross", spec, sv1, ar1, sv2, ar2]
                         std = std_dict["cross", spec, sv1, ar1, sv2, ar2]
                         ps_th = theory[sv1, ar1, sv2, ar2, "cross"][spec]
-                    
+
                         if (fig == "linear") and (spec == "TT"):
                             plt.errorbar(lb, mean * lb**2, std * lb**2, fmt='.', color=c, label=f"{sv1}{ar1} x {sv2}{ar2}", alpha=0.6)
                             plt.errorbar(lth, ps_th * lth**2, color=c, alpha=0.4)
@@ -244,8 +242,3 @@ for fig in ["log", "linear"]:
         plt.savefig(f"{plot_dir}/all_{fig}_spectra_{spec}_all_{exp_name}cross.png", bbox_inches="tight")
         plt.clf()
         plt.close()
-
-
-
-
-

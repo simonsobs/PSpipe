@@ -41,7 +41,7 @@ type = d["type"]
 lmax = d["lmax"]
 binning_file = d["binning_file"]
 
-spec_name_list, nu_eff_list = pspipe_list.get_spec_name_list(d, char="_", return_nueff=True)
+spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, char="_", return_nu_tag=True)
 spec_name_list_ET = pspipe_list.get_spec_name_list(d, char="_", remove_same_ar_and_sv=True)
 
 freq_list = pspipe_list.get_freq_list(d)
@@ -60,8 +60,8 @@ vec["xar"] = covariance.read_x_ar_spectra_vec(spec_dir,
 cov["xar"] = np.load(f"{like_product_dir}/x_ar_{cov_name}_with_beam.npy")
 inv_cov_xar = np.linalg.inv(cov["xar"])
 
-P_mat = covariance.get_x_ar_to_x_freq_P_mat(freq_list, spec_name_list, nu_eff_list, binning_file, lmax)
-P_mat_cross = covariance.get_x_ar_to_x_freq_P_mat_cross(freq_list, spec_name_list, nu_eff_list, binning_file, lmax)
+P_mat = covariance.get_x_ar_to_x_freq_P_mat(freq_list, spec_name_list, nu_tag_list, binning_file, lmax)
+P_mat_cross = covariance.get_x_ar_to_x_freq_P_mat_cross(freq_list, spec_name_list, nu_tag_list, binning_file, lmax)
 P_x_ar_to_x_freq = covariance.combine_P_mat(P_mat, P_mat_cross)
 so_cov.plot_cov_matrix(P_x_ar_to_x_freq, file_name=f"{plot_dir}/P_mat_xar_to_xfreq")
 
@@ -100,23 +100,21 @@ for comb in combin_level:
                                                                                 block_order[comb],
                                                                                 binning_file,
                                                                                 lmax)
-    
+
     for skip_220 in [True, False]:
         for spec in ["TT", "TE", "EE"]:
             plt.figure(figsize=(12, 8))
             for block in block_order[comb][spec]:
                 D_b = spec_dict[spec, block]
                 sigma_b = std_dict[spec, block]
-            
+
                 if skip_220 == False:
                     np.savetxt(f"{like_product_dir}/spectra_{comb}_{spec}_{block}.dat", np.transpose([lb, D_b, sigma_b]))
                 else:
                     if "220" in block: continue
                 plt.errorbar(lb, D_b, sigma_b, fmt=".", label=block)
-            
+
             plt.legend()
             plt.savefig(f"{plot_dir}/{comb}_{spec}_{block}_skip220={skip_220}.png", bbox_inches="tight")
             plt.clf()
             plt.close()
-                        
-                      

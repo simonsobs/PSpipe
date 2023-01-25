@@ -54,7 +54,7 @@ for task in subtasks:
                     
         if (deconvolve_pixwin == True):
             # deconvolve the CAR pixel function in fourier space
-            wy, wx = enmap.calc_window(win_T.data.shape)
+            wy, wx = enmap.calc_window(win_T.data.shape, order=d["pixwin_order"])
             inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
         else:
             inv_pixwin_lxly = None

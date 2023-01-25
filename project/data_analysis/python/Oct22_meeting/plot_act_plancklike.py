@@ -20,7 +20,7 @@ lp, clp, errorp = {}, {}, {}
 fp_act = ["90x90", "150x150", "220x220"]
 fp_pl = ["100x100", "143x143", "217x217"]
 
-for spec in ["TT","EE"]:
+for spec in ["TT", "TE", "EE"]:
     _, l_pl_dict, Db_pl_dict, err_pl_dict = external_data.get_planck_spectra(spec, return_Dl=True)
 
     for fpa, fpp in zip(fp_act, fp_pl):
@@ -34,6 +34,8 @@ for spec in ["TT","EE"]:
             plt.errorbar(lb_pl, Db_pl, sigmab_pl, fmt=".", label=f"Planck {fpp} legacy public data", alpha=0.5)
             plt.errorbar(lb, Db, sigmab, fmt=".", label=f"ACT {fpa} (with Planck likelihood mask)", alpha=0.5)
             plt.legend(fontsize=18)
+            plt.ylabel(r"$D^{%s}_{\ell}$" % spec, fontsize=22)
+            plt.xlabel(r"$\ell$", fontsize=22)
             plt.savefig(f"ACT_and_planck_{spec}_{fpa}.png", bbox_inches="tight")
             plt.clf()
             plt.close()
@@ -54,12 +56,15 @@ for spec in ["TT","EE"]:
             plt.clf()
             plt.close()
 
-        if spec == "EE":
+        if spec in ["EE", "TE"]:
             plt.figure(figsize=(12, 8))
             plt.errorbar(lb[:nbins], Db[:nbins], sigmab_pl, fmt=".", label=f"Planck {fpp} legacy public error", alpha=0.5)
             plt.errorbar(lb, Db, sigmab, fmt=".", label=f"ACT {fpa} (with Planck likelihood mask)", alpha=0.5)
             plt.legend(fontsize=18)
-            plt.ylim(-10, 50)
+            if spec == "EE":
+                plt.ylim(-10, 50)
+            plt.ylabel(r"$D^{%s}_{\ell}$" % spec, fontsize=22)
+            plt.xlabel(r"$\ell$", fontsize=22)
             plt.savefig(f"ACT_and_planck_{spec}_{fpa}_blinded.png", bbox_inches="tight")
             plt.clf()
             plt.close()

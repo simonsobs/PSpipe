@@ -51,6 +51,8 @@ n_med_ivar = d["n_med_ivar"]
 window_dir = "windows"
 surveys = d["surveys"]
 
+disable_ptsrc_mask = ("disable_ptsrc_mask" in d) and d["disable_ptsrc_mask"]
+
 pspy_utils.create_directory(window_dir)
 
 patch = None
@@ -128,9 +130,11 @@ for task in subtasks:
     # Now we create the final window function that will be used in the analysis
     survey_mask.data[dist.data < skip_from_edges_degree] = 0
     survey_mask = so_window.create_apodization(survey_mask, "C1", apod_survey_degree, use_rmax=True)
-    ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
-    ps_mask = so_window.create_apodization(ps_mask, "C1", apod_pts_source_degree, use_rmax=True)
-    survey_mask.data *= ps_mask.data
+
+    if disable_ptsrc_mask == False:
+        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
+        ps_mask = so_window.create_apodization(ps_mask, "C1", apod_pts_source_degree, use_rmax=True)
+        survey_mask.data *= ps_mask.data
     
     survey_mask.data = survey_mask.data.astype(np.float32)
     survey_mask.write_map(f"{window_dir}/window_{sv}_{ar}.fits")

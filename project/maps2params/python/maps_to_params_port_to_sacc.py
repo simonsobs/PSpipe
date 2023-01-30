@@ -142,7 +142,7 @@ for isim in range(iStart,iStop):
         freqs = d["freqs_%s" % exp]
         for f in freqs:
             # dummies file: not in used
-            data_bandpasses = {"nu":[149, 150], "b_nu":[0.5, 0.5]}
+            data_bandpasses = {"nu":[f], "b_nu":[1.0]}
             data_beams = {"l":np.arange(10000), "bl":np.ones(10000)}
 
             spec_sacc.add_tracer("NuMap", "%s_%s_s0" % (exp, f),

@@ -89,10 +89,14 @@ for task in subtasks:
     
     xtra_pw1, xtra_pw2, mm_tf1, mm_tf2 = None, None, None, None
     if deconvolve_pixwin:
-        # some xtra pixel window in the case of healpix
-        # or Planck projected into CAR
-        xtra_pw1 = transfer_function.healpix_pixwin(sv1, templates[sv1], binning_file, lmax)
-        xtra_pw2 = transfer_function.healpix_pixwin(sv2, templates[sv2], binning_file, lmax)
+        if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX":
+            pixwin_l = hp.pixwin(d[f"pixwin_{sv1}"]["nside"])
+            lb, xtra_pw1 = pspy_utils.naive_binning(np.arange(len(pixwin_l)),  pixwin_l, binning_file, lmax)
+        if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX":
+            pixwin_l = hp.pixwin(d[f"pixwin_{sv2}"]["nside"])
+            lb, xtra_pw2 = pspy_utils.naive_binning(np.arange(len(pixwin_l)),  pixwin_l, binning_file, lmax)
+
+
     if d[f"deconvolve_map_maker_tf_{sv1}"]:
         mm_tf1 = so_spectra.read_ps(d[f"mm_tf_{sv1}_{ar1}.dat"], spectra=spectra)
     if d[f"deconvolve_map_maker_tf_{sv2}"]:

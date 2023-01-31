@@ -52,12 +52,12 @@ for task in subtasks:
             ks_f = d[f"k_filter_{sv}"]
             filter = kspace.get_kspace_filter(win_T, ks_f)
                     
-        if (deconvolve_pixwin == True):
-            # deconvolve the CAR pixel function in fourier space
-            wy, wx = enmap.calc_window(win_T.data.shape, order=d["pixwin_order"])
-            inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
-        else:
-            inv_pixwin_lxly = None
+        inv_pixwin_lxly = None
+        if deconvolve_pixwin:
+            if d[f"pixwin_{sv}"]["pix"] == "CAR":
+                # compute the CAR pixel function in fourier space
+                wy, wx = enmap.calc_window(win_T.data.shape, order=d[f"pixwin_{sv}"]["order"])
+                inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
             
             
     maps = d[f"maps_{sv}_{ar}"]

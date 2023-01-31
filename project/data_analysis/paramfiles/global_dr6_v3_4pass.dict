@@ -8,7 +8,7 @@ map_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/maps_dr6_v3/4pass/'
 npass_dr6 = 4
 
 deconvolve_pixwin = True
-pixwin_dr6 = {pix: 'CAR', order: 0}
+pixwin_dr6 = {"pix": 'CAR', "order": 0}
 
 
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"

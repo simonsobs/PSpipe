@@ -53,7 +53,7 @@ for task in subtasks:
             filter = kspace.get_kspace_filter(win_T, ks_f)
                     
         inv_pixwin_lxly = None
-        if deconvolve_pixwin == True:
+        if deconvolve_pixwin:
             if d[f"pixwin_{sv}"]["pix"] == "CAR":
                 # compute the CAR pixel function in fourier space
                 wy, wx = enmap.calc_window(win_T.data.shape, order=d[f"pixwin_{sv}"]["order"])

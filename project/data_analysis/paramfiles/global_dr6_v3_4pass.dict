@@ -85,12 +85,13 @@ pol_eff_dr6_pa6_f090 = 0.9789
 pol_eff_dr6_pa6_f150 = 0.9656
 
 passband_dir = data_dir + "passbands/"
-freq_info_dr6_pa4_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa4_f150.dat", "do_bandpass_integration": False}
-freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir + "passband_dr6_pa4_f220.dat", "do_bandpass_integration": False}
-freq_info_dr6_pa5_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa5_f090.dat", "do_bandpass_integration": False}
-freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa5_f150.dat", "do_bandpass_integration": False}
-freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa6_f090.dat", "do_bandpass_integration": False}
-freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat", "do_bandpass_integration": False}
+do_bandpass_integration = False
+freq_info_dr6_pa4_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa4_f150.dat"}
+freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir + "passband_dr6_pa4_f220.dat"}
+freq_info_dr6_pa5_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa5_f090.dat"}
+freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa5_f150.dat"}
+freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa6_f090.dat"}
+freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
 
 beam_dr6_pa4_f150 = data_dir + 'beams/20220517_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa4_f220 = data_dir + 'beams/20220517_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'

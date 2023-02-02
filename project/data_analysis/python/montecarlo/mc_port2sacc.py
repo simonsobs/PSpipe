@@ -57,12 +57,13 @@ beams = {wafer: pspy_utils.read_beam_file(d[f"beam_dr6_{wafer}"]) for wafer in w
 
 # Reading passbands : the passband file should be within the dict file
 passbands = {}
+do_bandpass_integration = d["do_bandpass_integration"]
 for wafer in wafers:
     freq_info = d[f"freq_info_dr6_{wafer}"]
-    if freq_info["do_bandpass_integration"]:
+    if do_bandpass_integration:
         nu_ghz, passband = np.loadtxt(freq_info["passband"]).T
     else:
-        nu_ghz, passband = np.array([1, freq_info["freq_tag"]]), np.array([0., 1.])
+        nu_ghz, passband = np.array([freq_info["freq_tag"]]), np.array([1.])
 
     passbands[wafer] = [nu_ghz, passband]
 

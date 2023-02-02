@@ -40,12 +40,13 @@ fg_params = d["fg_params"]
 fg_components = d["fg_components"]
 
 passbands = {}
+do_bandpass_integration = d["do_bandpass_integration"]
 
 narrays, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 for sv, ar in zip(sv_list, ar_list):
 
     freq_info = d[f"freq_info_{sv}_{ar}"]
-    if freq_info["do_bandpass_integration"]:
+    if do_bandpass_integration:
         nu_ghz, pb = np.loadtxt(freq_info["passband"]).T
     else:
         nu_ghz, pb = np.array([freq_info["freq_tag"]]), np.array([1.])

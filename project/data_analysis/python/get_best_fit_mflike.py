@@ -48,12 +48,12 @@ for sv, ar in zip(sv_list, ar_list):
     if freq_info["do_bandpass_integration"]:
         nu_ghz, pb = np.loadtxt(freq_info["passband"]).T
     else:
-        nu_ghz, pb = np.array([1, freq_info["freq_tag"]]), np.array([0., 1.])
+        nu_ghz, pb = np.array([freq_info["freq_tag"]]), np.array([1.])
 
     passbands[f"{sv}_{ar}"] = [nu_ghz, pb]
 
-fg_dict = best_fits.get_foreground_dict(l_th, [], fg_components, fg_params,
-                                        fg_norm, external_bandpass = passbands)
+fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components,
+                                        fg_params, fg_norm,)
 
 spectra_list = pspipe_list.get_spec_name_list(d, char = "_")
 fg= {}

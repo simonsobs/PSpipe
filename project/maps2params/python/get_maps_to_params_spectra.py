@@ -52,11 +52,12 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
 all_freqs = [freq for exp in experiments for freq in d["freqs_%s" % exp]]
+exp_fr = [f"{exp}_{fr}" for exp in experiments for fr in d["freqs_%s" % exp]]
 ncomp = 3
 ps_cmb = powspec.read_spectrum(d["clfile"])[:ncomp, :ncomp]
 
 if include_fg == True:
-    l, ps_fg = maps_to_params_utils.get_foreground_matrix(fg_dir, fg_components, all_freqs, lmax_simu+1)
+    l, ps_fg = maps_to_params_utils.get_foreground_matrix(fg_dir, fg_components, exp_fr, lmax_simu)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
@@ -96,7 +97,7 @@ for iii in subtasks:
         l, nl_array_t, nl_array_pol = maps_to_params_utils.get_noise_matrix_spin0and2(noise_data_dir,
                                                                                       exp,
                                                                                       freqs,
-                                                                                      lmax_simu+1,
+                                                                                      lmax_simu,
                                                                                       nsplits,
                                                                                       lcut=lcut)
 
@@ -106,7 +107,7 @@ for iii in subtasks:
                                                         ncomp,
                                                         nl_array_pol=nl_array_pol)
 
-        for fid ,freq in enumerate(freqs):
+        for fid, freq in enumerate(freqs):
             window = so_map.read_map("%s/window_%s_%s.fits" % (window_dir, exp, freq))
             window_tuple = (window, window)
             l, bl = np.loadtxt("sim_data/beams/beam_%s_%s.dat" %(exp, freq), unpack=True)
@@ -123,11 +124,11 @@ for iii in subtasks:
             
             #here we calibrate the T, E alms and rotate the E, B alms of each frequency, for the LAT experiment
             if exp == "LAT":
-                cal_alms = maps_to_params_utils.calibrate_alm(alms_beamed, freq, **nuis_params)
-                print(f"Calibrating the {exp} alm by calT_{freq} = {nuis_params[f'calT_{freq}']} and calE_{freq} = {nuis_params[f'calE_{freq}']}")
+                cal_alms = maps_to_params_utils.calibrate_alm(alms_beamed, f"{exp}_{freq}", **nuis_params)
+                print(f"Calibrating the {exp} alm by cal_{exp}_{freq} = {nuis_params[f'cal_{exp}_{freq}']} and calE_{exp}_{freq} = {nuis_params[f'calE_{exp}_{freq}']}")
 
-                sys_alms = maps_to_params_utils.rotate_alm_polang(cal_alms, freq, **nuis_params)
-                print(f"Rotating the {exp} alm by alpha_{freq} = {nuis_params[f'alpha_{freq}']} deg")
+                sys_alms = maps_to_params_utils.rotate_alm_polang(cal_alms, f"{exp}_{freq}", **nuis_params)
+                print(f"Rotating the {exp} alm by alpha_{exp}_{freq} = {nuis_params[f'alpha_{exp}_{freq}']} deg")
 
             else: 
                 sys_alms = alms_beamed

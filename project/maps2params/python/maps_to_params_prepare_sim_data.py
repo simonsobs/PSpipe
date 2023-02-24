@@ -39,7 +39,7 @@ sensitivity_mode = d["sensitivity_mode"]
 f_sky_LAT = d["f_sky_LAT"]
 freqs = {}
 freqs["LAT"] = ["27", "39", "93", "145", "225", "280"]
-ell_min, ell_max = 2, 9000
+ell_min, ell_max = 2, 9001
 delta_ell = 1
 
 pspy_utils.create_directory("sim_data/noise_ps")
@@ -141,7 +141,8 @@ plt.figure(figsize=(12, 12))
 for exp in ["LAT", "Planck"]:
     my_freqs = freqs[exp]
     for f in my_freqs:
-        l, bl[exp + f] = pspy_utils.beam_from_fwhm(beam_fwhm[exp + '_' + f], ell_max)
+        #l and beams generated between ell = 2, ell_max+2
+        l, bl[exp + f] = pspy_utils.beam_from_fwhm(beam_fwhm[exp + '_' + f], ell_max+2)
         np.savetxt("sim_data/beams/beam_%s_%s.dat" % (exp,f), np.transpose([l, bl[exp + f] ]))
 
         plt.plot(l, bl[exp + f] , linestyle=linestyle[exp], label="%s_%s" % (exp, f))
@@ -163,14 +164,17 @@ camb_cosmo = {k: v for k, v in cosmo_params.items()
               if k not in ["logA", "As"]}
 camb_cosmo.update({"As": 1e-10*np.exp(cosmo_params["logA"]),
                    "lmax": ell_max,
+                   "kmax": d["kmax"],
+                   "k_per_logint": d["k_per_logint"],
+                   "nonlinear": d["nonlinear"],
                    "lens_potential_accuracy": d["lens_potential_accuracy"],
                    "lens_margin": d["lens_margin"],
                    "AccuracyBoost": d["AccuracyBoost"],
                    "lSampleBoost": d["lSampleBoost"],
-                   "lAccuracyBoost": d["lAccuracyBoost"]})
+                   "lAccuracyBoost": d["lAccuracyBoost"],
+                   "DoLateRadTruncation": d["DoLateRadTruncation"]},)
 pars = camb.set_params(**camb_cosmo)
 results = camb.get_results(pars)
-
 
 powers = results.get_cmb_power_spectra(pars, CMB_unit="muK")
 dls = {}
@@ -198,7 +202,7 @@ for exp in ["LAT", "Planck"]:
             ax[0].set_yscale("symlog")
             ax[0].set_ylim(1, 10**5)
             ax[0].plot(ell, dls["tt"], color = "black")
-            ax[0].plot(ell, n_ell_t[name] * fac / (bl[exp + f1] * bl[exp + f2]),
+            ax[0].plot(ell, n_ell_t[name] * fac / (bl[exp + f1][:ell_max-2] * bl[exp + f2][:ell_max-2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
             ax[0].set_xlabel(r"$\ell$", fontsize=22)
@@ -206,7 +210,7 @@ for exp in ["LAT", "Planck"]:
             ax[1].set_yscale("symlog")
             ax[1].set_ylim(5e-2, 1e3)
             ax[1].plot(ell, dls["ee"], color = "black")
-            ax[1].plot(ell, n_ell_pol[name] * fac / (bl[exp + f1] * bl[exp + f2]),
+            ax[1].plot(ell, n_ell_pol[name] * fac / (bl[exp + f1][:ell_max-2] * bl[exp + f2][:ell_max-2]),
                      linestyle=linestyle[exp],
                      label="%s" % (name))
             ax[1].set_xlabel(r"$\ell$", fontsize=22)
@@ -227,7 +231,9 @@ fg_components = d["fg_components"]
 fg_model =  {"normalisation":  fg_norm, "components": fg_components}
 fg_params =  d["fg_params"]
 nuis_params = d["nuisance_params"]
-band_integration = d["band_integration"]
+top_hat_band = d["top_hat_band"]
+bands = d["bands"]
+systematics_template = d["systematics_template"]
 
 all_freqs = np.array([int(freq) for exp in experiments for freq in d["freqs_%s" % exp]])
 nfreqs = len(all_freqs)
@@ -235,17 +241,29 @@ nfreqs = len(all_freqs)
 from mflike import theoryforge_MFLike as th_mflike
 
 ThFo = th_mflike.TheoryForge_MFLike()
-ThFo.freqs = all_freqs
-ThFo.bandint_nsteps = band_integration["nsteps"]
-ThFo.bandint_width = band_integration["bandwidth"]
-ThFo.bandint_external_bandpass = band_integration["external_bandpass"]
+
+ThFo.experiments = [f"{exp}_{fr}" for exp in experiments for fr in d["freqs_%s" % exp]]
+ThFo.use_top_hat_band = bool(top_hat_band)
+if ThFo.use_top_hat_band:
+    ThFo.bandint_nsteps = top_hat_band["nsteps"]
+    ThFo.bandint_width = top_hat_band["bandwidth"]
+    if not hasattr(ThFo.bandint_width, "__len__"):
+        ThFo.bandint_width = np.full_like(
+                        ThFo.experiments, ThFo.bandint_width, dtype=float
+                    )
+ThFo.use_systematics_template = bool(systematics_template)
+if ThFo.use_systematics_template:
+    ThFo.systematics_template = systematics_template
+ThFo.bands = bands
 
 ThFo.foregrounds = fg_model
 ThFo._init_foreground_model()
 
-#perform band integration if needed (only if bandpass not external)
-ThFo.bandint_freqs = ThFo._bandpass_construction(**nuis_params)
+#perform band integration if needed (only if bandpass is not a delta function)
 
+ThFo._bandpass_construction(**nuis_params)
+
+#fg components computed from ell_min to ell_max
 fg_dict = ThFo._get_foreground_model(ell = ell, **fg_params)
 
 
@@ -258,23 +276,23 @@ for comp in ["tSZ", "cibc", "tSZxCIB"]:
 for mode in ["tt", "te", "ee"]:
     fig, axes = plt.subplots(nfreqs, nfreqs, sharex=True, sharey=True, figsize=(10, 10))
     from itertools import product
-    for i, cross in enumerate(product(all_freqs, all_freqs)):
+    for i, cross in enumerate(product(ThFo.experiments, ThFo.experiments)):
         f0, f1 = cross
-        f0, f1 = int(f0), int(f1)
+       # f0, f1 = int(f0), int(f1)
         idx = (i%nfreqs, i//nfreqs)
         ax = axes[idx]
         if idx in zip(*np.triu_indices(nfreqs, k=1)) and mode != "te":
             fig.delaxes(ax)
             continue
         for compo in fg_model["components"][mode]:
-            ax.plot(l, fg_dict[mode, compo, f0, f1])
-            np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, compo, f0, f1),
-                       np.transpose([l,fg_dict[mode, compo, f0, f1]]))
+            ax.plot(l[:ell_max-2], fg_dict[mode, compo, f0, f1])
+            np.savetxt("%s/%s_%s_%sx%s.dat" % (cosmo_fg_dir, mode, compo, f0, f1),
+                       np.transpose([l[:ell_max-2],fg_dict[mode, compo, f0, f1]]))
 
-        ax.plot(l, fg_dict[mode, "all", f0, f1], color="k")
-        ax.plot(l, dls[mode], color="gray")
-        np.savetxt("%s/%s_%s_%dx%d.dat" % (cosmo_fg_dir, mode, "all", f0, f1),
-                   np.transpose([l,fg_dict[mode, "all", f0, f1]]))
+        ax.plot(l[:ell_max-2], fg_dict[mode, "all", f0, f1], color="k")
+        ax.plot(l[:ell_max-2], dls[mode], color="gray")
+        np.savetxt("%s/%s_%s_%sx%s.dat" % (cosmo_fg_dir, mode, "all", f0, f1),
+                   np.transpose([l[:ell_max-2],fg_dict[mode, "all", f0, f1]]))
 
         ax.legend([], title="{}x{} GHz".format(*cross))
         if mode == "tt":

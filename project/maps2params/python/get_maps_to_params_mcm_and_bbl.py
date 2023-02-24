@@ -26,7 +26,7 @@ lmax_mcm = d["lmax_mcm"]
 # The first step of this code is to generate the window functions for the different frequency channels
 # of the different experiments.
 
-print("Geneating window functions")
+print("Generating window functions")
 
 for exp in experiments:
     freqs = d["freqs_%s" % exp]
@@ -85,6 +85,11 @@ for id_exp1, exp1 in enumerate(experiments):
         l, bl1 = np.loadtxt("sim_data/beams/beam_%s_%s.dat" % (exp1,freq1), unpack=True)
         window1 = so_map.read_map("%s/window_%s_%s.fits" % (window_dir, exp1, freq1))
         
+        #the mcm_and_bbl_spin0spin2 function needs bl1, bl2 starting from ell = 0, 
+        #while they have been generated from ell = 2
+        Bl1 = np.zeros(lmax+2)
+        Bl1[2:] = bl1
+
         for id_exp2, exp2 in enumerate(experiments):
             freqs2 = d["freqs_%s" % exp2]
             
@@ -97,11 +102,14 @@ for id_exp1, exp1 in enumerate(experiments):
 
                 l, bl2 = np.loadtxt("sim_data/beams/beam_%s_%s.dat" % (exp2, freq2), unpack=True)
                 window2 = so_map.read_map("%s/window_%s_%s.fits" % (window_dir,exp2,freq2))
+ 
+                Bl2 = np.zeros(lmax+2)
+                Bl2[2:] = bl2                
                 
                 mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(window1, window1),
                                                             win2=(window2, window2),
-                                                            bl1=(bl1, bl1),
-                                                            bl2=(bl2, bl2),
+                                                            bl1=(Bl1, Bl1),
+                                                            bl2=(Bl2, Bl2),
                                                             binning_file=d["binning_file"],
                                                             niter=d["niter"],
                                                             lmax=d["lmax"],

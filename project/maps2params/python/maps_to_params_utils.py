@@ -231,11 +231,18 @@ def get_effective_noise(nl_file_t, bl1, bl2, lmax,nl_file_pol=None, lcut=0):
           leakage
     """
 
-    bl1 = bl1[lcut:lmax]
-    bl2 = bl2[lcut:lmax]
+    if lcut >= 2:
+       lcut_p2 = lcut
+       lcut_m2 = lcut-2
+    else:
+       lcut_p2 = lcut+2
+       lcut_m2 = lcut
+
+    bl1 = bl1[lcut_m2:lmax-2]
+    bl2 = bl2[lcut_m2:lmax-2]
     if nl_file_pol == None:
         l, noise = np.loadtxt(nl_file_t, unpack=True)
-        noise[lcut:lmax] /= (bl1 * bl2)
+        noise[lcut_m2:lmax-2] /= (bl1 * bl2)
     else:
         noise = {}
         spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -245,9 +252,9 @@ def get_effective_noise(nl_file_t, bl1, bl2, lmax,nl_file_pol=None, lcut=0):
         l, noise_t = np.loadtxt(nl_file_t,unpack=True)
         l, noise_pol = np.loadtxt(nl_file_pol,unpack=True)
 
-        noise["TT"][lcut:lmax] = noise_t[lcut:lmax] / (bl1 * bl2)
-        noise["EE"][lcut:lmax] = noise_pol[lcut:lmax] / (bl1 * bl2)
-        noise["BB"][lcut:lmax] = noise_pol[lcut:lmax] / (bl1 * bl2)
+        noise["TT"][lcut_p2:lmax] = noise_t[lcut_m2:lmax-2] / (bl1 * bl2)
+        noise["EE"][lcut_p2:lmax] = noise_pol[lcut_m2:lmax-2] / (bl1 * bl2)
+        noise["BB"][lcut_p2:lmax] = noise_pol[lcut_m2:lmax-2] / (bl1 * bl2)
 
     return noise
 
@@ -261,12 +268,13 @@ def calibrate_alm(alms, freq, **nuis_params):
     """
     Calibrates the alms for each frequency of the LAT by the appropriate calibration factor:
     i.e.: a_lm^X_nu1  -> c^X_nu1 a_lm^X_nu1, with X=T,E
-    c^X_nu1 = nuis_params["calG_all"]*nuis_params["cal_nu1"]*nuis_params["calX_nu1"]
-    where nuis_params is the dictionary of nuisance parameters, nuis_params["calG_all"] is a calibration factor common to all frequencies and nuis_params["cal_nu1"] is the calibration factor per channel.
+    c^X_nu1 = nuis_params["calG_all"]*nuis_params["calX_nu1"]
+    where nuis_params is the dictionary of nuisance parameters and nuis_params["calG_all"] is a calibration factor
+    common to all frequencies.
     """
     cal_alms = alms.copy()
-    cal_alms[0] *= nuis_params["calG_all"]*nuis_params[f"cal_{freq}"]*nuis_params[f"calT_{freq}"]
-    cal_alms[1] *= nuis_params["calG_all"]*nuis_params[f"cal_{freq}"]*nuis_params[f"calE_{freq}"]
+    cal_alms[0] *= 1./nuis_params["calG_all"]/nuis_params[f"calT_{freq}"]/nuis_params[f"cal_{freq}"]
+    cal_alms[1] *= 1./nuis_params["calG_all"]/nuis_params[f"calE_{freq}"]/nuis_params[f"cal_{freq}"]
     
     return cal_alms
 

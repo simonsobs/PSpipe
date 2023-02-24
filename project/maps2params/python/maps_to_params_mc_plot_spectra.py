@@ -38,7 +38,7 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 nsims = iStop-iStart
 ns = {exp: d["nsplits_%s"%exp] for exp in experiments}
 
-
+#defined from l = 2
 lth, Dlth = pspy_utils.ps_lensed_theory_to_dict(clfile, output_type=type, lmax=lmax, start_at_zero=False)
 
 theory = {}
@@ -61,6 +61,7 @@ for id_exp1, exp1 in enumerate(experiments):
                     nl_file_t = "sim_data/noise_ps/noise_t_%s_%sx%s_%s.dat" % (exp1, f1, exp2, f2)
                     nl_file_pol = "sim_data/noise_ps/noise_pol_%s_%sx%s_%s.dat" % (exp1, f1, exp2, f2)
 
+                    #generated from l = 0
                     nlth = maps_to_params_utils.get_effective_noise(nl_file_t,
                                                                     bl1,
                                                                     bl2,
@@ -79,22 +80,24 @@ for id_exp1, exp1 in enumerate(experiments):
                 for kind in ["cross", "noise", "auto"]:
                     ps_th = {}
                     for spec in spectra:
+                        #ps has to start from l = 0, theory and fg computed from l = 2
+                        ps_th[spec] = np.zeros(lmax)
                         ps=Dlth[spec].copy()
                         if spec.lower() in fg_components:
                             if include_fg:
                                 flth_all = 0
                                 for foreground in fg_components[spec.lower()]:
-                                    l, flth = np.loadtxt("%s/%s_%s_%sx%s.dat" % (fg_dir,spec.lower(), foreground, f1, f2)
+                                    l, flth = np.loadtxt("%s/%s_%s_%sx%s.dat" % (fg_dir,spec.lower(), foreground, f"{exp1}_{f1}", f"{exp2}_{f2}")
                                                         ,unpack=True)
                                     flth_all += flth[:lmax]
                                 ps = Dlth[spec] + flth_all
 
                         if kind == "cross":
-                            ps_th[spec] = ps
+                            ps_th[spec][2:] = ps
                         elif kind == "noise":
-                            ps_th[spec] = nlth[spec] * lth**2 / (2 * np.pi)
+                            ps_th[spec][2:] = nlth[spec][2:] * lth**2 / (2 * np.pi)
                         elif kind == "auto":
-                            ps_th[spec] = ps + nlth[spec] * lth**2 / (2 * np.pi) * ns[exp1]
+                            ps_th[spec][2:] = ps + nlth[spec][2:] * lth**2 / (2 * np.pi) * ns[exp1]
 
                     theory[exp1, f1, exp2, f2, kind] = ps_th
                     bin_theory[exp1, f1, exp2, f2, kind] = so_mcm.apply_Bbl(Bbl, ps_th, spectra=spectra)
@@ -142,7 +145,7 @@ for kind in ["cross", "noise", "auto"]:
                         mean_dict[kind, spec, exp1, f1, exp2, f2] = mean
                         std_dict[kind, spec, exp1, f1, exp2, f2] = std
 
-                        ps_th = theory[exp1, f1, exp2, f2, kind][spec]
+                        ps_th = theory[exp1, f1, exp2, f2, kind][spec][2:]
                         ps_th_binned = bin_theory[exp1, f1, exp2, f2, kind][spec]
 
                         plt.figure(figsize=(8, 7))
@@ -215,7 +218,7 @@ for fig in ["log", "linear"]:
 
                         mean = mean_dict["cross", spec, exp1, f1, exp2, f2]
                         std = std_dict["cross", spec, exp1, f1, exp2, f2]
-                        ps_th = theory[exp1, f1, exp2, f2, "cross"][spec]
+                        ps_th = theory[exp1, f1, exp2, f2, "cross"][spec][2:]
 
                         if (fig == "linear") and (spec == "TT"):
                             plt.errorbar(lb, mean * lb**2, std * lb**2, fmt='.', color=c, label="%s%s x %s%s" % (exp1, f1, exp2, f2), alpha=0.6)

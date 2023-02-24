@@ -33,6 +33,7 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 nbins = len(bin_hi)
 
+#computed from l = 2
 lth, ps_th = pspy_utils.ps_lensed_theory_to_dict(clfile,output_type=type,lmax=lmax,start_at_zero=False)
 
 ps_all, nl_all, ns = {}, {}, {}
@@ -53,33 +54,34 @@ for id_exp1, exp1 in enumerate(experiments):
 
                 l, bl1 = np.loadtxt("sim_data/beams/beam_%s_%s.dat" % (exp1, f1), unpack=True)
                 l, bl2 = np.loadtxt("sim_data/beams/beam_%s_%s.dat" % (exp2, f2), unpack=True)
-                bl1, bl2 = bl1[:lmax], bl2[:lmax]
+                bl1, bl2 = bl1[:lmax-2], bl2[:lmax-2]
 
                 for spec in ["TT", "TE", "ET", "EE"]:
-                    ps_all["%s_%s" % (exp1,f1), "%s_%s" % (exp2,f2), spec] = bl1 * bl2 * ps_th[spec]
+                    ps_all["%s_%s" % (exp1,f1), "%s_%s" % (exp2,f2), spec] = np.zeros(lmax)
+                    ps_all["%s_%s" % (exp1,f1), "%s_%s" % (exp2,f2), spec][2:] = bl1 * bl2 * ps_th[spec]
 
                     if include_fg:
                         flth_all = 0
                         if spec != "ET":
 
                             for foreground in fg_components[spec.lower()]:
-                                l, flth = np.loadtxt("%s/%s_%s_%sx%s.dat" % (fg_dir, spec.lower(), foreground, f1, f2), unpack=True)
-                                flth_all += flth[:lmax]
-                            ps_all["%s_%s" % (exp1, f1), "%s_%s" %(exp2, f2), spec] = bl1 * bl2 * (ps_th[spec] + flth_all)
+                                l, flth = np.loadtxt("%s/%s_%s_%sx%s.dat" % (fg_dir, spec.lower(), foreground, f"{exp1}_{f1}", f"{exp2}_{f2}"), unpack=True)
+                                flth_all += flth[:lmax-2]
+                            ps_all["%s_%s" % (exp1, f1), "%s_%s" %(exp2, f2), spec][2:] = bl1 * bl2 * (ps_th[spec] + flth_all)
 
                         else:
 
                             for foreground in fg_components["te"]:
-                                l, flth = np.loadtxt("%s/%s_%s_%sx%s.dat" % (fg_dir, "te", foreground, f2, f1), unpack=True)
-                                flth_all += flth[:lmax]
-                            ps_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec] = bl1 * bl2 * (ps_th[spec] + flth_all)
+                                l, flth = np.loadtxt("%s/%s_%s_%sx%s.dat" % (fg_dir, "te", foreground, f"{exp1}_{f1}", f"{exp2}_{f2}"), unpack=True)
+                                flth_all += flth[:lmax-2]
+                            ps_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec][2:] = bl1 * bl2 * (ps_th[spec] + flth_all)
 
                     if exp1 == exp2:
-
+                        #computed from l = 2
                         l, nl_t = np.loadtxt("sim_data/noise_ps/noise_t_%s_%sx%s_%s.dat" % (exp1, f1, exp2, f2), unpack=True)
                         l, nl_pol = np.loadtxt("sim_data/noise_ps/noise_pol_%s_%sx%s_%s.dat" %(exp1, f1, exp2, f2), unpack=True)
-
-                        l, nl_t, nl_pol = l[:lmax], nl_t[:lmax], nl_pol[:lmax]
+                        
+                        l, nl_t, nl_pol = l[:lmax-2], nl_t[:lmax-2], nl_pol[:lmax-2]
                         nl_t[:lcut], nl_pol[:lcut] = 0, 0
 
                         if type == "Dl":
@@ -87,12 +89,13 @@ for id_exp1, exp1 in enumerate(experiments):
                         else:
                             fac = 1
 
+                        nl_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec] = np.zeros(lmax)
                         if spec == "TT":
-                            nl_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec] = nl_t * fac * ns[exp1]
+                            nl_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec][2:] = nl_t * fac * ns[exp1]
                         if spec == "EE":
-                            nl_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec] = nl_pol * fac * ns[exp1]
+                            nl_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec][2:] = nl_pol * fac * ns[exp1]
                         if spec == "TE" or spec == "ET":
-                            nl_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec] = nl_t * 0
+                            nl_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec][2:] = nl_t * 0
                     else:
                         nl_all["%s_%s" % (exp1, f1), "%s_%s" % (exp2, f2), spec] = np.zeros(lmax)
 

@@ -7,7 +7,6 @@ freqs_LAT = ["93"]
 
 #noise properties of LAT
 f_sky_LAT = 0.4
-lAccuracyBoos_ = 1.0
 sensitivity_mode = 1
 
 # cmb and fg power spectra specifications

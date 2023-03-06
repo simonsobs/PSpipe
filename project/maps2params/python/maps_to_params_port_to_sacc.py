@@ -142,32 +142,32 @@ for isim in range(iStart,iStop):
         freqs = d["freqs_%s" % exp]
         for f in freqs:
             # dummies file: not in used
-            data_bandpasses = {"nu":[f], "b_nu":[1.0]}
+            data_bandpasses = {"nu":[float(f)], "b_nu":[1.0]}
             data_beams = {"l":np.arange(10000), "bl":np.ones(10000)}
 
             spec_sacc.add_tracer("NuMap", "%s_%s_s0" % (exp, f),
                                  quantity="cmb_temperature", spin=0,
                                  nu=data_bandpasses["nu"],
-                                 bandpass=data_bandpasses["nu"],
+                                 bandpass=data_bandpasses["b_nu"],
                                  ell=data_beams["l"],
                                  beam=data_beams["bl"])
             spec_sacc.add_tracer("NuMap", "%s_%s_s2" % (exp, f),
                                  quantity="cmb_polarization", spin=2,
                                  nu=data_bandpasses["nu"],
-                                 bandpass=data_bandpasses["nu"],
+                                 bandpass=data_bandpasses["b_nu"],
                                  ell=data_beams["l"],
                                  beam=data_beams["bl"])
             if isim == 0:
                 cov_sacc.add_tracer("NuMap", "%s_%s_s0" % (exp, f),
                                     quantity="cmb_temperature", spin=0,
                                     nu=data_bandpasses["nu"],
-                                    bandpass=data_bandpasses["nu"],
+                                    bandpass=data_bandpasses["b_nu"],
                                     ell=data_beams["l"],
                                     beam=data_beams["bl"])
                 cov_sacc.add_tracer("NuMap", "%s_%s_s2" % (exp, f),
                                     quantity="cmb_polarization", spin=2,
                                     nu=data_bandpasses["nu"],
-                                    bandpass=data_bandpasses["nu"],
+                                    bandpass=data_bandpasses["b_nu"],
                                     ell=data_beams["l"],
                                     beam=data_beams["bl"])
 

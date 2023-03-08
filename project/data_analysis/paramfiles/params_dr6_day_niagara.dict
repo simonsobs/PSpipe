@@ -1,0 +1,446 @@
+# surveys = ["dr6"]
+surveys = ["night", "day_wide_north", "day_wide_south", "day_deep_north", "day_deep_south"]
+
+# (these arrays are valid for all "surveys")
+arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+
+data_dir = '/home/r/rbond/estorer/project/actpol/pspipe_work/data/'
+map_dir = '/gpfs/fs0/project/r/rbond/sigurdkn/actpol/maps/dr6v3_20211031/release_bestpass/'
+window_dir = 'windows/'
+
+npass_dr6 = 4
+
+deconvolve_pixwin = True
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
+niter = 0
+remove_mean = False
+# (binned_mcm should be True for smaller regions, and False for the full DR6 patch, if you measure modes that are at least 180 deg)
+binned_mcm = True
+lmax = 7930
+type = 'Dl'
+write_splits_spectra = True
+multistep_path = data_dir
+use_toeplitz_mcm  = False
+use_toeplitz_cov  = True
+
+
+## WINDOW PARAMETERS (DEFAULT) ##
+
+# (these are the same for all surveys and arrays)
+ps_mask = data_dir + "masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits"
+gal_mask = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
+
+apod_pts_source_degree = 0.3
+apod_survey_degree = 2
+skip_from_edges_degree = 1
+n_med_ivar = 3
+
+
+## WINDOW PARAMETERS (MINE) ##
+
+apply_cross_link_threshold = False
+# cross_link_threshold = 0.97
+
+apply_dec_cut = False
+# skip_dec_high = -26.
+# skip_dec_low = -43.
+
+fill_holes_in_windows = True
+
+fill_holes_in_maps = False
+filled_map_dir = 'maps_filled/'
+
+output_hole_coords = False
+output_hole_dir = 'hole_coords/'
+
+apply_ivar_smoothing = True
+# try a few different smoothing standard deviation values (at some point)
+# keep in mind pixels are 0.5 arcmin
+ivar_smoothing_arcmin = 2.
+
+# (consider using sqrt(ivar) as a weight, as a compromise between uniform and inverse-variance weighting)
+take_sqrt_ivar = False
+
+
+# KSPACE FILTER
+
+apply_kspace_filter  = True
+kspace_tf_path  = "analytical"
+k_filter_dr6 = {"type":"binary_cross","vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
+
+
+## MAP-MAKER TF ##
+
+deconvolve_map_maker_tf_dr6 = False
+
+m_m_tf_dr6_pa4_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+
+deconvolve_map_maker_tf_day_wide_north = False
+
+m_m_tf_day_wide_north_pa4_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_north_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_north_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_north_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_north_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_north_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+
+deconvolve_map_maker_tf_day_wide_south = False
+
+m_m_tf_day_wide_south_pa4_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_south_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_south_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_south_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_south_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_wide_south_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+
+deconvolve_map_maker_tf_day_deep_north = False
+
+m_m_tf_day_deep_north_pa4_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_north_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_north_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_north_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_north_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_north_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+
+deconvolve_map_maker_tf_day_deep_south = False
+
+m_m_tf_day_deep_south_pa4_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_south_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_south_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_south_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_south_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
+m_m_tf_day_deep_south_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
+
+
+
+## MAPS ##
+
+src_free_maps_dr6 = True
+
+maps_dr6_pa4_f150 = [map_dir + 'cmb_night_pa4_f150_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_dr6_pa4_f220 = [map_dir + 'cmb_night_pa4_f220_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_dr6_pa5_f090 = [map_dir + 'cmb_night_pa5_f090_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_dr6_pa5_f150 = [map_dir + 'cmb_night_pa5_f150_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_dr6_pa6_f090 = [map_dir + 'cmb_night_pa6_f090_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_dr6_pa6_f150 = [map_dir + 'cmb_night_pa6_f150_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+
+
+src_free_maps_day_wide_north = True
+
+maps_day_wide_north_pa4_f150 = [map_dir + 'cmb_day_wide_pa4_f150_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_north_pa4_f220 = [map_dir + 'cmb_day_wide_pa4_f220_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_north_pa5_f090 = [map_dir + 'cmb_day_wide_pa5_f090_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_north_pa5_f150 = [map_dir + 'cmb_day_wide_pa5_f150_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_north_pa6_f090 = [map_dir + 'cmb_day_wide_pa6_f090_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_north_pa6_f150 = [map_dir + 'cmb_day_wide_pa6_f150_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+
+src_free_maps_day_wide_south = True
+
+maps_day_wide_south_pa4_f150 = [map_dir + 'cmb_day_wide_pa4_f150_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_south_pa4_f220 = [map_dir + 'cmb_day_wide_pa4_f220_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_south_pa5_f090 = [map_dir + 'cmb_day_wide_pa5_f090_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_south_pa5_f150 = [map_dir + 'cmb_day_wide_pa5_f150_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_south_pa6_f090 = [map_dir + 'cmb_day_wide_pa6_f090_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+maps_day_wide_south_pa6_f150 = [map_dir + 'cmb_day_wide_pa6_f150_4way_set%d_map_srcfree.fits' % i for i in range(4)]
+
+
+src_free_maps_day_deep_north = True
+
+maps_day_deep_north_pa4_f150 = [map_dir + 'cmb_day_deep_pa4_f150_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_north_pa4_f220 = [map_dir + 'cmb_day_deep_pa4_f220_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_north_pa5_f090 = [map_dir + 'cmb_day_deep_pa5_f090_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_north_pa5_f150 = [map_dir + 'cmb_day_deep_pa5_f150_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_north_pa6_f090 = [map_dir + 'cmb_day_deep_pa6_f090_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_north_pa6_f150 = [map_dir + 'cmb_day_deep_pa6_f150_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+
+src_free_maps_day_deep_south = True
+
+maps_day_deep_south_pa4_f150 = [map_dir + 'cmb_day_deep_pa4_f150_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_south_pa4_f220 = [map_dir + 'cmb_day_deep_pa4_f220_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_south_pa5_f090 = [map_dir + 'cmb_day_deep_pa5_f090_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_south_pa5_f150 = [map_dir + 'cmb_day_deep_pa5_f150_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_south_pa6_f090 = [map_dir + 'cmb_day_deep_pa6_f090_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+maps_day_deep_south_pa6_f150 = [map_dir + 'cmb_day_deep_pa6_f150_8way_set%d_map_srcfree.fits' % i for i in range(8)]
+
+
+
+## CALIBRATION ##
+
+# (for now, using the dr6 calibration values for everything)
+
+cal_dr6_pa4_f150 = 0.98539
+cal_dr6_pa4_f220 = 1.06922
+cal_dr6_pa5_f090 = 0.98334
+cal_dr6_pa5_f150 = 1.00053
+cal_dr6_pa6_f090 = 0.98115
+cal_dr6_pa6_f150 = 0.98381
+
+pol_eff_dr6_pa4_f150 = 0.9584
+pol_eff_dr6_pa4_f220 = 1.0
+pol_eff_dr6_pa5_f090 = 0.9646
+pol_eff_dr6_pa5_f150 = 0.9488
+pol_eff_dr6_pa6_f090 = 0.9789
+pol_eff_dr6_pa6_f150 = 0.9656
+
+nu_eff_dr6_pa4_f150 = 150
+nu_eff_dr6_pa4_f220 = 220
+nu_eff_dr6_pa5_f090 = 90
+nu_eff_dr6_pa5_f150 = 150
+nu_eff_dr6_pa6_f090 = 90
+nu_eff_dr6_pa6_f150 = 150
+
+
+
+cal_day_wide_north_pa4_f150 = 0.98539
+cal_day_wide_north_pa4_f220 = 1.06922
+cal_day_wide_north_pa5_f090 = 0.98334
+cal_day_wide_north_pa5_f150 = 1.00053
+cal_day_wide_north_pa6_f090 = 0.98115
+cal_day_wide_north_pa6_f150 = 0.98381
+
+pol_eff_day_wide_north_pa4_f150 = 0.9584
+pol_eff_day_wide_north_pa4_f220 = 1.0
+pol_eff_day_wide_north_pa5_f090 = 0.9646
+pol_eff_day_wide_north_pa5_f150 = 0.9488
+pol_eff_day_wide_north_pa6_f090 = 0.9789
+pol_eff_day_wide_north_pa6_f150 = 0.9656
+
+nu_eff_day_wide_north_pa4_f150 = 150
+nu_eff_day_wide_north_pa4_f220 = 220
+nu_eff_day_wide_north_pa5_f090 = 90
+nu_eff_day_wide_north_pa5_f150 = 150
+nu_eff_day_wide_north_pa6_f090 = 90
+nu_eff_day_wide_north_pa6_f150 = 150
+
+
+cal_day_wide_south_pa4_f150 = 0.98539
+cal_day_wide_south_pa4_f220 = 1.06922
+cal_day_wide_south_pa5_f090 = 0.98334
+cal_day_wide_south_pa5_f150 = 1.00053
+cal_day_wide_south_pa6_f090 = 0.98115
+cal_day_wide_south_pa6_f150 = 0.98381
+
+pol_eff_day_wide_south_pa4_f150 = 0.9584
+pol_eff_day_wide_south_pa4_f220 = 1.0
+pol_eff_day_wide_south_pa5_f090 = 0.9646
+pol_eff_day_wide_south_pa5_f150 = 0.9488
+pol_eff_day_wide_south_pa6_f090 = 0.9789
+pol_eff_day_wide_south_pa6_f150 = 0.9656
+
+nu_eff_day_wide_south_pa4_f150 = 150
+nu_eff_day_wide_south_pa4_f220 = 220
+nu_eff_day_wide_south_pa5_f090 = 90
+nu_eff_day_wide_south_pa5_f150 = 150
+nu_eff_day_wide_south_pa6_f090 = 90
+nu_eff_day_wide_south_pa6_f150 = 150
+
+
+
+cal_day_deep_north_pa4_f150 = 0.98539
+cal_day_deep_north_pa4_f220 = 1.06922
+cal_day_deep_north_pa5_f090 = 0.98334
+cal_day_deep_north_pa5_f150 = 1.00053
+cal_day_deep_north_pa6_f090 = 0.98115
+cal_day_deep_north_pa6_f150 = 0.98381
+
+pol_eff_day_deep_north_pa4_f150 = 0.9584
+pol_eff_day_deep_north_pa4_f220 = 1.0
+pol_eff_day_deep_north_pa5_f090 = 0.9646
+pol_eff_day_deep_north_pa5_f150 = 0.9488
+pol_eff_day_deep_north_pa6_f090 = 0.9789
+pol_eff_day_deep_north_pa6_f150 = 0.9656
+
+nu_eff_day_deep_north_pa4_f150 = 150
+nu_eff_day_deep_north_pa4_f220 = 220
+nu_eff_day_deep_north_pa5_f090 = 90
+nu_eff_day_deep_north_pa5_f150 = 150
+nu_eff_day_deep_north_pa6_f090 = 90
+nu_eff_day_deep_north_pa6_f150 = 150
+
+
+cal_day_deep_south_pa4_f150 = 0.98539
+cal_day_deep_south_pa4_f220 = 1.06922
+cal_day_deep_south_pa5_f090 = 0.98334
+cal_day_deep_south_pa5_f150 = 1.00053
+cal_day_deep_south_pa6_f090 = 0.98115
+cal_day_deep_south_pa6_f150 = 0.98381
+
+pol_eff_day_deep_south_pa4_f150 = 0.9584
+pol_eff_day_deep_south_pa4_f220 = 1.0
+pol_eff_day_deep_south_pa5_f090 = 0.9646
+pol_eff_day_deep_south_pa5_f150 = 0.9488
+pol_eff_day_deep_south_pa6_f090 = 0.9789
+pol_eff_day_deep_south_pa6_f150 = 0.9656
+
+nu_eff_day_deep_south_pa4_f150 = 150
+nu_eff_day_deep_south_pa4_f220 = 220
+nu_eff_day_deep_south_pa5_f090 = 90
+nu_eff_day_deep_south_pa5_f150 = 150
+nu_eff_day_deep_south_pa6_f090 = 90
+nu_eff_day_deep_south_pa6_f150 = 150
+
+
+
+## BEAMS ## 
+# these are no longer the most up-to-date
+
+beam_dr6_pa4_f150 = data_dir + 'beams/20220817_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa4_f220 = data_dir + 'beams/20220817_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f090 = data_dir + 'beams/20220817_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f150 = data_dir + 'beams/20220817_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa6_f090 = data_dir + 'beams/20220817_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa6_f150 = data_dir + 'beams/20220817_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+# (for now, using the dr6 nighttime beams for the daytime as well)
+
+beam_day_wide_north_pa4_f150 = data_dir + 'beams/20220817_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_north_pa4_f220 = data_dir + 'beams/20220817_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_north_pa5_f090 = data_dir + 'beams/20220817_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_north_pa5_f150 = data_dir + 'beams/20220817_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_north_pa6_f090 = data_dir + 'beams/20220817_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_north_pa6_f150 = data_dir + 'beams/20220817_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+beam_day_wide_south_pa4_f150 = data_dir + 'beams/20220817_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_south_pa4_f220 = data_dir + 'beams/20220817_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_south_pa5_f090 = data_dir + 'beams/20220817_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_south_pa5_f150 = data_dir + 'beams/20220817_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_south_pa6_f090 = data_dir + 'beams/20220817_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_day_wide_south_pa6_f150 = data_dir + 'beams/20220817_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+beam_day_deep_north_pa4_f150 = data_dir + 'beams/20220817_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_north_pa4_f220 = data_dir + 'beams/20220817_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_north_pa5_f090 = data_dir + 'beams/20220817_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_north_pa5_f150 = data_dir + 'beams/20220817_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_north_pa6_f090 = data_dir + 'beams/20220817_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_north_pa6_f150 = data_dir + 'beams/20220817_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+beam_day_deep_south_pa4_f150 = data_dir + 'beams/20220817_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_south_pa4_f220 = data_dir + 'beams/20220817_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_south_pa5_f090 = data_dir + 'beams/20220817_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_south_pa5_f150 = data_dir + 'beams/20220817_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_south_pa6_f090 = data_dir + 'beams/20220817_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_day_deep_south_pa6_f150 = data_dir + 'beams/20220817_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+
+
+## WINDOWS ## 
+
+
+# day wide north #
+
+window_T_day_wide_north_pa4_f150 =  window_dir + "window_day_wide_north_pa4_f150.fits"
+window_pol_day_wide_north_pa4_f150 =  window_dir + "window_day_wide_north_pa4_f150.fits"
+
+window_T_day_wide_north_pa4_f220 =  window_dir + "window_day_wide_north_pa4_f220.fits"
+window_pol_day_wide_north_pa4_f220 =  window_dir + "window_day_wide_north_pa4_f220.fits"
+
+window_T_day_wide_north_pa5_f090 =  window_dir + "window_day_wide_north_pa5_f090.fits"
+window_pol_day_wide_north_pa5_f090 =  window_dir + "window_day_wide_north_pa5_f090.fits"
+
+window_T_day_wide_north_pa5_f150 =  window_dir + "window_day_wide_north_pa5_f150.fits"
+window_pol_day_wide_north_pa5_f150 =  window_dir + "window_day_wide_north_pa5_f150.fits"
+
+window_T_day_wide_north_pa6_f090 =  window_dir + "window_day_wide_north_pa6_f090.fits"
+window_pol_day_wide_north_pa6_f090 =  window_dir + "window_day_wide_north_pa6_f090.fits"
+
+window_T_day_wide_north_pa6_f150 =  window_dir + "window_day_wide_north_pa6_f150.fits"
+window_pol_day_wide_north_pa6_f150 =  window_dir + "window_day_wide_north_pa6_f150.fits"
+
+
+# day wide south #
+
+window_T_day_wide_south_pa4_f150 =  window_dir + "window_day_wide_south_pa4_f150.fits"
+window_pol_day_wide_south_pa4_f150 =  window_dir + "window_day_wide_south_pa4_f150.fits"
+
+window_T_day_wide_south_pa4_f220 =  window_dir + "window_day_wide_south_pa4_f220.fits"
+window_pol_day_wide_south_pa4_f220 =  window_dir + "window_day_wide_north_pa4_f220.fits"
+
+window_T_day_wide_south_pa5_f090 =  window_dir + "window_day_wide_south_pa5_f090.fits"
+window_pol_day_wide_south_pa5_f090 =  window_dir + "window_day_wide_south_pa5_f090.fits"
+
+window_T_day_wide_south_pa5_f150 =  window_dir + "window_day_wide_south_pa5_f150.fits"
+window_pol_day_wide_south_pa5_f150 =  window_dir + "window_day_wide_south_pa5_f150.fits"
+
+window_T_day_wide_south_pa6_f090 =  window_dir + "window_day_wide_south_pa6_f090.fits"
+window_pol_day_wide_south_pa6_f090 =  window_dir + "window_day_wide_nsouth_pa6_f090.fits"
+
+window_T_day_wide_south_pa6_f150 =  window_dir + "window_day_wide_south_pa6_f150.fits"
+window_pol_day_wide_south_pa6_f150 =  window_dir + "window_day_wide_south_pa6_f150.fits"
+
+
+# day deep north #
+
+window_T_day_deep_north_pa4_f150 =  window_dir + "window_day_deep_north_pa4_f150.fits"
+window_pol_day_deep_north_pa4_f150 =  window_dir + "window_day_deep_north_pa4_f150.fits"
+
+window_T_day_deep_north_pa4_f220 =  window_dir + "window_day_deep_north_pa4_f220.fits"
+window_pol_day_deep_north_pa4_f220 =  window_dir + "window_day_deep_north_pa4_f220.fits"
+
+window_T_day_deep_north_pa5_f090 =  window_dir + "window_day_deep_north_pa5_f090.fits"
+window_pol_day_deep_north_pa5_f090 =  window_dir + "window_day_deep_north_pa5_f090.fits"
+
+window_T_day_deep_north_pa5_f150 =  window_dir + "window_day_deep_north_pa5_f150.fits"
+window_pol_day_deep_north_pa5_f150 =  window_dir + "window_day_deep_north_pa5_f150.fits"
+
+window_T_day_deep_north_pa6_f090 =  window_dir + "window_day_deep_north_pa6_f090.fits"
+window_pol_day_deep_north_pa6_f090 =  window_dir + "window_day_deep_north_pa6_f090.fits"
+
+window_T_day_deep_north_pa6_f150 =  window_dir + "window_day_deep_north_pa6_f150.fits"
+window_pol_day_deep_north_pa6_f150 =  window_dir + "window_day_deep_north_pa6_f150.fits"
+
+
+# day deep south #
+
+window_T_day_deep_south_pa4_f150 =  window_dir + "window_day_deep_south_pa4_f150.fits"
+window_pol_day_deep_south_pa4_f150 =  window_dir + "window_day_deep_south_pa4_f150.fits"
+
+window_T_day_deep_south_pa4_f220 =  window_dir + "window_day_deep_south_pa4_f220.fits"
+window_pol_day_deep_south_pa4_f220 =  window_dir + "window_day_deep_north_pa4_f220.fits"
+
+window_T_day_deep_south_pa5_f090 =  window_dir + "window_day_deep_south_pa5_f090.fits"
+window_pol_day_deep_south_pa5_f090 =  window_dir + "window_day_deep_south_pa5_f090.fits"
+
+window_T_day_deep_south_pa5_f150 =  window_dir + "window_day_deep_south_pa5_f150.fits"
+window_pol_day_deep_south_pa5_f150 =  window_dir + "window_day_deep_south_pa5_f150.fits"
+
+window_T_day_deep_south_pa6_f090 =  window_dir + "window_day_deep_south_pa6_f090.fits"
+window_pol_day_deep_south_pa6_f090 =  window_dir + "window_day_deep_nsouth_pa6_f090.fits"
+
+window_T_day_deep_south_pa6_f150 =  window_dir + "window_day_deep_south_pa6_f150.fits"
+window_pol_day_deep_south_pa6_f150 =  window_dir + "window_day_deep_south_pa6_f150.fits"
+
+
+## BEST FIT PARAMS (only used for sim generation and covariances computation) ##
+
+cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []} 
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.7,  "xi": 0.1, "T_d": 9.60, "a_gte": 0, "a_gtb": 0, "a_gee": 0,  "a_gbb": 0, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+
+
+## SIM ##
+
+iStart = 0
+iStop = 39
+sim_alm_dtype = "complex64"
+read_noise_alms_from_disk = False
+noise_sim_type = "fdw"
+noise_model_parameters = {"downgrade": 4, "mask_est_name": "dr6v3_20220316_baseline_union_mask", "mask_obs_name": "dr6v3_xlink_union_mask_0.001", "union_sources": "regular_20220316", "notes": "20220619"}
+
+
+## PLOT ##
+
+range_TT = [10, 8000]
+range_TE = [-150, 150]
+range_ET = [-150, 150]
+range_EE = [-20, 50]
+
+planck_data_dir = data_dir + "planck_data/"
+
+
+

@@ -22,7 +22,8 @@ niter = d["niter"]
 apply_kspace_filter = d["apply_kspace_filter"]
 
 
-window_dir = "windows"
+#window_dir = "windows"
+window_dir = d["window_dir"]
 alms_dir = "alms"
 
 pspy_utils.create_directory(alms_dir)
@@ -45,8 +46,12 @@ for task in subtasks:
 
 
     if win_T.pixel == "CAR":
-        binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
-        binary = so_map.read_map(binary_file)
+        # this doesn't work when using the weighted window, window_w:
+        #binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
+        #binary = so_map.read_map(binary_file)
+        
+        # I prefer how it was before:
+        binary = so_map.read_map(f"{window_dir}/binary_{sv}_{ar}.fits")
         
         if apply_kspace_filter:
             ks_f = d[f"k_filter_{sv}"]

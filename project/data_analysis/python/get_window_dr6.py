@@ -94,7 +94,7 @@ for task in subtasks:
             index = map.find("map.fits")
 
         ivar_map = map[:index] + "ivar.fits"
-        print(ivar_map)
+        #print(ivar_map)
         ivar_map = so_map.read_map(ivar_map)
         survey_mask.data[ivar_map.data[:] == 0.0] = 0.0
         ivar_all.data[:] += ivar_map.data[:]

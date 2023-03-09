@@ -128,9 +128,9 @@ for task in subtasks:
     if patch is not None:
         survey_mask.data *= patch.data
     
-    if sv[:-5] == 'north':
+    if sv[-5:] == 'north':
         survey_mask.data[(survey_mask.data.posmap()[0]<(survey_mask.data.posmap()[1]*(-23./18.)+(124.*np.pi/180.))) & (survey_mask.data.posmap()[0]<(survey_mask.data.posmap()[1]*(23./18.)+(103.5*np.pi/180.)))] = 0
-    elif sv[:-5] == 'south':
+    elif sv[-5:] == 'south':
         survey_mask.data[(survey_mask.data.posmap()[0]>(survey_mask.data.posmap()[1]*(-23./18.)+(124.*np.pi/180.))) | (survey_mask.data.posmap()[0]>(survey_mask.data.posmap()[1]*(23./18.)+(103.5*np.pi/180.)))] = 0
         
     # so here we create a binary mask this will only be used in order to skip the edges before applying the kspace filter

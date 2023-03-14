@@ -33,7 +33,9 @@ sim_sacc_dir = "sim_sacc"
 pspy_utils.create_directory(sim_sacc_dir)
 
 
-spec_name_list, nu_eff_list = pspipe_list.get_spec_name_list(d, char="_", return_nueff=True)
+#spec_name_list, nu_eff_list = pspipe_list.get_spec_name_list(d, char="_", return_nueff=True)
+spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+
 spectra_order = ["TT", "TE", "ET", "EE"]
 cov_order = pspipe_list.x_ar_cov_order(spec_name_list, spectra_order=spectra_order)
 
@@ -54,8 +56,16 @@ n_bins = len(bin_hi)
 beams = {wafer: pspy_utils.read_beam_file(d[f"beam_dr6_{wafer}"]) for wafer in wafers}
 
 # Reading passbands : the passband file should be within the dict file
-passbands_file = "passbands/AdvACT_Passbands.h5"
-passbands = external_data.get_passband_dict_dr6(wafers)
+passbands = {}
+do_bandpass_integration = d["do_bandpass_integration"]
+for wafer in wafers:
+    freq_info = d[f"freq_info_dr6_{wafer}"]
+    if do_bandpass_integration:
+        nu_ghz, passband = np.loadtxt(freq_info["passband"]).T
+    else:
+        nu_ghz, passband = np.array([freq_info["freq_tag"]]), np.array([1.])
+
+    passbands[wafer] = [nu_ghz, passband]
 
 # Reading covariance
 like_product_dir = "like_product"
@@ -126,7 +136,6 @@ for i in range(iStart, iStop):
     theory_vec = covariance.read_x_ar_theory_vec(bestfit_dir,
                                                  mcm_dir,
                                                  spec_name_list,
-                                                 nu_eff_list,
                                                  lmax,
                                                  spectra_order = ["TT", "TE", "ET", "EE"])
 

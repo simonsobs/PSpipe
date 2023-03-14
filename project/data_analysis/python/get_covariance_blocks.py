@@ -34,14 +34,13 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 # In particular we assume that the same window function is used in T and Pol
 fast_coupling = True
 
-arrays, n_splits, bl_dict, nu_eff = {}, {}, {}, {}
+arrays, n_splits, bl_dict = {}, {}, {}
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
     for ar in arrays[sv]:
         l_beam, bl_dict[sv, ar] = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
         id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
         bl_dict[sv, ar] = bl_dict[sv, ar][id_beam]
-        nu_eff[sv, ar] = d[f"nu_eff_{sv}_{ar}"]
         n_splits[sv] = len(d[f"maps_{sv}_{ar}"])
         if fast_coupling:
             # This loop check that this is what was specified in the dictfile
@@ -49,8 +48,8 @@ for sv in surveys:
 
 l_cmb, cmb_dict = best_fits.cmb_dict_from_file(bestfit_dir + "/cmb.dat", lmax, spectra)
 
-freq_list = pspipe_list.get_freq_list(d)
-l_fg, fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat", freq_list, lmax, spectra)
+array_list = [f"{sv}_{ar}" for sv in surveys for ar in arrays[sv]]
+l_fg, fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat", array_list, lmax, spectra)
 
 f_name_noise = noise_dir + "/mean_{}x{}_{}_noise.dat"
 l_noise, nl_dict = best_fits.noise_dict_from_files(f_name_noise,  surveys, arrays, lmax, spectra, n_splits=n_splits)
@@ -60,11 +59,10 @@ l, ps_all, nl_all = best_fits.get_all_best_fit(spec_name_list,
                                                l_cmb,
                                                cmb_dict,
                                                fg_dict,
-                                               nu_eff,
                                                spectra,
                                                nl_dict=nl_dict,
                                                bl_dict=bl_dict)
-                                               
+
 ncovs, na_list, nb_list, nc_list, nd_list = pspipe_list.get_covariances_list(d)
 
 if d["use_toeplitz_cov"] == True:
@@ -85,14 +83,14 @@ for task in subtasks:
 
 
     if fast_coupling:
-    
+
         coupling = so_cov.fast_cov_coupling_spin0and2(sq_win_alms_dir,
                                                      [na_r, nb_r, nc_r, nd_r],
                                                      lmax,
                                                      l_exact=l_exact,
                                                      l_band=l_band,
                                                      l_toep=l_toep)
-                                                         
+
     else:
         win = {}
         win["Ta"] = so_map.read_map(d[f"window_T_{na_r}"])
@@ -103,7 +101,7 @@ for task in subtasks:
         win["Pb"] = so_map.read_map(d[f"window_pol_{nb_r}"])
         win["Pc"] = so_map.read_map(d[f"window_pol_{nc_r}"])
         win["Pd"] = so_map.read_map(d[f"window_pol_{nd_r}"])
-        
+
         coupling = so_cov.cov_coupling_spin0and2_simple(win,
                                                         lmax,
                                                         niter=niter,
@@ -111,7 +109,7 @@ for task in subtasks:
                                                         l_band=l_band,
                                                         l_toep=l_toep)
 
-    
+
 
     try: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix=f"{mcms_dir}/{na_r}x{nb_r}", spin_pairs=spin_pairs)
     except: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix=f"{mcms_dir}/{nb_r}x{na_r}", spin_pairs=spin_pairs)

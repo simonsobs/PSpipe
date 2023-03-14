@@ -84,13 +84,14 @@ pol_eff_dr6_pa5_f150 = 0.9488
 pol_eff_dr6_pa6_f090 = 0.9789
 pol_eff_dr6_pa6_f150 = 0.9656
 
-
-nu_eff_dr6_pa4_f150 = 150
-nu_eff_dr6_pa4_f220 = 220
-nu_eff_dr6_pa5_f090 = 90
-nu_eff_dr6_pa5_f150 = 150
-nu_eff_dr6_pa6_f090 = 90
-nu_eff_dr6_pa6_f150 = 150
+passband_dir = data_dir + "passbands/"
+do_bandpass_integration = False
+freq_info_dr6_pa4_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa4_f150.dat"}
+freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir + "passband_dr6_pa4_f220.dat"}
+freq_info_dr6_pa5_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa5_f090.dat"}
+freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa5_f150.dat"}
+freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa6_f090.dat"}
+freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
 
 beam_dr6_pa4_f150 = data_dir + 'beams/20220517_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa4_f220 = data_dir + 'beams/20220517_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
@@ -121,7 +122,7 @@ window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
-fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []} 
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.7,  "xi": 0.1, "T_d": 9.60, "a_gte": 0, "a_gtb": 0, "a_gee": 0,  "a_gbb": 0, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
 
 #sim

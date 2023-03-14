@@ -49,8 +49,8 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
     for j, (ar3, ar4) in enumerate(cwr(arrays, 2)):
 
         if j <= i: continue
-        f1, f2 = d[f"nu_eff_{ar1}"], d[f"nu_eff_{ar2}"]
-        f3, f4 = d[f"nu_eff_{ar3}"], d[f"nu_eff_{ar4}"]
+        f1, f2 = d[f"freq_info_{ar1}"]["freq_tag"], d[f"freq_info_{ar2}"]["freq_tag"]
+        f3, f4 = d[f"freq_info_{ar3}"]["freq_tag"], d[f"freq_info_{ar4}"]["freq_tag"]
         if f1 != f3 or f2 != f4: continue
 
         ar_list = [ar1, ar2, ar3, ar4]

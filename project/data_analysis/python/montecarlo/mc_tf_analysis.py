@@ -36,9 +36,10 @@ scenarios = ["standard", "noE", "noB"]
 
 spec_list = pspipe_list.get_spec_name_list(d, char="_")
 
-freq_list = pspipe_list.get_freq_list(d)
+_, sv_list, ar_list = pspipe_list.get_arrays_list(d)
+array_list = [f"{sv}_{ar}" for (sv, ar) in zip(sv_list, ar_list)]
 lth, cmb_and_fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat",
-                                                    freq_list,
+                                                    array_list,
                                                     lmax + 2,
                                                     spectra,
                                                     f_name_cmb=bestfit_dir + "/cmb.dat")
@@ -49,7 +50,7 @@ for sid, spec in enumerate(spec_list):
     ps_list[spec] = {}
     for scenario in scenarios:
         for iii in range(iStart, iStop):
-        
+
             if iii == 0:
                 ps_list[spec]["nofilter", scenario] = []
                 ps_list[spec]["filter", scenario] = []
@@ -71,7 +72,7 @@ for spec in spec_list:
                                                                               n_sims,
                                                                               spectra,
                                                                               return_dict=True)
-                                                                        
+
     np.save(f"{tf_dir}/kspace_matrix_{spec}.npy", kspace_matrix[spec])
     for count, el in enumerate(elements):
         plt.subplot(3, 2, count+1)
@@ -93,34 +94,32 @@ for spec in spec_list:
     mbb_inv, Bbl = so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
 
     n1, n2 = spec.split("x")
-    nu_eff_1 = d[f"nu_eff_{n1}"]
-    nu_eff_2 = d[f"nu_eff_{n2}"]
-    bin_theory = so_mcm.apply_Bbl(Bbl, cmb_and_fg_dict[nu_eff_1, nu_eff_2], spectra=spectra)
-        
-    
+    bin_theory = so_mcm.apply_Bbl(Bbl, cmb_and_fg_dict[n1, n2], spectra=spectra)
+
+
 
     for iii in range(iStart, iStop):
         lb, ps_list[spec]["filter", "standard"][iii] = kspace.deconvolve_kspace_filter_matrix(lb,
                                                                                               ps_list[spec]["filter", "standard"][iii],
                                                                                               kspace_matrix[spec],
                                                                                               spectra)
-                                                           
+
 
     for spectrum in spectra:
         mean, std = {}, {}
         for filt in ["filter", "nofilter"]:
-    
+
             my_list = []
             for iii in range(iStart, iStop):
                 my_list += [ps_list[spec][filt, "standard"][iii][spectrum]]
-            
+
             mean[filt] = np.mean(my_list, axis=0)
             std[filt] = np.std(my_list, axis=0)
 
         if spectrum == "TT":
             plt.semilogy()
-        
-        plt.plot(lth, cmb_and_fg_dict[nu_eff_1, nu_eff_2][spectrum], color="grey", alpha=0.4)
+
+        plt.plot(lth, cmb_and_fg_dict[n1, n2][spectrum], color="grey", alpha=0.4)
         plt.plot(lb, bin_theory[spectrum])
         plt.errorbar(lb, mean["nofilter"], std["nofilter"], fmt=".", color="red", label = "no filter")
         plt.errorbar(lb, mean["filter"], std["filter"], fmt=".", color="blue", label = "filter corrected")
@@ -131,7 +130,7 @@ for spec in spec_list:
         plt.savefig(f"{plot_dir}/{spec}_{spectrum}.png", bbox_inches="tight")
         plt.clf()
         plt.close()
-                
+
         plt.errorbar(lb-10, mean["nofilter"] - bin_theory[spectrum], std["nofilter"]  / np.sqrt(n_sims), fmt=".", color="red", label = "no filter")
         plt.errorbar(lb+10, mean["filter"] - bin_theory[spectrum], std["filter"]  / np.sqrt(n_sims), fmt=".", color="blue", label = "filter corrected")
         plt.title(r"$\Delta D_{\ell}$" , fontsize=20)
@@ -140,4 +139,3 @@ for spec in spec_list:
         plt.savefig(f"{plot_dir}/diff_{spec}_{spectrum}.png", bbox_inches="tight")
         plt.clf()
         plt.close()
-        

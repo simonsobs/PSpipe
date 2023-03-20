@@ -41,7 +41,7 @@ for sv in surveys:
         l_beam, bl_dict[sv, ar] = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
         id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
         bl_dict[sv, ar] = bl_dict[sv, ar][id_beam]
-        n_splits[sv] = len(d[f"maps_{sv}_{ar}"])
+        n_splits[sv] = d[f"n_splits_{sv}"]
         if fast_coupling:
             # This loop check that this is what was specified in the dictfile
             assert d[f"window_T_{sv}_{ar}"] == d[f"window_pol_{sv}_{ar}"], "T and pol windows have to be the same"

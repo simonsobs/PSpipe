@@ -138,6 +138,10 @@ for iii in subtasks:
                 split = sph_tools.alm2map(signal_alms[ar] + noise_alms[ar], templates[sv])
                 print(f"  [split {k}] alm2map in {time.time()-t1:.02f} s")
 
+                # calibrate the map
+                split = split.calibrate(cal = d[f"cal_{sv}_{ar}"],
+                                        pol_eff = d[f"pol_eff_{sv}_{ar}"])
+
                 t1 = time.time()
                 if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
 

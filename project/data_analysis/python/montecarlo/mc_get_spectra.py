@@ -8,7 +8,7 @@ from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_
 import numpy as np
 import sys
 import time
-from pixell import curvedsky, powspec
+from pixell import curvedsky, powspec, enmap
 from pspipe_utils import simulation, pspipe_list, best_fits, kspace, misc
 
 
@@ -46,10 +46,14 @@ spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
 
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
-    template_name = d[f"maps_{sv}_{arrays[sv][0]}"][0]
-    n_splits[sv] = len(d[f"maps_{sv}_{arrays[sv][0]}"])
-    print(sv, "nsplits", n_splits[sv])
+    template_name = d[f"window_T_{sv}_{arrays[sv][0]}"]
+    n_splits[sv] = d[f"n_splits_{sv}"]
+    print(f"Running with {n_splits[sv]} splits for survey {sv}")
     templates[sv] = so_map.read_map(template_name)
+    template = np.stack([templates[sv].data for i in range(3)])
+    templates[sv].data = enmap.ndmap(template, wcs = templates[sv].data.wcs)
+    templates[sv].ncomp = 3
+
 
     if apply_kspace_filter:
         filter_dicts[sv] = d[f"k_filter_{sv}"]
@@ -93,6 +97,8 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 
 for iii in subtasks:
+    print(f"Simulation n° {iii:05d}/{d['iStop']:05d}")
+    print(f"-------------------------")
     t0 = time.time()
 
     # generate cmb alms and foreground alms
@@ -114,7 +120,7 @@ for iii in subtasks:
             l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
             signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
 
-        print("generate signal sim in %.02f s" % (time.time()-t1))
+        print(f"  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):
             noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax)
             for ar in arrays[sv]:
@@ -126,11 +132,11 @@ for iii in subtasks:
                 window_tuple = (win_T, win_pol)
                 del win_T, win_pol
 
-                print("reading window in %.02f s" % (time.time()-t1))
+                print(f"  [split {k}] Reading window in {time.time()-t1:.02f} s")
 
                 t1 = time.time()
                 split = sph_tools.alm2map(signal_alms[ar] + noise_alms[ar], templates[sv])
-                print("alm2map in %.02f s" % (time.time()-t1))
+                print(f"  [split {k}] alm2map in {time.time()-t1:.02f} s")
 
                 t1 = time.time()
                 if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
@@ -143,7 +149,7 @@ for iii in subtasks:
                                                   weighted_filter=filter_dicts[sv]["weighted"])
 
                         del binary
-                print("filtering in %.02f s" % (time.time()-t1))
+                print(f"  [split {k}] Filtering in {time.time()-t1:.02f} s")
 
 
                 if d["remove_mean"] == True:
@@ -151,7 +157,7 @@ for iii in subtasks:
 
                 t1 = time.time()
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
-                print("map2alm in %.02f s" % (time.time()-t1))
+                print(f"  [split {k}] map2alm in {time.time()-t1:.02f} s")
 
     ps_dict = {}
 
@@ -192,20 +198,21 @@ for iii in subtasks:
                                                             spectra=spectra,
                                                             binned_mcm=binned_mcm)
 
-                            lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
-                                                                            ps,
-                                                                            kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
-                                                                            spectra)
+                            if d["apply_kspace_filter"]:
+                                lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
+                                                                                ps,
+                                                                                kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
+                                                                                spectra)
 
                             if write_all_spectra:
                                 so_spectra.write_ps(spec_dir + "/%s_%05d.dat" % (spec_name,iii), lb, ps, type, spectra=spectra)
 
                             for count, spec in enumerate(spectra):
                                 if (s1 == s2) & (sv1 == sv2):
-                                    if count == 0:  print(f"auto {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
+                                    if count == 0:  print(f"  [auto] {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
                                     ps_dict[spec, "auto"] += [ps[spec]]
                                 else:
-                                    if count == 0: print(f"cross {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
+                                    if count == 0: print(f"  [cross] {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
                                     ps_dict[spec, "cross"] += [ps[spec]]
 
                     ps_dict_auto_mean = {}
@@ -232,5 +239,6 @@ for iii in subtasks:
                         so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)
                         so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)
 
-    print("spectra computation in %.02f s" % (time.time()-t1))
-    print("sim number %05d done in %.02f s" % (iii, time.time()-t0))
+    print(f"  Spectra computation in {time.time()-t1:.02f} s")
+    print(f"  Simulation n° {iii:05d} done in {time.time()-t0:.02f} s")
+    print("")

@@ -120,7 +120,9 @@ for iii in subtasks:
                 alms_beamed[0] += fglms[2*fcount]
                 alms_beamed[1] += fglms[2*fcount+1]
 
-            alms_beamed = maps_to_params_utils.multiply_alms(alms_beamed, bl, ncomp)
+            Bl = np.zeros(lmax+2)
+            Bl[2:] = bl
+            alms_beamed = maps_to_params_utils.multiply_alms(alms_beamed, Bl, ncomp)
             
             #here we calibrate the T, E alms and rotate the E, B alms of each frequency, for the LAT experiment
             if exp == "LAT":

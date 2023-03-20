@@ -97,7 +97,7 @@ f_sky_LAT = 0.4
 # CAMB cosmo params
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 # CAMB accuracy params
-accuracy_params = {"lens_potential_accuracy": 1, "lens_margin": 1050, "AccuracyBoost": 1.0, "lSampleBoost": 1.0, "lAccuracyBoos": 1.0}
+accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoos": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False}
 
 
 # Simulation

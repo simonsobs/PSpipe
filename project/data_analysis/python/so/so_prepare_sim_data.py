@@ -209,7 +209,7 @@ plt.close()
 # Let's compare the signal power spectra with the noise power spectra
 # We generate the signal power spectra using camb and write it to disk
 cosmo_params =  d["cosmo_params"]
-l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, d["type"], ell_max)
+l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, d["type"], ell_max, **d["accuracy_params"])
 f_name = f"{bestfit_dir}/cmb.dat"
 so_spectra.write_ps(f_name, l_th, ps_dict, type, spectra=spectra)
 ## !!!!! INCLUDE ACCURACY PARAMETERS FOR CAMB

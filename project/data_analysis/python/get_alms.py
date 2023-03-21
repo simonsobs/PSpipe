@@ -75,7 +75,7 @@ for task in subtasks:
             split = so_map.read_map(map, geometry=win_T.data.geometry)
                 
             if d[f"src_free_maps_{sv}"] == True:
-                ps_map_name = map.replace("srcfree.fits", "model.fits")
+                ps_map_name = map.replace("map_srcfree.fits", "srcs.fits")
                 if ps_map_name == map:
                     raise ValueError("No model map is provided! Check map names!")
                 ps_map = so_map.read_map(ps_map_name)

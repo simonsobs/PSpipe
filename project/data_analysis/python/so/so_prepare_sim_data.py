@@ -58,7 +58,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 sensitivity_mode = d["sensitivity_mode"]
 f_sky_LAT = d["f_sky_LAT"]
 
-ell_min, ell_max = 2, d["lmax"]
+ell_min, ell_max = 2, d["lmax"] + 500
 delta_ell = 1
 # We use the SO noise calculator to compute the expected noise in temperature and polarisation.
 ell, n_ell_t_LAT, n_ell_pol_LAT, map_wn = noise_calc.Simons_Observatory_V3_LA_noise(sensitivity_mode,

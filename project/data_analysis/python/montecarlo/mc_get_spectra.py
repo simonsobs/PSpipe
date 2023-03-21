@@ -120,6 +120,15 @@ for iii in subtasks:
             l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
             signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
 
+            # calibrate the alms
+            signal_alms[ar] = pspy_utils.calibrate_alms(signal_alms[ar],
+                                                        cal = d[f"cal_{sv}_{ar}"],
+                                                        pol_eff = d[f"pol_eff_{sv}_{ar}"])
+
+            # apply polarization angle miscalibration
+            signal_alms[ar] = pspy_utils.rotate_pol_alms(signal_alms[ar],
+                                                         pol_rot_angle = d[f"pol_angle_degree_{sv}_{ar}"])
+
         print(f"  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):
             noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax)
@@ -137,10 +146,6 @@ for iii in subtasks:
                 t1 = time.time()
                 split = sph_tools.alm2map(signal_alms[ar] + noise_alms[ar], templates[sv])
                 print(f"  [split {k}] alm2map in {time.time()-t1:.02f} s")
-
-                # calibrate the map
-                split = split.calibrate(cal = d[f"cal_{sv}_{ar}"],
-                                        pol_eff = d[f"pol_eff_{sv}_{ar}"])
 
                 t1 = time.time()
                 if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):

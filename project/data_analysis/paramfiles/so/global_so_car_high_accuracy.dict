@@ -60,13 +60,20 @@ pts_source_mask_radius_LAT = 5
 apod_pts_source_mask_degree_LAT = 0.3
 apod_type_pts_source_mask_LAT = "C1"
 
+# Calibration
 cal_LAT_93 = 1.0
 cal_LAT_145 = 1.0
 cal_LAT_225 = 1.0
 
+# Polarization efficiency
 pol_eff_LAT_93 = 1.0
 pol_eff_LAT_145 = 1.0
 pol_eff_LAT_225 = 1.0
+
+# Polarization angle miscalibration
+pol_angle_degree_LAT_93 = 0.
+pol_angle_degree_LAT_145 = 0.
+pol_angle_degree_LAT_225 = 0.
 
 # Foregrounds
 do_bandpass_integration = True
@@ -74,6 +81,11 @@ do_bandpass_integration = True
 bandwidth_LAT_93 = 0.05
 bandwidth_LAT_145 = 0.05
 bandwidth_LAT_225 = 0.05
+
+# Passband frequency shifts
+bandint_shift_LAT_93 = 0.
+bandint_shift_LAT_145 = 0.
+bandint_shift_LAT_225 = 0.
 
 passband_dir = "passbands"
 freq_info_LAT_93 = {"freq_tag": 93, "passband": f"{passband_dir}/passband_LAT_93.dat"}
@@ -97,7 +109,7 @@ f_sky_LAT = 0.4
 # CAMB cosmo params
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 # CAMB accuracy params
-accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoos": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False}
+accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False}
 
 
 # Simulation
@@ -107,10 +119,16 @@ sim_alm_dtype = "complex64"
 apply_kspace_filter = False
 write_all_spectra = True
 
+use_mc_corrected_cov = False
+use_only_diag_corrections = False
+use_beam_covariance = False
+
 hdf5 = False
 multistep_path = "./"
 
 
+
+### /!\ This is not used yet /!\
 # Use map based simulations
 # /!\ Only works with HEALPIX pixellisation
 use_mbs = False

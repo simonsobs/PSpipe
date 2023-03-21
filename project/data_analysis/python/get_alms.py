@@ -79,7 +79,7 @@ for task in subtasks:
                 if ps_map_name == map:
                     raise ValueError("No model map is provided! Check map names!")
                 ps_map = so_map.read_map(ps_map_name)
-                ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
+                ps_mask = so_map.read_map(d[f"ps_mask"])
                 ps_map.data *= ps_mask.data
                 split.data += ps_map.data
 

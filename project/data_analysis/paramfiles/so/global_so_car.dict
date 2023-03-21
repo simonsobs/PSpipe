@@ -1,13 +1,13 @@
 surveys = ["LAT"]
-arrays_LAT = ["93", "145"]
+arrays_LAT = ["93", "145", "225"]
 
 
 binning_dir = f"binning/"
 binning_file = f"{binning_dir}/binning.dat"
-niter = 0
+niter = 3
 remove_mean = False
 binned_mcm = False
-lmax = 2000
+lmax = 9001
 l_cut_noise_LAT = 30 # Parameter to regularize the noise power spectra at very low ell
 type = "Dl"
 write_splits_spectra = False
@@ -41,11 +41,11 @@ window_pol_LAT_225 = f"{windows_dir}/window_LAT_225.fits"
 apod_type_survey_LAT = "Rectangle"
 apod_survey_degree_LAT = 3
 skip_from_edges_degree = 1.
-binary_is_survey_mask_LAT = True
+binary_is_survey_mask_LAT = False
 apod_pts_source_degree_LAT = 0.3
 
 include_pts_source_mask_LAT = True
-include_galactic_mask_LAT = False
+include_galactic_mask_LAT = True
 
 pixel_LAT = "CAR"
 n_splits_LAT = 2
@@ -53,7 +53,7 @@ ra0_LAT = -180
 ra1_LAT = 180
 dec0_LAT = -75
 dec1_LAT = 30
-res_LAT = 2
+res_LAT = 0.5
 
 pts_source_mask_nholes_LAT = 5000
 pts_source_mask_radius_LAT = 5
@@ -78,9 +78,9 @@ pol_angle_degree_LAT_225 = 0.
 # Foregrounds
 do_bandpass_integration = True
 
-bandwidth_LAT_93 = 0.05
-bandwidth_LAT_145 = 0.05
-bandwidth_LAT_225 = 0.05
+bandwidth_LAT_93 = 0.3
+bandwidth_LAT_145 = 0.3
+bandwidth_LAT_225 = 0.3
 
 # Passband frequency shifts
 bandint_shift_LAT_93 = 0.
@@ -94,7 +94,7 @@ freq_info_LAT_225 = {"freq_tag": 225, "passband": f"{passband_dir}/passband_LAT_
 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.7,  "xi": 0.1, "T_d": 9.60, "a_gte": 0, "a_gtb": 0, "a_gee": 0,  "a_gbb": 0, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.20, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 2.80,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.10, "a_gtb": 0, "a_gee": 0.10,  "a_gbb": 0, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
 
 # Beams
 beam_dir = "beams"
@@ -102,19 +102,19 @@ beam_LAT_93 = f"{beam_dir}/beam_LAT_93.dat"
 beam_LAT_145 = f"{beam_dir}/beam_LAT_145.dat"
 beam_LAT_225 = f"{beam_dir}/beam_LAT_225.dat"
 
-
+# SO noise properties
 sensitivity_mode = 1
 f_sky_LAT = 0.4
 
 # CAMB cosmo params
-cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+cosmo_params = {"cosmomc_theta":0.0104092, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 # CAMB accuracy params
 accuracy_params = {"lens_potential_accuracy": 1, "lens_margin": 1050, "AccuracyBoost": 1.0, "lSampleBoost": 1.0, "lAccuracyBoost": 1.0}
 
 
 # Simulation
 iStart = 0
-iStop = 49
+iStop = 39
 sim_alm_dtype = "complex64"
 apply_kspace_filter = False
 write_all_spectra = True

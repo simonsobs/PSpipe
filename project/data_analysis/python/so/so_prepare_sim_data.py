@@ -161,7 +161,6 @@ for sv in surveys:
             # apply a regularization to the noise power spectrum at very low ell
             l_cut_noise = d["l_cut_noise_LAT"]
             for spec in spectra:
-                #mean_noise[spec] = np.where(ell <= l_cut_noise, mean_noise[spec][ell == l_cut_noise], mean_noise[spec])
                 mean_noise[spec] = np.where(ell <= l_cut_noise, 0., mean_noise[spec])
             nlth_dict[spec_name] = mean_noise
 

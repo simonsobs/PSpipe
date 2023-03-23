@@ -53,15 +53,19 @@ for task in subtasks:
         # I prefer how it was before:
         binary = so_map.read_map(f"{window_dir}/binary_{sv}_{ar}.fits")
         
+        # same kfilter and pixwin for all seasons
         if apply_kspace_filter:
-            ks_f = d[f"k_filter_{sv}"]
+            #ks_f = d[f"k_filter_{sv}"]
+            ks_f = d[f"k_filter"]
             filter = kspace.get_kspace_filter(win_T, ks_f)
                     
         inv_pixwin_lxly = None
         if deconvolve_pixwin:
-            if d[f"pixwin_{sv}"]["pix"] == "CAR":
+            #if d[f"pixwin_{sv}"]["pix"] == "CAR":
+            if d[f"pixwin"]["pix"] == "CAR":
                 # compute the CAR pixel function in fourier space
-                wy, wx = enmap.calc_window(win_T.data.shape, order=d[f"pixwin_{sv}"]["order"])
+                #wy, wx = enmap.calc_window(win_T.data.shape, order=d[f"pixwin_{sv}"]["order"])
+                wy, wx = enmap.calc_window(win_T.data.shape, order=d[f"pixwin"]["order"])
                 inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
             
             

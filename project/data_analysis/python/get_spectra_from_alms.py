@@ -38,7 +38,8 @@ master_alms, nsplit, arrays, templates, filter_dicts = {}, {}, {}, {}, {}
 
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
-    if apply_kspace_filter == True: filter_dicts[sv] = d[f"k_filter_{sv}"]
+    #if apply_kspace_filter == True: filter_dicts[sv] = d[f"k_filter_{sv}"]
+    if apply_kspace_filter == True: filter_dicts[sv] = d[f"k_filter"]
     templates[sv] = so_map.read_map(d[f"window_T_{sv}_{arrays[sv][0]}"])
     
     for ar in arrays[sv]:
@@ -89,11 +90,15 @@ for task in subtasks:
     
     xtra_pw1, xtra_pw2, mm_tf1, mm_tf2 = None, None, None, None
     if deconvolve_pixwin:
-        if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX":
-            pixwin_l = hp.pixwin(d[f"pixwin_{sv1}"]["nside"])
+        #if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX":
+        #    pixwin_l = hp.pixwin(d[f"pixwin_{sv1}"]["nside"])
+        if d[f"pixwin"]["pix"] == "HEALPIX":
+            pixwin_l = hp.pixwin(d[f"pixwin"]["nside"])
             lb, xtra_pw1 = pspy_utils.naive_binning(np.arange(len(pixwin_l)),  pixwin_l, binning_file, lmax)
-        if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX":
-            pixwin_l = hp.pixwin(d[f"pixwin_{sv2}"]["nside"])
+        #if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX":
+        #    pixwin_l = hp.pixwin(d[f"pixwin_{sv2}"]["nside"])
+        if d[f"pixwin"]["pix"] == "HEALPIX":
+            pixwin_l = hp.pixwin(d[f"pixwin"]["nside"])
             lb, xtra_pw2 = pspy_utils.naive_binning(np.arange(len(pixwin_l)),  pixwin_l, binning_file, lmax)
 
 

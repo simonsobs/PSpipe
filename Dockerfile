@@ -1,5 +1,5 @@
-FROM ubuntu:18.04
-MAINTAINER Xavier Garrido <xavier.garrido@lal.in2p3.fr>
+FROM ubuntu:22.04
+MAINTAINER Xavier Garrido <xavier.garrido@ijclab.in2p3.fr>
 
 RUN apt-get update && apt-get install -y \
         automake                         \
@@ -25,7 +25,8 @@ ENV USER pspipe
 ENV PATH "/home/pspipe/.local/bin:${PATH}"
 WORKDIR /home/pspipe
 
-RUN python3 -m pip install --user --upgrade pip numpy cython ipython jupyter
+RUN python3 -m pip install --user --upgrade pip wheel
+RUN python3 -m pip install --user --upgrade numpy cython ipython jupyter
 RUN python3 -m pip install --user --upgrade astropy astropy-helpers healpy mpi4py numba toml
 RUN python3 -m pip install --user --upgrade pysm3
 RUN python3 -m pip install --user git+https://github.com/simonsobs/PSpipe.git

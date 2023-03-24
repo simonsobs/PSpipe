@@ -21,7 +21,6 @@ lmax = d["lmax"]
 type = d["type"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
-freq_list = pspipe_list.get_freq_list(d)
 # let's create the directories to write best fit to disk and for plotting purpose
 bestfit_dir = "best_fits"
 plot_dir = "plots/best_fits/"
@@ -39,67 +38,98 @@ so_spectra.write_ps(f_name, l_th, ps_dict, type, spectra=spectra)
 fg_norm = d["fg_norm"]
 fg_params = d["fg_params"]
 fg_components = d["fg_components"]
-fg_dict = best_fits.get_foreground_dict(l_th, freq_list, fg_components, fg_params, fg_norm)
+
+passbands = {}
+do_bandpass_integration = d["do_bandpass_integration"]
+
+narrays, sv_list, ar_list = pspipe_list.get_arrays_list(d)
+for sv, ar in zip(sv_list, ar_list):
+
+    freq_info = d[f"freq_info_{sv}_{ar}"]
+    if do_bandpass_integration:
+        nu_ghz, pb = np.loadtxt(freq_info["passband"]).T
+    else:
+        nu_ghz, pb = np.array([freq_info["freq_tag"]]), np.array([1.])
+
+    passbands[f"{sv}_{ar}"] = [nu_ghz, pb]
+
+fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components,
+                                        fg_params, fg_norm,)
+
+spectra_list = pspipe_list.get_spec_name_list(d, char = "_")
 fg= {}
-for freq1 in freq_list:
-    for freq2 in freq_list:
-        fg[freq1, freq2] = {}
+
+for sv1, ar1 in zip(sv_list, ar_list):
+    for sv2, ar2 in zip(sv_list, ar_list):
+        name1 = f"{sv1}_{ar1}"
+        name2 = f"{sv2}_{ar2}"
+        fg[name1, name2] = {}
         for spec in spectra:
-            fg[freq1,freq2][spec] = fg_dict[spec.lower(), "all", freq1, freq2]
-        so_spectra.write_ps(f"{bestfit_dir}/fg_{freq1}x{freq2}.dat", l_th, fg[freq1,freq2], type, spectra=spectra)
+            fg[name1, name2][spec] = fg_dict[spec.lower(), "all", name1, name2]
+
+        so_spectra.write_ps(f"{bestfit_dir}/fg_{name1}x{name2}.dat", l_th, fg[name1, name2], type, spectra=spectra)
 
 for spec in spectra:
     plt.figure(figsize=(12, 12))
-    for freq1 in freq_list:
-        for freq2 in freq_list:
-            name = f"{freq1}x{freq2}_{spec}"
-            cl_th_and_fg = ps_dict[spec]
+    for ps_name in spectra_list:
+        name1, name2 = ps_name.split("x")
+        name = f"{ps_name}_{spec}"
+        cl_th_and_fg = ps_dict[spec]
 
-            if spec == "TT":
-                plt.semilogy()
+        if spec == "TT":
+            plt.semilogy()
+        if spec.lower() in d["fg_components"].keys():
+            fg = fg_dict[spec.lower(), "all", name1, name2]
+        else:
+            fg = fg_dict[spec.lower()[::-1], "all", name1, name2]
+        cl_th_and_fg = cl_th_and_fg + fg
 
-            if spec.lower() in d["fg_components"].keys():
-                fg = fg_dict[spec.lower(), "all", freq1, freq2]
-            else:
-                fg = fg_dict[spec.lower()[::-1], "all", freq1, freq2]
+        plt.plot(l_th, cl_th_and_fg, label = ps_name)
 
-            cl_th_and_fg = cl_th_and_fg + fg
-
-            plt.plot(l_th, cl_th_and_fg, label= f"{freq1} x {freq2}")
     plt.legend()
     plt.savefig(f"{plot_dir}/best_fit_{spec}.png")
     plt.clf()
     plt.close()
 
-nfreq = len(freq_list)
-
 fg_components["tt"].remove("tSZ_and_CIB")
 for comp in ["tSZ", "cibc", "tSZxCIB"]:
     fg_components["tt"].append(comp)
 
-for mode in ["tt", "te", "ee"]:
-    fig, axes = plt.subplots(nfreq, nfreq, sharex = True, sharey = True, figsize = (10, 10))
-    for i, cross in enumerate(product(freq_list, freq_list)):
-        f0, f1 = cross
-        f0, f1 = int(f0), int(f1)
-        idx = (i % nfreq, i // nfreq)
+for mode in ["tt", "te", "tb", "ee", "eb", "bb"]:
+    fig, axes = plt.subplots(narrays, narrays, sharex = True, sharey = True, figsize = (16, 16))
+    indices = np.triu_indices(narrays)[::-1]
+    for i, cross in enumerate(spectra_list):
+        name1, name2 = cross.split("x")
+        idx = (indices[0][i], indices[1][i])
         ax = axes[idx]
 
-        if idx in zip(*np.triu_indices(nfreq, k=1)) and mode != "te":
-            fig.delaxes(ax)
-            continue
-
         for comp in fg_components[mode]:
-            ax.plot(l_th, fg_dict[mode, comp, f0, f1])
-        ax.plot(l_th, fg_dict[mode, "all", f0, f1], color = "k")
+            ax.plot(l_th, fg_dict[mode, comp, name1, name2])
+        ax.plot(l_th, fg_dict[mode, "all", name1, name2], color = "k")
         ax.plot(l_th, ps_dict[mode.upper()], color = "gray")
-        ax.legend([], title="{}x{} GHz".format(*cross))
+        ax.set_title(cross)
         if mode == "tt":
             ax.set_yscale("log")
             ax.set_ylim(1e-1, 1e4)
         if mode == "ee":
             ax.set_yscale("log")
-    for i in range(nfreq):
+        if mode == "bb":
+            ax.set_yscale("log")
+
+        if (mode[0] != mode[1]) and (name1 != name2):
+            ax = axes[idx[::-1]]
+            for comp in fg_components[mode]:
+                ax.plot(l_th, fg_dict[mode, comp, name2, name1])
+            ax.plot(l_th, fg_dict[mode, "all", name2, name1])
+            ax.plot(l_th, ps_dict[mode.upper()], color = "gray")
+            ax.set_title(f"{name2}x{name1}")
+
+    if mode[0] == mode[1]:
+        for idx in zip(*np.triu_indices(narrays, k=1)):
+            ax = axes[idx]
+            fig.delaxes(ax)
+
+    for i in range(narrays):
         axes[-1, i].set_xlabel(r"$\ell$")
         axes[i, 0].set_ylabel(r"$D_\ell$")
     fig.legend(fg_components[mode] + ["all"], title=mode.upper(), bbox_to_anchor=(1,1))

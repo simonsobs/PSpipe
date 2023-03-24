@@ -318,12 +318,12 @@ for sv in surveys:
 
         if d[f"include_galactic_mask_{sv}"]:
             gal_mask = so_map.read_map(d[f"gal_mask_{sv}_{ar}"])
-            gal_mask.plot(file_name = f"{plot_dir}/galactic_mask_{sv}_{ar}")
+            gal_mask.plot(file_name = f"{windows_plot_dir}/galactic_mask_{sv}_{ar}")
             window.data[:] *= gal_mask.data[:]
 
         if not d[f"binary_is_survey_mask_{sv}"]:
             survey_mask = so_map.read_map(d[f"survey_mask_{sv}_{ar}"])
-            survey_mask.plot(file_name = f"{plot_dir}/survey_mask_{sv}_{ar}")
+            survey_mask.plot(file_name = f"{windows_plot_dir}/survey_mask_{sv}_{ar}")
             window.data[:] *= survey_mask.data[:]
 
         apod_survey_degree = d[f"apod_survey_degree_{sv}"]

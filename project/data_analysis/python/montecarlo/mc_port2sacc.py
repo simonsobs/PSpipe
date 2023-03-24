@@ -6,6 +6,12 @@ import os
 import re
 import sys
 
+import importlib
+from datetime import datetime
+
+import matplotlib.pyplot as plt
+import scipy.stats as ss
+
 import numpy as np
 import sacc
 from pspipe_utils import external_data, pspipe_list, covariance
@@ -82,7 +88,10 @@ inv_analytic_cov = np.linalg.inv(analytic_cov)
 
 iStart = d["iStart"]
 iStop = d["iStop"]
+chi2_list = []
 for i in range(iStart, iStop):
+    if i == 0:
+        cov_sacc = sacc.Sacc()
     print(f"Storing simulation n°{i}...")
 
     # Saving into sacc format
@@ -105,6 +114,18 @@ for i in range(iStart, iStop):
                     beam=beam,
                 )
 
+                if i == 0:
+                    cov_sacc.add_tracer(
+                        "NuMap",
+                        f"{sv}_{wafer}_s{spin}",
+                        quantity=f"cmb_{quantity}",
+                        spin=spin,
+                        nu=nus,
+                        bandpass=passband,
+                        ell=ell,
+                        beam=beam,
+                    )
+
     # Reading the flat data vector
     data_vec = covariance.read_x_ar_spectra_vec(
         sim_spec_dir, spec_name_list, f"cross_{i:05d}", spectra_order=spectra_order, type=d["type"]
@@ -113,11 +134,6 @@ for i in range(iStart, iStop):
     for count, (spec, s1, s2) in enumerate(blocks):
         print(f"Adding {s1}x{s2}, {spec} spectrum")
 
-        # Get Bbl
-        mcm_dir = "mcms"
-        Bbl = np.load(os.path.join(mcm_dir, f"{s1}x{s2}_Bbl_spin0xspin0.npy"))
-        ls_w = np.arange(2, Bbl.shape[-1] + 2)
-        bp_window = sacc.BandpowerWindow(ls_w, Bbl.T)
 
         # Define tracer names and cl type
         pa, pb = spec
@@ -134,8 +150,28 @@ for i in range(iStart, iStop):
         Db = data_vec[count * n_bins : (count + 1) * n_bins]
         act_sacc.add_ell_cl(cl_type, ta_name, tb_name, lb, Db, window=bp_window)
 
-    print("Adding covariance")
-    act_sacc.add_covariance(analytic_cov)
+        if i == 0:
+            # Get Bbl
+            mcm_dir = "mcms"
+            Bbl = np.load(os.path.join(mcm_dir, f"{s1}x{s2}_Bbl_spin0xspin0.npy"))
+            ls_w = np.arange(2, Bbl.shape[-1] + 2)
+            bp_window = sacc.BandpowerWindow(ls_w, Bbl.T)
+            cov_sacc.add_ell_cl(cl_type, ta_name, tb_name,
+                                lb, Db, window=bp_window)
+
+    if i == 0:
+        # Add metadata
+        cov_sacc.metadata["author"] = d.get("author", "SO Collaboration PS Task Force")
+        cov_sacc.metadata["date"] = d.get("date", datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
+        modules = ["camb", "mflike", "numpy", "pixell", "pspy", "sacc"]
+        cov_sacc.metadata["modules"] = str(modules)
+        for m in modules:
+            cov_sacc.metadata[f"{m}_version"] = importlib.import_module(m).__version__
+        # Store dict file as strings
+        for k, v in d.items():
+            cov_sacc.metadata[k] = str(v)
+        cov_sacc.add_covariance(analytic_cov)
+        cov_sacc.save_fits(f"{sim_sacc_dir}/data_sacc_w_covar_and_Bbl.fits", overwrite=True)
 
     print("Writing sacc file")
     sacc_file_name = f"{'_'.join(surveys)}_simu_sacc_{i:05d}.fits"
@@ -150,4 +186,22 @@ for i in range(iStart, iStop):
 
     res = data_vec - theory_vec
     chi2 = res @ inv_analytic_cov @ res
+    chi2_list.append(chi2)
     print(r"$\chi^{2}$/DoF = %.2f/%d" % (chi2, len(data_vec)))
+
+
+output_plot_dir = "plots"
+
+kernel = ss.gaussian_kde(chi2_list)
+x = np.linspace(len(res) * 0.8, len(res)*1.2, 300)
+y_kde = kernel(x)
+y_pdf = ss.chi2(len(res)).pdf(x)
+plt.figure(figsize = (8, 6))
+plt.xlabel(r"$\chi^2$")
+plt.yticks([], [])
+plt.hist(chi2_list, density = True, bins = 15, color = "blue", alpha = 0.4)
+plt.plot(x, y_kde, color = "darkorange", label = "KDE")
+plt.plot(x, y_pdf, color = "forestgreen", label = r"$\chi^2$ dist.")
+plt.legend()
+plt.tight_layout()
+plt.savefig(f"{output_plot_dir}/chi2_sacc.png", dpi = 300)

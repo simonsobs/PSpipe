@@ -52,7 +52,7 @@ for sv in surveys:
     templates[sv] = so_map.read_map(template_name)
 
     if apply_kspace_filter:
-        filter_dicts[sv] = d[f"k_filter_{sv}"]
+        filter_dicts[sv] = d[f"k_filter"]
         filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv])
 
 if apply_kspace_filter:

@@ -68,7 +68,7 @@ for sv in surveys:
     template_name = d[f"maps_{sv}_{arrays[0]}"][0]
     template[sv] = so_map.read_map(template_name)
     assert (template[sv].pixel == "CAR"), "we only compute kspace tf in CAR pixellisation"
-    ks_f = d[f"k_filter_{sv}"]
+    ks_f = d[f"k_filter"]
     filter[sv] = kspace.get_kspace_filter(template[sv], ks_f)
 
 # the filter also introduce E->B leakage, in order to measure it we run the scenario where there
@@ -92,7 +92,7 @@ for iii in subtasks:
         for sv in surveys:
 
             arrays = d[f"arrays_{sv}"]
-            ks_f = d[f"k_filter_{sv}"]
+            ks_f = d[f"k_filter"]
 
             for ar_id, ar in enumerate(arrays):
 

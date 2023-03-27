@@ -44,10 +44,11 @@ skip_from_edges_degree = 1.
 binary_is_survey_mask_LAT = False
 apod_pts_source_degree_LAT = 0.3
 
-include_pts_source_mask_LAT = True
+include_pts_source_mask_LAT = False
 include_galactic_mask_LAT = True
 
-pixel_LAT = "CAR"
+pixel_LAT = "HEALPIX"
+nside_LAT = 4096
 n_splits_LAT = 2
 ra0_LAT = -180
 ra1_LAT = 180
@@ -63,9 +64,9 @@ apod_type_pts_source_mask_LAT = "C1"
 # Foregrounds
 do_bandpass_integration = True
 
-bandwidth_LAT_93 = 0.3
-bandwidth_LAT_145 = 0.3
-bandwidth_LAT_225 = 0.3
+bandwidth_LAT_93 = 0.05
+bandwidth_LAT_145 = 0.05
+bandwidth_LAT_225 = 0.05
 
 # Passband frequency shifts
 bandint_shift_LAT_93 = 0.
@@ -87,7 +88,7 @@ beam_LAT_93 = f"{beam_dir}/beam_LAT_93.dat"
 beam_LAT_145 = f"{beam_dir}/beam_LAT_145.dat"
 beam_LAT_225 = f"{beam_dir}/beam_LAT_225.dat"
 
-
+# SO noise properties
 sensitivity_mode = 1
 f_sky_LAT = 0.4
 

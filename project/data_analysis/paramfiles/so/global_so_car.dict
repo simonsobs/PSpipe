@@ -60,21 +60,6 @@ pts_source_mask_radius_LAT = 5
 apod_pts_source_mask_degree_LAT = 0.3
 apod_type_pts_source_mask_LAT = "C1"
 
-# Calibration
-cal_LAT_93 = 1.0
-cal_LAT_145 = 1.0
-cal_LAT_225 = 1.0
-
-# Polarization efficiency
-pol_eff_LAT_93 = 1.0
-pol_eff_LAT_145 = 1.0
-pol_eff_LAT_225 = 1.0
-
-# Polarization angle miscalibration
-pol_angle_degree_LAT_93 = 0.
-pol_angle_degree_LAT_145 = 0.
-pol_angle_degree_LAT_225 = 0.
-
 # Foregrounds
 do_bandpass_integration = True
 
@@ -119,8 +104,6 @@ sim_alm_dtype = "complex64"
 apply_kspace_filter = False
 write_all_spectra = True
 
-use_mc_corrected_cov = False
-use_only_diag_corrections = False
 use_beam_covariance = False
 
 hdf5 = False

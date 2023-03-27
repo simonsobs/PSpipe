@@ -23,8 +23,8 @@ d.read_from_file(sys.argv[1])
 surveys = d["surveys"]
 arrays = {sv: d[f"arrays_{sv}"] for sv in surveys}
 
-use_mc_corrected_cov = d["use_mc_corrected_cov"]
-only_diag_corrections = d["use_only_diag_corrections"]
+use_mc_corrected_cov = True
+only_diag_corrections = False
 use_beam_covariance = d["use_beam_covariance"]
 
 cov_name = "analytic_cov"
@@ -65,7 +65,7 @@ bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(bin_hi)
 
 # Reading beams
-beams = {f"{sv}&{ar}": pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"]) for sv in surveys for ar in arrays[sv]}
+beams = {f"{sv}_{ar}": pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"]) for sv in surveys for ar in arrays[sv]}
 
 # Reading passbands : the passband file should be within the dict file
 passbands = {}
@@ -78,7 +78,7 @@ for sv in surveys:
         else:
             nu_ghz, passband = np.array([freq_info["freq_tag"]]), np.array([1.])
 
-        passbands[f"{sv}&{ar}"] = [nu_ghz, passband]
+        passbands[f"{sv}_{ar}"] = [nu_ghz, passband]
 
 # Reading covariance
 like_product_dir = "like_product"
@@ -100,8 +100,8 @@ for i in range(iStart, iStop):
         for wafer in arrays[sv]:
             for spin, quantity in zip([0, 2], ["temperature", "polarization"]):
 
-                nus, passband = passbands.get(f"{sv}&{wafer}")
-                ell, beam = beams.get(f"{sv}&{wafer}")
+                nus, passband = passbands.get(f"{sv}_{wafer}")
+                ell, beam = beams.get(f"{sv}_{wafer}")
 
                 act_sacc.add_tracer(
                     "NuMap",
@@ -163,7 +163,7 @@ for i in range(iStart, iStop):
         # Add metadata
         cov_sacc.metadata["author"] = d.get("author", "SO Collaboration PS Task Force")
         cov_sacc.metadata["date"] = d.get("date", datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
-        modules = ["camb", "mflike", "numpy", "pixell", "pspy", "sacc"]
+        modules = ["camb", "mflike", "numpy", "pixell", "pspipe", "pspy", "sacc"]
         cov_sacc.metadata["modules"] = str(modules)
         for m in modules:
             cov_sacc.metadata[f"{m}_version"] = importlib.import_module(m).__version__

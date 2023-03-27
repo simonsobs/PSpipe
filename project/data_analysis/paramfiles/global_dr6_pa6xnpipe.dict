@@ -5,7 +5,7 @@ arrays_Planck = ["f100", "f143"]
 
 
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19'
-map_dir = f'{data_dir}/npipe6v20_maps/'
+Planck_map_dir = f'{data_dir}/npipe6v20_maps/'
 dr6_map_dir = f'{data_dir}/maps_dr6_v3/4pass/'
 npass_dr6 = 4
 
@@ -23,6 +23,8 @@ write_splits_spectra = True
 multistep_path = data_dir
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
+
+use_beam_covariance = True
 
 #window parameters
 

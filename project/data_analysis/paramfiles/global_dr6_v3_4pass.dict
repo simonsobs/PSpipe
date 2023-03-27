@@ -22,6 +22,8 @@ multistep_path = data_dir
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
 
+use_beam_covariance = True
+
 #window parameters
 
 ps_mask_dr6_pa4_f150 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'

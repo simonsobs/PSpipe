@@ -8,7 +8,7 @@ from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_
 import numpy as np
 import sys
 import time
-from pixell import curvedsky, powspec, enmap
+from pixell import curvedsky, powspec
 from pspipe_utils import simulation, pspipe_list, best_fits, kspace, misc
 
 
@@ -50,10 +50,7 @@ for sv in surveys:
     n_splits[sv] = d[f"n_splits_{sv}"]
     print(f"Running with {n_splits[sv]} splits for survey {sv}")
     templates[sv] = so_map.read_map(template_name)
-    template = np.stack([templates[sv].data for i in range(3)])
-    templates[sv].data = enmap.ndmap(template, wcs = templates[sv].data.wcs)
-    templates[sv].ncomp = 3
-
+    templates[sv].set_ncomp(3)
 
     if apply_kspace_filter:
         filter_dicts[sv] = d[f"k_filter_{sv}"]
@@ -119,15 +116,6 @@ for iii in subtasks:
             signal_alms[ar] = alms_cmb + fglms[f"{sv}_{ar}"]
             l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
             signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
-
-            # calibrate the alms
-            signal_alms[ar] = pspy_utils.calibrate_alms(signal_alms[ar],
-                                                        cal = d[f"cal_{sv}_{ar}"],
-                                                        pol_eff = d[f"pol_eff_{sv}_{ar}"])
-
-            # apply polarization angle miscalibration
-            signal_alms[ar] = pspy_utils.rotate_pol_alms(signal_alms[ar],
-                                                         pol_rot_angle = d[f"pol_angle_degree_{sv}_{ar}"])
 
         print(f"  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):

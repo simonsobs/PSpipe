@@ -52,7 +52,7 @@ for sv in surveys:
     templates[sv] = so_map.read_map(template_name)
     templates[sv].set_ncomp(3)
 
-    if apply_kspace_filter:
+    if apply_kspace_filter & (templates[sv].pixel == "CAR"):
         filter_dicts[sv] = d[f"k_filter_{sv}"]
         filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv])
 
@@ -136,7 +136,7 @@ for iii in subtasks:
                 print(f"  [split {k}] alm2map in {time.time()-t1:.02f} s")
 
                 t1 = time.time()
-                if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
+                if sv in filters:
 
                         binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
                         binary = so_map.read_map(binary_file)
@@ -195,7 +195,7 @@ for iii in subtasks:
                                                             spectra=spectra,
                                                             binned_mcm=binned_mcm)
 
-                            if d["apply_kspace_filter"]:
+                            if (sv1 in filters) & (sv2 in filters):
                                 lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
                                                                                 ps,
                                                                                 kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],

@@ -148,7 +148,7 @@ for i in range(iStart, iStop):
 
         # Add ell/cl to sacc
         Db = data_vec[count * n_bins : (count + 1) * n_bins]
-        act_sacc.add_ell_cl(cl_type, ta_name, tb_name, lb, Db, window=bp_window)
+        act_sacc.add_ell_cl(cl_type, ta_name, tb_name, lb, Db)
 
         if i == 0:
             # Get Bbl

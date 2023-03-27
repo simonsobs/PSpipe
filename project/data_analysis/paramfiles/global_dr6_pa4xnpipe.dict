@@ -70,8 +70,8 @@ src_free_maps_dr6 = True
 
 n_splits_dr6 = 8
 n_splits_Planck = 2
-maps_Planck_f143 = [f'{map_dir}/npipe6v20{split}_143_map_srcfree.fits' for split in ["A", "B"]]
-maps_Planck_f217 = [f'{map_dir}/npipe6v20{split}_217_map_srcfree.fits' for split in ["A", "B"]]
+maps_Planck_f143 = [f'{Planck_map_dir}/npipe6v20{split}_143_map_srcfree.fits' for split in ["A", "B"]]
+maps_Planck_f217 = [f'{Planck_map_dir}/npipe6v20{split}_217_map_srcfree.fits' for split in ["A", "B"]]
 
 maps_dr6_pa4_f150 = [f'{dr6_map_dir}/cmb_night_pa4_f150_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
 maps_dr6_pa4_f220 = [f'{dr6_map_dir}/cmb_night_pa4_f220_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]

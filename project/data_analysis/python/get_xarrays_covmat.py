@@ -16,8 +16,8 @@ import sys, os
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-use_mc_corrected_cov = d["use_mc_corrected_cov"]
-only_diag_corrections = d["use_only_diag_corrections"]
+use_mc_corrected_cov = True
+only_diag_corrections = False
 use_beam_covariance = d["use_beam_covariance"]
 
 cov_name = "analytic_cov"
@@ -64,7 +64,7 @@ if use_beam_covariance:
     pspy_utils.is_pos_def(analytic_cov_with_beam)
     pspy_utils.is_symmetric(analytic_cov_with_beam)
 
-    np.save(f"{like_product_dir}/x_ar_{cov_name}_with_beam.npy", analytic_cov_with_beam)
+    np.save(f"{like_product_dir}/x_ar_{cov_name}.npy", analytic_cov_with_beam)
 
     corr_analytic_cov_with_beam = so_cov.cov2corr(analytic_cov_with_beam, remove_diag=True)
     so_cov.plot_cov_matrix(corr_analytic_cov_with_beam, file_name=f"{plot_dir}/corr_xar_with_beam")

@@ -64,8 +64,8 @@ apod_type_pts_source_mask_LAT = "C1"
 do_bandpass_integration = True
 
 bandwidth_LAT_93 = 0.3
-bandwidth_LAT_145 = 0.3
-bandwidth_LAT_225 = 0.3
+bandwidth_LAT_145 = 0.2
+bandwidth_LAT_225 = 0.13
 
 # Passband frequency shifts
 bandint_shift_LAT_93 = 0.

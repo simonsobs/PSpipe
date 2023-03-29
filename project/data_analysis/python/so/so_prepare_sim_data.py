@@ -50,6 +50,7 @@ linestyle = {
 # Get survey, array lists & spectra name list
 n_arrays, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 spec_name_list = pspipe_list.get_spec_name_list(d, char = "_")
+sv_ar_list = [f"{sv}_{ar}" for sv, ar in zip(sv_list, ar_list)]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -73,7 +74,7 @@ ell, n_ell_t_LAT, n_ell_pol_LAT, map_wn = noise_calc.Simons_Observatory_V3_LA_no
                                                                                     apply_kludge_correction=True)
 
 # Initialize the dictionnaries with zeros
-n_ell_t = {spec_name: ell * 0 for spec_name in spec_name_list}
+n_ell_t = {spec_name: np.zeros_like(ell, dtype = float) for spec_name in spec_name_list}
 n_ell_pol = deepcopy(n_ell_t)
 
 # Create a dict storing the noise computed with the SO noise calculator
@@ -128,8 +129,8 @@ for f_pair_Planck in f_pairs_Planck:
     sigma_t_rad = np.deg2rad(sigma_t[f_pair_Planck]) / 60
     sigma_pol_rad = np.deg2rad(sigma_pol[f_pair_Planck]) / 60
 
-    n_ell_t_Planck_dict[f_pair_Planck] = np.full_like(ell, sigma_t_rad ** 2)
-    n_ell_pol_Planck_dict[f_pair_Planck] = np.full_like(ell, sigma_pol_rad ** 2)
+    n_ell_t_Planck_dict[f_pair_Planck] = np.full_like(ell, sigma_t_rad ** 2, dtype = float)
+    n_ell_pol_Planck_dict[f_pair_Planck] = np.full_like(ell, sigma_pol_rad ** 2, dtype = float)
 
 # Fill the dict with non-zero noise power
 for f_pair_Planck in f_pairs_Planck:
@@ -139,10 +140,7 @@ for f_pair_Planck in f_pairs_Planck:
 
 # Now let's write the n_ell_t and n_ell_pol dictionnary to disk
 # Note that we are creating a lot of small files, we could use another data format
-if d["type"] == "Dl":
-    fac = ell * (ell + 1) / (2 * np.pi)
-else:
-    fac = 1.
+fac = ell * (ell + 1) / (2 * np.pi) if d["type"] == "Dl" else 1.
 
 nlth_dict = {}
 for sv in surveys:
@@ -153,15 +151,14 @@ for sv in surveys:
             mean_noise_t = n_ell_t[spec_name] * fac
             mean_noise_p = n_ell_pol[spec_name] * fac
             mean_noise = {"TT": mean_noise_t, "EE": mean_noise_p, "BB": mean_noise_p}
-            for spec in spectra:
-                if spec in ["TT", "EE", "BB"]: continue
-                mean_noise[spec] = np.zeros_like(ell)
-
 
             # apply a regularization to the noise power spectrum at very low ell
             l_cut_noise = d["l_cut_noise_LAT"]
             for spec in spectra:
-                mean_noise[spec] = np.where(ell <= l_cut_noise, 0., mean_noise[spec])
+                if spec in ["TT", "EE", "BB"]:
+                    mean_noise[spec] = np.where(ell <= l_cut_noise, 0., mean_noise[spec])
+                else:
+                    mean_noise[spec] = np.zeros_like(ell, dtype = float)
             nlth_dict[spec_name] = mean_noise
 
             so_spectra.write_ps(f"{noise_model_dir}/mean_{ar1}x{ar2}_{sv}_noise.dat", ell, mean_noise, type, spectra = spectra)
@@ -189,15 +186,15 @@ beam_fwhm = {
 }
 
 l = np.arange(ell_max + 1000)
-bl = {f"{sv}_{ar}": np.ones(ell_max + 1000) for sv,ar in zip(sv_list, ar_list)}
+bl = {sv_ar: np.ones(ell_max + 1000) for sv_ar in sv_ar_list}
 plt.figure(figsize=(12, 12))
-for sv,ar in zip(sv_list, ar_list):
-    _, bl_sv_ar = pspy_utils.beam_from_fwhm(beam_fwhm[f"{sv}_{ar}"], ell_max+1000)
-    bl[f"{sv}_{ar}"][2:] = bl_sv_ar
+for sv_ar in sv_ar_list:
+    _, bl_sv_ar = pspy_utils.beam_from_fwhm(beam_fwhm[sv_ar], ell_max+1000)
+    bl[sv_ar][2:] = bl_sv_ar
 
-    np.savetxt(d[f"beam_{sv}_{ar}"], np.array([l, bl[f"{sv}_{ar}"]]).T)
+    np.savetxt(d[f"beam_{sv_ar}"], np.array([l, bl[f"{sv_ar}"]]).T)
 
-    plt.plot(l, bl[f"{sv}_{ar}"], ls = linestyle[sv], label = f"{sv}_{ar}")
+    plt.plot(l, bl[f"{sv_ar}"], ls = linestyle[sv], label = f"{sv_ar}")
     plt.xlabel(r"$\ell$", fontsize = 22)
     plt.ylabel(r"$b_{\ell}$", fontsize = 22)
 plt.legend()
@@ -241,37 +238,41 @@ fg_model =  {"normalisation":  fg_norm, "components": fg_components}
 fg_params =  d["fg_params"]
 do_bandpass_integration = d["do_bandpass_integration"]
 
-res = 0.1 #GHz
+res = 1. #GHz
 passbands = {}
 
-for sv, ar in zip(sv_list, ar_list):
-    freq_info = d[f"freq_info_{sv}_{ar}"]
+for sv_ar in sv_ar_list:
+    freq_info = d[f"freq_info_{sv_ar}"]
     if do_bandpass_integration:
-        central_nu, delta_nu_rel = freq_info["freq_tag"], d[f"bandwidth_{sv}_{ar}"]
+        central_nu, delta_nu_rel = freq_info["freq_tag"], d[f"bandwidth_{sv_ar}"]
         nu_min, nu_max = central_nu * (1 - delta_nu_rel), central_nu * (1 + delta_nu_rel)
         nu_ghz = np.linspace(nu_min, nu_max, int((nu_max-nu_min)/res))
 
         bp = np.where(nu_ghz > central_nu * (1 + delta_nu_rel * 0.5), 0.,
                       np.where(nu_ghz < central_nu * (1 - delta_nu_rel * 0.5), 0., 1.))
+
+        # remove the frequencies for which the passband is zero
+        # this is useful in the case of top-hat passbands in particular
+        nu_ghz, bp = nu_ghz[bp != 0.], bp[bp != 0.]
         np.savetxt(freq_info["passband"], np.array([nu_ghz, bp]).T)
 
     else:
         nu_ghz, bp = np.array([freq_info["freq_tag"]]), np.array([1])
 
-    passbands[f"{sv}_{ar}"] = [nu_ghz, bp]
+    passbands[f"{sv_ar}"] = [nu_ghz, bp]
 
 fg_dict = best_fits.get_foreground_dict(ell, passbands, fg_components, fg_params)
 
 fg = {}
-for sv1, ar1 in zip(sv_list, ar_list):
-    for sv2, ar2 in zip(sv_list, ar_list):
-        spec_name_1 = f"{sv1}_{ar1}"
-        spec_name_2 = f"{sv2}_{ar2}"
-        fg[spec_name_1, spec_name_2] = {}
+for sv1_ar1 in sv_ar_list:
+    for sv2_ar2 in sv_ar_list:
+        #spec_name_1 = f"{sv1}_{ar1}"
+        #spec_name_2 = f"{sv2}_{ar2}"
+        fg[sv1_ar1, sv2_ar2] = {}
         for spec in spectra:
-            fg[spec_name_1, spec_name_2][spec] = fg_dict[spec.lower(), "all", spec_name_1, spec_name_2]
+            fg[sv1_ar1, sv2_ar2][spec] = fg_dict[spec.lower(), "all", sv1_ar1, sv2_ar2]
 
-        so_spectra.write_ps(f"{bestfit_dir}/fg_{spec_name_1}x{spec_name_2}.dat", ell, fg[spec_name_1, spec_name_2], type, spectra=spectra)
+        so_spectra.write_ps(f"{bestfit_dir}/fg_{sv1_ar1}x{sv2_ar2}.dat", ell, fg[sv1_ar1, sv2_ar2], type, spectra=spectra)
 
 # Create binning file
 n_bins = 200

@@ -38,7 +38,7 @@ window_pol_LAT_145 = f"{windows_dir}/window_LAT_145.fits"
 window_T_LAT_225 = f"{windows_dir}/window_LAT_225.fits"
 window_pol_LAT_225 = f"{windows_dir}/window_LAT_225.fits"
 
-apod_type_survey_LAT = "Rectangle"
+apod_type_survey_LAT = "C1"
 apod_survey_degree_LAT = 3
 skip_from_edges_degree = 1.
 binary_is_survey_mask_LAT = False

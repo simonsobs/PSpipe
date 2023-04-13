@@ -149,6 +149,8 @@ for iii in subtasks:
 
                         if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                         if  (id_sv1 > id_sv2) : continue
+                        if  ('north' in sv1) & ('south' in sv2) : continue
+                        if  ('south' in sv1) & ('north' in sv2) : continue
 
                         spec_name = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}"
 

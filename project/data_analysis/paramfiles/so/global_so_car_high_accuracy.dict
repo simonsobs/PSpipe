@@ -4,7 +4,7 @@ arrays_LAT = ["93", "145", "225"]
 
 binning_dir = f"binning/"
 binning_file = f"{binning_dir}/binning.dat"
-niter = 3
+niter = 0
 remove_mean = False
 binned_mcm = False
 lmax = 9001

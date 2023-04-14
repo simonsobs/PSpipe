@@ -87,7 +87,7 @@ inv_analytic_cov = np.linalg.inv(analytic_cov)
 
 
 iStart = d["iStart"]
-iStop = d["iStop"]
+iStop = d["iStop"] + 1
 chi2_list = []
 for i in range(iStart, iStop):
     if i == 0:

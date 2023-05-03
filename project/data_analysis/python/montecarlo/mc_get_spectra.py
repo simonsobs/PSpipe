@@ -50,7 +50,12 @@ for sv in surveys:
     n_splits[sv] = d[f"n_splits_{sv}"]
     print(f"Running with {n_splits[sv]} splits for survey {sv}")
     templates[sv] = so_map.read_map(template_name)
-    templates[sv].set_ncomp(3)
+    if templates[sv].pixel == "CAR":
+        shape, wcs = templates[sv].data.geometry
+        templates[sv] = so_map.car_template_from_shape_wcs(shape, wcs, 3)
+    elif templates[sv].pixel == "HEALPIX":
+        nside = templates[sv].nside
+        templates[sv] = so_map.healpix_template(3, nside)
 
     if apply_kspace_filter & (templates[sv].pixel == "CAR"):
         filter_dicts[sv] = d[f"k_filter_{sv}"]

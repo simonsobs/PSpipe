@@ -234,7 +234,6 @@ for spec in ["TT", "EE"]:
 # We now compare the signal power spectra with foreground power spectra
 fg_norm = d["fg_norm"]
 fg_components = d["fg_components"]
-fg_model =  {"normalisation":  fg_norm, "components": fg_components}
 fg_params =  d["fg_params"]
 do_bandpass_integration = d["do_bandpass_integration"]
 
@@ -261,13 +260,12 @@ for sv_ar in sv_ar_list:
 
     passbands[f"{sv_ar}"] = [nu_ghz, bp]
 
-fg_dict = best_fits.get_foreground_dict(ell, passbands, fg_components, fg_params)
+fg_dict = best_fits.get_foreground_dict(ell, passbands, fg_components,
+                                        fg_params, fg_norm = fg_norm)
 
 fg = {}
 for sv1_ar1 in sv_ar_list:
     for sv2_ar2 in sv_ar_list:
-        #spec_name_1 = f"{sv1}_{ar1}"
-        #spec_name_2 = f"{sv2}_{ar2}"
         fg[sv1_ar1, sv2_ar2] = {}
         for spec in spectra:
             fg[sv1_ar1, sv2_ar2][spec] = fg_dict[spec.lower(), "all", sv1_ar1, sv2_ar2]

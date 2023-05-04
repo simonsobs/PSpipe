@@ -82,6 +82,8 @@ for ps_name in spectra_list:
 
 for spec in spectra:
     plt.figure(figsize=(12, 12))
+    if spec == "TT":
+        plt.semilogy()
     for ps_name in spectra_list:
         plt.plot(l_th, best_fit_dict[ps_name][spec], label = ps_name)
     plt.legend()

@@ -52,7 +52,7 @@ for sv in surveys:
     templates[sv] = so_map.read_map(template_name)
     if templates[sv].pixel == "CAR":
         shape, wcs = templates[sv].data.geometry
-        templates[sv] = so_map.car_template_from_shape_wcs(shape, wcs, 3)
+        templates[sv] = so_map.car_template_from_shape_wcs(3, shape, wcs)
     elif templates[sv].pixel == "HEALPIX":
         nside = templates[sv].nside
         templates[sv] = so_map.healpix_template(3, nside)

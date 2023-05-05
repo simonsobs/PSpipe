@@ -261,7 +261,7 @@ for sv_ar in sv_ar_list:
     passbands[f"{sv_ar}"] = [nu_ghz, bp]
 
 fg_dict = best_fits.get_foreground_dict(ell, passbands, fg_components,
-                                        fg_params, fg_norm = fg_norm)
+                                        fg_params, fg_norm=fg_norm)
 
 fg = {}
 for sv1_ar1 in sv_ar_list:

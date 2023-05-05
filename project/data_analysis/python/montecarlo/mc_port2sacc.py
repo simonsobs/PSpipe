@@ -163,7 +163,7 @@ for i in range(iStart, iStop):
         # Add metadata
         cov_sacc.metadata["author"] = d.get("author", "SO Collaboration PS Task Force")
         cov_sacc.metadata["date"] = d.get("date", datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
-        modules = ["camb", "fgspectra", "mflike", "numpy", "pixell", "pspipe", "pspy", "sacc"]
+        modules = ["camb", "fgspectra", "mflike", "numpy", "pixell", "pspipe", "pspipe_utils", "pspy", "sacc"]
         cov_sacc.metadata["modules"] = str(modules)
         for m in modules:
             cov_sacc.metadata[f"{m}_version"] = importlib.import_module(m).__version__

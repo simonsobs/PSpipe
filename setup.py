@@ -1,6 +1,5 @@
-from setuptools import find_packages, setup
-
 import versioneer
+from setuptools import find_packages, setup
 
 with open("README.rst") as readme_file:
     readme = readme_file.read()
@@ -20,9 +19,9 @@ setup(
     install_requires=[
         "scipy",
         "camb",
-        "pspy>=1.2.1,<1.5.0",
-        "pymaster>=1.0.2",
-        "mflike @ git+https://github.com/simonsobs/LAT_MFLike@v0.7.0#egg=mflike",
+        "pspy>=1.2.1",
+        # "pymaster>=1.0.2",
+        "mflike",
         "wget",
     ],
 )

@@ -20,7 +20,7 @@ setup(
         "scipy",
         "camb",
         "pspy>=1.2.1",
-        # "pymaster>=1.0.2",
+        "pymaster>=1.0.2",
         "mflike",
         "wget",
     ],

@@ -26,6 +26,8 @@ lmax = d["lmax"]
 niter = d["niter"]
 binned_mcm = d["binned_mcm"]
 apply_kspace_filter = d["apply_kspace_filter"]
+cov_T_E_only = d["cov_T_E_only"]
+
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
@@ -127,7 +129,10 @@ for task in subtasks:
                                                     binning_file,
                                                     mbb_inv_ab,
                                                     mbb_inv_cd,
-                                                    binned_mcm=binned_mcm)
+                                                    binned_mcm=binned_mcm,
+                                                    cov_T_E_only=cov_T_E_only,
+                                                    dtype=np.float32)
+
 
     if apply_kspace_filter == True:
         # Some heuristic correction for the number of modes lost due to the transfer function

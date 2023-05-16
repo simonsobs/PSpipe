@@ -1,5 +1,6 @@
 import os
 import tempfile
+import unittest
 
 import camb
 import healpy as hp
@@ -101,9 +102,15 @@ def run_namaster():
     return lb, Clb
 
 
-lb_pspy, Clb_pspy = run_pspy()
-lb_nmt, Clb_nmt = run_namaster()
+class PSPipeTestPspyVsNamaster(unittest.TestCase):
+    def test_spectra(self):
+        lb_pspy, Clb_pspy = run_pspy()
+        lb_nmt, Clb_nmt = run_namaster()
 
-for spec in spectra:
-    msg = f"Testing {spec} spectrum"
-    np.testing.assert_almost_equal(Clb_pspy[spec], Clb_nmt[spec], err_msg=msg, decimal=12)
+        for spec in spectra:
+            msg = f"Testing {spec} spectrum"
+            np.testing.assert_almost_equal(Clb_pspy[spec], Clb_nmt[spec], err_msg=msg, decimal=12)
+
+
+if __name__ == "__main__":
+    unittest.main()

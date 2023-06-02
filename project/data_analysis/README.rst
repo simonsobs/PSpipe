@@ -6,7 +6,7 @@ Computing DR6 spectra
 Requirements
 ============
 
-* pspy >= 1.5.10
+* pspy >= 1.6.1
 * pspipe_utils 
 
 

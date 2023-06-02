@@ -26,6 +26,7 @@ write_all_spectra = d["write_splits_spectra"]
 deconvolve_pixwin = d["deconvolve_pixwin"]
 binned_mcm = d["binned_mcm"]
 apply_kspace_filter = d["apply_kspace_filter"]
+cov_T_E_only = d["cov_T_E_only"]
 
 mcm_dir = "mcms"
 spec_dir = "spectra"
@@ -71,7 +72,8 @@ if apply_kspace_filter:
     
     # this will be used in the covariance computation
     for spec_name in spec_name_list:
-        one_d_tf = kspace_transfer_matrix[spec_name].diagonal()[:4 * n_bins]
+        one_d_tf = kspace_transfer_matrix[spec_name].diagonal()
+        if cov_T_E_only == True: one_d_tf = one_d_tf[:4 * n_bins]
         np.savetxt(f"{spec_dir}/one_dimension_kspace_tf_{spec_name}.dat", one_d_tf)
 
 # compute the power spectra

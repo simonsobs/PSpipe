@@ -54,42 +54,44 @@ for sv, ar in zip(sv_list, ar_list):
     passbands[f"{sv}_{ar}"] = [nu_ghz, pb]
 
 fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components,
-                                        fg_params, fg_norm,)
+                                        fg_params, fg_norm)
 
 spectra_list = pspipe_list.get_spec_name_list(d, char = "_")
-fg= {}
 
 for sv1, ar1 in zip(sv_list, ar_list):
     for sv2, ar2 in zip(sv_list, ar_list):
         name1 = f"{sv1}_{ar1}"
         name2 = f"{sv2}_{ar2}"
-        fg[name1, name2] = {}
+        fg = {}
         for spec in spectra:
-            fg[name1, name2][spec] = fg_dict[spec.lower(), "all", name1, name2]
+            fg[spec] = fg_dict[spec.lower(), "all", name1, name2]
+        so_spectra.write_ps(f"{bestfit_dir}/fg_{name1}x{name2}.dat", l_th, fg, type, spectra=spectra)
 
-        so_spectra.write_ps(f"{bestfit_dir}/fg_{name1}x{name2}.dat", l_th, fg[name1, name2], type, spectra=spectra)
-
-for spec in spectra:
-    plt.figure(figsize=(12, 12))
-    for ps_name in spectra_list:
-        name1, name2 = ps_name.split("x")
-        name = f"{ps_name}_{spec}"
-        cl_th_and_fg = ps_dict[spec]
-
-        if spec == "TT":
-            plt.semilogy()
+best_fit_dict = {}
+for ps_name in spectra_list:
+    best_fit_dict[ps_name] = {}
+    name1, name2 = ps_name.split("x")
+    for spec in spectra:
         if spec.lower() in d["fg_components"].keys():
             fg = fg_dict[spec.lower(), "all", name1, name2]
         else:
             fg = fg_dict[spec.lower()[::-1], "all", name1, name2]
-        cl_th_and_fg = cl_th_and_fg + fg
+        best_fit_dict[ps_name][spec] = ps_dict[spec] + fg
+    so_spectra.write_ps(f"{bestfit_dir}/cmb_and_fg_{ps_name}.dat", l_th, best_fit_dict[ps_name], type, spectra=spectra)
 
-        plt.plot(l_th, cl_th_and_fg, label = ps_name)
 
+for spec in spectra:
+    plt.figure(figsize=(12, 12))
+    if spec == "TT":
+        plt.semilogy()
+    for ps_name in spectra_list:
+        plt.plot(l_th, best_fit_dict[ps_name][spec], label = ps_name)
     plt.legend()
     plt.savefig(f"{plot_dir}/best_fit_{spec}.png")
     plt.clf()
     plt.close()
+    
+
 
 fg_components["tt"].remove("tSZ_and_CIB")
 for comp in ["tSZ", "cibc", "tSZxCIB"]:

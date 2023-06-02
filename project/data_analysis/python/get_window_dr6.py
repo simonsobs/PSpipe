@@ -89,7 +89,7 @@ for task in subtasks:
             index = map.find("map.fits")
 
         ivar_map = map[:index] + "ivar.fits"
-        log.info(f"using '{ivar_map}' file")
+        log.info(f"[{task}] using '{ivar_map}' file")
         ivar_map = so_map.read_map(ivar_map)
         survey_mask.data[ivar_map.data[:] == 0.0] = 0.0
         ivar_all.data[:] += ivar_map.data[:]
@@ -103,7 +103,7 @@ for task in subtasks:
             index = map.find("map.fits")
 
         xlink_map = map[:index] + "xlink.fits"
-        log.info(f"using '{xlink_map}' file")
+        log.info(f"[{task}] using '{xlink_map}' file")
         x_mask = create_crosslink_mask(xlink_map, cross_link_threshold)
         survey_mask.data *= x_mask
 

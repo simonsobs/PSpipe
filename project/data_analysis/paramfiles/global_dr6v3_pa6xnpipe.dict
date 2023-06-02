@@ -7,6 +7,7 @@ arrays_Planck = ["f100", "f143"]
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19'
 Planck_map_dir = f'{data_dir}/npipe6v20_maps/'
 dr6_map_dir = f'{data_dir}/maps_dr6_v3/4pass/'
+
 npass_dr6 = 4
 
 deconvolve_pixwin = True
@@ -14,6 +15,7 @@ pixwin_dr6 = {"pix": 'CAR', "order": 0}
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
 
 binning_file = f"{data_dir}/binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
+
 niter = 0
 remove_mean = False
 binned_mcm = False
@@ -41,6 +43,7 @@ gal_mask_Planck_f143 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmi
 gal_mask_dr6_pa6_f090 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
 gal_mask_dr6_pa6_f150 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
 
+
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
 skip_from_edges_degree = 1
@@ -64,6 +67,7 @@ mm_tf_Planck_f143 = f"{data_dir}/transfer_fcns/tf_unity.dat"
 mm_tf_dr6_pa6_f090 = f"{data_dir}/transfer_fcns/tf_unity.dat"
 mm_tf_dr6_pa6_f150 = f"{data_dir}/transfer_fcns/tf_unity.dat"
 
+
 # maps
 
 src_free_maps_Planck = True
@@ -76,6 +80,7 @@ maps_Planck_f143 = [f'{Planck_map_dir}/npipe6v20{split}_143_map_srcfree.fits' fo
 
 maps_dr6_pa6_f090 = [f'{dr6_map_dir}/cmb_night_pa6_f090_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
 maps_dr6_pa6_f150 = [f'{dr6_map_dir}/cmb_night_pa6_f150_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
+
 
 cal_Planck_f100 = 1.0
 cal_Planck_f143 = 1.0
@@ -100,6 +105,7 @@ beam_Planck_f143 = f'{data_dir}/npipe6v20_beams/npipe6v20_beam_143_mean.dat'
 
 beam_dr6_pa6_f090 = f'{data_dir}/beams/20220517_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa6_f150 = f'{data_dir}/beams/20220517_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
 
 window_T_Planck_f100 = "windows/window_dr6_pa6_f090.fits"
 window_pol_Planck_f100 = "windows/window_dr6_pa6_f090.fits"

@@ -4,16 +4,20 @@ arrays_dr6 = ["pa4_f150", "pa4_f220"]
 arrays_Planck = ["f143", "f217"]
 
 
+
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19'
 Planck_map_dir = f'{data_dir}/npipe6v20_maps'
 dr6_map_dir = f'{data_dir}/maps_dr6_v3/4pass'
+
 npass_dr6 = 4
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": 'CAR', "order": 0}
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
 
+
 binning_file = f"{data_dir}/binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
+
 niter = 0
 remove_mean = False
 binned_mcm = False
@@ -40,6 +44,7 @@ gal_mask_Planck_f217 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmi
 
 gal_mask_dr6_pa4_f150 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
 gal_mask_dr6_pa4_f220 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
+
 
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
@@ -95,11 +100,13 @@ nu_eff_Planck_f217 = 217
 nu_eff_dr6_pa4_f150 = 150
 nu_eff_dr6_pa4_f220 = 220
 
+
 beam_Planck_f143 = f'{data_dir}/npipe6v20_beams/npipe6v20_beam_143_mean.dat'
 beam_Planck_f217 = f'{data_dir}/npipe6v20_beams/npipe6v20_beam_217_mean.dat'
 
 beam_dr6_pa4_f150 = f'{data_dir}/beams/20220517_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa4_f220 = f'{data_dir}/beams/20220517_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+
 
 window_T_Planck_f143 = "windows/window_dr6_pa4_f150.fits"
 window_pol_Planck_f143 = "windows/window_dr6_pa4_f150.fits"
@@ -133,5 +140,6 @@ range_TT = [10, 8000]
 range_TE = [-150, 150]
 range_ET = [-150, 150]
 range_EE = [-20, 50]
+
 
 planck_data_dir = f"{data_dir}/planck_data/"

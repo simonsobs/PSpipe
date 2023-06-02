@@ -2,14 +2,13 @@ surveys = ["dr6"]
 
 arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 
-
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19'
 map_dir = '/project/projectdirs/act/data/tlouis/s17s18s19/maps_dr6_v3/4pass'
+
 npass_dr6 = 4
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": 'CAR', "order": 0}
-
 
 binning_file = f"{data_dir}/binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
 niter = 0
@@ -18,6 +17,7 @@ binned_mcm = False
 lmax = 5400
 type = 'Dl'
 write_splits_spectra = True
+cov_T_E_only = True
 multistep_path = data_dir
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
@@ -40,6 +40,7 @@ gal_mask_dr6_pa5_f150 = f"{data_dir}/masks/mask_galactic_equatorial_car_halfarcm
 gal_mask_dr6_pa6_f090 = f"{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
 gal_mask_dr6_pa6_f150 = f"{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits"
 
+
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
 skip_from_edges_degree = 1
@@ -48,7 +49,7 @@ n_med_ivar = 3
 
 # kspace filter parameters
 apply_kspace_filter  = True
-kspace_tf_path  = "/project/projectdirs/act/data/tlouis/s17s18s19/transfer_fcns/transfer_functions_choi_binning"
+kspace_tf_path  = "analytical"
 k_filter_dr6 = {"type":"binary_cross","vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
 
 deconvolve_map_maker_tf_dr6 = False
@@ -60,9 +61,11 @@ mm_tf_dr6_pa5_f150 = f"{data_dir}/transfer_fcns/tf_unity.dat"
 mm_tf_dr6_pa6_f090 = f"{data_dir}/transfer_fcns/tf_unity.dat"
 mm_tf_dr6_pa6_f150 = f"{data_dir}/transfer_fcns/tf_unity.dat"
 
+
 # maps
 
 src_free_maps_dr6 = True
+
 n_splits_dr6 = 8
 maps_dr6_pa4_f150 = [f'{map_dir}/cmb_night_pa4_f150_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
 maps_dr6_pa4_f220 = [f'{map_dir}/cmb_night_pa4_f220_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
@@ -70,7 +73,6 @@ maps_dr6_pa5_f090 = [f'{map_dir}/cmb_night_pa5_f090_{npass_dr6}pass_{n_splits_dr
 maps_dr6_pa5_f150 = [f'{map_dir}/cmb_night_pa5_f150_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
 maps_dr6_pa6_f090 = [f'{map_dir}/cmb_night_pa6_f090_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
 maps_dr6_pa6_f150 = [f'{map_dir}/cmb_night_pa6_f150_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
-
 
 cal_dr6_pa4_f150 = 0.98539
 cal_dr6_pa4_f220 = 1.06922
@@ -101,6 +103,7 @@ beam_dr6_pa5_f090 = f'{data_dir}/beams/20220517_beams/coadd_pa5_f090_night_beam_
 beam_dr6_pa5_f150 = f'{data_dir}/beams/20220517_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa6_f090 = f'{data_dir}/beams/20220517_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa6_f150 = f'{data_dir}/beams/20220517_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
 
 window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
 window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
@@ -141,5 +144,6 @@ range_TT = [10, 8000]
 range_TE = [-150, 150]
 range_ET = [-150, 150]
 range_EE = [-20, 50]
+
 
 planck_data_dir = f"{data_dir}/planck_data"

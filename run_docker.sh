@@ -65,7 +65,7 @@ function start_docker() {
     local docker_options="-it -p 8888:8888"
     docker_options+=" --cidfile ${cid_file} -v ${pspipe_workspace}:/home/pspipe/workspace"
 
-    docker run $(echo ${docker_options}) simonsobs/pspipe:latest /bin/bash
+    docker run $(echo ${docker_options}) ghcr.io/simonsobs/pspipe:master /bin/bash
     return 0
 }
 
@@ -73,7 +73,7 @@ function stop_docker() {
     msg_notice "Stopping PSpipe docker."
     if [ ! -z ${cid_file} ]; then
         cid_value=$(cat ${cid_file})
-        docker commit ${cid_value} simonsobs/pspipe:latest > /dev/null 2>&1
+        docker commit ${cid_value} simonsobs/pspipe:master > /dev/null 2>&1
         docker rm ${cid_value} > /dev/null 2>&1
     fi
     return 0

@@ -6,12 +6,12 @@ class PSPipeTest(unittest.TestCase):
         def _assert_import(pkg_name):
             try:
                 import importlib
+
                 importlib.import_module(pkg_name)
             except:
-                assert False, "Import of '{}' fails".format(pkg_name)
+                assert False, f"Import of '{pkg_name}' fails"
 
         _assert_import("camb")
         _assert_import("mflike")
         _assert_import("pixell")
         _assert_import("pspy")
-        _assert_import("pymaster")

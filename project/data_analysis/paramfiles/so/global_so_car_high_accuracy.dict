@@ -11,6 +11,7 @@ lmax = 9001
 l_cut_noise_LAT = 30 # Parameter to regularize the noise power spectra at very low ell
 type = "Dl"
 write_splits_spectra = False
+cov_T_E_only = True
 
 use_toeplitz_mcm = False
 use_toeplitz_cov = True

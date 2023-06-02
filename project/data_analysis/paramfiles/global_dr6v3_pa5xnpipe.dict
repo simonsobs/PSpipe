@@ -1,7 +1,7 @@
 surveys = ["dr6", "Planck"]
 
-arrays_dr6 = ["pa4_f150", "pa4_f220"]
-arrays_Planck = ["f143", "f217"]
+arrays_dr6 = ["pa5_f090", "pa5_f150"]
+arrays_Planck = ["f100", "f143"]
 
 
 data_dir = '/project/projectdirs/act/data/tlouis/s17s18s19'
@@ -20,6 +20,7 @@ binned_mcm = False
 lmax = 2000
 type = 'Dl'
 write_splits_spectra = True
+cov_T_E_only = True
 multistep_path = data_dir
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
@@ -28,17 +29,17 @@ use_beam_covariance = True
 
 #window parameters
 
+ps_mask_Planck_f100 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_10.0_monster_dust.fits'
 ps_mask_Planck_f143 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_10.0_monster_dust.fits'
-ps_mask_Planck_f217 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_10.0_monster_dust.fits'
 
-ps_mask_dr6_pa4_f150 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_10.0_monster_dust.fits'
-ps_mask_dr6_pa4_f220 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_10.0_monster_dust.fits'
+ps_mask_dr6_pa5_f090 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_10.0_monster_dust.fits'
+ps_mask_dr6_pa5_f150 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_10.0_monster_dust.fits'
 
+gal_mask_Planck_f100 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
 gal_mask_Planck_f143 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
-gal_mask_Planck_f217 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
 
-gal_mask_dr6_pa4_f150 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
-gal_mask_dr6_pa4_f220 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
+gal_mask_dr6_pa5_f090 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
+gal_mask_dr6_pa5_f150 = f'{data_dir}/masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch.fits'
 
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
@@ -57,11 +58,11 @@ k_filter_Planck = {"type":"binary_cross","vk_mask":[-90, 90], "hk_mask":[-50, 50
 deconvolve_map_maker_tf_Planck = False
 deconvolve_map_maker_tf_dr6 = False
 
+mm_tf_Planck_f100 = f"{data_dir}/transfer_fcns/tf_unity.dat"
 mm_tf_Planck_f143 = f"{data_dir}/transfer_fcns/tf_unity.dat"
-mm_tf_Planck_f217 = f"{data_dir}/transfer_fcns/tf_unity.dat"
 
-mm_tf_dr6_pa4_f150 = f"{data_dir}/transfer_fcns/tf_unity.dat"
-mm_tf_dr6_pa4_f220 = f"{data_dir}/transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa5_f090 = f"{data_dir}/transfer_fcns/tf_unity.dat"
+mm_tf_dr6_pa5_f150 = f"{data_dir}/transfer_fcns/tf_unity.dat"
 
 # maps
 
@@ -70,47 +71,47 @@ src_free_maps_dr6 = True
 
 n_splits_dr6 = 8
 n_splits_Planck = 2
+maps_Planck_f100 = [f'{Planck_map_dir}/npipe6v20{split}_100_map_srcfree.fits' for split in ["A", "B"]]
 maps_Planck_f143 = [f'{Planck_map_dir}/npipe6v20{split}_143_map_srcfree.fits' for split in ["A", "B"]]
-maps_Planck_f217 = [f'{Planck_map_dir}/npipe6v20{split}_217_map_srcfree.fits' for split in ["A", "B"]]
 
-maps_dr6_pa4_f150 = [f'{dr6_map_dir}/cmb_night_pa4_f150_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
-maps_dr6_pa4_f220 = [f'{dr6_map_dir}/cmb_night_pa4_f220_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
+maps_dr6_pa5_f090 = [f'{dr6_map_dir}/cmb_night_pa5_f090_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
+maps_dr6_pa5_f150 = [f'{dr6_map_dir}/cmb_night_pa5_f150_{npass_dr6}pass_{n_splits_dr6}way_set{i}_map_srcfree.fits' for i in range(n_splits_dr6)]
 
+cal_Planck_f100 = 1.0
 cal_Planck_f143 = 1.0
-cal_Planck_f217 = 1.0
 
-cal_dr6_pa4_f150 = 1.0
-cal_dr6_pa4_f220 = 1.0
+cal_dr6_pa5_f090 = 1.0
+cal_dr6_pa5_f150 = 1.0
 
+pol_eff_Planck_f100 = 1.0
 pol_eff_Planck_f143 = 1.0
-pol_eff_Planck_f217 = 1.0
 
-pol_eff_dr6_pa4_f150 = 1.0
-pol_eff_dr6_pa4_f220 = 1.0
+pol_eff_dr6_pa5_f090 = 1.0
+pol_eff_dr6_pa5_f150 = 1.0
 
+nu_eff_Planck_f100 = 100
 nu_eff_Planck_f143 = 143
-nu_eff_Planck_f217 = 217
 
-nu_eff_dr6_pa4_f150 = 150
-nu_eff_dr6_pa4_f220 = 220
+nu_eff_dr6_pa5_f090 = 90
+nu_eff_dr6_pa5_f150 = 150
 
+beam_Planck_f100 = f'{data_dir}/npipe6v20_beams/npipe6v20_beam_100_mean.dat'
 beam_Planck_f143 = f'{data_dir}/npipe6v20_beams/npipe6v20_beam_143_mean.dat'
-beam_Planck_f217 = f'{data_dir}/npipe6v20_beams/npipe6v20_beam_217_mean.dat'
 
-beam_dr6_pa4_f150 = f'{data_dir}/beams/20220517_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa4_f220 = f'{data_dir}/beams/20220517_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f090 = f'{data_dir}/beams/20220517_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f150 = f'{data_dir}/beams/20220517_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
 
-window_T_Planck_f143 = "windows/window_dr6_pa4_f150.fits"
-window_pol_Planck_f143 = "windows/window_dr6_pa4_f150.fits"
+window_T_Planck_f100 = "windows/window_dr6_pa5_f090.fits"
+window_pol_Planck_f100 = "windows/window_dr6_pa5_f090.fits"
 
-window_T_Planck_f217 = "windows/window_dr6_pa4_f220.fits"
-window_pol_Planck_f217 = "windows/window_dr6_pa4_f220.fits"
+window_T_Planck_f143 = "windows/window_dr6_pa5_f150.fits"
+window_pol_Planck_f143 = "windows/window_dr6_pa5_f150.fits"
 
-window_T_dr6_pa4_f150 = "windows/window_dr6_pa4_f150.fits"
-window_pol_dr6_pa4_f150 = "windows/window_dr6_pa4_f150.fits"
+window_T_dr6_pa5_f090 = "windows/window_dr6_pa5_f090.fits"
+window_pol_dr6_pa5_f090 = "windows/window_dr6_pa5_f090.fits"
 
-window_T_dr6_pa4_f220 = "windows/window_dr6_pa4_f220.fits"
-window_pol_dr6_pa4_f220 = "windows/window_dr6_pa4_f220.fits"
+window_T_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150.fits"
+window_pol_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150.fits"
 
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}

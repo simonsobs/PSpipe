@@ -18,6 +18,7 @@ d.read_from_file(sys.argv[1])
 
 use_mc_corrected_cov = True
 only_diag_corrections = False
+use_beam_covariance = d["use_beam_covariance"]
 
 cov_name = "analytic_cov"
 if use_mc_corrected_cov:
@@ -25,7 +26,8 @@ if use_mc_corrected_cov:
         cov_name += "_with_diag_mc_corrections"
     else:
         cov_name += "_with_mc_corrections"
-
+if use_beam_covariance:
+    cov_name += "_with_beam"
 
 cov_dir = "covariances"
 like_product_dir = "like_product"
@@ -44,25 +46,28 @@ analytic_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
                                                             remove_doublon=True,
                                                             check_pos_def=True)
 
-beam_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
-                                                        cov_dir,
-                                                        "analytic_beam_cov",
-                                                        spectra_order=["TT", "TE", "ET", "EE"],
-                                                        remove_doublon=True,
-                                                        check_pos_def=False)
-
-analytic_cov_with_beam = analytic_cov + beam_cov
-
-pspy_utils.is_pos_def(analytic_cov_with_beam)
-pspy_utils.is_symmetric(analytic_cov_with_beam)
-
 np.save(f"{like_product_dir}/x_ar_{cov_name}.npy", analytic_cov)
-np.save(f"{like_product_dir}/x_ar_{cov_name}_with_beam.npy", analytic_cov_with_beam)
-
 corr_analytic = so_cov.cov2corr(analytic_cov, remove_diag=True)
-corr_analytic_cov_with_beam = so_cov.cov2corr(analytic_cov_with_beam, remove_diag=True)
 so_cov.plot_cov_matrix(corr_analytic, file_name=f"{plot_dir}/corr_xar")
-so_cov.plot_cov_matrix(corr_analytic_cov_with_beam, file_name=f"{plot_dir}/corr_xar_with_beam")
+
+if use_beam_covariance:
+
+    beam_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
+                                                            cov_dir,
+                                                            "analytic_beam_cov",
+                                                            spectra_order=["TT", "TE", "ET", "EE"],
+                                                            remove_doublon=True,
+                                                            check_pos_def=False)
+
+    analytic_cov_with_beam = analytic_cov + beam_cov
+
+    pspy_utils.is_pos_def(analytic_cov_with_beam)
+    pspy_utils.is_symmetric(analytic_cov_with_beam)
+
+    np.save(f"{like_product_dir}/x_ar_{cov_name}.npy", analytic_cov_with_beam)
+
+    corr_analytic_cov_with_beam = so_cov.cov2corr(analytic_cov_with_beam, remove_diag=True)
+    so_cov.plot_cov_matrix(corr_analytic_cov_with_beam, file_name=f"{plot_dir}/corr_xar_with_beam")
 
 
 # This part compare the analytic covariance with the montecarlo covariance
@@ -78,7 +83,7 @@ if compare_with_sims:
     multistep_path = d["multistep_path"]
 
     full_mc_cov = np.load("%s/cov_restricted_all_cross.npy" % mc_dir)
-    
+
     bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
     n_bins = len(bin_hi)
 
@@ -101,13 +106,13 @@ if compare_with_sims:
     size = int(full_analytic_cov.shape[0] / n_bins)
     count = 0
     for ispec in range(-size + 1, size):
-    
+
         rows, cols = np.indices(full_mc_cov.shape)
         row_vals = np.diag(rows, k = ispec * n_bins)
         col_vals = np.diag(cols, k = ispec * n_bins)
         mat = np.ones(full_mc_cov.shape)
         mat[row_vals, col_vals] = 0
-    
+
         str = "cov_diagonal_%03d.png" % (count)
 
         plt.figure(figsize=(12,8))
@@ -120,15 +125,13 @@ if compare_with_sims:
         plt.savefig(f"{cov_plot_dir}/{str}")
         plt.clf()
         plt.close()
-    
+
         g.write('<div class=sub>\n')
         g.write('<img src="' + str + '"  /> \n')
         g.write('</div>\n')
-    
+
         count+=1
 
     g.write('</body> \n')
     g.write('</html> \n')
     g.close()
-
-

@@ -6,6 +6,12 @@ import os
 import re
 import sys
 
+import importlib
+from datetime import datetime
+
+import matplotlib.pyplot as plt
+import scipy.stats as ss
+
 import numpy as np
 import sacc
 from pspipe_utils import external_data, pspipe_list, covariance
@@ -14,8 +20,12 @@ from pspy import pspy_utils, so_dict
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+surveys = d["surveys"]
+arrays = {sv: d[f"arrays_{sv}"] for sv in surveys}
+
 use_mc_corrected_cov = True
 only_diag_corrections = False
+use_beam_covariance = d["use_beam_covariance"]
 
 cov_name = "analytic_cov"
 if use_mc_corrected_cov:
@@ -23,6 +33,8 @@ if use_mc_corrected_cov:
         cov_name += "_with_diag_mc_corrections"
     else:
         cov_name += "_with_mc_corrections"
+if use_beam_covariance:
+    cov_name += "_with_beam"
 
 mcm_dir = "mcms"
 bestfit_dir = "best_fits"
@@ -53,49 +65,66 @@ bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(bin_hi)
 
 # Reading beams
-beams = {wafer: pspy_utils.read_beam_file(d[f"beam_dr6_{wafer}"]) for wafer in wafers}
+beams = {f"{sv}_{ar}": pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"]) for sv in surveys for ar in arrays[sv]}
 
 # Reading passbands : the passband file should be within the dict file
 passbands = {}
 do_bandpass_integration = d["do_bandpass_integration"]
-for wafer in wafers:
-    freq_info = d[f"freq_info_dr6_{wafer}"]
-    if do_bandpass_integration:
-        nu_ghz, passband = np.loadtxt(freq_info["passband"]).T
-    else:
-        nu_ghz, passband = np.array([freq_info["freq_tag"]]), np.array([1.])
+for sv in surveys:
+    for ar in arrays[sv]:
+        freq_info = d[f"freq_info_{sv}_{ar}"]
+        if do_bandpass_integration:
+            nu_ghz, passband = np.loadtxt(freq_info["passband"]).T
+        else:
+            nu_ghz, passband = np.array([freq_info["freq_tag"]]), np.array([1.])
 
-    passbands[wafer] = [nu_ghz, passband]
+        passbands[f"{sv}_{ar}"] = [nu_ghz, passband]
 
 # Reading covariance
 like_product_dir = "like_product"
-analytic_cov = np.load(os.path.join(like_product_dir, f"x_ar_{cov_name}_with_beam.npy"))
+analytic_cov = np.load(os.path.join(like_product_dir, f"x_ar_{cov_name}.npy"))
 inv_analytic_cov = np.linalg.inv(analytic_cov)
 
 
 iStart = d["iStart"]
-iStop = d["iStop"]
+iStop = d["iStop"] + 1
+chi2_list = []
 for i in range(iStart, iStop):
+    if i == 0:
+        cov_sacc = sacc.Sacc()
     print(f"Storing simulation n°{i}...")
 
     # Saving into sacc format
     act_sacc = sacc.Sacc()
-    for wafer in wafers:
-        for spin, quantity in zip([0, 2], ["temperature", "polarization"]):
+    for sv in surveys:
+        for wafer in arrays[sv]:
+            for spin, quantity in zip([0, 2], ["temperature", "polarization"]):
 
-            nus, passband = passbands.get(wafer)
-            ell, beam = beams.get(wafer)
+                nus, passband = passbands.get(f"{sv}_{wafer}")
+                ell, beam = beams.get(f"{sv}_{wafer}")
 
-            act_sacc.add_tracer(
-                "NuMap",
-                f"dr6_{wafer}_s{spin}",
-                quantity=f"cmb_{quantity}",
-                spin=spin,
-                nu=nus,
-                bandpass=passband,
-                ell=ell,
-                beam=beam,
-            )
+                act_sacc.add_tracer(
+                    "NuMap",
+                    f"{sv}_{wafer}_s{spin}",
+                    quantity=f"cmb_{quantity}",
+                    spin=spin,
+                    nu=nus,
+                    bandpass=passband,
+                    ell=ell,
+                    beam=beam,
+                )
+
+                if i == 0:
+                    cov_sacc.add_tracer(
+                        "NuMap",
+                        f"{sv}_{wafer}_s{spin}",
+                        quantity=f"cmb_{quantity}",
+                        spin=spin,
+                        nu=nus,
+                        bandpass=passband,
+                        ell=ell,
+                        beam=beam,
+                    )
 
     # Reading the flat data vector
     data_vec = covariance.read_x_ar_spectra_vec(
@@ -105,11 +134,6 @@ for i in range(iStart, iStop):
     for count, (spec, s1, s2) in enumerate(blocks):
         print(f"Adding {s1}x{s2}, {spec} spectrum")
 
-        # Get Bbl
-        mcm_dir = "mcms"
-        Bbl = np.load(os.path.join(mcm_dir, f"{s1}x{s2}_Bbl_spin0xspin0.npy"))
-        ls_w = np.arange(2, Bbl.shape[-1] + 2)
-        bp_window = sacc.BandpowerWindow(ls_w, Bbl.T)
 
         # Define tracer names and cl type
         pa, pb = spec
@@ -124,13 +148,34 @@ for i in range(iStart, iStop):
 
         # Add ell/cl to sacc
         Db = data_vec[count * n_bins : (count + 1) * n_bins]
-        act_sacc.add_ell_cl(cl_type, ta_name, tb_name, lb, Db, window=bp_window)
+        act_sacc.add_ell_cl(cl_type, ta_name, tb_name, lb, Db)
 
-    print("Adding covariance")
-    act_sacc.add_covariance(analytic_cov)
+        if i == 0:
+            # Get Bbl
+            mcm_dir = "mcms"
+            Bbl = np.load(os.path.join(mcm_dir, f"{s1}x{s2}_Bbl_spin0xspin0.npy"))
+            ls_w = np.arange(2, Bbl.shape[-1] + 2)
+            bp_window = sacc.BandpowerWindow(ls_w, Bbl.T)
+            cov_sacc.add_ell_cl(cl_type, ta_name, tb_name,
+                                lb, Db, window=bp_window)
+
+    if i == 0:
+        # Add metadata
+        cov_sacc.metadata["author"] = d.get("author", "SO Collaboration PS Task Force")
+        cov_sacc.metadata["date"] = d.get("date", datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
+        modules = ["camb", "fgspectra", "mflike", "numpy", "pixell", "pspipe", "pspipe_utils", "pspy", "sacc"]
+        cov_sacc.metadata["modules"] = str(modules)
+        for m in modules:
+            cov_sacc.metadata[f"{m}_version"] = importlib.import_module(m).__version__
+        # Store dict file as strings
+        for k, v in d.items():
+            cov_sacc.metadata[k] = str(v)
+        cov_sacc.add_covariance(analytic_cov)
+        cov_sacc.save_fits(f"{sim_sacc_dir}/data_sacc_w_covar_and_Bbl.fits", overwrite=True)
 
     print("Writing sacc file")
-    act_sacc.save_fits(f"{sim_sacc_dir}/act_simu_sacc_{i:05d}.fits", overwrite=True)
+    sacc_file_name = f"{'_'.join(surveys)}_simu_sacc_{i:05d}.fits"
+    act_sacc.save_fits(f"{sim_sacc_dir}/{sacc_file_name}", overwrite=True)
 
     print("Check chi2")
     theory_vec = covariance.read_x_ar_theory_vec(bestfit_dir,
@@ -141,4 +186,22 @@ for i in range(iStart, iStop):
 
     res = data_vec - theory_vec
     chi2 = res @ inv_analytic_cov @ res
+    chi2_list.append(chi2)
     print(r"$\chi^{2}$/DoF = %.2f/%d" % (chi2, len(data_vec)))
+
+
+output_plot_dir = "plots"
+
+kernel = ss.gaussian_kde(chi2_list)
+x = np.linspace(len(res) * 0.8, len(res)*1.2, 300)
+y_kde = kernel(x)
+y_pdf = ss.chi2(len(res)).pdf(x)
+plt.figure(figsize = (8, 6))
+plt.xlabel(r"$\chi^2$")
+plt.yticks([], [])
+plt.hist(chi2_list, density = True, bins = 15, color = "blue", alpha = 0.4)
+plt.plot(x, y_kde, color = "darkorange", label = "KDE")
+plt.plot(x, y_pdf, color = "forestgreen", label = r"$\chi^2$ dist.")
+plt.legend()
+plt.tight_layout()
+plt.savefig(f"{output_plot_dir}/chi2_sacc.png", dpi = 300)

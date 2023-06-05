@@ -22,7 +22,6 @@ setup(
         "camb",
         "pspy>=1.6.1",
         "pspipe_utils>=0.1.2",
-        "mflike",
         "wget",
     ],
 )

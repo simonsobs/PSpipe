@@ -78,43 +78,50 @@ First we need to create all the window functions. In the following we will assum
 
 .. code:: shell
 
-    salloc -N 6 -C haswell -q interactive -t 01:00:00
-    srun -n 6 -c 64 --cpu_bind=cores python get_window_dr6.py global_dr6_v3_4pass.dict
+    salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
+    srun -n 6 -c 42 --cpu-bind=cores python get_window_dr6.py global_dr6_v4.dict
+    # real	10m30.406s
 
 The next step is to precompute the mode coupling matrices associated with these window functions, we have N window functions corresponding to each (season X array a) data set, we will have to compute all the cross power spectra of the form
 (season X array 1)  x (season Y array 2) there are therefore Ns = N * (N+1)/2 independent spectra to compute
 
 .. code:: shell
 
-    salloc -N 21 -C haswell -q interactive -t 00:30:00
-    srun -n 21 -c 64 --cpu_bind=cores python get_mcm_and_bbl.py global_dr6_v3_4pass.dict
+    salloc --nodes 4 --qos interactive --time 01:00:00 --constraint cpu
+    srun -n 21 -c 42 --cpu-bind=cores python get_mcm_and_bbl.py global_dr6_v4.dict
+    # real	7m12.207s
 
 Now we can compute all the power spectra, the mpi loop is done on all the different arrays.
 If you consider six detector arrays, we first compute the alms using mpi, and then have a simple code to combine them into power spectra
 
 .. code:: shell
 
-    salloc -N 6 -C haswell -q interactive -t 04:00:00
-    srun -n 6 -c 64 --cpu_bind=cores python get_alms.py global_dr6_v3_4pass.dict
-    srun -n 6 -c 64 --cpu_bind=cores python get_spectra_from_alms.py global_dr6_v3_4pass.dict
+    salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
+    srun -n 6 -c 42 --cpu-bind=cores python get_alms.py global_dr6_v4.dict
+    # real	5m51.974s
+    srun -n 6 -c 42 --cpu-bind=cores python get_spectra_from_alms.py global_dr6_v4.dict
+    # real	7m36.364s
 
 
 Finally, we need to compute the associated covariances of all these spectra, for this we need a model for the signal and noise power spectra
 
 .. code:: shell
 
-    salloc -N 1 -C haswell -q interactive -t 00:30:00
-    srun -n 1 -c 64 --cpu_bind=cores python get_best_fit_mflike.py global_dr6_v3_4pass.dict
-    srun -n 1 -c 64 --cpu_bind=cores python get_noise_model.py global_dr6_v3_4pass.dict
+    srun -n 1 -c 256 --cpu-bind=cores python get_best_fit_mflike.py global_dr6_v4.dict
+    # real	0m42.667s
+    srun -n 1 -c 256 --cpu-bind=cores python get_noise_model.py global_dr6_v4.dict
+    # real	0m40.229s
 
 The computation of the covariance matrices is then divided into two steps, first compute all (window1 x window2) alms needed for the covariance computation, then the actual computation, note that there is Ns(Ns+1)/2 covariance matrix block to compute, this is enormous and is therefore the bottleneck of the spectra computation.
 
 
 .. code:: shell
 
-    salloc -N 40 -C haswell -q interactive -t 04:00:00
-    srun -n 40 -c 64 --cpu_bind=cores python get_sq_windows_alms.py global_dr6_v3_4pass.dict
-    srun -n 40 -c 64 --cpu_bind=cores python get_covariance_blocks.py global_dr6_v3_4pass.dict
+    salloc --nodes 4 --qos interactive --time 02:30:00 --constraint cpu
+    srun -n 20 -c 12 --cpu_bind=cores python get_sq_windows_alms.py global_dr6_v4.dict
+    # real	0m31.015s
+    srun -n 4 -c 256 --cpu_bind=cores python get_covariance_blocks.py global_dr6_v4.dict
+    # real	134m2.478s
 
 Uncertainties in the beam of the telescope need to be propagated, the covariance matrix associated to beam errors can be computed analytically as
 

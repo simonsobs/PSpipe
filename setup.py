@@ -20,7 +20,7 @@ setup(
     install_requires=[
         "scipy",
         "camb",
-        "pspy>=1.6.0",
+        "pspy>=1.6.1",
         "pspipe_utils>=0.1.2",
         "mflike",
         "wget",

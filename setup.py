@@ -1,6 +1,5 @@
-from setuptools import find_packages, setup
-
 import versioneer
+from setuptools import find_packages, setup
 
 with open("README.rst") as readme_file:
     readme = readme_file.read()
@@ -21,7 +20,7 @@ setup(
         "scipy",
         "camb",
         "pspy>=1.6.1",
-        "pspipe_utils>=0.1.2",
+        "pspipe_utils>=0.1.3",
         "wget",
     ],
 )

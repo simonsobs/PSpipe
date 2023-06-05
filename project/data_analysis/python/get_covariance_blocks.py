@@ -26,6 +26,8 @@ lmax = d["lmax"]
 niter = d["niter"]
 binned_mcm = d["binned_mcm"]
 apply_kspace_filter = d["apply_kspace_filter"]
+cov_T_E_only = d["cov_T_E_only"]
+
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
@@ -41,7 +43,9 @@ for sv in surveys:
         l_beam, bl_dict[sv, ar] = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
         id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
         bl_dict[sv, ar] = bl_dict[sv, ar][id_beam]
-        n_splits[sv] = len(d[f"maps_{sv}_{ar}"])
+        n_splits[sv] = d[f"n_splits_{sv}"]
+        assert n_splits[sv] == len(d.get(f"maps_{sv}_{ar}", [0]*n_splits[sv])), "the number of splits does not correspond to the number of maps"
+
         if fast_coupling:
             # This loop check that this is what was specified in the dictfile
             assert d[f"window_T_{sv}_{ar}"] == d[f"window_pol_{sv}_{ar}"], "T and pol windows have to be the same"
@@ -127,7 +131,10 @@ for task in subtasks:
                                                     binning_file,
                                                     mbb_inv_ab,
                                                     mbb_inv_cd,
-                                                    binned_mcm=binned_mcm)
+                                                    binned_mcm=binned_mcm,
+                                                    cov_T_E_only=cov_T_E_only,
+                                                    dtype=np.float32)
+
 
     if apply_kspace_filter == True:
         # Some heuristic correction for the number of modes lost due to the transfer function

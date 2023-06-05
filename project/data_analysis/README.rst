@@ -7,9 +7,7 @@ Requirements
 ============
 
 * pspy >= 1.6.1
-* pspipe_utils 
-
-
+* pspipe_utils >= 0.1.3
 
 dependency: pspy, pspipe_utils
 
@@ -17,8 +15,64 @@ Here are some specific instructions to compute spectra for DR6 at NERSC.
 Since it is a lot of spectra computation, we are going to make full use of MPI capacities.
 The current dictionnary is called ``global_dr6.dict`` and is given in the ``paramfiles`` folder.
 Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
-Here we give instructions to run the full thing on interactive nodes, you can of course also submit it to NERSC standard nodes
+Here we give instructions to install and to run the full thing on interactive nodes, you can of
+course also submit it to NERSC standard nodes
 
+Installation steps
+------------------
+
+First, we strongly recommand to install everything in a virtual ``python`` environment in order to
+avoid clash with other ``python`` modules installed, for instance, within the ``.local``
+directory. You can use the following script to install everything (the ``mpi4py`` installation
+command is especially important @ NERSC)
+
+.. code:: shell
+
+    base_dir=~/pspipe
+
+    slurm_account=mp107
+    export SBATCH_ACCOUNT=${slurm_account}
+    export SALLOC_ACCOUNT=${slurm_account}
+
+    module load python
+
+
+    pyenv_dir=${base_dir}/pyenv/perlmutter
+    if  [ ! -d ${pyenv_dir} ]; then
+        python -m venv ${pyenv_dir}
+        source ${pyenv_dir}/bin/activate
+        python -m pip install -U pip wheel
+        python -m pip install ipython
+        python -m pip install numpy
+        module swap PrgEnv-${PE_ENV,,} PrgEnv-gnu
+        MPICC="cc -shared" pip install --force-reinstall --no-cache-dir --no-binary=mpi4py mpi4py
+    fi
+
+    software_dir=${base_dir}/software
+    if  [ ! -d ${software_dir} ]; then
+        mkdir -p ${software_dir}
+        (
+            cd ${software_dir}
+            git clone git@github.com:simonsobs/PSpipe.git
+            cd PSpipe
+            python -m pip install -e .
+        )
+    fi
+
+    source ${pyenv_dir}/bin/activate
+
+The ``base_dir`` is where everything (virtual env. and ``pspipe`` scripts) will be located. Save the
+above commands within a ``setup.sh`` file and run it with
+
+.. code:: shell
+    source setup.sh
+
+The first time you run the script, it will install everything. Every time you log to NERSC machines,
+you **need to source this file** with ``source setup.sh`` to get into the virtual environment and
+use the proper software suite.
+
+Running the pipeline
+--------------------
 
 First we need to create all the window functions. In the following we will assume that the window functions  used in temperature and in polarisation are the same, we will create the windows based on a the edges of the survey, a galactic mask, a pt source mask and a threshold on the amount of crosslinking in the patch of observation. For n seasons with m dichroic arrays (mx2 frequency maps), we will have N = n x m x 2  window functions.
 
@@ -119,4 +173,3 @@ We can now combine the data together, for this we run
 
 
 We are done !
-

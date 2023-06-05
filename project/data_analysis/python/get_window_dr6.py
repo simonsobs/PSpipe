@@ -9,8 +9,7 @@ this not so well defined Fourier operation.
 import sys
 
 import numpy as np
-from pspipe.log import get_logger
-from pspipe_utils import pspipe_list
+from pspipe_utils import log, pspipe_list
 from pspy import pspy_utils, so_dict, so_map, so_mpi, so_window
 
 
@@ -37,7 +36,7 @@ def create_crosslink_mask(xlink_map, cross_link_threshold):
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
-log = get_logger(**d)
+log = log.get_logger(**d)
 
 # the apodisation lenght of the point source mask in degree
 apod_pts_source_degree = d["apod_pts_source_degree"]

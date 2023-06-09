@@ -116,9 +116,9 @@ The computation of the covariance matrices is then divided into two steps, first
 
 .. code:: shell
 
-    salloc --nodes 4 --qos interactive --time 02:30:00 --constraint cpu
-    srun -n 20 -c 12 --cpu_bind=cores python get_sq_windows_alms.py global_dr6_v4.dict
-    # real	0m31.015s
-    srun -n 4 -c 256 --cpu_bind=cores python get_covariance_blocks.py global_dr6_v4.dict
-    # real	134m2.478s
+    salloc --nodes 1 --qos interactive --time 00:30:00 --constraint cpu
+    srun -n 7 -c 36 --cpu-bind=cores python get_sq_windows_alms.py global_dr6_v4.dict
+    salloc --nodes 2 --qos interactive --time 03:00:00 --constraint cpu
+    srun -n 8 -c 64 --cpu-bind=cores python get_covariance_blocks.py global_dr6_v4.dict
+    # real	169m56.466s
 

@@ -20,6 +20,7 @@ arrays = {sv: d[f"arrays_{sv}"] for sv in surveys}
 binning_file = d["binning_file"]
 lmax = d["lmax"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+cov_T_E_only = d["cov_T_E_only"]
 
 array_list = [f"{sv}_{ar}" for sv in surveys for ar in arrays[sv]]
 lth, cmb_and_fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat",
@@ -48,9 +49,7 @@ for id_sv1, sv1 in enumerate(surveys):
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
 
-
-                for spec in ["TT", "TE", "ET", "EE"]:
-
+                for spec in spectra:
                     ps_all[f"{sv1}&{ar1}", f"{sv2}&{ar2}", spec] = cmb_and_fg_dict[f"{sv1}_{ar1}", f"{sv2}_{ar2}"][spec]
                     ps_all[f"{sv2}&{ar2}", f"{sv1}&{ar1}", spec] = ps_all[f"{sv1}&{ar1}", f"{sv2}&{ar2}", spec]
 
@@ -66,7 +65,7 @@ for task in subtasks:
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     id_element = [na, nb, nc, nd]
 
-    analytic_beam_cov = so_cov.covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax)
+    analytic_beam_cov = so_cov.covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax, cov_T_E_only=cov_T_E_only)
 
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
 

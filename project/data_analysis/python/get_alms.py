@@ -5,6 +5,7 @@ Optionally, it applies a calibration to the maps, a kspace filter and deconvolve
 """
 
 import sys
+import time
 
 import numpy as np
 from pixell import enmap
@@ -63,6 +64,7 @@ for task in subtasks:
     maps = d[f"maps_{sv}_{ar}"]
     cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]
 
+    t0 = time.time()
     for k, map in enumerate(maps):
 
         if win_T.pixel == "CAR":
@@ -102,3 +104,5 @@ for task in subtasks:
 
         master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax)
         np.save(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy", master_alms)
+
+    log.info(f"[{task}] execution time {time.time() - t0} seconds")

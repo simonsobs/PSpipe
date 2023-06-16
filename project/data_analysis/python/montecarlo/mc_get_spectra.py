@@ -9,12 +9,13 @@ import numpy as np
 import sys
 import time
 from pixell import curvedsky, powspec
-from pspipe_utils import simulation, pspipe_list, best_fits, kspace, misc
+from pspipe_utils import simulation, pspipe_list, best_fits, kspace, misc, log
 
 
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 surveys = d["surveys"]
 lmax = d["lmax"]
@@ -63,7 +64,7 @@ for sv in surveys:
 
     if apply_kspace_filter & (templates[sv].pixel == "CAR"):
         filter_dicts[sv] = d[f"k_filter_{sv}"]
-        filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv])
+        filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv], dtype=np.float32)
 
 if apply_kspace_filter:
     kspace_tf_path = d["kspace_tf_path"]

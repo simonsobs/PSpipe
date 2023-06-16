@@ -139,3 +139,25 @@ for ar in arrays:
 
         plt.tight_layout()
         plt.savefig(f"{output_dir}/{ar}_{m}_split_null.png", dpi = 300)
+
+# PTE summary plot
+x_list = np.arange(len(arrays))
+colors = {"TT": "tab:blue", "TE": "tab:orange", "ET": "tab:green", "EE": "tab:red"}
+delta_x = {"TT": -0.195, "TE": -0.065, "ET": 0.065, "EE": 0.195}
+
+plt.figure(figsize=(8, 6))
+for i, ar in enumerate(arrays):
+    for m in ["TT", "TE", "ET", "EE"]:
+
+        y = pte_dict[ar][m]
+        x = np.full_like(y, x_list[i] + delta_x[m])
+
+        plt.scatter(x, y, color=colors[m], alpha=0.4, label=m,s=65)
+    if i == 0:
+        plt.legend(fontsize=13, ncol=4, loc="upper center")
+
+plt.ylabel(r"Probability to exceed (PTE)")
+plt.xticks(x_list, arrays)
+plt.ylim(0, 1)
+plt.tight_layout()
+plt.savefig(f"{output_dir}/pte_summary.png", dpi=300)

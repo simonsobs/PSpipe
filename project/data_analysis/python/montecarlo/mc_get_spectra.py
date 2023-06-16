@@ -152,7 +152,8 @@ for iii in subtasks:
                         split = kspace.filter_map(split,
                                                   filters[sv],
                                                   binary,
-                                                  weighted_filter=filter_dicts[sv]["weighted"])
+                                                  weighted_filter=filter_dicts[sv]["weighted"],
+                                                  use_ducc_rfft=True)
 
                         del binary
                 print(f"  [split {k}] Filtering in {time.time()-t1:.02f} s")

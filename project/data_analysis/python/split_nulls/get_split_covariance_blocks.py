@@ -60,7 +60,7 @@ for sv in surveys:
             # This loop check that this is what was specified in the dictfile
             assert d[f"window_T_{sv}_{ar}"] == d[f"window_pol_{sv}_{ar}"], "T and pol windows have to be the same"
 
-        cross_split_list = list(cwr(np.arange(n_splits[sv], dtype = np.int32), 2))
+        cross_split_list = list(cwr(np.arange(n_splits[sv], dtype=np.int32), 2))
 
         for split1, split2 in cross_split_list:
 

@@ -91,14 +91,14 @@ for ar in arrays:
             pte = 1 - ss.chi2(len(lb[lrange])).cdf(chi2)
             pte_dict[ar][m].append(pte)
 
-            plt.figure(figsize = (8, 6))
+            plt.figure(figsize=(8, 6))
             plt.xlabel(r"$\ell$")
             plt.ylabel(r"$\Delta D_\ell^{%s}$" % m)
             if m == "TT":
                 plt.ylabel(r"$\ell\Delta D_\ell^{TT}$")
             elif m == "EE":
                 plt.ylabel(r"${\ell}^{-1}\Delta D_\ell^{EE}$")
-            plt.axhline(0, color = "k", ls = "--")
+            plt.axhline(0, color="k", ls="--")
 
             ell_scaling = 0
             if m == "TT":
@@ -113,7 +113,7 @@ for ar in arrays:
                          label=f"$\chi^2/d.o.f. = {chi2:.1f}/{len(lb[lrange])}$",
                          color="tab:blue", markeredgecolor="tab:blue", markerfacecolor="white",
                          lw=0.7, elinewidth=1.3)
-            plt.axvspan(0, lb[lrange][0], color = "gray", alpha = 0.4)
+            plt.axvspan(0, lb[lrange][0], color="gray", alpha=0.4)
             plt.ylim(*ylims)
             plt.legend()
             plt.tight_layout()
@@ -124,10 +124,10 @@ p.dump(pte_dict, open(f"{output_dir}/pte_dict.pkl", "wb"))
 
 for ar in arrays:
     for m in modes:
-        plt.figure(figsize = (8, 6))
+        plt.figure(figsize=(8, 6))
 
         ndof = chi2_dict[ar, m, "ndof"]
-        plt.hist(np.array(chi2_dict[ar][m]), bins = 15, density = True)
+        plt.hist(np.array(chi2_dict[ar][m]), bins=15, density=True)
         plt.axvline(ndof, color="k", ls="--")
 
         x = np.linspace(ndof/4, 2*ndof, 500)
@@ -138,7 +138,7 @@ for ar in arrays:
         plt.xlabel(r"$\chi^2$")
 
         plt.tight_layout()
-        plt.savefig(f"{output_dir}/{ar}_{m}_split_null.png", dpi = 300)
+        plt.savefig(f"{output_dir}/{ar}_{m}_split_null.png", dpi=300)
 
 # PTE summary plot
 x_list = np.arange(len(arrays))

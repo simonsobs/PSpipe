@@ -65,6 +65,7 @@ The ``base_dir`` is where everything (virtual env. and ``pspipe`` scripts) will 
 above commands within a ``setup.sh`` file and run it with
 
 .. code:: shell
+
     source setup.sh
 
 The first time you run the script, it will install everything. Every time you log to NERSC machines,

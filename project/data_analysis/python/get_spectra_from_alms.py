@@ -6,17 +6,17 @@ The spectra are then combined in mean auto, cross and noise power spectrum and w
 If write_all_spectra=True, each individual spectrum is also written to disk.
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_map_preprocessing, so_mpi
-from pspipe_utils import kspace, pspipe_list, transfer_function
-from pixell import enmap
-import numpy as np
-import healpy as hp
 import sys
-import time
 
+import healpy as hp
+import numpy as np
+from pixell import enmap
+from pspipe_utils import kspace, log, pspipe_list, transfer_function
+from pspy import pspy_utils, so_dict, so_map, so_mcm, so_mpi, so_spectra
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 surveys = d["surveys"]
 lmax = d["lmax"]
@@ -41,15 +41,15 @@ for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
     if apply_kspace_filter == True: filter_dicts[sv] = d[f"k_filter_{sv}"]
     templates[sv] = so_map.read_map(d[f"window_T_{sv}_{arrays[sv][0]}"])
-    
+
     for ar in arrays[sv]:
         maps = d[f"maps_{sv}_{ar}"]
         nsplit[sv] = len(maps)
-        print(f"{nsplit[sv]} split of survey: {sv}, array {ar}")
+        log.info(f"{nsplit[sv]} split of survey: {sv}, array {ar}")
         for k, map in enumerate(maps):
             master_alms[sv, ar, k] = np.load(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy")
-            print(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy")
-            
+            log.debug(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy")
+
 # compute the transfer functions
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(lb)
@@ -68,8 +68,8 @@ if apply_kspace_filter:
         kspace_transfer_matrix = {}
         for spec_name in spec_name_list:
             kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
-            
-    
+
+
     # this will be used in the covariance computation
     for spec_name in spec_name_list:
         one_d_tf = kspace_transfer_matrix[spec_name].diagonal()
@@ -81,14 +81,16 @@ if apply_kspace_filter:
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
-print(f"number of spectra to compute : {n_spec}")
+log.info(f"number of spectra to compute : {n_spec}")
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_spec - 1)
 
 for task in subtasks:
     task = int(task)
     sv1, ar1, sv2, ar2 = sv1_list[task], ar1_list[task], sv2_list[task], ar2_list[task]
-    
+
+    log.info(f"[{task}] Computing spectra for {sv1}_{ar1} x {sv2}_{ar2}")
+
     xtra_pw1, xtra_pw2, mm_tf1, mm_tf2 = None, None, None, None
     if deconvolve_pixwin:
         if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX":
@@ -109,26 +111,25 @@ for task in subtasks:
     for spec in spectra:
         ps_dict[spec, "auto"] = []
         ps_dict[spec, "cross"] = []
-                    
+
     nsplits_1 = nsplit[sv1]
     nsplits_2 = nsplit[sv2]
-    
+
     spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
     mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}",
                                         spin_pairs=spin_pairs)
 
-                
+
     for s1 in range(nsplits_1):
         for s2 in range(nsplits_2):
             if (sv1 == sv2) & (ar1 == ar2) & (s1>s2) : continue
-                    
 
             l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, s1],
                                                          master_alms[sv2, ar2, s2],
                                                          spectra=spectra)
-                                                              
+
             spec_name=f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_{s1}{s2}"
-                        
+
             lb, ps = so_spectra.bin_spectra(l,
                                             ps_master,
                                             binning_file,
@@ -142,8 +143,8 @@ for task in subtasks:
                                                                 ps,
                                                                 kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
                                                                 spectra)
-                                                                
-                                                            
+
+
             lb, ps = transfer_function.deconvolve_xtra_tf(lb,
                                                           ps,
                                                           spectra,
@@ -157,10 +158,10 @@ for task in subtasks:
 
             for count, spec in enumerate(spectra):
                 if (s1 == s2) & (sv1 == sv2):
-                    if count == 0: print(f"auto {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
+                    if count == 0: log.debug(f"[{task}] auto {sv1}_{ar1} x {sv2}_{ar2} {s1}{s2}")
                     ps_dict[spec, "auto"] += [ps[spec]]
                 else:
-                    if count == 0:  print(f"cross {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
+                    if count == 0: log.debug(f"[{task}] cross {sv1}_{ar1} x {sv2}_{ar2} {s1}{s2}")
                     ps_dict[spec, "cross"] += [ps[spec]]
 
     ps_dict_auto_mean = {}
@@ -170,7 +171,7 @@ for task in subtasks:
     for spec in spectra:
         ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
         spec_name_cross = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_cross"
-                    
+
         if ar1 == ar2 and sv1 == sv2:
             # Average TE / ET so that for same array same season TE = ET
             ps_dict_cross_mean[spec] = (np.mean(ps_dict[spec, "cross"], axis=0) + np.mean(ps_dict[spec[::-1], "cross"], axis=0)) / 2.
@@ -185,5 +186,3 @@ for task in subtasks:
     if sv1 == sv2:
         so_spectra.write_ps(spec_dir + f"/{spec_name_auto}.dat", lb, ps_dict_auto_mean, type, spectra=spectra)
         so_spectra.write_ps(spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
-
-

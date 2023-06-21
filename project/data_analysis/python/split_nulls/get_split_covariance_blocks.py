@@ -50,8 +50,7 @@ for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
     for ar in arrays[sv]:
         l_beam, bl_dict[sv, ar] = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
-        id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
-        bl_dict[sv, ar] = bl_dict[sv, ar][id_beam]
+        bl_dict[sv, ar] = bl_dict[sv, ar][2:lmax]
 
         n_splits[sv] = d[f"n_splits_{sv}"]
         assert n_splits[sv] == len(d.get(f"maps_{sv}_{ar}", [0]*n_splits[sv])), "the number of splits does not correspond to the number of maps"
@@ -67,14 +66,13 @@ for sv in surveys:
             if split1 == split2:
                 l_noise, Nl = so_spectra.read_ps(f"{noise_dir}/Dl_{sv}_{ar}x{sv}_{ar}_{split1}{split2}_noise_model.dat",
                                            spectra = spectra)
-                id_noise = np.where((l_noise >= 2) & (l_noise < lmax))
             for spec in spectra:
                 ps_th = cmb_dict[spec] + fg_dict[f"{sv}_{ar}", f"{sv}_{ar}"][spec]
 
                 ps_all[f"{sv}&{ar}&{split1}", f"{sv}&{ar}&{split2}", spec] = bl_dict[sv, ar] * bl_dict[sv, ar] * ps_th
 
                 if split1 == split2:
-                    nl_all[f"{sv}&{ar}&{split1}", f"{sv}&{ar}&{split2}", spec] = Nl[spec][id_noise]
+                    nl_all[f"{sv}&{ar}&{split1}", f"{sv}&{ar}&{split2}", spec] = Nl[spec][:lmax-2]
                 else:
                     nl_all[f"{sv}&{ar}&{split1}", f"{sv}&{ar}&{split2}", spec] = np.zeros(lmax-2)
 

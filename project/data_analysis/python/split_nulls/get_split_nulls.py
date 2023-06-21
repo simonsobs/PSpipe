@@ -59,9 +59,9 @@ for ar in arrays:
     ns = n_splits[ar]
     splits_id = [str(i) for i in range(ns)]
 
-    cross_splits = list(combinations(splits_id, 2))
-    split_diff_list = list(combinations(cross_splits, 2))
-    print(split_diff_list)
+    cross_splits = combinations(splits_id, 2)
+    split_diff_list = combinations(cross_splits, 2)
+    print(list(split_diff_list))
     ps_template = f"{ps_dir}/Dl_{ar}x{ar}_" + "{}{}.dat"
     name = f"{ar}" + "_{}"
     cov_template = f"{cov_dir}/analytic_cov_{ar}x{ar}_{ar}x{ar}" + "_{}{}x{}{}.npy"

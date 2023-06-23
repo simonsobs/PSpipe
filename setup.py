@@ -1,5 +1,6 @@
-import versioneer
 from setuptools import find_packages, setup
+
+import versioneer
 
 with open("README.rst") as readme_file:
     readme = readme_file.read()
@@ -23,4 +24,5 @@ setup(
         "pspipe_utils>=0.1.3",
         "wget",
     ],
+    package_data={"pspipe": ["js/multistep2.js"]},
 )

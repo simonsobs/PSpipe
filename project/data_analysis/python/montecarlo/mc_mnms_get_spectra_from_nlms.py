@@ -5,7 +5,6 @@ the fg is based on fgspectra, note that the noise sim include the pixwin so we h
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
-from mnms import noise_models as nm
 import numpy as np
 import sys
 import time
@@ -29,30 +28,11 @@ if sim_alm_dtype in ["complex64", "complex128"]: sim_alm_dtype = getattr(np, sim
 else: raise ValueError(f"Unsupported sim_alm_dtype {sim_alm_dtype}")
 dtype = np.float32 if sim_alm_dtype == "complex64" else np.float64
 
-######################################
-###### Set up mnms noise model  ######
-######################################
-
-noise_sim_type = d["noise_sim_type"]
-lmax_noise_sim = 10800 # Should be moved to the paramfile ?
-
-arrays_alias = {
-    "pa4": {"pa4a": "pa4_f150", "pa4b": "pa4_f220"},
-    "pa5": {"pa5a": "pa5_f090", "pa5b": "pa5_f150"},
-    "pa6": {"pa6a": "pa6_f090", "pa6b": "pa6_f150"}
-}
-
-noise_models = {
-    wafer_name: nm.BaseNoiseModel.from_config("act_dr6v4", noise_sim_type, *arrays_alias[wafer_name].keys())
-    for sv in surveys for wafer_name in sorted({ar.split("_")[0] for ar in d[f"arrays_{sv}"]})
-}
-
-####################################
-
 window_dir = "windows"
 mcm_dir = "mcms"
-spec_dir = "sim_spectra"
+spec_dir = "sim_spectra_from_nlms"
 bestfit_dir = "best_fits"
+nlms_dir = "mnms_noise_alms"
 
 pspy_utils.create_directory(spec_dir)
 
@@ -122,6 +102,7 @@ for iii in subtasks:
 
         signal_alms = {}
         for ar in arrays[sv]:
+
             signal_alms[ar] = alms_cmb + fglms[f"{sv}_{ar}"]
             l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
             signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
@@ -138,22 +119,14 @@ for iii in subtasks:
         wafers = sorted({ar.split("_")[0] for ar in arrays[sv]})
 
         for k in range(n_splits[sv]):
+
             noise_alms = {}
             t2 = time.time()
-            for wafer_name in wafers:
-                sim_arrays = noise_models[wafer_name].get_sim(split_num=k,
-                                                              sim_num=iii,
-                                                              lmax=lmax_noise_sim,
-                                                              alm=False,
-                                                              keep_model=False)
+            for ar in arrays[sv]:
 
-                for i, (qid, ar) in enumerate(arrays_alias[wafer_name].items()):
+                noise_alms[ar] = np.load(f"{nlms_dir}/mnms_nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
 
-                    noise_alms[ar] = curvedsky.map2alm(sim_arrays[i, 0, :], lmax=lmax, tweak=True)
-
-                del sim_arrays
-
-            log.info(f"[Sim n° {iii}] Get noise realization for split {k} in {time.time()-t2:.2f} s")
+            log.info(f"[Sim n° {iii}] Load noise alms for split {k} in {time.time()-t2:.2f} s")
 
             for ar in arrays[sv]:
 
@@ -187,8 +160,8 @@ for iii in subtasks:
 
                 log.info(f"[Sim n° {iii}] Filter split {k} and array {ar} in {time.time()-t5:.2f} s")
 
-                cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]
-                split = split.calibrate(cal=cal, pol_eff=pol_eff)
+                #cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]
+                #split = split.calibrate(cal=cal, pol_eff=pol_eff)
 
                 if d["remove_mean"] == True:
                     split = split.subtract_mean(window_tuple)

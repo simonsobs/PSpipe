@@ -199,4 +199,4 @@ for task in subtasks:
         # is our proxy for the number of modes
         analytic_cov /= np.outer(one_d_tf ** (1./4.), one_d_tf ** (1./4.))
 
-    np.save(f"{cov_dir}/analytic_cov_{na_r}x{nb_r}_{nc_r}x{nd_r}_{split_a}{split_b}x{split_c}{split_d}.npy", analytic_cov)
+    np.save(f"{cov_dir}/analytic_cov_{na_r}_{split_a}x{nb_r}_{split_b}_{nc_r}_{split_c}x{nd_r}_{split_d}.npy", analytic_cov)

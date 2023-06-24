@@ -16,37 +16,46 @@ cov_dir = "split_covariances"
 output_dir = "plots/split_nulls"
 pspy_utils.create_directory(output_dir)
 
+cov_type = "analytic_cov"
+
 surveys = d["surveys"]
 
 arrays = [f"{sv}_{ar}" for sv in surveys for ar in d[f"arrays_{sv}"]]
 n_splits = {ar: len(d[f"maps_{ar}"]) for ar in arrays}
 
-modes = ["TT", "TE", "ET", "EE"]
+modes = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+
 
 multipole_range = {
     "dr6_pa4_f150": {
         "T": [1250, 8500],
-        "E": [500, 8500]
+        "E": [500, 8500],
+        "B": [500, 8500]
     },
     "dr6_pa4_f220": {
         "T": [1000, 8500],
-        "E": [500, 8500]
+        "E": [500, 8500],
+        "B": [500, 8500]
     },
     "dr6_pa5_f090": {
         "T": [800, 8500],
-        "E": [500, 8500]
+        "E": [500, 8500],
+        "B": [500, 8500]
     },
     "dr6_pa5_f150": {
         "T": [800, 8500],
-        "E": [500, 8500]
+        "E": [500, 8500],
+        "B": [500, 8500]
     },
     "dr6_pa6_f090": {
         "T": [600, 8500],
-        "E": [500, 8500]
+        "E": [500, 8500],
+        "B": [500, 8500]
     },
     "dr6_pa6_f150": {
         "T": [600, 8500],
-        "E": [500, 8500]
+        "E": [500, 8500],
+        "B": [500, 8500]
     }
 }
 
@@ -61,16 +70,17 @@ for ar in arrays:
 
     cross_splits = combinations(splits_id, 2)
     split_diff_list = combinations(cross_splits, 2)
-    print(list(split_diff_list))
+
     ps_template = f"{ps_dir}/Dl_{ar}x{ar}_" + "{}{}.dat"
     name = f"{ar}" + "_{}"
-    cov_template = f"{cov_dir}/analytic_cov_{ar}x{ar}_{ar}x{ar}" + "_{}{}x{}{}.npy"
+    cov_template = f"{cov_dir}/{cov_type}_{name}x{name}_{name}x{name}.npy"
 
     ps_dict, cov_dict = consistency.get_ps_and_cov_dict(splits_id, ps_template, cov_template, skip_auto=True)
 
     for (s1, s2), (s3, s4) in split_diff_list:
 
         split_list = [s1, s2, s3, s4]
+        print(split_list)
 
         for m in modes:
 
@@ -142,22 +152,38 @@ for ar in arrays:
 
 # PTE summary plot
 x_list = np.arange(len(arrays))
-colors = {"TT": "tab:blue", "TE": "tab:orange", "ET": "tab:green", "EE": "tab:red"}
-delta_x = {"TT": -0.195, "TE": -0.065, "ET": 0.065, "EE": 0.195}
 
-plt.figure(figsize=(8, 6))
+cmap = plt.get_cmap("tab10")
+spacing = np.linspace(-0.23, 0.23, len(modes))
+modes = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+
+delta_x = {m: spacing[i] for i,m in enumerate(modes)}
+colors = {m: cmap(i) for i,m in enumerate(modes)}
+
+plt.figure(figsize=(11, 5))
 for i, ar in enumerate(arrays):
-    for m in ["TT", "TE", "ET", "EE"]:
+    for m in modes:
 
         y = pte_dict[ar][m]
         x = np.full_like(y, x_list[i] + delta_x[m])
 
-        plt.scatter(x, y, color=colors[m], alpha=0.4, label=m,s=65)
+        plt.scatter(x, y, color=colors[m], alpha=0.4, label=m, s=45)
     if i == 0:
-        plt.legend(fontsize=13, ncol=4, loc="upper center")
+        plt.legend(fontsize=13, ncol=3, loc="upper center")
 
 plt.ylabel(r"Probability to exceed (PTE)")
 plt.xticks(x_list, arrays)
 plt.ylim(0, 1)
 plt.tight_layout()
 plt.savefig(f"{output_dir}/pte_summary.png", dpi=300)
+
+# Histogram
+pte_array = np.array([pte_dict[ar][m] for ar in arrays for m in modes])
+pte_array = pte_array.flatten()
+
+plt.figure(figsize=(8,6))
+plt.xlabel(r"Probability to exceed (PTE)")
+plt.hist(pte_array, bins=np.arange(0, 1.01, 0.05), density=True)
+plt.axhline(1., color="k", ls="--")
+plt.tight_layout()
+plt.savefig(f"{output_dir}/pte_hist.png", dpi=300)

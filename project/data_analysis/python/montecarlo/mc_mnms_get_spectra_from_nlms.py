@@ -169,11 +169,7 @@ for iii in subtasks:
                 t6 = time.time()
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
                 log.info(f"[Sim n° {iii}] Final map2alm done in {time.time()-t6:.2f} s")
-                del split
-            del noise_alms
-        del signal_alms
-    del fglms
-    del alms_cmb
+
     ps_dict = {}
 
     t7 = time.time()
@@ -254,6 +250,5 @@ for iii in subtasks:
                         so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)
 
 
-    del master_alms
     log.info(f"[Sim n° {iii}] Spectra computation done in {time.time()-t7:.2f} s")
     log.info(f"[Sim n° {iii}] Done in {time.time()-t0:.2f} s")

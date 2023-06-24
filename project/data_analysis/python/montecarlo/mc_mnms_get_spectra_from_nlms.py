@@ -30,7 +30,7 @@ dtype = np.float32 if sim_alm_dtype == "complex64" else np.float64
 
 window_dir = "windows"
 mcm_dir = "mcms"
-spec_dir = "sim_spectra_from_nlms"
+spec_dir = "sim_spectra"
 bestfit_dir = "best_fits"
 nlms_dir = "mnms_noise_alms"
 

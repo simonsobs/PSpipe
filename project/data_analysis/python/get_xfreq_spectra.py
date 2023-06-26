@@ -1,6 +1,8 @@
 """
-This script combine the cross array spectra into cross freq spectra that could be used in the likelihood
-it also combine together all TE and EE spectra (since fg are subdominant)
+This script combine the cross array spectra into cross freq spectra
+it also combine together all TE and EE spectra together (assuming fg are subdominant)
+This should mostly be used for plotting, the actual likelihood analysis will be
+done based on the xar matrix
 """
 
 import matplotlib
@@ -32,7 +34,6 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(bin_hi)
 
-
 if d["cov_T_E_only"] == True:
     modes_for_xar_cov = ["TT", "TE", "ET", "EE"]
     modes_for_xfreq_cov = ["TT", "TE", "EE"]
@@ -40,7 +41,6 @@ else:
     modes_for_xar_cov = spectra
     modes_for_xfreq_cov = ["TT", "TE", "TB", "EE", "EB", "BB"]
     
-
 spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, char="_", return_nu_tag=True)
 freq_list = pspipe_list.get_freq_list(d)
 
@@ -49,9 +49,8 @@ x_freq_cov_list = pspipe_list.x_freq_cov_order(freq_list, spectra_order=modes_fo
 final_cov_list = pspipe_list.final_cov_order(freq_list, spectra_order=modes_for_xfreq_cov)
 
 
-
 inv_cov, cov, vec = {}, {}, {}
-combin_level = ["xar", "xfreq", "final"]
+
 cov["xar"] = covariance.read_cov_block_and_build_full_cov(spec_name_list,
                                                           cov_dir,
                                                           "analytic_cov",
@@ -105,11 +104,9 @@ vec["final"] = covariance.max_likelihood_spectra(cov["final"],
 covariance.plot_P_matrix(P_mat, x_freq_cov_list, x_ar_cov_list, file_name=f"{combine_dir}/P_mat_x_ar_to_x_freq")
 covariance.plot_P_matrix(P_final, final_cov_list, x_freq_cov_list, file_name=f"{combine_dir}/P_mat_x_freq_to_final")
 
-for comb in combin_level:
-    corr = so_cov.cov2corr(cov[comb], remove_diag=True)
-    so_cov.plot_cov_matrix(corr, file_name=f"{combine_dir}/corr_{comb}")
-
-
+for comb, mat in cov.items():
+    corr = so_cov.cov2corr(mat, remove_diag=True)
+    so_cov.plot_cov_matrix(corr, file_name=f"{combine_dir}/test_corr_{comb}")
 
 def select_spec(spec_vec, cov, id, n_bins):
     ps = spec_vec[id * n_bins: (id + 1) * n_bins]
@@ -126,11 +123,10 @@ lscaling["EB"] = -0.5
 lscaling["BB"] = -0.5
 
 for spec in modes_for_xfreq_cov:
-        x_freq_list = []
-        if spec[0] == spec[1]:
-            x_freq_list += [(f0, f1) for f0, f1 in cwr(freq_list, 2)]
-        else:
-            x_freq_list +=  [(f0, f1) for f0, f1 in product(freq_list, freq_list)]
+ 
+        if spec[0] == spec[1]: x_freq_list = cwr(freq_list, 2)
+        else:  x_freq_list = product(freq_list, freq_list)
+
         for x_freq in x_freq_list:
         
             plt.figure(figsize=(12,8))

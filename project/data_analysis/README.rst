@@ -123,3 +123,14 @@ The computation of the covariance matrices is then divided into two steps, first
     srun -n 8 -c 64 --cpu-bind=cores python get_covariance_blocks.py global_dr6_v4.dict
     # real	169m56.466s
 
+To generate a set of simulated spectra using the `mnms` noise simulation code you first have to generate the noise `alms` for each split and wafer and store them to disk. Then you have to run a standard simulation routine that reads the precomputed noise `alms`. Remember to delete the noise `alms` when you are done with your simulations. For a set of 100 simulations :
+
+.. code:: shell
+
+    salloc --nodes 2 --qos interactive --time 3:30:00 --constraint cpu
+    srun -n 4 -c 128 --cpu_bind=cores python mc_mnms_get_nlms.py global_dr6_v4.dict
+    # real time ~ 3h (for 100 sims)
+
+    salloc --nodes 4 --qos interactive --time 3:00:00 --constraint cpu
+    srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_dr6_v4.dict
+    # real time ~ 1100s for each sim

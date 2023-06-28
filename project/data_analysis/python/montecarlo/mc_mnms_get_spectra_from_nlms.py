@@ -120,14 +120,6 @@ for iii in subtasks:
 
         for k in range(n_splits[sv]):
 
-            noise_alms = {}
-            t2 = time.time()
-            for ar in arrays[sv]:
-
-                noise_alms[ar] = np.load(f"{nlms_dir}/mnms_nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
-
-            log.info(f"[Sim n° {iii}] Load noise alms for split {k} in {time.time()-t2:.2f} s")
-
             for ar in arrays[sv]:
 
                 t3 = time.time()
@@ -139,8 +131,11 @@ for iii in subtasks:
 
                 log.info(f"[Sim n° {iii}] Read window in {time.time()-t3:.2f} s")
 
+                noise_alms = np.load(f"{nlms_dir}/mnms_nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
+
                 t4 = time.time()
-                split = sph_tools.alm2map(signal_alms[ar] + noise_alms[ar], templates[sv])
+
+                split = sph_tools.alm2map(signal_alms[ar] + noise_alms, templates[sv])
 
                 log.info(f"[Sim n° {iii}] alm2map for split {k} and array {ar} done in {time.time()-t4:.2f} s")
 

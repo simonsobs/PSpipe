@@ -100,7 +100,7 @@ for spec_name in spec_name_list:
         plt.plot(lb, ps[spec], label="pre correction")
         plt.plot(lb, ps_corr[spec], label="post correction")
         plt.legend(fontsize=12)
-        plt.savefig(f"{plot_dir}/{spec_name_cross}_{spec}.png", bbox_inches="tight")
+        plt.savefig(f"{plot_dir}/{spec_name}_{spec}.png", bbox_inches="tight")
         plt.legend()
         plt.clf()
         plt.close()

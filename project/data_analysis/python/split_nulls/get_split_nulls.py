@@ -16,7 +16,11 @@ cov_dir = "split_covariances"
 output_dir = "plots/split_nulls"
 pspy_utils.create_directory(output_dir)
 
-cov_type = "analytic_cov"
+covariances_type = [
+    "analytic_cov",
+    "analytic_cov_with_mc_corrections",
+    "analytic_cov_with_diag_mc_corrections"
+]
 
 surveys = d["surveys"]
 
@@ -59,12 +63,15 @@ multipole_range = {
     }
 }
 
-chi2_dict = {}
-pte_dict = {}
+chi2_dict = {cov_type: {} for cov_type in covariances_type}
+pte_dict = {cov_type: {} for cov_type in covariances_type}
+
 for ar in arrays:
 
-    chi2_dict[ar] = {m: [] for m in modes}
-    pte_dict[ar] = {m: [] for m in modes}
+    for cov_type in covariances_type:
+        chi2_dict[cov_type][ar] = {m: [] for m in modes}
+        pte_dict[cov_type][ar] = {m: [] for m in modes}
+
     ns = n_splits[ar]
     splits_id = [str(i) for i in range(ns)]
 
@@ -73,14 +80,15 @@ for ar in arrays:
 
     ps_template = f"{ps_dir}/Dl_{ar}x{ar}_" + "{}{}.dat"
     name = f"{ar}" + "_{}"
-    cov_template = f"{cov_dir}/{cov_type}_{name}x{name}_{name}x{name}.npy"
-
-    ps_dict, cov_dict = consistency.get_ps_and_cov_dict(splits_id, ps_template, cov_template, skip_auto=True)
+    cov_dict = {}
+    for cov_type in covariances_type:
+        cov_template = f"{cov_dir}/{cov_type}_{name}x{name}_{name}x{name}.npy"
+        ps_dict, cov = consistency.get_ps_and_cov_dict(splits_id, ps_template, cov_template, skip_auto=True)
+        cov_dict[cov_type] = cov
 
     for (s1, s2), (s3, s4) in split_diff_list:
 
         split_list = [s1, s2, s3, s4]
-        print(split_list)
 
         for m in modes:
 
@@ -90,16 +98,21 @@ for ar in arrays:
             lmin = max(lmin0, lmin1)
             lmax = min(lmax0, lmax1)
 
-            lb, res_ps, res_cov, chi2, pte = consistency.compare_spectra(split_list, "ab-cd", ps_dict, cov_dict, mode=m)
+            res_cov_dict = {}
+            for cov_type in covariances_type:
+                lb, res_ps, res_cov, _, _ = consistency.compare_spectra(split_list, "ab-cd", ps_dict, cov_dict[cov_type], mode=m)
+                res_cov_dict[cov_type] = res_cov
 
             lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
-            chi2 = res_ps[lrange] @ np.linalg.inv(res_cov[np.ix_(lrange, lrange)]) @ res_ps[lrange]
+            for cov_type in covariances_type:
+                cov = res_cov_dict[cov_type][np.ix_(lrange, lrange)]
+                chi2 = res_ps[lrange] @ np.linalg.inv(cov) @ res_ps[lrange]
+                pte = 1 - ss.chi2(len(lb[lrange])).cdf(chi2)
 
-            chi2_dict[ar][m].append(chi2)
-            chi2_dict[ar, m, "ndof"] = len(lb[lrange])
+                chi2_dict[cov_type][ar][m].append(chi2)
+                chi2_dict[cov_type][ar, m, "ndof"] = len(lb[lrange])
 
-            pte = 1 - ss.chi2(len(lb[lrange])).cdf(chi2)
-            pte_dict[ar][m].append(pte)
+                pte_dict[cov_type][ar][m].append(pte)
 
             plt.figure(figsize=(8, 6))
             plt.xlabel(r"$\ell$")
@@ -119,10 +132,16 @@ for ar in arrays:
 
             plt.plot(lb, rescale_amp*res_ps, alpha=0.)
             ylims = plt.gca().get_ylim()
-            plt.errorbar(lb, rescale_amp*res_ps, rescale_amp*np.sqrt(res_cov.diagonal()), marker="o",
-                         label=f"$\chi^2/d.o.f. = {chi2:.1f}/{len(lb[lrange])}$",
-                         color="tab:blue", markeredgecolor="tab:blue", markerfacecolor="white",
-                         lw=0.7, elinewidth=1.3)
+
+            for cov_type in covariances_type[::-1]:
+                res_cov = res_cov_dict[cov_type]
+                chi2 = chi2_dict[cov_type][ar][m][-1]
+
+                plt.errorbar(lb, rescale_amp*res_ps, rescale_amp*np.sqrt(res_cov.diagonal()), marker="o",
+                            label=f"[{cov_type}] $\chi^2/d.o.f. = {chi2:.1f}/{len(lb[lrange])}$",
+                            #color="tab:blue", markeredgecolor="tab:blue",
+                            markerfacecolor="white",
+                            lw=0.7, elinewidth=1.3)
             plt.axvspan(0, lb[lrange][0], color="gray", alpha=0.4)
             plt.ylim(*ylims)
             plt.legend()
@@ -132,23 +151,24 @@ for ar in arrays:
 p.dump(chi2_dict, open(f"{output_dir}/chi2_dict.pkl", "wb"))
 p.dump(pte_dict, open(f"{output_dir}/pte_dict.pkl", "wb"))
 
-for ar in arrays:
-    for m in modes:
-        plt.figure(figsize=(8, 6))
+for cov_type in covariances_type:
+    for ar in arrays:
+        for m in modes:
+            plt.figure(figsize=(8, 6))
 
-        ndof = chi2_dict[ar, m, "ndof"]
-        plt.hist(np.array(chi2_dict[ar][m]), bins=15, density=True)
-        plt.axvline(ndof, color="k", ls="--")
+            ndof = chi2_dict[cov_type][ar, m, "ndof"]
+            plt.hist(np.array(chi2_dict[cov_type][ar][m]), bins=15, density=True)
+            plt.axvline(ndof, color="k", ls="--")
 
-        x = np.linspace(ndof/4, 2*ndof, 500)
-        y = ss.chi2(ndof).pdf(x)
-        plt.plot(x, y)
+            x = np.linspace(ndof/4, 2*ndof, 500)
+            y = ss.chi2(ndof).pdf(x)
+            plt.plot(x, y)
 
-        plt.title(f"{ar} split null - {m}")
-        plt.xlabel(r"$\chi^2$")
+            plt.title(f"{ar} split null - {m}")
+            plt.xlabel(r"$\chi^2$")
 
-        plt.tight_layout()
-        plt.savefig(f"{output_dir}/{ar}_{m}_split_null.png", dpi=300)
+            plt.tight_layout()
+            plt.savefig(f"{output_dir}/{ar}_{m}_{cov_type}_split_null.png", dpi=300)
 
 # PTE summary plot
 x_list = np.arange(len(arrays))
@@ -160,30 +180,36 @@ modes = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 delta_x = {m: spacing[i] for i,m in enumerate(modes)}
 colors = {m: cmap(i) for i,m in enumerate(modes)}
 
-plt.figure(figsize=(11, 5))
-for i, ar in enumerate(arrays):
-    for m in modes:
+for cov_type in covariances_type:
+    plt.figure(figsize=(11, 5))
+    for i, ar in enumerate(arrays):
+        for m in modes:
 
-        y = pte_dict[ar][m]
-        x = np.full_like(y, x_list[i] + delta_x[m])
+            y = pte_dict[cov_type][ar][m]
+            x = np.full_like(y, x_list[i] + delta_x[m])
 
-        plt.scatter(x, y, color=colors[m], alpha=0.4, label=m, s=45)
-    if i == 0:
-        plt.legend(fontsize=13, ncol=3, loc="upper center")
+            plt.scatter(x, y, color=colors[m], alpha=0.4, label=m, s=45)
+        if i == 0:
+            plt.legend(fontsize=13, ncol=3, loc="upper center")
 
-plt.ylabel(r"Probability to exceed (PTE)")
-plt.xticks(x_list, arrays)
-plt.ylim(0, 1)
-plt.tight_layout()
-plt.savefig(f"{output_dir}/pte_summary.png", dpi=300)
+    plt.ylabel(r"Probability to exceed (PTE)")
+    plt.xticks(x_list, arrays)
+    plt.ylim(0, 1)
+    plt.tight_layout()
+    plt.savefig(f"{output_dir}/pte_summary_{cov_type}.png", dpi=300)
 
 # Histogram
-pte_array = np.array([pte_dict[ar][m] for ar in arrays for m in modes])
-pte_array = pte_array.flatten()
+for cov_type in covariances_type:
+    pte_array = np.array([pte_dict[cov_type][ar][m] for ar in arrays for m in modes])
+    pte_array = pte_array.flatten()
 
-plt.figure(figsize=(8,6))
-plt.xlabel(r"Probability to exceed (PTE)")
-plt.hist(pte_array, bins=np.arange(0, 1.01, 0.05), density=True)
-plt.axhline(1., color="k", ls="--")
-plt.tight_layout()
-plt.savefig(f"{output_dir}/pte_hist.png", dpi=300)
+    n_samples = len(pte_array)
+    n_bins = 20
+    bins = np.linspace(0,1,n_bins+1)
+
+    plt.figure(figsize=(8,6))
+    plt.xlabel(r"Probability to exceed (PTE)")
+    plt.hist(pte_array, bins=bins)
+    plt.axhline(n_samples/n_bins, color="k", ls="--")
+    plt.tight_layout()
+    plt.savefig(f"{output_dir}/pte_hist_{cov_type}.png", dpi=300)

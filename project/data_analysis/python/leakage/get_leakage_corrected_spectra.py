@@ -37,7 +37,6 @@ gamma, var = {}, {}
 plt.figure(figsize=(12, 8))
 for sv in surveys:
     arrays = d[f"arrays_{sv}"]
-    print(arrays)
     for ar in arrays:
         name = f"{sv}_{ar}"
         gamma[name], var[name] = {}, {}

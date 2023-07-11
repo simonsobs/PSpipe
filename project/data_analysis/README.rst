@@ -154,3 +154,15 @@ So why was it early, well the spectra are contaminated by leakage, and the analy
     # real 15m50.472s
     srun -n 1 -c 256 --cpu-bind=cores python get_leakage_covariance.py global_dr6_v4.dict
     # real 6m38.858s
+
+To generate a set of simulated spectra using the `mnms` noise simulation code you first have to generate the noise `alms` for each split and wafer and store them to disk. Then you have to run a standard simulation routine that reads the precomputed noise `alms`. Remember to delete the noise `alms` when you are done with your simulations. For a set of 100 simulations :
+
+.. code:: shell
+
+    salloc --nodes 2 --qos interactive --time 3:30:00 --constraint cpu
+    srun -n 4 -c 128 --cpu_bind=cores python mc_mnms_get_nlms.py global_dr6_v4.dict
+    # real time ~ 3h (for 100 sims)
+
+    salloc --nodes 4 --qos interactive --time 3:00:00 --constraint cpu
+    srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_dr6_v4.dict
+    # real time ~ 1100s for each sim

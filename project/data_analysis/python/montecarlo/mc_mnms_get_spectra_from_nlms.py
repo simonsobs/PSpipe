@@ -4,16 +4,16 @@ it generates gaussian simulations of cmb, fg and add noise based on the mnms sim
 the fg is based on fgspectra, note that the noise sim include the pixwin so we have to deal with it
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi, so_map_preprocessing
-from mnms import noise_models as nm
+from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
 import numpy as np
 import sys
 import time
-from pixell import curvedsky, powspec
-from pspipe_utils import simulation, pspipe_list, best_fits, kspace, misc
+from pixell import curvedsky
+from pspipe_utils import simulation, pspipe_list, kspace, misc, log
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 surveys = d["surveys"]
 lmax = d["lmax"]
@@ -25,31 +25,14 @@ sim_alm_dtype = d["sim_alm_dtype"]
 binned_mcm = d["binned_mcm"]
 apply_kspace_filter = d["apply_kspace_filter"]
 if sim_alm_dtype in ["complex64", "complex128"]: sim_alm_dtype = getattr(np, sim_alm_dtype)
-
-####################################
-###### parameter for mnms  #########
-####################################
-
-noise_model_parameters = d["noise_model_parameters"]
-noise_sim_type = d["noise_sim_type"]
-soapack_arrays = {
-    "pa4": {"pa4a": "pa4_f150", "pa4b": "pa4_f220"},
-    "pa5": {"pa5a": "pa5_f090", "pa5b": "pa5_f150"},
-    "pa6": {"pa6a": "pa6_f090", "pa6b": "pa6_f150"},
-}
-models = {"tiled": nm.TiledNoiseModel, "wavelet": nm.WaveletNoiseModel, "fdw": nm.FDWNoiseModel}
-noise_models = {
-        wafer_name: models[noise_sim_type](*soapack_arrays[wafer_name].keys(), **noise_model_parameters)
-        for sv in surveys
-        for wafer_name in sorted({ar.split("_")[0] for ar in d[f"arrays_{sv}"]})
-    }
-####################################
+else: raise ValueError(f"Unsupported sim_alm_dtype {sim_alm_dtype}")
+dtype = np.float32 if sim_alm_dtype == "complex64" else np.float64
 
 window_dir = "windows"
 mcm_dir = "mcms"
 spec_dir = "sim_spectra"
 bestfit_dir = "best_fits"
-noise_model_dir = "noise_model"
+nlms_dir = "mnms_noise_alms"
 
 pspy_utils.create_directory(spec_dir)
 
@@ -63,15 +46,15 @@ spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
     n_splits[sv] = len(d[f"maps_{sv}_{arrays[sv][0]}"])
-    print(sv, "nsplits", n_splits[sv])
+    log.info(f"Running with {n_splits[sv]} splits for survey {sv}")
     template_name = d[f"maps_{sv}_{arrays[sv][0]}"][0]
     templates[sv] = so_map.read_map(template_name)
-    pixwin[sv] = templates[sv].get_pixwin()
+    pixwin[sv] = templates[sv].get_pixwin(dtype=np.float32)
     inv_pixwin[sv] = pixwin[sv] ** -1
 
     if apply_kspace_filter:
         filter_dicts[sv] = d[f"k_filter_{sv}"]
-        filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv])
+        filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv], dtype=np.float32)
 
 if apply_kspace_filter:
     kspace_tf_path = d["kspace_tf_path"]
@@ -89,23 +72,12 @@ if apply_kspace_filter:
 
 
 f_name_cmb = bestfit_dir + "/cmb.dat"
-f_name_noise = noise_model_dir + "/mean_{}x{}_{}_noise.dat"
 f_name_fg = bestfit_dir + "/fg_{}x{}.dat"
 
 ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax, spectra)
 
 array_list = [f"{sv}_{ar}" for sv in surveys for ar in arrays[sv]]
 l, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, array_list, lmax, spectra)
-
-noise_mat = {}
-for sv in surveys:
-    l, noise_mat[sv] = simulation.noise_matrix_from_files(f_name_noise,
-                                                          sv,
-                                                          arrays[sv],
-                                                          lmax,
-                                                          n_splits[sv],
-                                                          spectra)
-
 
 # we will use mpi over the number of simulations
 so_mpi.init(True)
@@ -119,8 +91,9 @@ for iii in subtasks:
     # fglms will be of shape (nfreq, lm) and is T only
 
     alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
-    fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax)
+    fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax, dtype="complex64")
 
+    log.info(f"[Sim n° {iii}] Generate signal alms in {time.time()-t0:.2f} s")
     master_alms = {}
 
     for sv in surveys:
@@ -129,6 +102,7 @@ for iii in subtasks:
 
         signal_alms = {}
         for ar in arrays[sv]:
+
             signal_alms[ar] = alms_cmb + fglms[f"{sv}_{ar}"]
             l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
             signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
@@ -136,36 +110,36 @@ for iii in subtasks:
             signal = sph_tools.alm2map(signal_alms[ar], templates[sv])
             binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
             binary = so_map.read_map(binary_file)
-            signal = signal.convolve_with_pixwin(niter=niter, pixwin=pixwin[sv], binary=binary)
+            signal = signal.convolve_with_pixwin(niter=niter, pixwin=pixwin[sv], binary=binary,
+                                                 use_ducc_rfft=True)
             signal_alms[ar] = sph_tools.map2alm(signal, niter, lmax)
 
-        print("generate signal sim in %.02f s" % (time.time()-t1))
+        log.info(f"[Sim n° {iii}] Convolve beam and pixwin in {time.time()-t1:.2f} s")
 
         wafers = sorted({ar.split("_")[0] for ar in arrays[sv]})
 
         for k in range(n_splits[sv]):
-            noise_alms = {}
-            for wafer_name in wafers:
-                sim_arrays = noise_models[wafer_name].get_sim(k, iii, keep_model=False, verbose=True)
-                for i, (qid, ar) in enumerate(soapack_arrays[wafer_name].items()):
-                    noise_alms[ar] = sim_arrays[i, 0, :]
 
             for ar in arrays[sv]:
 
-                t1 = time.time()
+                t3 = time.time()
 
                 win_T = so_map.read_map(d[f"window_T_{sv}_{ar}"])
                 win_pol = so_map.read_map(d[f"window_pol_{sv}_{ar}"])
                 window_tuple = (win_T, win_pol)
                 del win_T, win_pol
 
-                print("reading window in %.02f s" % (time.time()-t1))
+                log.info(f"[Sim n° {iii}] Read window in {time.time()-t3:.2f} s")
 
-                t1 = time.time()
-                split = sph_tools.alm2map(signal_alms[ar] + noise_alms[ar], templates[sv])
-                print("alm2map in %.02f s" % (time.time()-t1))
+                noise_alms = np.load(f"{nlms_dir}/mnms_nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
 
-                t1 = time.time()
+                t4 = time.time()
+
+                split = sph_tools.alm2map(signal_alms[ar] + noise_alms, templates[sv])
+
+                log.info(f"[Sim n° {iii}] alm2map for split {k} and array {ar} done in {time.time()-t4:.2f} s")
+
+                t5 = time.time()
                 if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
 
                         binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
@@ -174,22 +148,26 @@ for iii in subtasks:
                                                   filters[sv],
                                                   binary,
                                                   inv_pixwin = inv_pixwin[sv],
-                                                  weighted_filter=filter_dicts[sv]["weighted"])
+                                                  weighted_filter=filter_dicts[sv]["weighted"],
+                                                  use_ducc_rfft=True)
 
                         del binary
-                print("filtering in %.02f s" % (time.time()-t1))
 
+                log.info(f"[Sim n° {iii}] Filter split {k} and array {ar} in {time.time()-t5:.2f} s")
+
+                #cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]
+                #split = split.calibrate(cal=cal, pol_eff=pol_eff)
 
                 if d["remove_mean"] == True:
                     split = split.subtract_mean(window_tuple)
 
-                t1 = time.time()
+                t6 = time.time()
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
-                print("map2alm in %.02f s" % (time.time()-t1))
+                log.info(f"[Sim n° {iii}] Final map2alm done in {time.time()-t6:.2f} s")
 
     ps_dict = {}
 
-    t1 = time.time()
+    t7 = time.time()
 
     for id_sv1, sv1 in enumerate(surveys):
         for id_ar1, ar1 in enumerate(arrays[sv1]):
@@ -236,10 +214,10 @@ for iii in subtasks:
 
                             for count, spec in enumerate(spectra):
                                 if (s1 == s2) & (sv1 == sv2):
-                                    if count == 0:  print(f"auto {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
+                                    if count == 0:  log.info(f"[Sim n° {iii}] auto {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
                                     ps_dict[spec, "auto"] += [ps[spec]]
                                 else:
-                                    if count == 0: print(f"cross {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
+                                    if count == 0: log.info(f"[Sim n° {iii}] cross {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
                                     ps_dict[spec, "cross"] += [ps[spec]]
 
                     ps_dict_auto_mean = {}
@@ -266,5 +244,6 @@ for iii in subtasks:
                         so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)
                         so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)
 
-    print("spectra computation in %.02f s" % (time.time()-t1))
-    print("sim number %05d done in %.02f s" % (iii, time.time()-t0))
+
+    log.info(f"[Sim n° {iii}] Spectra computation done in {time.time()-t7:.2f} s")
+    log.info(f"[Sim n° {iii}] Done in {time.time()-t0:.2f} s")

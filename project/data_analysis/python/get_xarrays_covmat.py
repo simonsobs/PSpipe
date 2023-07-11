@@ -46,15 +46,15 @@ so_cov.plot_cov_matrix(x_ar_analytic_corr, file_name=f"{plot_dir}/xar_analytic_c
 if d["use_beam_covariance"]:
     log.info(f"create x array beam cov mat from beam cov block")
 
-    beam_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
-                                                            cov_dir,
-                                                            "beam_cov",
-                                                            spectra_order=modes_for_cov,
-                                                            remove_doublon=True,
-                                                            check_pos_def=False)
+    x_ar_beam_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
+                                                                 cov_dir,
+                                                                 "beam_cov",
+                                                                 spectra_order=modes_for_cov,
+                                                                 remove_doublon=True,
+                                                                 check_pos_def=False)
 
-    np.save(f"{cov_dir}/x_ar_beam_cov.npy", beam_cov)
-    x_ar_beam_corr = so_cov.cov2corr(beam_cov, remove_diag=True)
+    np.save(f"{cov_dir}/x_ar_beam_cov.npy", x_ar_beam_cov)
+    x_ar_beam_corr = so_cov.cov2corr(x_ar_beam_cov, remove_diag=True)
     so_cov.plot_cov_matrix(x_ar_beam_corr, file_name=f"{plot_dir}/xar_beam_corr")
 
 

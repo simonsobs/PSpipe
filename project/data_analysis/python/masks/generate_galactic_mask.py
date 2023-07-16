@@ -51,8 +51,6 @@ for mask_name in data.names:
     car_project = so_map.healpix2car(healpix_map, survey)
     car_project.data[car_project.data > 0.5] = 1
     car_project.data[car_project.data <= 0.5] = 0
-    car_project.data = car_project.data.astype(np.int16)
-
 
     car_file = os.path.join(
         mask_dir, f"mask_galactic_equatorial_car_{mask_name.lower()}_apo{apod}.fits"

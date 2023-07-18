@@ -63,26 +63,25 @@ for spec_name in spec_name_list:
 
     for i in range(n_splits[sv1]):
 
-        split_noise_mean = {spec: [] for spec in spectra}
+        cross_ps_dict = {spec: [] for spec in spectra}
 
         for id1, id2 in list(split_ps_dict.keys()):
             if id1 == id2: continue
 
             for spec in spectra:
-                split_noise_mean[spec].append(split_ps_dict[id1, id2][spec])
+                cross_ps_dict[spec].append(split_ps_dict[id1, id2][spec])
 
         for spec in spectra:
-            split_noise_mean[spec] = np.mean(split_noise_mean[spec], axis=0)
+            cross_ps_dict[spec] = np.mean(cross_ps_dict[spec], axis=0)
 
-        split_noise = {spec: split_ps_dict[i, i][spec] - split_noise_mean[spec] for spec in spectra}
+        split_noise = {spec: split_ps_dict[i, i][spec] - cross_ps_dict[spec] for spec in spectra}
 
         split_noise_dict[sv1, ar1, sv2, ar2, i] = split_noise
 
+        spec_name = f"Dl_{sv1}_{ar1}x{sv2}_{ar2}_{i}{i}_noise.dat"
+        so_spectra.write_ps(f"{split_noise_dir}/{spec_name}", lb, split_noise, type, spectra=spectra)
 
 for (sv1, ar1, sv2, ar2, split), split_noise in split_noise_dict.items():
-    spec_name = f"Dl_{sv1}_{ar1}x{sv2}_{ar2}_{split}{split}_noise.dat"
-
-    so_spectra.write_ps(f"{split_noise_dir}/{spec_name}", lb, split_noise, type, spectra=spectra)
 
     # Noise model
     l, bl1 = pspy_utils.read_beam_file(d[f"beam_{sv1}_{ar1}"])
@@ -109,7 +108,7 @@ for (sv1, ar1, sv2, ar2, split), split_noise in split_noise_dict.items():
 
         nlth = {spec: Rlth[spec] * np.sqrt(nlth_ar1xar1[spec] * nlth_ar2xar2[spec]) for spec in spectra}
 
-    spec_model_name = f"Dl_{sv1}_{ar1}x{sv2}_{ar2}_{split}{split}_noise_model.dat"
+    spec_model_name = f"Dl_{sv1}_{ar1}_{split}x{sv2}_{ar2}_{split}_{sv1}_noise_model.dat"
     so_spectra.write_ps(f"{split_noise_dir}/{spec_model_name}", lth, nlth, type, spectra=spectra)
 
 
@@ -139,3 +138,17 @@ for spec_name in spec_name_list:
         plt.legend()
         plt.tight_layout()
         plt.savefig(f"{plot_dir}/noise_{sv1ar1}x{sv2ar2}_{spec}.png", dpi=300)
+
+        if sv1ar1 == sv2ar2:
+            plt.figure(figsize=(13,8))
+            plt.axhline(1, color="k", ls="--")
+            for i in range(n_splits[sv1]):
+                split_noise_model_file = f"{split_noise_dir}/Dl_{sv1}_{ar1}x{sv2}_{ar2}_{i}{i}_noise_model.dat"
+                ell, nl = so_spectra.read_ps(split_noise_model_file, spectra = spectra)
+                plt.plot(ell, nl[spec]/nl_mean[spec]/n_splits[sv1], label = f"Split {i}")
+            plt.title(f"{ar1}x{ar2}", fontsize = 16.5)
+            plt.xlabel(r"$\ell$", fontsize = 15)
+            plt.ylabel(r"$N_\ell^{%s}/N_\ell^{%s,\mathrm{mean}}$" % (spec, spec), fontsize = 15)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(f"{plot_dir}/noise_ratio_{sv1ar1}x{sv2ar2}_{spec}.png", dpi = 300)

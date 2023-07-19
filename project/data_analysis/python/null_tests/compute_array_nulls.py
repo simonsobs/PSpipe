@@ -39,7 +39,7 @@ cov_dict = {}
 for label, (spec_dir, cov_type) in nulls_data.items():
     ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
     cov_template = f"{cov_dir}/{cov_type}" + "_{}x{}_{}x{}.npy"
-    ps, cov = consistency.get_ps_and_cov_dict(arrays, ps_template, cov_template)
+    ps, cov = consistency.get_ps_and_cov_dict(arrays, ps_template, cov_template, spectra_order=spectra)
     ps_dict[label] = ps
     lb = ps["ell"]
     cov_dict[label] = cov
@@ -131,7 +131,7 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
                 lb, res_ps, res_cov = lb[1:], res_ps[1:], res_cov[1:,1:]
                 res_ps_dict[label] = res_ps
                 res_cov_dict[label] = res_cov
-                
+
                 # plot res corrmat
                 corr = so_cov.cov2corr(res_cov)
                 plt.figure(figsize=(9,8))

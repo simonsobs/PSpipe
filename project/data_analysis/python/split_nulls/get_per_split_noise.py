@@ -25,8 +25,8 @@ d.read_from_file(sys.argv[1])
 
 spectra_dir = "spectra"
 ps_model_dir = "noise_model"
-split_noise_dir = "split_noise_test"
-plot_dir = "plots/split_noise_test"
+split_noise_dir = "split_noise"
+plot_dir = "plots/split_noise"
 
 pspy_utils.create_directory(split_noise_dir)
 pspy_utils.create_directory(plot_dir)

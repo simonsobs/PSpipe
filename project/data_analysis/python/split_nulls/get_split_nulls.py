@@ -11,7 +11,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 ps_dir = "spectra"
-cov_dir = "split_covariances_old"
+cov_dir = "split_covariances"
 
 output_dir = "plots/split_nulls"
 pspy_utils.create_directory(output_dir)

@@ -16,8 +16,8 @@ log = log.get_logger(**d)
 windows_dir = "windows"
 mcms_dir = "mcms"
 spectra_dir = "spectra"
-noise_dir = "split_noise_test"
-cov_dir = "split_covariances_test"
+noise_dir = "split_noise"
+cov_dir = "split_covariances"
 bestfit_dir = "best_fits"
 sq_win_alms_dir = "sq_win_alms"
 

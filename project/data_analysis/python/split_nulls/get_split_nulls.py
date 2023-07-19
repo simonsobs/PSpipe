@@ -11,14 +11,14 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 ps_dir = "spectra"
-cov_dir = "split_covariances"
+cov_dir = "split_covariances_old"
 
 output_dir = "plots/split_nulls"
 pspy_utils.create_directory(output_dir)
 
 covariances_type = [
     "analytic_cov",
-    "analytic_cov_with_mc_corrections",
+    #"analytic_cov_with_mc_corrections",
     "analytic_cov_with_diag_mc_corrections"
 ]
 
@@ -83,7 +83,7 @@ for ar in arrays:
     cov_dict = {}
     for cov_type in covariances_type:
         cov_template = f"{cov_dir}/{cov_type}_{name}x{name}_{name}x{name}.npy"
-        ps_dict, cov = consistency.get_ps_and_cov_dict(splits_id, ps_template, cov_template, skip_auto=True)
+        ps_dict, cov = consistency.get_ps_and_cov_dict(splits_id, ps_template, cov_template, spectra_order = modes, skip_auto=True)
         cov_dict[cov_type] = cov
 
     for (s1, s2), (s3, s4) in split_diff_list:

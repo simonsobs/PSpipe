@@ -25,8 +25,8 @@ d.read_from_file(sys.argv[1])
 
 spectra_dir = "spectra"
 ps_model_dir = "noise_model"
-split_noise_dir = "split_noise"
-plot_dir = "plots/split_noise"
+split_noise_dir = "split_noise_test"
+plot_dir = "plots/split_noise_test"
 
 pspy_utils.create_directory(split_noise_dir)
 pspy_utils.create_directory(plot_dir)
@@ -108,9 +108,14 @@ for (sv1, ar1, sv2, ar2, split), split_noise in split_noise_dict.items():
 
         nlth = {spec: Rlth[spec] * np.sqrt(nlth_ar1xar1[spec] * nlth_ar2xar2[spec]) for spec in spectra}
 
-    spec_model_name = f"Dl_{sv1}_{ar1}_{split}x{sv2}_{ar2}_{split}_{sv1}_noise_model.dat"
+    spec_model_name = f"Dl_{ar1}_{split}x{ar2}_{split}_{sv1}_noise_model.dat"
     so_spectra.write_ps(f"{split_noise_dir}/{spec_model_name}", lth, nlth, type, spectra=spectra)
 
+    for split2 in range(n_splits[sv1]):
+        if split == split2: continue
+        nl_xsplit = {spec: np.zeros_like(nlth[spec]) for spec in spectra}
+        spec_name = f"Dl_{ar1}_{split}x{ar2}_{split2}_{sv1}_noise_model.dat"
+        so_spectra.write_ps(f"{split_noise_dir}/{spec_name}", lth, nl_xsplit, type, spectra=spectra)
 
 # Plots
 for spec_name in spec_name_list:
@@ -126,7 +131,7 @@ for spec_name in spec_name_list:
     for spec in ["TT", "EE", "BB"]:
         plt.figure(figsize = (13, 8))
         for i in range(n_splits[sv1]):
-            split_noise_model_file = f"{split_noise_dir}/Dl_{sv1}_{ar1}x{sv2}_{ar2}_{i}{i}_noise_model.dat"
+            split_noise_model_file = f"{split_noise_dir}/Dl_{ar1}_{i}x{ar2}_{i}_{sv1}_noise_model.dat"
             ell, nl = so_spectra.read_ps(split_noise_model_file, spectra=spectra)
             plt.plot(ell, nl[spec], label=f"Split {i}")
 
@@ -143,7 +148,7 @@ for spec_name in spec_name_list:
             plt.figure(figsize=(13,8))
             plt.axhline(1, color="k", ls="--")
             for i in range(n_splits[sv1]):
-                split_noise_model_file = f"{split_noise_dir}/Dl_{sv1}_{ar1}x{sv2}_{ar2}_{i}{i}_noise_model.dat"
+                split_noise_model_file = f"{split_noise_dir}/Dl_{ar1}_{i}x{ar2}_{i}_{sv1}_noise_model.dat"
                 ell, nl = so_spectra.read_ps(split_noise_model_file, spectra = spectra)
                 plt.plot(ell, nl[spec]/nl_mean[spec]/n_splits[sv1], label = f"Split {i}")
             plt.title(f"{ar1}x{ar2}", fontsize = 16.5)

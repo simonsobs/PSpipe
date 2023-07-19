@@ -2,20 +2,22 @@
 This script compute the analytical covariance matrix elements.
 """
 import sys
-import numpy as np, pylab as plt
-from pspipe_utils import pspipe_list, best_fits
-
+import numpy as np
+from pspipe_utils import best_fits, log
 from pspy import pspy_utils, so_cov, so_dict, so_map, so_mcm, so_mpi, so_spectra
 from itertools import combinations_with_replacement as cwr
+from itertools import combinations
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+log = log.get_logger(**d)
+
 windows_dir = "windows"
 mcms_dir = "mcms"
 spectra_dir = "spectra"
-noise_dir = "split_noise"
-cov_dir = "split_covariances"
+noise_dir = "split_noise_test"
+cov_dir = "split_covariances_test"
 bestfit_dir = "best_fits"
 sq_win_alms_dir = "sq_win_alms"
 
@@ -35,83 +37,67 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 # In particular we assume that the same window function is used in T and Pol
 fast_coupling = True
 
-arrays, n_splits, bl_dict = {}, {}, {}
-ps_all, nl_all = {}, {}
-spec_name = []
-
 l_cmb, cmb_dict = best_fits.cmb_dict_from_file(bestfit_dir + "/cmb.dat", lmax, spectra)
 
 arrays = {sv: d[f"arrays_{sv}"] for sv in surveys}
+n_splits = {sv: d[f"n_splits_{sv}"] for sv in surveys}
+
 array_list = [f"{sv}_{ar}" for sv in surveys for ar in arrays[sv]]
 
 l_fg, fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat", array_list, lmax, spectra)
 
+spec_name_list = []
+noise_dict = {}
+f_name_noise = f"{noise_dir}/Dl_" + "{}x{}_{}_noise_model.dat"
 for sv in surveys:
-    arrays[sv] = d[f"arrays_{sv}"]
+    for ar in arrays[sv]:
+
+        split_list = {sv: [f"{ar}_{i}" for i in range(n_splits[sv])]}
+        _, nlth = best_fits.noise_dict_from_files(f_name_noise, [sv], split_list, lmax=d["lmax"],spectra=spectra)
+        noise_dict.update(nlth)
+
+        for id_split_1, id_split_2 in cwr(range(n_splits[sv]), 2):
+            spec_name_list.append(f"{sv}&{ar}&{id_split_1}x{sv}&{ar}&{id_split_2}")
+
+bl_dict = {}
+for sv in surveys:
     for ar in arrays[sv]:
         l_beam, bl_dict[sv, ar] = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
-        bl_dict[sv, ar] = bl_dict[sv, ar][2:lmax]
+        id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
+        bl_dict[sv, ar] = bl_dict[sv, ar][id_beam]
 
-        n_splits[sv] = d[f"n_splits_{sv}"]
-        assert n_splits[sv] == len(d.get(f"maps_{sv}_{ar}", [0]*n_splits[sv])), "the number of splits does not correspond to the number of maps"
+lth, ps_all_th, nl_all_th = best_fits.get_all_best_fit(spec_name_list, l_cmb,
+                                                       cmb_dict, fg_dict, spectra,
+                                                       nl_dict=noise_dict, bl_dict=bl_dict)
 
-        if fast_coupling:
-            # This loop check that this is what was specified in the dictfile
-            assert d[f"window_T_{sv}_{ar}"] == d[f"window_pol_{sv}_{ar}"], "T and pol windows have to be the same"
-
-        cross_split_list = list(cwr(np.arange(n_splits[sv], dtype=np.int32), 2))
-
-        for split1, split2 in cross_split_list:
-
-            if split1 == split2:
-                l_noise, Nl = so_spectra.read_ps(f"{noise_dir}/Dl_{sv}_{ar}x{sv}_{ar}_{split1}{split2}_noise_model.dat",
-                                           spectra = spectra)
-            for spec in spectra:
-                ps_th = cmb_dict[spec] + fg_dict[f"{sv}_{ar}", f"{sv}_{ar}"][spec]
-
-                ps_all[f"{sv}&{ar}&{split1}", f"{sv}&{ar}&{split2}", spec] = bl_dict[sv, ar] * bl_dict[sv, ar] * ps_th
-
-                if split1 == split2:
-                    nl_all[f"{sv}&{ar}&{split1}", f"{sv}&{ar}&{split2}", spec] = Nl[spec][:lmax-2]
-                else:
-                    nl_all[f"{sv}&{ar}&{split1}", f"{sv}&{ar}&{split2}", spec] = np.zeros(lmax-2)
-
-                ps_all[f"{sv}&{ar}&{split2}", f"{sv}&{ar}&{split1}", spec] = ps_all[f"{sv}&{ar}&{split1}", f"{sv}&{ar}&{split2}", spec]
-                nl_all[f"{sv}&{ar}&{split2}", f"{sv}&{ar}&{split1}", spec] = nl_all[f"{sv}&{ar}&{split1}", f"{sv}&{ar}&{split2}", spec]
-
-            if split1 != split2:
-                spec_name += [f"{sv}&{ar}&{split1}x{sv}&{ar}&{split2}"]
-
-dlth_and_noise_dict = {k: ps_all[k] + nl_all[k] for k in ps_all.keys()}
+ps_and_noise_dict = {k: ps_all_th[k] + nl_all_th[k] for k in ps_all_th.keys()}
 
 cov_name = []
-for id1, spec1 in enumerate(spec_name):
-    for id2, spec2 in enumerate(spec_name):
-        if id1 > id2: continue
-        na, nb = spec1.split("x")
-        nc, nd = spec2.split("x")
+for sv in surveys:
+    for ar in arrays[sv]:
+        for id1, xsplit1 in enumerate(combinations(range(n_splits[sv]), 2)):
+            for id2, xsplit2 in enumerate(combinations(range(n_splits[sv]), 2)):
+                if id1 > id2: continue
 
-        sva, ara, splita = na.split("&")
-        svb, arb, splitb = nb.split("&")
-        svc, arc, splitc = nc.split("&")
-        svd, ard, splitd = nd.split("&")
+                na = f"{sv}&{ar}&{xsplit1[0]}"
+                nb = f"{sv}&{ar}&{xsplit1[1]}"
+                nc = f"{sv}&{ar}&{xsplit2[0]}"
+                nd = f"{sv}&{ar}&{xsplit2[1]}"
 
-        if (sva == svc) & (svb == svd):
-            if (ara == arc) & (arb == ard):
                 cov_name.append((na, nb, nc, nd))
 
 ncovs = len(cov_name)
 
 if d["use_toeplitz_cov"] == True:
-    print("we will use the toeplitz approximation")
+    log.info("we will use the toeplitz approximation")
     l_exact, l_band, l_toep = 800, 2000, 2750
 else:
     l_exact, l_band, l_toep = None, None, None
 
-print(f"number of covariance matrices to compute : {ncovs}")
+log.info(f"number of covariance matrices to compute : {ncovs}")
+
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=ncovs - 1)
-print(subtasks)
 for task in subtasks:
 
     task = int(task)
@@ -127,7 +113,7 @@ for task in subtasks:
     nd = f"{sv_d}&{ar_d}"
 
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
-    print(f"cov element ({na_r} x {nb_r}, {nc_r} x {nd_r})")
+    log.info(f"[task] cov element ({na_r} x {nb_r}, {nc_r} x {nd_r}) {split_a}{split_b}{split_c}{split_d}")
 
     if fast_coupling:
 
@@ -175,7 +161,7 @@ for task in subtasks:
         for id_1, cross_name_1 in cross_dict.items():
             for field2 in ["T", "E", "B"]:
                 for id_2, cross_name_2 in cross_dict.items():
-                    Dlth_dict[f"{field1}{id_1}{field2}{id_2}"] = dlth_and_noise_dict[cross_name_1, cross_name_2, field1+field2]
+                    Dlth_dict[f"{field1}{id_1}{field2}{id_2}"] = ps_and_noise_dict[cross_name_1, cross_name_2, field1+field2]
 
     analytic_cov = so_cov.cov_spin0and2(Dlth_dict,
                                         coupling,

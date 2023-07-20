@@ -115,8 +115,8 @@ for iii in subtasks:
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
     # fglms will be of shape (nfreq, lm) and is T only
 
-    alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
-    fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax)
+    alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, seed=iii, dtype="complex64")
+    fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax, seed=iii)
 
     master_alms = {}
 
@@ -132,7 +132,7 @@ for iii in subtasks:
 
         log.info(f"[{iii}]  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):
-            noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax)
+            noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax, seed=iii)
             for ar in arrays[sv]:
 
                 t1 = time.time()

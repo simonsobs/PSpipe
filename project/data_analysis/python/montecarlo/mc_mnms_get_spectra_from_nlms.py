@@ -90,8 +90,8 @@ for iii in subtasks:
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
     # fglms will be of shape (nfreq, lm) and is T only
 
-    alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
-    fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax, dtype="complex64")
+    alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, seed=iii, dtype="complex64")
+    fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax, seed=iii, dtype="complex64")
 
     log.info(f"[Sim n° {iii}] Generate signal alms in {time.time()-t0:.2f} s")
     master_alms = {}

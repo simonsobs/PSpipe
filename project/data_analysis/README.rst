@@ -28,14 +28,14 @@ command is especially important @ NERSC)
 
 .. code:: shell
 
-    base_dir=~/pspipe
-
     slurm_account=mp107
     export SBATCH_ACCOUNT=${slurm_account}
     export SALLOC_ACCOUNT=${slurm_account}
 
     module load python
+    module load intel
 
+    base_dir=/path/to/base/dir
 
     pyenv_dir=${base_dir}/pyenv/perlmutter
     if  [ ! -d ${pyenv_dir} ]; then
@@ -53,12 +53,55 @@ command is especially important @ NERSC)
         mkdir -p ${software_dir}
         (
             cd ${software_dir}
+            git clone git@github.com:simonsobs/pspy.git
+            cd pspy
+            python -m pip install -e .
+        )
+        (
+            cd ${software_dir}
+            git clone git@github.com:simonsobs/pspipe_utils.git
+            cd pspipe_utils
+            python -m pip install -e .
+        )
+        (
+            cd ${software_dir}
             git clone git@github.com:simonsobs/PSpipe.git
             cd PSpipe
             python -m pip install -e .
         )
+        (
+            cd ${software_dir}
+            git clone git@github.com:AdriJD/optweight.git
+            cd optweight
+            python -m pip install -e .
+        )
+        (
+            cd ${software_dir}
+            git clone git@github.com:amaurea/enlib.git
+            cd enlib
+            #sed 's/-liomp5/-lgomp/g' compile_opts/cca_intel.mk > compile_opts/cca_intel.mk
+            export ENLIB_COMP=cca_intel
+            make array_ops
+        )
+        (
+            cd ${software_dir}
+            git clone git@github.com:simonsobs/sofind.git
+            cd sofind
+            python -m pip install -e .
+            cd sofind/products/masks
+            sed -i '/^system_paths:.*/a \ \ perlmutter: /global/cfs/cdirs/act/data/zatkins/data/simonsobs/mnms/masks' mnms_masks.yaml
+        )
+        (
+            cd ${software_dir}
+            git clone git@github.com:simonsobs/mnms.git
+            cd mnms
+            python -m pip install -e .
+
+        )
     fi
 
+    export SOFIND_SYSTEM=perlmutter
+    export PYTHONPATH=$PYTHONPATH:${software_dir}
     source ${pyenv_dir}/bin/activate
 
 The ``base_dir`` is where everything (virtual env. and ``pspipe`` scripts) will be located. Save the
@@ -124,7 +167,7 @@ The computation of the covariance matrices is then divided into two steps, first
     salloc --nodes 2 --qos interactive --time 03:00:00 --constraint cpu
     srun -n 8 -c 64 --cpu-bind=cores python get_covariance_blocks.py global_dr6_v4.dict
     # real	89m7.793s
-    
+
 you might also want to compute the beam covariance
 
 .. code:: shell

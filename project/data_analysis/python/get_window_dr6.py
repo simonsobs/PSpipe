@@ -66,6 +66,11 @@ log.info(f"number of windows to compute : {n_wins}")
 so_mpi.init(True)
 
 subtasks = so_mpi.taskrange(imin=0, imax=n_wins - 1)
+
+if len(sys.argv) == 4:
+    log.info(f"computing only the windows : {int(sys.argv[2])}:{int(sys.argv[3])}")
+    subtasks = subtasks[int(sys.argv[2]):int(sys.argv[3])]
+
 for task in subtasks:
     task = int(task)
     sv, ar = sv_list[task], ar_list[task]

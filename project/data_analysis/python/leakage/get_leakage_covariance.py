@@ -2,9 +2,10 @@
 This script uses montecarlo simulation to estimate the covariance of the spectra due to uncertainties in the
 leakage beam model.
 """
+import matplotlib
+matplotlib.use("Agg")
 
 import sys
-import time
 
 import numpy as np
 from pspipe_utils import pspipe_list, log, covariance

@@ -1,7 +1,7 @@
-data_dir = "/project/projectdirs/act/data/tlouis/s17s18s19/"
+data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/"
 
 # Template mask
-template = data_dir + "maps/srcfree_s19/s19_cmb_pa4_f150_nohwp_night_1pass_4way_set0_map_srcfree.fits"
+template = data_dir + "maps/cmb_night_pa4_f150_3pass_4way_set0_map_srcfree.fits"
 
 # Point sources config
 point_source_file = data_dir + "catalogs/cat_skn_multifreq_20220526_nightonly.txt"

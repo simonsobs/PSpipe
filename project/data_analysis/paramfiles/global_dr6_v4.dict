@@ -1,10 +1,8 @@
 surveys = ["dr6"]
 
-arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 
-
-data_dir = '/project/projectdirs/act/data/tlouis/dr6v4/'
-
+data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": 'CAR', "order": 0}
@@ -19,6 +17,7 @@ cov_T_E_only = False
 multistep_path = data_dir
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
+use_beam_covariance = True
 
 #window parameters
 
@@ -57,7 +56,7 @@ mm_tf_dr6_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
 mm_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
 
 # maps
-
+n_splits_dr6 = 4
 src_free_maps_dr6 = True
 
 maps_dr6_pa4_f150 = [data_dir + 'maps/cmb_night_pa4_f150_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
@@ -100,6 +99,18 @@ beam_dr6_pa5_f090 = data_dir + 'beams/20230130_beams/coadd_pa5_f090_night_beam_t
 beam_dr6_pa5_f150 = data_dir + 'beams/20230130_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa6_f090 = data_dir + 'beams/20230130_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa6_f150 = data_dir + 'beams/20230130_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+leakage_file_dir = data_dir + 'beams/20230130_beams/'
+
+leakage_beam_dr6_pa4_f150 = 'gamma_mp_uranus_pa4_f150.txt'
+leakage_beam_dr6_pa4_f220 = 'gamma_mp_uranus_pa4_f220.txt'
+leakage_beam_dr6_pa5_f090 = 'gamma_mp_uranus_pa5_f090.txt'
+leakage_beam_dr6_pa5_f150 = 'gamma_mp_uranus_pa5_f150.txt'
+leakage_beam_dr6_pa6_f090 = 'gamma_mp_uranus_pa6_f090.txt'
+leakage_beam_dr6_pa6_f150 = 'gamma_mp_uranus_pa6_f150.txt'
+
+
+
 
 window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
 window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"

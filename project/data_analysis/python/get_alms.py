@@ -85,15 +85,17 @@ for task in subtasks:
                                           filter,
                                           binary,
                                           inv_pixwin=inv_pixwin_lxly,
-                                          weighted_filter=ks_f["weighted"])
-
+                                          weighted_filter=ks_f["weighted"],
+                                          use_ducc_rfft=True)
+                        
             else:
                 log.info(f"[{task}] WARNING: no kspace filter is applied")
                 if deconvolve_pixwin:
                     split = so_map.fourier_convolution(split,
                                                        inv_pixwin_lxly,
-                                                       binary=binary)
-
+                                                       binary=binary,
+                                                       use_ducc_rfft=True)
+                         
         elif win_T.pixel == "HEALPIX":
             split = so_map.read_map(map)
 

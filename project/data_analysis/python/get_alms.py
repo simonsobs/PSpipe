@@ -46,8 +46,7 @@ for task in subtasks:
 
 
     if win_T.pixel == "CAR":
-        binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
-        binary = so_map.read_map(binary_file)
+        win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
 
         if apply_kspace_filter:
             ks_f = d[f"k_filter_{sv}"]
@@ -83,7 +82,7 @@ for task in subtasks:
                 log.info(f"[{task}] apply kspace filter on {map}")
                 split = kspace.filter_map(split,
                                           filter,
-                                          binary,
+                                          win_kspace,
                                           inv_pixwin=inv_pixwin_lxly,
                                           weighted_filter=ks_f["weighted"],
                                           use_ducc_rfft=True)
@@ -93,7 +92,7 @@ for task in subtasks:
                 if deconvolve_pixwin:
                     split = so_map.fourier_convolution(split,
                                                        inv_pixwin_lxly,
-                                                       binary=binary,
+                                                       window=win_kspace,
                                                        use_ducc_rfft=True)
                          
         elif win_T.pixel == "HEALPIX":

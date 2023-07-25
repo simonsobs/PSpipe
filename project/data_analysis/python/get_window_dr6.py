@@ -65,8 +65,8 @@ def apply_coordinate_mask(mask, coord):
     """
         
     dec_ra = np.deg2rad(coord)
-    pix1 = enmap.sky2pix(mask.data.shape, mask.data.wcs, dec_ra[0])
-    pix2 = enmap.sky2pix(mask.data.shape, mask.data.wcs, dec_ra[1])
+    pix1 = mask.data.sky2pix(dec_ra[0])
+    pix2 = mask.data.sky2pix(dec_ra[1])
     min_pix = np.min([pix1, pix2], axis=0).astype(int)
     max_pix = np.max([pix1, pix2], axis=0).astype(int)
     mask.data[min_pix[0] : max_pix[0], min_pix[1] : max_pix[1]] = 0
@@ -235,9 +235,7 @@ for task in subtasks:
         my_masks[mask_type_w].data = my_masks[mask_type_w].data.astype(np.float32)
         my_masks[mask_type_w].write_map(f"{window_dir}/window_w_{sv}_{ar}_{mask_type}.fits")
 
-
-    for mask_type in ["kspace", "xlink", "baseline", "xlink_ivar", "baseline_ivar"]:
+    for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
-
-        my_masks[mask_type] = my_masks[mask_type].downgrade(4)
-        my_masks[mask_type].plot(file_name=f"{window_dir}/{mask_type}_mask_{sv}_{ar}")
+        mask = mask.downgrade(4)
+        mask.plot(file_name=f"{window_dir}/{mask_type}_mask_{sv}_{ar}")

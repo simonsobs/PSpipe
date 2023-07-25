@@ -30,7 +30,7 @@ pspy_utils.create_directory(output_dir)
 # Load paramfiles info
 surveys = d["surveys"]
 arrays = {sv: d[f"arrays_{sv}"] for sv in surveys}
-lmax = 4000#d["lmax"]
+lmax = 8000
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -68,7 +68,6 @@ fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components, fg_param
 # computed in ACT DR6 windows
 dust_priors = {
     "EE": {"loc": 0.205, "scale": 0.008},
-    #"EE": {"loc": 0.271, "scale": 0.012},
     "TE": {"loc": 0.541, "scale": 0.015}
 }
 
@@ -83,7 +82,7 @@ def get_model(cmb_th, fg_th, Bbl, dust_amp, pol_eff, mode):
 
 for sv in surveys:
     for ar in arrays[sv]:
-        
+
         # Load ps and cov
         spec_name = f"{sv}_{ar}x{sv}_{ar}"
         lb, ps = so_spectra.read_ps(f"{ps_dir}/Dl_{spec_name}_cross.dat", spectra=spectra)
@@ -93,7 +92,7 @@ for sv in surveys:
         ps = ps[spectrum]
         n_bins = len(lb)
         cov = so_cov.selectblock(cov, spectra, n_bins=n_bins, block=spectrum+spectrum)
-        
+
         # Multipole cuts
         id = np.where((lb >= lmin_cal) & (lb <= lmax_cal))[0]
         ps = ps[id]
@@ -155,12 +154,8 @@ for sv in surveys:
         }
 
         updated_info, sampler = run(info)
-        
+
         samples = loadMCSamples(f"{output_dir}/chain_{spectrum}_{sv}_{ar}", settings={"ignore_rows": 0.5})
         gdplot = gdplt.get_subplot_plotter()
         gdplot.triangle_plot(samples, ["pol_eff", "dust_amp"], filled=True, title_limit=1)
         plt.savefig(f"{output_dir}/posterior_dist_{spectrum}_{sv}_{ar}.png", dpi=300, bbox_inches="tight")
-
-
-
-        

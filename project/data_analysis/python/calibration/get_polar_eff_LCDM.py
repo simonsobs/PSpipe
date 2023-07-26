@@ -1,3 +1,7 @@
+"""
+This script is used to calibrate the polarization efficiencies
+for each array with respect to a LCDM bestfit (default: cmb.dat)
+"""
 from pspy import so_dict, pspy_utils, so_spectra, so_cov
 from getdist.mcsamples import loadMCSamples
 from pspipe_utils import best_fits

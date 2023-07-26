@@ -9,12 +9,13 @@ import numpy as np
 import sys
 import time
 from pixell import curvedsky, powspec
-from pspipe_utils import simulation, pspipe_list, best_fits, kspace, misc
+from pspipe_utils import simulation, pspipe_list, best_fits, kspace, misc, log
 
 
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 surveys = d["surveys"]
 lmax = d["lmax"]
@@ -44,11 +45,12 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 arrays, templates, filters, n_splits, filter_dicts = {}, {}, {}, {}, {}
 spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
 
+log.info(f"build template and filter")
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
     template_name = d[f"window_T_{sv}_{arrays[sv][0]}"]
     n_splits[sv] = d[f"n_splits_{sv}"]
-    print(f"Running with {n_splits[sv]} splits for survey {sv}")
+    log.info(f"Running with {n_splits[sv]} splits for survey {sv}")
     templates[sv] = so_map.read_map(template_name)
     if templates[sv].pixel == "CAR":
         shape, wcs = templates[sv].data.geometry
@@ -63,7 +65,9 @@ for sv in surveys:
 
     if apply_kspace_filter & (templates[sv].pixel == "CAR"):
         filter_dicts[sv] = d[f"k_filter_{sv}"]
-        filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv])
+        filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv], dtype=np.float32)
+
+log.info(f"build kspace_transfer_matrix")
 
 if apply_kspace_filter:
     kspace_tf_path = d["kspace_tf_path"]
@@ -103,8 +107,8 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 
 for iii in subtasks:
-    print(f"Simulation n° {iii:05d}/{d['iStop']:05d}")
-    print(f"-------------------------")
+    log.info(f"Simulation n° {iii:05d}/{d['iStop']:05d}")
+    log.info(f"-------------------------")
     t0 = time.time()
 
     # generate cmb alms and foreground alms
@@ -126,7 +130,7 @@ for iii in subtasks:
             l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
             signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
 
-        print(f"  Generate signal sim in {time.time() - t1:.02f} s")
+        log.info(f"[{iii}]  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):
             noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax)
             for ar in arrays[sv]:
@@ -138,11 +142,11 @@ for iii in subtasks:
                 window_tuple = (win_T, win_pol)
                 del win_T, win_pol
 
-                print(f"  [split {k}] Reading window in {time.time()-t1:.02f} s")
+                log.info(f"[{iii}]  [split {k}] Reading window in {time.time()-t1:.02f} s")
 
                 t1 = time.time()
                 split = sph_tools.alm2map(signal_alms[ar] + noise_alms[ar], templates[sv])
-                print(f"  [split {k}] alm2map in {time.time()-t1:.02f} s")
+                log.info(f"[{iii}]  [split {k}] alm2map in {time.time()-t1:.02f} s")
 
                 t1 = time.time()
                 if sv in filters:
@@ -152,10 +156,11 @@ for iii in subtasks:
                         split = kspace.filter_map(split,
                                                   filters[sv],
                                                   binary,
-                                                  weighted_filter=filter_dicts[sv]["weighted"])
+                                                  weighted_filter=filter_dicts[sv]["weighted"],
+                                                  use_ducc_rfft=True)
 
                         del binary
-                print(f"  [split {k}] Filtering in {time.time()-t1:.02f} s")
+                log.info(f"[{iii}]  [split {k}] Filtering in {time.time()-t1:.02f} s")
 
 
                 if d["remove_mean"] == True:
@@ -163,7 +168,7 @@ for iii in subtasks:
 
                 t1 = time.time()
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
-                print(f"  [split {k}] map2alm in {time.time()-t1:.02f} s")
+                log.info(f"[{iii}]  [split {k}] map2alm in {time.time()-t1:.02f} s")
 
     ps_dict = {}
 
@@ -215,10 +220,8 @@ for iii in subtasks:
 
                             for count, spec in enumerate(spectra):
                                 if (s1 == s2) & (sv1 == sv2):
-                                    if count == 0:  print(f"  [auto] {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
                                     ps_dict[spec, "auto"] += [ps[spec]]
                                 else:
-                                    if count == 0: print(f"  [cross] {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
                                     ps_dict[spec, "cross"] += [ps[spec]]
 
                     ps_dict_auto_mean = {}
@@ -245,6 +248,5 @@ for iii in subtasks:
                         so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)
                         so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)
 
-    print(f"  Spectra computation in {time.time()-t1:.02f} s")
-    print(f"  Simulation n° {iii:05d} done in {time.time()-t0:.02f} s")
-    print("")
+    log.info(f"[{iii}]  Spectra computation in {time.time()-t1:.02f} s")
+    log.info(f"[{iii}]  Simulation n° {iii:05d} done in {time.time()-t0:.02f} s")

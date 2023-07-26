@@ -6,10 +6,11 @@ import sys
 
 import numpy as np
 from pspy import pspy_utils, so_dict, so_mpi, so_cov
-from pspipe_utils import pspipe_list, best_fits
+from pspipe_utils import pspipe_list, best_fits, log
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 cov_dir = "covariances"
 bestfit_dir = "best_fits"
@@ -31,6 +32,9 @@ lth, cmb_and_fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat
 
 
 ps_all, norm_beam_cov = {}, {}
+
+
+log.info(f"construct best fit for all cross array spectra")
 
 for id_sv1, sv1 in enumerate(surveys):
     for id_ar1, ar1 in enumerate(d[f"arrays_{sv1}"]):
@@ -55,6 +59,10 @@ for id_sv1, sv1 in enumerate(surveys):
 
 
 # prepare the mpi computation
+
+
+log.info(f"construct block beam covariance")
+
 ncovs, na_list, nb_list, nc_list, nd_list = pspipe_list.get_covariances_list(d)
 
 so_mpi.init(True)
@@ -65,8 +73,10 @@ for task in subtasks:
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     id_element = [na, nb, nc, nd]
 
-    analytic_beam_cov = so_cov.covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax, cov_T_E_only=cov_T_E_only)
+    beam_cov = so_cov.covariance_element_beam(id_element, ps_all, norm_beam_cov, binning_file, lmax, cov_T_E_only=cov_T_E_only)
 
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
 
-    np.save(f"{cov_dir}/analytic_beam_cov_{na_r}x{nb_r}_{nc_r}x{nd_r}.npy", analytic_beam_cov)
+    log.info(f"beam_cov_{na_r}x{nb_r}_{nc_r}x{nd_r}")
+
+    np.save(f"{cov_dir}/beam_cov_{na_r}x{nb_r}_{nc_r}x{nd_r}.npy", beam_cov)

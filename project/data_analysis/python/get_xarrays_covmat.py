@@ -1,137 +1,61 @@
 """
-This script use the covariance matrix block to form a cross array covariance matrix
-with block TT - TE - ET - EE
-Note that for the ET block, we do not include any same array, same survey spectra, since for
-these guys TE = ET
+This script uses the covariance matrix blocks to form a cross array covariance matrix
+Note that for the ET - BT - BE blocks, we do not include any same array, same survey spectra, since for
+these guys XY = YX and therefore are already included in the TE - TB - EB.
+The x_ar cov is organised as TT - TE -TB - ET - BT - EE - EB - BE -BB for cov_T_E_only = False, TT - TE - ET - EE otherwise
+then each of these blocks contains all x_array terms e.g pa5_f090xpa5_f090, pa5_f090xpa5_f150 ..
 """
 
-import matplotlib
-matplotlib.use("Agg")
 from pspy import so_dict, pspy_utils, so_cov
-from pspipe_utils import covariance, pspipe_list
+from pspipe_utils import covariance, pspipe_list, log
 import numpy as np
-import pylab as plt
 import sys, os
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
-use_mc_corrected_cov = True
-only_diag_corrections = False
-use_beam_covariance = d["use_beam_covariance"]
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
-cov_name = "analytic_cov"
-if use_mc_corrected_cov:
-    if only_diag_corrections:
-        cov_name += "_with_diag_mc_corrections"
-    else:
-        cov_name += "_with_mc_corrections"
-if use_beam_covariance:
-    cov_name += "_with_beam"
+if d["cov_T_E_only"] == True:
+    modes_for_cov = ["TT", "TE", "ET", "EE"]
+else:
+    modes_for_cov = spectra
 
 cov_dir = "covariances"
-like_product_dir = "like_product"
-plot_dir = "plots/combined_cov"
+plot_dir = "plots/x_ar_cov"
 
-
-pspy_utils.create_directory(like_product_dir)
 pspy_utils.create_directory(plot_dir)
 
 spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
 
-analytic_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
-                                                            cov_dir,
-                                                            cov_name,
-                                                            spectra_order=["TT", "TE", "ET", "EE"],
-                                                            remove_doublon=True,
-                                                            check_pos_def=True)
+log.info(f"create x array cov mat from analytic cov block")
 
-np.save(f"{like_product_dir}/x_ar_{cov_name}.npy", analytic_cov)
-corr_analytic = so_cov.cov2corr(analytic_cov, remove_diag=True)
-so_cov.plot_cov_matrix(corr_analytic, file_name=f"{plot_dir}/corr_xar")
+x_ar_analytic_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
+                                                                 cov_dir,
+                                                                 "analytic_cov",
+                                                                 spectra_order=modes_for_cov,
+                                                                 remove_doublon=True,
+                                                                 check_pos_def=True)
 
-if use_beam_covariance:
-
-    beam_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
-                                                            cov_dir,
-                                                            "analytic_beam_cov",
-                                                            spectra_order=["TT", "TE", "ET", "EE"],
-                                                            remove_doublon=True,
-                                                            check_pos_def=False)
-
-    analytic_cov_with_beam = analytic_cov + beam_cov
-
-    pspy_utils.is_pos_def(analytic_cov_with_beam)
-    pspy_utils.is_symmetric(analytic_cov_with_beam)
-
-    np.save(f"{like_product_dir}/x_ar_{cov_name}.npy", analytic_cov_with_beam)
-
-    corr_analytic_cov_with_beam = so_cov.cov2corr(analytic_cov_with_beam, remove_diag=True)
-    so_cov.plot_cov_matrix(corr_analytic_cov_with_beam, file_name=f"{plot_dir}/corr_xar_with_beam")
+np.save(f"{cov_dir}/x_ar_analytic_cov.npy", x_ar_analytic_cov)
+x_ar_analytic_corr = so_cov.cov2corr(x_ar_analytic_cov, remove_diag=True)
+so_cov.plot_cov_matrix(x_ar_analytic_corr, file_name=f"{plot_dir}/xar_analytic_corr")
 
 
-# This part compare the analytic covariance with the montecarlo covariance
-# In particular it produce plot of all diagonals of the matrix with MC vs analytics
-# We use our usual javascript visualisation tools
+if d["use_beam_covariance"]:
+    log.info(f"create x array beam cov mat from beam cov block")
 
-compare_with_sims = False
-if compare_with_sims:
-    mc_dir = "montecarlo"
+    x_ar_beam_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
+                                                                 cov_dir,
+                                                                 "beam_cov",
+                                                                 spectra_order=modes_for_cov,
+                                                                 remove_doublon=True,
+                                                                 check_pos_def=False)
 
-    cov_plot_dir = "plots/full_covariance"
-    pspy_utils.create_directory(cov_plot_dir)
-    multistep_path = d["multistep_path"]
+    np.save(f"{cov_dir}/x_ar_beam_cov.npy", x_ar_beam_cov)
+    x_ar_beam_corr = so_cov.cov2corr(x_ar_beam_cov, remove_diag=True)
+    so_cov.plot_cov_matrix(x_ar_beam_corr, file_name=f"{plot_dir}/xar_beam_corr")
 
-    full_mc_cov = np.load("%s/cov_restricted_all_cross.npy" % mc_dir)
 
-    bin_lo, bin_hi, bin_c, bin_size = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
-    n_bins = len(bin_hi)
 
-    os.system("cp %s/multistep2.js %s/multistep2.js" % (multistep_path, cov_plot_dir))
-    file = "%s/covariance.html" % (cov_plot_dir)
-    g = open(file, mode="w")
-    g.write('<html>\n')
-    g.write('<head>\n')
-    g.write('<title> covariance </title>\n')
-    g.write('<script src="multistep2.js"></script>\n')
-    g.write('<script> add_step("sub",  ["c","v"]) </script> \n')
-    g.write('<style> \n')
-    g.write('body { text-align: center; } \n')
-    g.write('img { width: 100%; max-width: 1200px; } \n')
-    g.write('</style> \n')
-    g.write('</head> \n')
-    g.write('<body> \n')
-    g.write('<div class=sub>\n')
-
-    size = int(full_analytic_cov.shape[0] / n_bins)
-    count = 0
-    for ispec in range(-size + 1, size):
-
-        rows, cols = np.indices(full_mc_cov.shape)
-        row_vals = np.diag(rows, k = ispec * n_bins)
-        col_vals = np.diag(cols, k = ispec * n_bins)
-        mat = np.ones(full_mc_cov.shape)
-        mat[row_vals, col_vals] = 0
-
-        str = "cov_diagonal_%03d.png" % (count)
-
-        plt.figure(figsize=(12,8))
-        plt.subplot(1, 2, 1)
-        plt.plot(np.log(np.abs(full_analytic_cov.diagonal(ispec * n_bins))))
-        plt.plot(np.log(np.abs(full_mc_cov.diagonal(ispec * n_bins))), '.')
-        plt.legend()
-        plt.subplot(1, 2, 2)
-        plt.imshow(np.log(np.abs(full_analytic_cov * mat)))
-        plt.savefig(f"{cov_plot_dir}/{str}")
-        plt.clf()
-        plt.close()
-
-        g.write('<div class=sub>\n')
-        g.write('<img src="' + str + '"  /> \n')
-        g.write('</div>\n')
-
-        count+=1
-
-    g.write('</body> \n')
-    g.write('</html> \n')
-    g.close()

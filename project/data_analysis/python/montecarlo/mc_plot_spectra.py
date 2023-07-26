@@ -6,22 +6,24 @@ It is there to catch bias from the pipeline
 
 import matplotlib
 matplotlib.use("Agg")
-from pspy import pspy_utils, so_dict, so_mcm, so_spectra
+from pspy import pspy_utils, so_dict, so_spectra, so_mcm
 from matplotlib.pyplot import cm
 import numpy as np
 import pylab as plt
 import os, sys
-from pspipe_utils import pspipe_list, best_fits
+from pspipe_utils import pspipe_list, best_fits, log
+import pspipe
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 type = d["type"]
 surveys = d["surveys"]
 iStart = d["iStart"]
 iStop = d["iStop"]
 lmax = d["lmax"]
-multistep_path = d["multistep_path"]
+multistep_path = os.path.join(os.path.dirname(pspipe.__file__), "js")
 
 noise_model_dir = "noise_model"
 mcm_dir = "mcms"
@@ -42,9 +44,20 @@ lth, cmb_and_fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat
 
 pspy_utils.create_directory(plot_dir)
 
-spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 nsims = iStop - iStart
+
+diff_l_fac = {}
+diff_l_fac["TT"] = 1
+diff_l_fac["TE"] = 0
+diff_l_fac["TB"] = -0.8
+diff_l_fac["ET"] = 0
+diff_l_fac["BT"] = -0.8
+diff_l_fac["EE"] = -0.8
+diff_l_fac["EB"] = -0.8
+diff_l_fac["BE"] = -0.8
+diff_l_fac["BB"] = -0.8
+
 
 theory = {}
 bin_theory = {}
@@ -58,6 +71,8 @@ for id_sv1, sv1 in enumerate(surveys):
 
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
+                
+                log.info(f"prepare theory spectra {sv1} {ar1} x {sv2} {ar2}")
 
                 l, bl1 = pspy_utils.read_beam_file(d[f"beam_{sv1}_{ar1}"], lmax=lmax)
                 l, bl2 = pspy_utils.read_beam_file(d[f"beam_{sv2}_{ar2}"], lmax=lmax)
@@ -130,16 +145,26 @@ for kind in ["cross", "noise", "auto"]:
                         if (sv1 != sv2) & (kind == "noise"): continue
                         if (sv1 != sv2) & (kind == "auto"): continue
 
-
                         spec_name = f"spectra_{spec}_{sv1}_{ar1}x{sv2}_{ar2}_{kind}"
+                        
+                        log.info(f"plot {spec_name}")
 
                         lb, mean, std = np.loadtxt(f"{mc_dir}/{spec_name}.dat", unpack=True)
 
-                        mean_dict[kind, spec, sv1, ar1, sv2, ar2] = mean
-                        std_dict[kind, spec, sv1, ar1, sv2, ar2] = std
-
+                        
                         ps_th = theory[sv1, ar1, sv2, ar2, kind][spec]
                         ps_th_binned = bin_theory[sv1, ar1, sv2, ar2, kind][spec]
+
+                        
+                        # skip the first bin, we never use it and it dominated the plotting range
+                        lb = lb[1:]
+                        mean = mean[1:]
+                        std = std[1:]
+                        ps_th_binned = ps_th_binned[1:]
+                        
+                        
+                        mean_dict[kind, spec, sv1, ar1, sv2, ar2] = mean
+                        std_dict[kind, spec, sv1, ar1, sv2, ar2] = std
 
                         plt.figure(figsize=(8, 7))
 
@@ -149,21 +174,26 @@ for kind in ["cross", "noise", "auto"]:
                         plt.plot(lth, ps_th, color="grey", alpha=0.4)
                         plt.plot(lb, ps_th_binned)
                         plt.errorbar(lb, mean, std, fmt=".", color="red")
-                        plt.title(r"$D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}$" % (spec, sv1, ar1, sv2, ar2, kind), fontsize=20)
+                        plt.title(r"$D^{%s, %s %s x %s %s}_{%s,\ell}$ (press c/v for type, j/k for spectra, a/z for residual)" % (spec, sv1, ar1, sv2, ar2, kind), fontsize=20)
                         plt.xlabel(r"$\ell$", fontsize=20)
                         plt.savefig("%s/%s.png" % (plot_dir, spec_name), bbox_inches="tight")
                         plt.clf()
                         plt.close()
 
-                        plt.errorbar(lb, mean - ps_th_binned, std / np.sqrt(nsims), fmt=".", color="red")
-                        plt.title(r"$\Delta D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}$" % (spec, sv1, ar1, sv2, ar2, kind), fontsize=20)
+                        plt.errorbar(lb,
+                                     (mean - ps_th_binned) * lb ** diff_l_fac[spec],
+                                     std / np.sqrt(nsims)  * lb ** diff_l_fac[spec],
+                                     fmt=".",
+                                     color="red")
+                        plt.plot(lb, lb * 0, color="gray", alpha=0.6)
+                        plt.title(r"$\ell^{%.01f} \Delta D^{%s, %s %s x %s %s}_{%s,\ell}$ (press c/v for type, j/k for spectra, a/z for residual)" % (diff_l_fac[spec], spec, sv1, ar1, sv2, ar2, kind), fontsize=20)
                         plt.xlabel(r"$\ell$", fontsize=20)
                         plt.savefig("%s/diff_%s.png" % (plot_dir, spec_name), bbox_inches="tight")
                         plt.clf()
                         plt.close()
 
                         plt.errorbar(lb, (mean - ps_th_binned) / (std / np.sqrt(nsims)), color="red")
-                        plt.title(r"$\Delta D^{%s,%s_{%s}x%s_{%s}}_{%s,\ell}/\sigma$"%(spec, sv1, ar1, sv2, ar2, kind), fontsize=20)
+                        plt.title(r"$\Delta D^{%s, %s %s x %s %s}_{%s,\ell}/\sigma$ (press c/v for type, j/k for spectra, a/z for residual)"%(spec, sv1, ar1, sv2, ar2, kind), fontsize=20)
                         plt.xlabel(r"$\ell$", fontsize=20)
                         plt.savefig("%s/frac_%s.png" % (plot_dir, spec_name), bbox_inches="tight")
                         plt.clf()
@@ -185,7 +215,6 @@ g.write('</div> \n')
 g.write('</body> \n')
 g.write('</html> \n')
 g.close()
-
 
 
 for fig in ["log", "linear"]:
@@ -214,8 +243,8 @@ for fig in ["log", "linear"]:
                         ps_th = theory[sv1, ar1, sv2, ar2, "cross"][spec]
 
                         if (fig == "linear") and (spec == "TT"):
-                            plt.errorbar(lb, mean * lb**2, std * lb**2, fmt='.', color=c, label=f"{sv1}{ar1} x {sv2}{ar2}", alpha=0.6)
-                            plt.errorbar(lth, ps_th * lth**2, color=c, alpha=0.4)
+                            plt.errorbar(lb, mean * lb ** 2, std * lb ** 2, fmt='.', color=c, label=f"{sv1}{ar1} x {sv2}{ar2}", alpha=0.6)
+                            plt.errorbar(lth, ps_th * lth ** 2, color=c, alpha=0.4)
                         else:
                             plt.errorbar(lb, mean, std, fmt='.', color=c, label=f"{sv1}{ar1} x {sv2}{ar2}", alpha=0.6)
                             plt.errorbar(lth, ps_th, color=c, alpha=0.4)
@@ -223,7 +252,7 @@ for fig in ["log", "linear"]:
             exp_name += "%s_" % sv1
 
         if (fig == "log") and (spec == "TT"):
-            plt.ylim(10, 10**4)
+            plt.ylim(10, 10 ** 4)
         if (fig == "linear") and (spec == "TT"):
             plt.ylim(0, 2 * 10**9)
 

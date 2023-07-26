@@ -1,3 +1,8 @@
+"""
+This script is used to compute the per-split noise
+from pre-computed power spectra. `write_split_spectra` has to be
+set to `True` to run this script.
+"""
 from pspy import so_dict, pspy_utils, so_spectra
 import sys
 from pspipe_utils import pspipe_list

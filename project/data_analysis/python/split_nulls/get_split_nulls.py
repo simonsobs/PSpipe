@@ -1,3 +1,8 @@
+"""
+This script computes differences between split
+power spectra for the different arrays specified
+in the paramfile. 
+"""
 from pspipe_utils import consistency
 from pspy import so_dict, pspy_utils
 from itertools import combinations

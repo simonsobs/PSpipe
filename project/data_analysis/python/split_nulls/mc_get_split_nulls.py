@@ -1,3 +1,7 @@
+"""
+This script compute split null tests on
+simulations and build the expected PTE histogram
+"""
 from pspipe_utils import consistency
 from pspy import so_dict, pspy_utils
 from itertools import combinations

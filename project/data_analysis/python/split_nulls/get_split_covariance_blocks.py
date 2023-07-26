@@ -1,5 +1,6 @@
 """
-This script compute the analytical covariance matrix elements.
+This script compute the analytical covariance matrix elements
+between split power spectra
 """
 import sys
 import numpy as np

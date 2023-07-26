@@ -1,3 +1,8 @@
+"""
+This script performs null tests between different arrays
+and plot residual power spectra and a summary PTE distribution
+"""
+
 from pspy import so_dict, pspy_utils, so_cov
 from itertools import combinations_with_replacement as cwr
 from pspipe_utils import consistency, best_fits
@@ -11,7 +16,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-spec_dir = "spectra"
 cov_dir = "covariances"
 
 output_dir = "plots/array_nulls"
@@ -83,6 +87,32 @@ multipole_range = {
     }
 }
 
+# Options
+remove_first_bin=True
+l_pows = {
+    "TT": 1,
+    "TE": 0,
+    "TB": 0,
+    "ET": 0,
+    "BT": 0,
+    "EE": -1,
+    "EB": -1,
+    "BE": -1,
+    "BB": -1
+}
+y_lims = {
+    "TT": (-100000, 75000),
+    "TE": (-30, 30),
+    "TB": (-30, 30),
+    "ET": (-30, 30),
+    "BT": (-30, 30),
+    "EE": (-0.01, 0.005),
+    "EB": (-0.01, 0.005),
+    "BE": (-0.01, 0.005),
+    "BB": (-0.01, 0.005)
+}
+pte_threshold = 0.01
+
 # Define PTE dict
 pte_dict = {label: [] for label in nulls_data}
 
@@ -94,7 +124,6 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
         if j <= i: continue
         f1, f2 = d[f"freq_info_{ar1}"]["freq_tag"], d[f"freq_info_{ar2}"]["freq_tag"]
         f3, f4 = d[f"freq_info_{ar3}"]["freq_tag"], d[f"freq_info_{ar4}"]["freq_tag"]
-        #if (f1 != f3 or f2 != f4): continue
 
         ar_list = [ar1, ar2, ar3, ar4]
 
@@ -107,7 +136,7 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
             m0, m1 = m[0], m[1]
             if (f1 != f3) and (m0 == "T"): continue
             if (f2 != f4) and (m1 == "T"): continue
-            if f"{ar1}x{ar2}".count("pa4_f220") != f"{ar3}x{ar4}".count("pa4_f220"): continue
+            #if f"{ar1}x{ar2}".count("pa4_f220") != f"{ar3}x{ar4}".count("pa4_f220"): continue
 
             lmin0, lmax0 = multipole_range[ar1][m0]
             lmin1, lmax1 = multipole_range[ar2][m1]
@@ -127,8 +156,9 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
             res_cov_dict = {}
             for label in nulls_data:
                 lb, res_ps, res_cov, _, _ = consistency.compare_spectra(ar_list, "ab-cd", ps_dict[label], cov_dict[label], mode = m)
-                # remove first bin
-                lb, res_ps, res_cov = lb[1:], res_ps[1:], res_cov[1:,1:]
+                if remove_first_bin:
+                    # remove first bin
+                    lb, res_ps, res_cov = lb[1:], res_ps[1:], res_cov[1:,1:]
                 res_ps_dict[label] = res_ps
                 res_cov_dict[label] = res_cov
 
@@ -141,12 +171,12 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
                 dy, = np.diff(centers[2:]) / (corr.shape[0]-1)
                 extent=[centers[0]-dx/2, centers[1]+dx/2, centers[2]+dy/2, centers[3]-dy/2]
                 im = ax.imshow(corr, vmin=-1, vmax=1, cmap="RdBu_r", extent=extent, aspect="auto")
-                plt.title(f"{ar1.replace('dr6_', '')}x{ar2.replace('dr6_', '')} - {ar3.replace('dr6_', '')}x{ar4.replace('dr6_', '')}")
+                plt.title(f"{ar1}x{ar2} - {ar3}x{ar4}")
                 divider=make_axes_locatable(ax)
                 cax=divider.append_axes("right", size="5%",pad=0.05)
                 plt.colorbar(im, cax=cax)
                 plt.tight_layout()
-                fname = f"corr_{label.replace(' ', '_')}_{ar1.replace('dr6_', '')}x{ar2.replace('dr6_', '')}_{ar3.replace('dr6_', '')}x{ar4.replace('dr6_', '')}_{m}.png"
+                fname = f"corr_{label}_{ar1}x{ar2}_{ar3}x{ar4}_{m}.png"
                 plt.savefig(f"{output_dir}/{fname}", dpi=300)
 
             lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
@@ -156,19 +186,9 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
             lb_fg, res_th_b = pspy_utils.naive_binning(lth, res_th, d["binning_file"], d["lmax"])
             # remove first bin
             lb_fg, res_th_b = lb_fg[1:], res_th_b[1:]
-            # ell scaling
-            l_pow = 0
-            if m == "TT":
-                l_pow = 1
-                ylims = (-100000, 75000)
-            elif m in ["EE", "EB", "BE", "BB"]:
-                l_pow = -1
-                ylims = (-0.01, 0.005)
-            elif m in ["TB", "TE", "BT", "ET"]:
-                ylims = (-30, 30)
 
             # Plot residual and get chi2
-            fname = f"diff_{ar1.replace('dr6_', '')}x{ar2.replace('dr6_', '')}_{ar3.replace('dr6_', '')}x{ar4.replace('dr6_', '')}_{m}"
+            fname = f"diff_{ar1}x{ar2}_{ar3}x{ar4}_{m}"
             chi2_dict = consistency.plot_residual(
                 lb, res_ps_dict, res_cov_dict, mode=m,
                 title=plot_title.replace('dr6_', ''),
@@ -176,16 +196,16 @@ for i, (ar1, ar2) in enumerate(cwr(arrays, 2)):
                 expected_res=expected_res,
                 lrange=lrange,
                 overplot_theory_lines=(lb_fg, res_th_b),
-                l_pow=l_pow,
+                l_pow=l_pows[m],
                 return_chi2=True,
-                ylims=ylims
+                ylims=y_lims[m]
             )
 
             # Fill pte_dict
             for label in nulls_data:
                 pte = 1-ss.chi2(chi2_dict[label]["ndof"]).cdf(chi2_dict[label]["chi2"])
                 pte_dict[label].append(pte)
-                if pte <= 0.01:
+                if (pte <= pte_threshold) or (pte >= 1-pte_threshold):
                     print(f"[{label}] [{plot_title} {m}] PTE = {pte:.03f}")
 
 # Save pte to pickle

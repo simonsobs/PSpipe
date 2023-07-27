@@ -79,7 +79,12 @@ else:
 log.info(f"number of covariance matrices to compute : {ncovs}")
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=ncovs - 1)
+
+if len(sys.argv) == 4:
+    log.info(f"computing only the covariance matrices : {int(sys.argv[2])}:{int(sys.argv[3])}")
+    subtasks = subtasks[int(sys.argv[2]):int(sys.argv[3])]
 log.info(subtasks)
+
 for task in subtasks:
     task = int(task)
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]

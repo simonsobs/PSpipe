@@ -28,16 +28,24 @@ ps_mask_dr6_pa5_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_r
 ps_mask_dr6_pa6_f090 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
 ps_mask_dr6_pa6_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
 
-gal_mask_dr6_pa4_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa4_f220 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa5_f090 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa5_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa6_f090 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa6_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
+gal_mask_dr6_pa4_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa4_f220 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa5_f090 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa5_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa6_f090 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa6_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+
+coord_mask_dr6_pa4_f150 = [[-5.6, 140], [-30, 110]]
+coord_mask_dr6_pa4_f220 = [[-5.6, 140], [-30, 110]]
+coord_mask_dr6_pa5_f090 = [[-4.8, 140], [-30, 110]]
+coord_mask_dr6_pa5_f150 = [[-4.8, 140], [-30, 110]]
+coord_mask_dr6_pa6_f090 = [[-5.6, 140], [-30, 110]]
+coord_mask_dr6_pa6_f150 = [[-5.6, 140], [-30, 110]]
+
 
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
-skip_from_edges_degree = 1
+edge_skip_rescale = 1
 cross_link_threshold = 0.97
 n_med_ivar = 3
 
@@ -111,24 +119,29 @@ leakage_beam_dr6_pa6_f150 = 'gamma_mp_uranus_pa6_f150.txt'
 
 
 
+window_kspace_dr6_pa4_f150 =  "windows/kspace_mask_dr6_pa4_f150.fits"
+window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150_xlink.fits"
+window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150_xlink.fits"
 
-window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
-window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150.fits"
+window_kspace_dr6_pa4_f220 =  "windows/kspace_mask_dr6_pa4_f220.fits"
+window_T_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220_xlink.fits"
+window_pol_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220_xlink.fits"
 
-window_T_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220.fits"
-window_pol_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220.fits"
+window_kspace_dr6_pa5_f090 =  "windows/kspace_mask_dr6_pa5_f090.fits"
+window_T_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090_xlink.fits"
+window_pol_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090_xlink.fits"
 
-window_T_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090.fits"
-window_pol_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090.fits"
+window_kspace_dr6_pa5_f150 =  "windows/kspace_mask_dr6_pa5_f150.fits"
+window_T_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150_xlink.fits"
+window_pol_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150_xlink.fits"
 
-window_T_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150.fits"
-window_pol_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150.fits"
+window_kspace_dr6_pa6_f090 =  "windows/kspace_mask_dr6_pa6_f090.fits"
+window_T_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090_xlink.fits"
+window_pol_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090_xlink.fits"
 
-window_T_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090.fits"
-window_pol_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090.fits"
-
-window_T_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
-window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
+window_kspace_dr6_pa6_f150 =  "windows/kspace_mask_dr6_pa6_f150.fits"
+window_T_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_xlink.fits"
+window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_xlink.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)
@@ -139,11 +152,10 @@ fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4
 
 #sim
 iStart = 0
-iStop = 39
+iStop = 127
 sim_alm_dtype = "complex64"
-read_noise_alms_from_disk = False
-noise_sim_type = "fdw"
-noise_model_parameters = {"downgrade": 4, "mask_est_name": "dr6v3_20220316_baseline_union_mask", "mask_obs_name": "dr6v3_xlink_union_mask_0.001", "union_sources": "regular_20220316", "notes": "20220619"}
+noise_sim_type = "tile_cmbmask"
+
 
 #plot
 range_TT = [10, 8000]

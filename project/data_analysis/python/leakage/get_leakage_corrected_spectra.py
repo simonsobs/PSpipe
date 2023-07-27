@@ -5,6 +5,8 @@ computed from the planet beam leakage measurement and a best fit model.
 Note that this assume we have a best fit model, but realistically, not knowing the best fit
 presicely is going to be a second order correction
 """
+import matplotlib
+matplotlib.use("Agg")
 
 import sys
 

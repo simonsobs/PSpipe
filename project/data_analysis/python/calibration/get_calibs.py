@@ -54,11 +54,11 @@ pspy_utils.create_directory(chains_dir)
 # Define the multipole range used to obtain
 # the calibration amplitudes
 multipole_range = {"dr6_pa4_f150": [1250, 1800],
-                   "dr6_pa4_f220": [1500, 2000],
+                   "dr6_pa4_f220": [1250, 2000],
                    "dr6_pa5_f090": [800, 1100],
-                   "dr6_pa5_f150": [1250, 1800],
-                   "dr6_pa6_f090": [800, 1100],
-                   "dr6_pa6_f150": [1250, 1800]}
+                   "dr6_pa5_f150": [800, 1800],
+                   "dr6_pa6_f090": [600, 1100],
+                   "dr6_pa6_f150": [600, 1800]}
 
 # Define the reference arrays
 ref_arrays = {"dr6_pa4_f150": "Planck_f143",

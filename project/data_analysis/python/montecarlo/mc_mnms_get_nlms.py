@@ -36,7 +36,7 @@ noise_models = {
 }
 
 # Create output dir
-nlms_dir = "mnms_noise_alms"
+nlms_dir = "noise_alms"
 pspy_utils.create_directory(nlms_dir)
 
 arrays = {sv: d[f"arrays_{sv}"] for sv in surveys}
@@ -81,7 +81,7 @@ for id_mpi in subtasks:
                 sim_arrays[i, 0, :][2] *= cal / pol_eff
                 noise_alms = curvedsky.map2alm(sim_arrays[i, 0, :], lmax=lmax, tweak=True)
 
-                np.save(f"{nlms_dir}/mnms_nlms_{sv}_{ar}_set{k}_{iii:05d}.npy", noise_alms)
+                np.save(f"{nlms_dir}/nlms_{sv}_{ar}_set{k}_{iii:05d}.npy", noise_alms)
 
         noise_models[wafer_name].cache_clear()
 

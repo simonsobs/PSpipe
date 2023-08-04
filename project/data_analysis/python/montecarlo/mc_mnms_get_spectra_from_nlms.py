@@ -32,7 +32,7 @@ window_dir = "windows"
 mcm_dir = "mcms"
 spec_dir = "sim_spectra"
 bestfit_dir = "best_fits"
-nlms_dir = "mnms_noise_alms"
+nlms_dir = "noise_alms"
 
 pspy_utils.create_directory(spec_dir)
 
@@ -126,7 +126,7 @@ for iii in subtasks:
 
                 log.info(f"[Sim n° {iii}] Read window in {time.time()-t3:.2f} s")
 
-                noise_alms = np.load(f"{nlms_dir}/mnms_nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
+                noise_alms = np.load(f"{nlms_dir}/nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
 
                 t4 = time.time()
 
@@ -162,11 +162,11 @@ for iii in subtasks:
     ps_dict = {}
 
     t7 = time.time()
-    
+
     n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
-    
+
     for i_spec in range(n_spec):
-    
+
         sv1, ar1, sv2, ar2 = sv1_list[i_spec], ar1_list[i_spec], sv2_list[i_spec], ar2_list[i_spec]
 
         for spec in spectra:

@@ -67,6 +67,12 @@ maps_dr6_pa5_f150 = [data_dir + 'src_free_maps/cmb_night_pa5_f150_3pass_4way_set
 maps_dr6_pa6_f090 = [data_dir + 'src_free_maps/cmb_night_pa6_f090_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
 maps_dr6_pa6_f150 = [data_dir + 'src_free_maps/cmb_night_pa6_f150_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
 
+ivar_dr6_pa4_f150 = [map_dir + 'cmb_night_pa4_f150_3pass_4way_set%d_ivar.fits' % (i) for i in range(4)]
+ivar_dr6_pa4_f220 = [map_dir + 'cmb_night_pa4_f220_3pass_4way_set%d_ivar.fits' % (i) for i in range(4)]
+ivar_dr6_pa5_f090 = [map_dir + 'cmb_night_pa5_f090_3pass_4way_set%d_ivar.fits' % (i) for i in range(4)]
+ivar_dr6_pa5_f150 = [map_dir + 'cmb_night_pa5_f150_3pass_4way_set%d_ivar.fits' % (i) for i in range(4)]
+ivar_dr6_pa6_f090 = [map_dir + 'cmb_night_pa6_f090_3pass_4way_set%d_ivar.fits' % (i) for i in range(4)]
+ivar_dr6_pa6_f150 = [map_dir + 'cmb_night_pa6_f150_3pass_4way_set%d_ivar.fits' % (i) for i in range(4)]
 
 cal_dr6_pa4_f150 = 1.0072
 cal_dr6_pa4_f220 = 1.0340

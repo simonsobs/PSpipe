@@ -42,6 +42,10 @@ Now spectra,
 10core2hr "srun --ntasks 1 --cpus-per-task 10 --cpu-bind=cores python -u python/get_spectra_from_alms.py paramfiles/della/global_dr6_v4.dict"
 ```
 
+```bash
+10core2hr "srun --ntasks 1 --cpus-per-task 10 --cpu-bind=cores python -u python/split_nulls/get_per_split_noise.py paramfiles/della/global_dr6_v4.dict"
+```
+
 Now we compute the analytic covariances blocks assuming an isotropic noise model.
 
 ```bash
@@ -49,7 +53,10 @@ Now we compute the analytic covariances blocks assuming an isotropic noise model
 ```
 
 ```bash
-for i in {0..0}; do \
+for i in {0..119}; do \
     10core2hr "srun --ntasks 1 --cpus-per-task 10 --cpu-bind=cores python -u python/get_covariance_blocks.py paramfiles/della/global_dr6_v4.dict $i $((i+1))"
 done
 ```
+
+
+srun --ntasks 1 --cpus-per-task 10 --cpu-bind=cores --pty ipython

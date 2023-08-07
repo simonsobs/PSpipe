@@ -77,7 +77,7 @@ for sv in surveys:
                 if id1 > id2: continue
 
 
-                for pol in ("T",):
+                for pol in ("T",):  # TODO: add back E
 
                     na = f"{sv}&{ar}&{xsplit1[0]}&{pol}"
                     nb = f"{sv}&{ar}&{xsplit1[1]}&{pol}"
@@ -101,8 +101,7 @@ log.info(subtasks)
 
 for task in subtasks:
     na, nb, nc, nd = cov_name[task]
-
-
+    
     sv_a, ar_a, split_a, pol_a = na.split("&")
     sv_b, ar_b, split_b, pol_b = nb.split("&")
     sv_c, ar_c, split_c, pol_c = nc.split("&")
@@ -114,6 +113,13 @@ for task in subtasks:
     nd = f"{sv_d}&{ar_d}"
 
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
+
+    try: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix=f"{mcms_dir}/{na_r}x{nb_r}", spin_pairs=spin_pairs)
+    except: mbb_inv_ab, Bbl_ab = so_mcm.read_coupling(prefix=f"{mcms_dir}/{nb_r}x{na_r}", spin_pairs=spin_pairs)
+
+    try: mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix=f"{mcms_dir}/{nc_r}x{nd_r}", spin_pairs=spin_pairs)
+    except:  mbb_inv_cd, Bbl_cd = so_mcm.read_coupling(prefix=f"{mcms_dir}/{nd_r}x{nc_r}", spin_pairs=spin_pairs)
+
     log.info(f"[task] cov element ({na_r} x {nb_r}, {nc_r} x {nd_r}) {split_a}{split_b}{split_c}{split_d} {pol_a}{pol_b}{pol_c}{pol_d}")
 
     splits = [split_a, split_b, split_c, split_d]
@@ -137,7 +143,7 @@ for task in subtasks:
         var[id1] = so_cov.make_weighted_variance_map(var1, win[id1])
 
 
-    print(white_noise)
+    log.info(white_noise)
 
 
     Clth_dict = {}
@@ -167,3 +173,8 @@ for task in subtasks:
 
     np.save(f"{cov_dir}/analytic_aniso_coupled_cov_{na_r}_{split_a}x{nb_r}_{split_b}_{nc_r}_{split_c}x{nd_r}_{split_d}.npy", 
         cov_tttt)
+
+    full_analytic_cov = mbb_inv_ab["spin0xspin0"] @ cov_tttt @ mbb_inv_cd["spin0xspin0"].T
+    analytic_cov = so_cov.bin_mat(full_analytic_cov, binning_file, lmax)
+    np.save(f"{cov_dir}/analytic_aniso_cov_{na_r}_{split_a}x{nb_r}_{split_b}_{nc_r}_{split_c}x{nd_r}_{split_d}.npy", 
+        analytic_cov)

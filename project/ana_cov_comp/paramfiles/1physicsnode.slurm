@@ -4,8 +4,11 @@
 #SBATCH --ntasks-per-node=1      # total number of tasks per node
 #SBATCH -p physics
 #SBATCH --output=slurmoutput/R-%j.out
+#SBATCH --mail-type=begin        # send email when job begins
+#SBATCH --mail-type=end          # send email when job ends
+#SBATCH --mail-user=zatkins@princeton.edu
 
-cd /home/zatkins/repos/simonsobs/PSpipe/project/data_analysis
+cd /home/zatkins/repos/simonsobs/PSpipe/project/ana_cov_comp
 
 ### set environment ###
 module purge
@@ -17,4 +20,4 @@ conda activate pspy-della8
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export JULIA_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-$1
+srun $1

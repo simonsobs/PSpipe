@@ -10,7 +10,7 @@ export sbatch1pn="/home/zatkins/repos/simonsobs/PSpipe/project/ana_cov_comp/para
 We need windows. Note, this will generate "PSpipe" style windows. A particular dict file may load other, pre-generated windows.
 
 ```bash
-for i in {0..4}; do \
+for i in {0..5}; do \
     sbatch --cpus-per-task 1 --mem 48G --time 20:00 --job-name get_window_dr6 ${sbatch1pn} "python -u python/get_window_dr6.py paramfiles/global_dr6_v4.dict $i $((i+1))"
 done
 ```
@@ -24,7 +24,7 @@ sbatch --cpus-per-task 1 --mem 2G --time 2:00 --job-name get_best_fit_mflike ${s
 Next we'll need to compute the mode-coupling matrices,
 
 ```bash
-for i in {0..21}; do \
+for i in {0..20}; do \
     sbatch --cpus-per-task 10 --mem 28G --time 5:00 --job-name get_mcm_and_bbl ${sbatch1pn} "python -u python/get_mcm_and_bbl.py paramfiles/sims_dr6_v4_lmax5400_20230816.dict $i $((i+1))"
 done
 ```
@@ -46,23 +46,25 @@ sbatch --cpus-per-task 1 --mem 1G --time 2:00 --job-name get_noise_model ${sbatc
 ```
 
 ```bash
-sbatch --cpus-per-task 1 --mem 4G --time 10:00 --job-name get_per_split_noise ${sbatch1pn} "python -u python/get_per_split_noise.py paramfiles/sims_dr6_v4_lmax5400_20230816.dict"
+sbatch --cpus-per-task 1 --mem 1G --time 2:00 --job-name get_per_split_noise ${sbatch1pn} "python -u python/get_per_split_noise.py paramfiles/sims_dr6_v4_lmax5400_20230816.dict"
 ```
 
 Now we compute the analytic covariances blocks assuming an isotropic noise model.
 
 ```bash
-10core2hr "srun --ntasks 1 --cpus-per-task 10 --cpu-bind=cores python -u python/get_sq_windows_alms.py paramfiles/della/global_dr6_v4.dict"
+sbatch --cpus-per-task 4 --mem 10G --time 15:00 --job-name get_sq_windows_alms ${sbatch1pn} "python -u python/get_sq_windows_alms.py paramfiles/sims_dr6_v4_lmax5400_20230816.dict"
 ```
 
 ```bash
-for i in {0..119}; do \
-    10core2hr "srun --ntasks 1 --cpus-per-task 10 --cpu-bind=cores python -u python/get_covariance_blocks.py paramfiles/della/global_dr6_v4.dict $i $((i+1))"
+for i in {0..230}; do \
+    sbatch --cpus-per-task 10 --mem 32G --time 5:00 --job-name get_covariance_blocks ${sbatch1pn} "python -u python/get_covariance_blocks.py paramfiles/sims_dr6_v4_lmax5400_20230816.dict $i $((i+1))"
 done
 ```
 
 For anisotropic covariances,
 
 ```bash
-10core2hr "srun --ntasks 1 --cpus-per-task 10 --cpu-bind=cores python -u python/get_split_covariance_aniso.py paramfiles/della/global_dr6_v4.dict 100 101"
+for i in {0..230}; do \
+    sbatch --cpus-per-task 4 --mem 10G --time 15:00 --job-name get_split_covariance_aniso ${sbatch1pn} "python -u python/get_split_covariance_aniso.py paramfiles/sims_dr6_v4_lmax5400_20230816.dict $i $((i+1))"
+done
 ```

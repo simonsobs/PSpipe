@@ -4,6 +4,10 @@ arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f
 
 data_dir = '/scratch/gpfs/zatkins/data/simonsobs/PSpipe/project/data_analysis/ana_cov_comp/'
 
+# orphans
+use_beam_covariance = True
+multistep_path = data_dir
+
 # mcms
 mcms_dir = data_dir + 'mcms'
 
@@ -38,10 +42,12 @@ mm_tf_dr6_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
 mm_tf_dr6_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
 mm_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
 
-#
-multistep_path = data_dir
+# cov 
+sq_win_alms_dir = data_dir + 'sq_win_alms'
+covariances_dir = data_dir + 'covariances'
+split_covariances_dir = data_dir + 'split_covariances'
+
 use_toeplitz_cov = True
-use_beam_covariance = True
 
 # window parameters
 ps_mask_dr6_pa4_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'

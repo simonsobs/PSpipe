@@ -42,6 +42,14 @@ coord_mask_dr6_pa5_f150 = [[-4.8, 140], [-30, 110]]
 coord_mask_dr6_pa6_f090 = [[-5.6, 140], [-30, 110]]
 coord_mask_dr6_pa6_f150 = [[-5.6, 140], [-30, 110]]
 
+mnmns_mask_dr6_pa4_f150 = data_dir + "masks/mnms_mask/pa4_baseline_effective_bool_20230731_converted.fits"
+mnmns_mask_dr6_pa4_f220 = data_dir + "masks/mnms_mask/pa4_baseline_effective_bool_20230731_converted.fits"
+mnmns_mask_dr6_pa5_f090 = data_dir + "masks/mnms_mask/pa5_baseline_effective_bool_20230731_converted.fits"
+mnmns_mask_dr6_pa5_f150 = data_dir + "masks/mnms_mask/pa5_baseline_effective_bool_20230731_converted.fits"
+mnmns_mask_dr6_pa6_f090 = data_dir + "masks/mnms_mask/pa6_baseline_effective_bool_20230731_converted.fits"
+mnmns_mask_dr6_pa6_f150 = data_dir + "masks/mnms_mask/pa6_baseline_effective_bool_20230731_converted.fits"
+
+
 
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
@@ -120,28 +128,28 @@ leakage_beam_dr6_pa6_f150 = 'gamma_mp_uranus_pa6_f150.txt'
 
 
 window_kspace_dr6_pa4_f150 =  "windows/kspace_mask_dr6_pa4_f150.fits"
-window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150_xlink.fits"
-window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150_xlink.fits"
+window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150_baseline.fits"
+window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150_baseline.fits"
 
 window_kspace_dr6_pa4_f220 =  "windows/kspace_mask_dr6_pa4_f220.fits"
-window_T_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220_xlink.fits"
-window_pol_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220_xlink.fits"
+window_T_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220_baseline.fits"
+window_pol_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220_baseline.fits"
 
 window_kspace_dr6_pa5_f090 =  "windows/kspace_mask_dr6_pa5_f090.fits"
-window_T_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090_xlink.fits"
-window_pol_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090_xlink.fits"
+window_T_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090_baseline.fits"
+window_pol_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090_baseline.fits"
 
 window_kspace_dr6_pa5_f150 =  "windows/kspace_mask_dr6_pa5_f150.fits"
-window_T_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150_xlink.fits"
-window_pol_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150_xlink.fits"
+window_T_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150_baseline.fits"
+window_pol_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150_baseline.fits"
 
 window_kspace_dr6_pa6_f090 =  "windows/kspace_mask_dr6_pa6_f090.fits"
-window_T_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090_xlink.fits"
-window_pol_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090_xlink.fits"
+window_T_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090_baseline.fits"
+window_pol_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090_baseline.fits"
 
 window_kspace_dr6_pa6_f150 =  "windows/kspace_mask_dr6_pa6_f150.fits"
-window_T_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_xlink.fits"
-window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_xlink.fits"
+window_T_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
+window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)
@@ -152,7 +160,7 @@ fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4
 
 #sim
 iStart = 0
-iStop = 127
+iStop = 3
 sim_alm_dtype = "complex64"
 noise_sim_type = "tile_cmbmask"
 

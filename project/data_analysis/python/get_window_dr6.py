@@ -151,6 +151,11 @@ for task in subtasks:
         log.info(f"[{task}] apply coord mask")
         my_masks["baseline"]  = apply_coordinate_mask(my_masks["baseline"], d[f"coord_mask_{sv}_{ar}"])
 
+    if d[f"mnmns_mask_{sv}_{ar}"] is not None:
+        log.info(f"[{task}] apply mnms mask")
+        mnms_mask = so_map.read_map(d[f"mnmns_mask_{sv}_{ar}"])
+        my_masks["baseline"].data[:] *= mnms_mask.data[:]
+
     
     log.info(f"[{task}] compute distance to the edges and remove {0.5*rescale:.2f} degree from the edges")
     # compute the distance to the nearest 0

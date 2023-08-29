@@ -79,7 +79,6 @@ command is especially important @ NERSC)
             cd ${software_dir}
             git clone git@github.com:amaurea/enlib.git
             cd enlib
-            #sed 's/-liomp5/-lgomp/g' compile_opts/cca_intel.mk > compile_opts/cca_intel.mk
             export ENLIB_COMP=cca_intel
             make array_ops
         )
@@ -88,8 +87,6 @@ command is especially important @ NERSC)
             git clone git@github.com:simonsobs/sofind.git
             cd sofind
             python -m pip install -e .
-            cd sofind/products/masks
-            sed -i '/^system_paths:.*/a \ \ perlmutter: /global/cfs/cdirs/act/data/zatkins/data/simonsobs/mnms/masks' mnms_masks.yaml
         )
         (
             cd ${software_dir}

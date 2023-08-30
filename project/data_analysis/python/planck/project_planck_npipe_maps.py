@@ -9,7 +9,7 @@ assess consistency against Planck.
 import sys
 import numpy as np
 from pspy import so_dict, so_map, so_mpi, pspy_utils
-from pspipe_utils import log
+from pspipe_utils import log, misc
 from pixell import reproject
 
 d = so_dict.so_dict()
@@ -39,15 +39,16 @@ for split in splits:
         map_names.append((freq, split))
 
 # Mono and dipole parameters
+# from NPIPE paper https://arxiv.org/pdf/2007.04997.pdf
 dip_amp = 3366.6 #uK
 l = 263.986
 b = 48.247
 dipole = dip_amp * hp.pixelfunc.ang2vec((90-b)/180*np.pi, l/180*np.pi)
 monopole = {
-    "100":-70.,
-    "143":-81.,
-    "217":-182.4,
-    "353":395.2,
+    "100": -70.,
+    "143": -81.,
+    "217": -182.4,
+    "353": 395.2,
 }
 
 n_maps = len(map_names)
@@ -85,7 +86,10 @@ for task in subtasks:
 
     # Inverse variance
     log.info(f"[{freq} GHz - split {split}] Reading ivar map ...")
-    npipe_ivar = so_map.read_map(map_file.replace("map.fits", "wcov_mcscaled.fits"), coordinate="gal", fields_healpix=[0])
+    var_file = misc.str_replace(map_file, "map.fits", "wcov_mcscaled.fits")
+    # Read the variance map
+    npipe_ivar = so_map.read_map(var_file, coordinate="gal", fields_healpix=[0])
+    # Convert into inverse variance in uK
     npipe_ivar.data[npipe_ivar.data != 0] = 1 / (1e12 * npipe_ivar.data)
 
     ivar_project = reproject.enmap_from_healpix_interp(npipe_ivar.data, shape[1:], wcs)
@@ -93,3 +97,5 @@ for task in subtasks:
 
     out_file_name = f"npipe6v20{split}_f{freq}_ivar"
     ivar_project.write_map(file_name=f"{out_dir}/{out_file_name}.fits")
+    ivar_project.downgrade(8).plot(file_name=f"{out_dir}/{out_file_name}",
+                                   color_range=[300, 100, 100])

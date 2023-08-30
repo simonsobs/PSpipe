@@ -25,10 +25,10 @@ beam_areas = {
 for freq, freq_id in flux_id.items():
 
     flux = {
-        m: getattr(input_catalog, f"flux_{m}{freq_id}") for m in ["T", "Q", "U"]
+        m: getattr(input_catalog, f"flux_{m}{freq_id}") for m in "TQU"
     }
     dflux = {
-        m: getattr(input_catalog, f"dflux_{m}{freq_id}") for m in ["T", "Q", "U"]
+        m: getattr(input_catalog, f"dflux_{m}{freq_id}") for m in "TQU"
     }
 
     # nsr to sr

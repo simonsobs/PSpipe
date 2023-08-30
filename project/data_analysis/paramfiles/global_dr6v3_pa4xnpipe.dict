@@ -130,6 +130,7 @@ fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4
 iStart = 0
 iStop = 79
 sim_alm_dtype = "complex64"
+seed_sims = False
 read_noise_alms_from_disk = False
 noise_sim_type = "fdw"
 noise_model_parameters = {"downgrade": 4, "mask_est_name": "dr6v3_20220316_baseline_union_mask", "mask_obs_name": "dr6v3_xlink_union_mask_0.001", "union_sources": "regular_20220316", "notes": "20220619"}

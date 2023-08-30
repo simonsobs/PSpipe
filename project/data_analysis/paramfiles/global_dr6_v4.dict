@@ -134,13 +134,14 @@ window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150.fits"
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
-fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []} 
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.7,  "xi": 0.1, "T_d": 9.60, "a_gte": 0, "a_gtb": 0, "a_gee": 0,  "a_gbb": 0, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
 
 #sim
 iStart = 0
 iStop = 39
 sim_alm_dtype = "complex64"
+seed_sims = False
 read_noise_alms_from_disk = False
 noise_sim_type = "fdw"
 noise_model_parameters = {"downgrade": 4, "mask_est_name": "dr6v3_20220316_baseline_union_mask", "mask_obs_name": "dr6v3_xlink_union_mask_0.001", "union_sources": "regular_20220316", "notes": "20220619"}

@@ -114,6 +114,9 @@ for iii in subtasks:
     # generate cmb alms and foreground alms
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
 
+    # Set seed if needed
+    if d["seed_sims"]:
+        np.random.seed(iii)
     alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
     fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax)
 
@@ -131,6 +134,7 @@ for iii in subtasks:
 
         log.info(f"[{iii}]  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):
+
             noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax)
             for ar in arrays[sv]:
 

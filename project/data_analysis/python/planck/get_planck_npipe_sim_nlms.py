@@ -17,7 +17,6 @@ log = log.get_logger(**d)
 
 lmax = d["lmax"]
 sv = "Planck"
-#planck_freqs = [100, 143, 217, 353]
 planck_freqs = [ar.replace("f", "") for ar in d[f"arrays_{sv}"]]
 planck_splits = ["A", "B"]
 
@@ -26,10 +25,8 @@ npipe_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
 output_dir = "noise_alms"
 pspy_utils.create_directory(output_dir)
 
-#n_sims = 100
 n_sims = d["iStop"] - d["iStart"] + 1
 
-#mpi_list = [(f, s, iii) for f in planck_freqs for s in planck_splits for iii in range(200, 200+n_sims)]
 mpi_list = [(f, s, iii) for f in planck_freqs for s in planck_splits for iii in range(n_sims)]
 
 so_mpi.init(True)

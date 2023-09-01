@@ -117,8 +117,8 @@ for iii in subtasks:
     # Set seed if needed
     if d["seed_sims"]:
         np.random.seed(iii)
-    alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, seed=iii, dtype="complex64")
-    fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax, seed=iii)
+    alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
+    fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax)
 
     master_alms = {}
 
@@ -134,10 +134,8 @@ for iii in subtasks:
 
         log.info(f"[{iii}]  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):
-            # Set seed if needed
-            if d["seed_sims"]:
-                np.random.seed(iii+k+1)
-            noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax, seed=iii)
+
+            noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax)
             for ar in arrays[sv]:
 
                 t1 = time.time()

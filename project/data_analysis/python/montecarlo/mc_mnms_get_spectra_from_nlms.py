@@ -1,7 +1,7 @@
 """
-This script generate simplistic simulations of the actpol data
+This script generate simulations of the actpol data
 it generates gaussian simulations of cmb, fg and add noise based on the mnms simulations
-the fg is based on fgspectra, note that the noise sim include the pixwin so we have to deal with it
+the fg is based on fgspectra, note that the noise sim include the pixwin so we have to convolve the signal sim with it
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
@@ -72,10 +72,9 @@ if apply_kspace_filter:
 
 
 f_name_cmb = bestfit_dir + "/cmb.dat"
-f_name_fg = bestfit_dir + "/fg_{}x{}.dat"
-
 ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax, spectra)
 
+f_name_fg = bestfit_dir + "/fg_{}x{}.dat"
 array_list = [f"{sv}_{ar}" for sv in surveys for ar in arrays[sv]]
 l, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, array_list, lmax, spectra)
 
@@ -88,7 +87,6 @@ for iii in subtasks:
 
     # generate cmb alms and foreground alms
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
-    # fglms will be of shape (nfreq, lm) and is T only
 
     # Set seed if needed
     if d["seed_sims"]:
@@ -111,10 +109,8 @@ for iii in subtasks:
             signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
             # since the mnms noise sim include a pixwin, we convolve the signal ones
             signal = sph_tools.alm2map(signal_alms[ar], templates[sv])
-            binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
-            binary = so_map.read_map(binary_file)
-            signal = signal.convolve_with_pixwin(niter=niter, pixwin=pixwin[sv], binary=binary,
-                                                 use_ducc_rfft=True)
+            win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
+            signal = signal.convolve_with_pixwin(niter=niter, pixwin=pixwin[sv], window=win_kspace, use_ducc_rfft=True)
             signal_alms[ar] = sph_tools.map2alm(signal, niter, lmax)
 
         log.info(f"[Sim n° {iii}] Convolve beam and pixwin in {time.time()-t1:.2f} s")
@@ -122,7 +118,6 @@ for iii in subtasks:
         wafers = sorted({ar.split("_")[0] for ar in arrays[sv]})
 
         for k in range(n_splits[sv]):
-
             for ar in arrays[sv]:
 
                 t3 = time.time()
@@ -145,16 +140,15 @@ for iii in subtasks:
                 t5 = time.time()
                 if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
 
-                        binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
-                        binary = so_map.read_map(binary_file)
+                        win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
                         split = kspace.filter_map(split,
                                                   filters[sv],
-                                                  binary,
+                                                  win_kspace,
                                                   inv_pixwin = inv_pixwin[sv],
                                                   weighted_filter=filter_dicts[sv]["weighted"],
                                                   use_ducc_rfft=True)
 
-                        del binary
+                        del win_kspace
 
                 log.info(f"[Sim n° {iii}] Filter split {k} and array {ar} in {time.time()-t5:.2f} s")
 
@@ -171,82 +165,79 @@ for iii in subtasks:
     ps_dict = {}
 
     t7 = time.time()
+    
+    n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
+    
+    for i_spec in range(n_spec):
+    
+        sv1, ar1, sv2, ar2 = sv1_list[i_spec], ar1_list[i_spec], sv2_list[i_spec], ar2_list[i_spec]
 
-    for id_sv1, sv1 in enumerate(surveys):
-        for id_ar1, ar1 in enumerate(arrays[sv1]):
-            for id_sv2, sv2 in enumerate(surveys):
-                for id_ar2, ar2 in enumerate(arrays[sv2]):
+        for spec in spectra:
+            ps_dict[spec, "auto"] = []
+            ps_dict[spec, "cross"] = []
 
-                    if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                    if  (id_sv1 > id_sv2) : continue
-
-                    for spec in spectra:
-                        ps_dict[spec, "auto"] = []
-                        ps_dict[spec, "cross"] = []
-
-                    mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}",
+        mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}",
                                                         spin_pairs=spin_pairs)
 
-                    for s1 in range(n_splits[sv1]):
-                        for s2 in range(n_splits[sv2]):
-                            if (sv1 == sv2) & (ar1 == ar2) & (s1>s2) : continue
+        for s1 in range(n_splits[sv1]):
+            for s2 in range(n_splits[sv2]):
+                if (sv1 == sv2) & (ar1 == ar2) & (s1>s2) : continue
 
 
-                            l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, s1],
-                                                                         master_alms[sv2, ar2, s2],
-                                                                         spectra=spectra)
+                l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, s1],
+                                                             master_alms[sv2, ar2, s2],
+                                                             spectra=spectra)
 
-                            spec_name=f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_{s1}{s2}"
+                spec_name=f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_{s1}{s2}"
 
-                            lb, ps = so_spectra.bin_spectra(l,
-                                                            ps_master,
-                                                            binning_file,
-                                                            lmax,
-                                                            type=type,
-                                                            mbb_inv=mbb_inv,
-                                                            spectra=spectra,
-                                                            binned_mcm=binned_mcm)
+                lb, ps = so_spectra.bin_spectra(l,
+                                                ps_master,
+                                                binning_file,
+                                                lmax,
+                                                type=type,
+                                                mbb_inv=mbb_inv,
+                                                spectra=spectra,
+                                                binned_mcm=binned_mcm)
 
-                            lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
-                                                                            ps,
-                                                                            kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
-                                                                            spectra)
+                lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
+                                                                ps,
+                                                                kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
+                                                                spectra)
 
-                            if write_all_spectra:
-                                so_spectra.write_ps(spec_dir + "/%s_%05d.dat" % (spec_name,iii), lb, ps, type, spectra=spectra)
+                if write_all_spectra:
+                    so_spectra.write_ps(spec_dir + "/{spec_name}_%05d.dat" % (iii), lb, ps, type, spectra=spectra)
 
-                            for count, spec in enumerate(spectra):
-                                if (s1 == s2) & (sv1 == sv2):
-                                    if count == 0:  log.info(f"[Sim n° {iii}] auto {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
-                                    ps_dict[spec, "auto"] += [ps[spec]]
-                                else:
-                                    if count == 0: log.info(f"[Sim n° {iii}] cross {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
-                                    ps_dict[spec, "cross"] += [ps[spec]]
+                for count, spec in enumerate(spectra):
+                    if (s1 == s2) & (sv1 == sv2):
+                        if count == 0:  log.info(f"[Sim n° {iii}] auto {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
+                        ps_dict[spec, "auto"] += [ps[spec]]
+                    else:
+                        if count == 0: log.info(f"[Sim n° {iii}] cross {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
+                        ps_dict[spec, "cross"] += [ps[spec]]
 
-                    ps_dict_auto_mean = {}
-                    ps_dict_cross_mean = {}
-                    ps_dict_noise_mean = {}
+        ps_dict_auto_mean = {}
+        ps_dict_cross_mean = {}
+        ps_dict_noise_mean = {}
 
-                    for spec in spectra:
-                        ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
-                        spec_name_cross = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_cross_%05d" % iii
+        for spec in spectra:
+            ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
 
-                        if ar1 == ar2 and sv1 == sv2:
-                            # Average TE / ET so that for same array same season TE = ET
-                            ps_dict_cross_mean[spec] = (np.mean(ps_dict[spec, "cross"], axis=0) + np.mean(ps_dict[spec[::-1], "cross"], axis=0)) / 2.
+            if ar1 == ar2 and sv1 == sv2:
+                # Average TE / ET so that for same array same season TE = ET
+                ps_dict_cross_mean[spec] = (np.mean(ps_dict[spec, "cross"], axis=0) + np.mean(ps_dict[spec[::-1], "cross"], axis=0)) / 2.
 
-                        if sv1 == sv2:
-                            ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
-                            spec_name_auto = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_auto_%05d" % iii
-                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / n_splits[sv1]
-                            spec_name_noise = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_noise_%05d" % iii
+            if sv1 == sv2:
+                ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
+                ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / n_splits[sv1]
 
-                    so_spectra.write_ps(spec_dir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
+        spec_name_cross = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_cross_{iii:05d}"
+        so_spectra.write_ps(spec_dir + f"/{spec_name_cross}.dat", lb, ps_dict_cross_mean, type, spectra=spectra)
 
-                    if sv1 == sv2:
-                        so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)
-                        so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)
-
+        if sv1 == sv2:
+            spec_name_auto = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_auto_{iii:05d}"
+            so_spectra.write_ps(spec_dir + f"/{spec_name_auto}.dat", lb, ps_dict_auto_mean, type, spectra=spectra)
+            spec_name_noise = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_noise_{iii:05d}"
+            so_spectra.write_ps(spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
 
     log.info(f"[Sim n° {iii}] Spectra computation done in {time.time()-t7:.2f} s")
     log.info(f"[Sim n° {iii}] Done in {time.time()-t0:.2f} s")

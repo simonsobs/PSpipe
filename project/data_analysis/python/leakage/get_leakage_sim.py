@@ -4,9 +4,10 @@ leakage beam model.
 We generate a bunch of simulations of the leakage beam, apply it to a theory spectra, and correct assuming the average leakage beam.
 This should look like what happens to the actual data.
 """
+import matplotlib
+matplotlib.use("Agg")
 
 import sys
-import time
 
 import numpy as np
 from pspipe_utils import leakage, pspipe_list, log

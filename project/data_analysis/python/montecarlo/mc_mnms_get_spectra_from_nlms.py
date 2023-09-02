@@ -205,7 +205,7 @@ for iii in subtasks:
                                                                 spectra)
 
                 if write_all_spectra:
-                    so_spectra.write_ps(spec_dir + "/{spec_name}_%05d.dat" % (iii), lb, ps, type, spectra=spectra)
+                    so_spectra.write_ps(spec_dir + f"/{spec_name}_%05d.dat" % (iii), lb, ps, type, spectra=spectra)
 
                 for count, spec in enumerate(spectra):
                     if (s1 == s2) & (sv1 == sv2):

@@ -206,3 +206,9 @@ To generate a set of simulated spectra using the `mnms` noise simulation code yo
     salloc --nodes 4 --qos interactive --time 3:00:00 --constraint cpu
     srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_dr6_v4.dict
     # real time ~ 1100s for each sim
+
+
+.. code:: shell
+
+    salloc --nodes 4 --qos interactive --time 3:00:00 --constraint cpu
+    srun -n 32 -c 32 --cpu-bind=cores python mc_get_kspace_tf_spectra.py global_dr6_v4.dict

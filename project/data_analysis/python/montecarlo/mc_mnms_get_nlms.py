@@ -16,8 +16,7 @@ log = log.get_logger(**d)
 surveys = d["surveys"]
 lmax = d["lmax"]
 
-# Read the noise sim type
-noise_sim_type = d["noise_sim_type"]
+
 
 # Set the lmax corresponding to a pre-computed noise model
 lmax_noise_sim = 10800 # Should be moved to the paramfile ?
@@ -31,7 +30,7 @@ arrays_alias = {
 
 # Load the noise models
 noise_models = {
-    wafer_name: nm.BaseNoiseModel.from_config("act_dr6v4", noise_sim_type, *arrays_alias[wafer_name].keys())
+    wafer_name: nm.BaseNoiseModel.from_config("act_dr6v4", d[f"noise_sim_type_{wafer_name}"], *arrays_alias[wafer_name].keys())
     for sv in surveys for wafer_name in sorted({ar.split("_")[0] for ar in d[f"arrays_{sv}"]})
 }
 

@@ -208,7 +208,12 @@ To generate a set of simulated spectra using the `mnms` noise simulation code yo
     # real time ~ 1100s for each sim
 
 
+To estimate the kspace filter transfer function from simulations
+
 .. code:: shell
 
     salloc --nodes 4 --qos interactive --time 3:00:00 --constraint cpu
     srun -n 32 -c 32 --cpu-bind=cores python mc_get_kspace_tf_spectra.py global_dr6_v4.dict
+
+    salloc --nodes 1 --qos interactive --time 1:00:00 --constraint cpu
+    srun -n 1 -c 256 --cpu_bind=cores python mc_kspace_tf_analysis.py global_dr6_v4.dict

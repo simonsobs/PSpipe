@@ -92,7 +92,7 @@ cal_dr6_pa6_f150 = 0.9699
 
 
 pol_eff_dr6_pa4_f150 = 0.9584
-pol_eff_dr6_pa4_f220 = 1.0
+pol_eff_dr6_pa4_f220 = 0.894
 pol_eff_dr6_pa5_f090 = 0.9646
 pol_eff_dr6_pa5_f150 = 0.9488
 pol_eff_dr6_pa6_f090 = 0.9789

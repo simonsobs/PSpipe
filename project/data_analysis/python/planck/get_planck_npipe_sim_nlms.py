@@ -41,7 +41,7 @@ for id_mpi in subtasks:
     freq = d[f"freq_info_{sv}_{ar}"]["freq_tag"]
 
     # Note that and we are using the sim index 0 as the first simulation (corresponding to the 200th NPIPE sim.)
-    map_name = f"{npipe_dir}/npipe6v20{split}_sim/{iii:04d}/residual/residual_npipe6v20{split}_{freq}_{iii+200:04d}.fits"
+    map_name = f"{npipe_dir}/npipe6v20{split}_sim/{iii+200:04d}/residual/residual_npipe6v20{split}_{freq}_{iii+200:04d}.fits"
 
     hp_map = hp.read_map(map_name, field=(0,1,2))
     hp_map *= 1e6 # from K to uK

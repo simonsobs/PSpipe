@@ -27,7 +27,7 @@ pspy_utils.create_directory(output_dir)
 
 n_sims = d["iStop"] - d["iStart"] + 1
 
-mpi_list = [(f, s, iii) for f in planck_freqs for s in planck_splits for iii in range(n_sims)]
+mpi_list = [(f, s, iii) for f in planck_arrays for s in planck_splits for iii in range(n_sims)]
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=len(mpi_list)-1)

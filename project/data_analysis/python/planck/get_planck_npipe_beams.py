@@ -30,5 +30,7 @@ for freq in freqs:
         bl_mean += bl
         np.savetxt(f"{output_dir}/npipe6v20_beam_{freq}{split}.dat", np.transpose([ell,bl]))
 
+        hdul.close()
+        
     bl_mean /= len(splits)
     np.savetxt(f"{output_dir}/npipe6v20_beam_{freq}_mean.dat", np.transpose([ell, bl]))

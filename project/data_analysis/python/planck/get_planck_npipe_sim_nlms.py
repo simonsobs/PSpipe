@@ -17,7 +17,7 @@ log = log.get_logger(**d)
 
 lmax = d["lmax"]
 sv = "Planck"
-planck_freqs = [ar.replace("f", "") for ar in d[f"arrays_{sv}"]]
+planck_arrays = d[f"arrays_{sv}"]
 planck_splits = ["A", "B"]
 
 npipe_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
@@ -37,7 +37,8 @@ for id_mpi in subtasks:
 
     t0 = time.time()
 
-    freq, split, iii = mpi_list[id_mpi]
+    ar, split, iii = mpi_list[id_mpi]
+    freq = d[f"freq_info_{sv}_{ar}"]["freq_tag"]
 
     # Note that and we are using the sim index 0 as the first simulation (corresponding to the 200th NPIPE sim.)
     map_name = f"{npipe_dir}/npipe6v20{split}_sim/{iii:04d}/residual/residual_npipe6v20{split}_{freq}_{iii+200:04d}.fits"

@@ -104,6 +104,7 @@ for comp in ["tSZ", "cibc", "tSZxCIB"]:
 
 for mode in ["tt", "te", "tb", "ee", "eb", "bb"]:
     fig, axes = plt.subplots(narrays, narrays, sharex=True, sharey=True, figsize=(16, 16))
+    axes = np.atleast_2d(axes)
     indices = np.triu_indices(narrays)[::-1]
     for i, cross in enumerate(spectra_list):
         name1, name2 = cross.split("x")

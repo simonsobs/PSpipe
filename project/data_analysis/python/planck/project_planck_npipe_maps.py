@@ -92,10 +92,12 @@ for task in subtasks:
     # Convert into inverse variance in uK
     npipe_ivar.data[npipe_ivar.data != 0] = 1 / (1e12 * npipe_ivar.data)
 
-    ivar_project = reproject.enmap_from_healpix_interp(npipe_ivar.data, shape[1:], wcs)
+    rot=f"{npipe_ivar.coordinate},{survey.coordinate}"
+    ivar_project = reproject.healpix2map(npipe_ivar.data, shape[1:], wcs, rot=rot, method="spline",
+                                         spin=[0], extensive=True)
     ivar_project = so_map.from_enmap(ivar_project)
 
     out_file_name = f"npipe6v20{split}_f{freq}_ivar"
     ivar_project.write_map(file_name=f"{out_dir}/{out_file_name}.fits")
     ivar_project.downgrade(8).plot(file_name=f"{out_dir}/{out_file_name}",
-                                   color_range=[300, 100, 100])
+                                   color_range=5e-4)

@@ -8,8 +8,9 @@ from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_
 import numpy as np
 import sys
 import time
+import healpy as hp
 from pixell import curvedsky
-from pspipe_utils import simulation, pspipe_list, kspace, misc, log
+from pspipe_utils import simulation, pspipe_list, kspace, misc, log, transfer_function
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -57,9 +58,8 @@ for sv in surveys:
         inv_pixwin[sv] = pixwin[sv] ** (-1)
     elif d[f"pixwin_{sv}"]["pix"] == "HEALPIX":
         pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"])
-        lb, xtra_pw = pspy_utils.naive_binning(np.arange(pw_l), pw_l, binning_file, lmax)
-        pixwin[sv] = xtra_pw
-        inv_pixwin[sv] = xtra_pw ** (-1)
+        pixwin[sv] = pw_l
+        inv_pixwin[sv] = pw_l ** (-1)
 
     if apply_kspace_filter:
         filter_dicts[sv] = d[f"k_filter_{sv}"]
@@ -219,8 +219,14 @@ for iii in subtasks:
                                                                 kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
                                                                 spectra)
 
-                xtra_pw1 = pixwin[sv1] if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX" else None
-                xtra_pw2 = pixwin[sv2] if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX" else None
+                if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX":
+                    _, xtra_pw1 = pspy_utils.naive_binning(np.arange(len(pixwin[sv1])), pixwin[sv1], binning_file, lmax)
+                else:
+                    xtra_pw1 = None
+                if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX":
+                    _, xtra_pw2 = pspy_utils.naive_binning(np.arange(len(pixwin[sv2])), pixwin[sv2], binning_file, lmax)
+                else:
+                    xtra_pw2 = None
                 lb, ps = transfer_function.deconvolve_xtra_tf(lb,
                                                               ps,
                                                               spectra,

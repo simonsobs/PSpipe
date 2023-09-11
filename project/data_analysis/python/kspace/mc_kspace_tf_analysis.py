@@ -176,8 +176,8 @@ for spec in spec_list:
 
         plt.figure(figsize=(12,8))
         plt.plot(lb, bin_theory["TE"] * 1 / 100, color="black", label= "1% TE")
-        plt.errorbar(lb, correction_TE, sigma_TE / np.sqrt(nsims), fmt="-", label = f"corr TE {spec}")
-        plt.errorbar(lb, correction_ET, sigma_ET / np.sqrt(nsims), fmt="--", label = f"corr ET {spec}")
+        plt.errorbar(lb, correction_TE, sigma_TE / np.sqrt(n_sims), fmt="-", label = f"corr TE {spec}")
+        plt.errorbar(lb, correction_ET, sigma_ET / np.sqrt(n_sims), fmt="--", label = f"corr ET {spec}")
         plt.legend()
         plt.show()
         plt.savefig(f"{plot_dir}/TE_correction_{spec}.png", bbox_inches="tight")

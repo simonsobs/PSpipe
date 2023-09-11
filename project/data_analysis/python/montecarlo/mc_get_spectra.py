@@ -80,8 +80,11 @@ if apply_kspace_filter:
                                                                               lmax)
     else:
         kspace_transfer_matrix = {}
+        TE_corr = {}
+
         for spec_name in spec_name_list:
             kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
+            _, TE_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
 
 
 f_name_cmb = bestfit_dir + "/cmb.dat"
@@ -209,10 +212,17 @@ for iii in subtasks:
                                                 binned_mcm=binned_mcm)
 
                 if (sv1 in filters) & (sv2 in filters):
+                
+                    if kspace_tf_path == "analytical":
+                        xtra_corr = None
+                    else:
+                        xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
+
                     lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
                                                                     ps,
                                                                     kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
-                                                                    spectra)
+                                                                    spectra,
+                                                                    xtra_corr=xtra_corr)
 
                 if write_all_spectra:
                     so_spectra.write_ps(spec_dir + f"/{spec_name}_{iii:05d}.dat", lb, ps, type, spectra=spectra)

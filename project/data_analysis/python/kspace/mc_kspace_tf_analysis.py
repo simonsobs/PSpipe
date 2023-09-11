@@ -186,8 +186,8 @@ for spec in spec_list:
 
         # write correction to file
         corr_dict = {}
-        for spec in spectra:
-            corr_dict[spec] = lb * 0
+        for spectrum in spectra:
+            corr_dict[spectrum] = lb * 0
         corr_dict["TE"] = correction_TE
         corr_dict["ET"] = correction_ET
         

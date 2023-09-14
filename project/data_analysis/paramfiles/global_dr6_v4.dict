@@ -35,20 +35,12 @@ gal_mask_dr6_pa5_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_ap
 gal_mask_dr6_pa6_f090 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
 gal_mask_dr6_pa6_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
 
-coord_mask_dr6_pa4_f150 = [[-5.6, 140], [-30, 110]]
-coord_mask_dr6_pa4_f220 = [[-5.6, 140], [-30, 110]]
-coord_mask_dr6_pa5_f090 = [[-4.8, 140], [-30, 110]]
-coord_mask_dr6_pa5_f150 = [[-4.8, 140], [-30, 110]]
-coord_mask_dr6_pa6_f090 = [[-5.6, 140], [-30, 110]]
-coord_mask_dr6_pa6_f150 = [[-5.6, 140], [-30, 110]]
-
-mnmns_mask_dr6_pa4_f150 = data_dir + "masks/mnms_mask/pa4_baseline_effective_bool_20230731_converted.fits"
-mnmns_mask_dr6_pa4_f220 = data_dir + "masks/mnms_mask/pa4_baseline_effective_bool_20230731_converted.fits"
-mnmns_mask_dr6_pa5_f090 = data_dir + "masks/mnms_mask/pa5_baseline_effective_bool_20230731_converted.fits"
-mnmns_mask_dr6_pa5_f150 = data_dir + "masks/mnms_mask/pa5_baseline_effective_bool_20230731_converted.fits"
-mnmns_mask_dr6_pa6_f090 = data_dir + "masks/mnms_mask/pa6_baseline_effective_bool_20230731_converted.fits"
-mnmns_mask_dr6_pa6_f150 = data_dir + "masks/mnms_mask/pa6_baseline_effective_bool_20230731_converted.fits"
-
+extra_mask_dr6_pa4_f150 = data_dir + "masks/act_xtra_mask_dr6_pa4_f150.fits"
+extra_mask_dr6_pa4_f220 = data_dir + "masks/act_xtra_mask_dr6_pa4_f220.fits"
+extra_mask_dr6_pa5_f090 = data_dir + "masks/act_xtra_mask_dr6_pa5_f090.fits"
+extra_mask_dr6_pa5_f150 = data_dir + "masks/act_xtra_mask_dr6_pa5_f150.fits"
+extra_mask_dr6_pa6_f090 = data_dir + "masks/act_xtra_mask_dr6_pa6_f090.fits"
+extra_mask_dr6_pa6_f150 = data_dir + "masks/act_xtra_mask_dr6_pa6_f150.fits"
 
 
 apod_pts_source_degree = 0.3
@@ -92,7 +84,7 @@ cal_dr6_pa6_f150 = 0.9699
 
 
 pol_eff_dr6_pa4_f150 = 0.9584
-pol_eff_dr6_pa4_f220 = 1.0
+pol_eff_dr6_pa4_f220 = 0.894
 pol_eff_dr6_pa5_f090 = 0.9646
 pol_eff_dr6_pa5_f150 = 0.9488
 pol_eff_dr6_pa6_f090 = 0.9789
@@ -155,7 +147,7 @@ window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
-fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []} 
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.7,  "xi": 0.1, "T_d": 9.60, "a_gte": 0, "a_gtb": 0, "a_gee": 0,  "a_gbb": 0, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
 
 #sim

@@ -28,7 +28,7 @@ The source subtraction can then be performed at ``NERSC`` using the following in
 .. code:: shell
 
     salloc -N 1 -C cpu -q interactive -t 02:30:00
-    source run_npipe_src_subtraction.sh
+    ./run_npipe_src_subtraction.sh
 
 and the source subtraction process can be checked by running the ``check_src_subtraction.py`` script which displays the residual maps around point sources.
 
@@ -38,3 +38,4 @@ This directory also provides tools to get noise alms from NPIPE simulations to g
 
     salloc -N 1 -C cpu -q interactive -t 01:00:00
     srun -n 64 -c 4 --cpu_bind=cores python get_planck_npipe_sim_nlms.py
+    #real 26m42.475s (128 sims at 100,143,217 GHz)

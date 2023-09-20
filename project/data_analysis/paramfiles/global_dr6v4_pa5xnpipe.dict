@@ -33,6 +33,11 @@ gal_mask_dr6_pa5_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_ap
 gal_mask_Planck_f100 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
 gal_mask_Planck_f143 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
 
+extra_mask_dr6_pa5_f090 = data_dir + "masks/act_xtra_mask_dr6_pa5_f090.fits"
+extra_mask_dr6_pa5_f150 = data_dir + "masks/act_xtra_mask_dr6_pa5_f150.fits"
+extra_mask_Planck_f100 = data_dir + "masks/act_xtra_mask_dr6_pa5_f090.fits"
+extra_mask_Planck_f143 = data_dir + "masks/act_xtra_mask_dr6_pa5_f150.fits"
+
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
 edge_skip_rescale = 1

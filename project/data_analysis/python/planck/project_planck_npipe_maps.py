@@ -8,6 +8,7 @@ assess consistency against Planck.
 """
 import sys
 import numpy as np
+import healpy as hp
 from pspy import so_dict, so_map, so_mpi, pspy_utils
 from pspipe_utils import log, misc
 from pixell import reproject

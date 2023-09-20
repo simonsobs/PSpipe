@@ -54,11 +54,11 @@ pspy_utils.create_directory(chains_dir)
 # Define the multipole range used to obtain
 # the calibration amplitudes
 multipole_range = {"dr6_pa4_f150": [1250, 1800],
-                   "dr6_pa4_f220": [1500, 2000],
+                   "dr6_pa4_f220": [1250, 2000],
                    "dr6_pa5_f090": [800, 1100],
-                   "dr6_pa5_f150": [1250, 1800],
-                   "dr6_pa6_f090": [800, 1100],
-                   "dr6_pa6_f150": [1250, 1800]}
+                   "dr6_pa5_f150": [800, 1800],
+                   "dr6_pa6_f090": [600, 1100],
+                   "dr6_pa6_f150": [600, 1800]}
 
 # Define the reference arrays
 ref_arrays = {"dr6_pa4_f150": "Planck_f143",
@@ -101,8 +101,9 @@ for ar in d["arrays_dr6"]:
 
     lmin, lmax = multipole_range[array]
     id = np.where((lb >= lmin) & (lb <= lmax))[0]
-    consistency.plot_residual(lb[id], res_spectrum[id], res_cov[np.ix_(id, id)],
-                     "TT", array, f"{residual_output_dir}/residual_{array}_before")
+    consistency.plot_residual(lb, res_spectrum, {"analytical": res_cov}, "TT", array,
+                              f"{residual_output_dir}/residual_{array}_before",
+                              lrange=id, l_pow=1)
 
     # Calibrate the spectra
     cal_mean, cal_std = consistency.get_calibration_amplitudes(spec_vec, full_cov,
@@ -118,7 +119,8 @@ for ar in d["arrays_dr6"]:
                                                           proj_pattern,
                                                           calib_vec = calib_vec)
     np.savetxt(f"{residual_output_dir}/residual_{array}_after.dat", np.array([lb, res_spectrum]).T)
-    consistency.plot_residual(lb[id], res_spectrum[id], res_cov[np.ix_(id, id)],
-                     "TT", array, f"{residual_output_dir}/residual_{array}_after")
+    consistency.plot_residual(lb, res_spectrum, {"analytical": res_cov}, "TT", array,
+                              f"{residual_output_dir}/residual_{array}_after",
+                              lrange=id, l_pow=1)
 
 pickle.dump(results_dict, open(f"{output_dir}/calibs_dict.pkl", "wb"))

@@ -8,8 +8,9 @@ from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_
 import numpy as np
 import sys
 import time
+import healpy as hp
 from pixell import curvedsky
-from pspipe_utils import simulation, pspipe_list, kspace, misc, log
+from pspipe_utils import simulation, pspipe_list, kspace, misc, log, transfer_function
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -32,7 +33,7 @@ window_dir = "windows"
 mcm_dir = "mcms"
 spec_dir = "sim_spectra"
 bestfit_dir = "best_fits"
-nlms_dir = "mnms_noise_alms"
+nlms_dir = "noise_alms"
 
 pspy_utils.create_directory(spec_dir)
 
@@ -49,8 +50,16 @@ for sv in surveys:
     log.info(f"Running with {n_splits[sv]} splits for survey {sv}")
     template_name = d[f"maps_{sv}_{arrays[sv][0]}"][0]
     templates[sv] = so_map.read_map(template_name)
-    pixwin[sv] = templates[sv].get_pixwin(dtype=np.float32)
-    inv_pixwin[sv] = pixwin[sv] ** -1
+
+    if d[f"pixwin_{sv}"]["pix"] == "CAR":
+        wy, wx = enmap.calc_window(templates[sv].data.shape,
+                                   order=d[f"pixwin_{sv}"]["order"])
+        pixwin[sv] = (wy[:, None] * wx[None, :])
+        inv_pixwin[sv] = pixwin[sv] ** (-1)
+    elif d[f"pixwin_{sv}"]["pix"] == "HEALPIX":
+        pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"])
+        pixwin[sv] = pw_l
+        inv_pixwin[sv] = pw_l ** (-1)
 
     if apply_kspace_filter:
         filter_dicts[sv] = d[f"k_filter_{sv}"]
@@ -112,8 +121,13 @@ for iii in subtasks:
             # since the mnms noise sim include a pixwin, we convolve the signal ones
             signal = sph_tools.alm2map(signal_alms[ar], templates[sv])
             win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
-            signal = signal.convolve_with_pixwin(niter=niter, pixwin=pixwin[sv], window=win_kspace, use_ducc_rfft=True)
+            # Convolve the signal map with the pixwin only for CAR pixellization
+            if d[f"pixwin_{sv}"]["pix"] == "CAR":
+                signal = signal.convolve_with_pixwin(niter=niter, pixwin=pixwin[sv], window=win_kspace, use_ducc_rfft=True)
             signal_alms[ar] = sph_tools.map2alm(signal, niter, lmax)
+            # Convolve the signal with the pixwin in harm. space for Planck sims
+            if d[f"pixwin_{sv}"]["pix"] == "HEALPIX":
+                signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], pixwin[sv])
 
         log.info(f"[Sim n° {iii}] Convolve beam and pixwin in {time.time()-t1:.2f} s")
 
@@ -131,7 +145,7 @@ for iii in subtasks:
 
                 log.info(f"[Sim n° {iii}] Read window in {time.time()-t3:.2f} s")
 
-                noise_alms = np.load(f"{nlms_dir}/mnms_nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
+                noise_alms = np.load(f"{nlms_dir}/nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
 
                 t4 = time.time()
 
@@ -143,12 +157,16 @@ for iii in subtasks:
                 if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
 
                         win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
+
+                        inv_pixwin = inv_pixwin[sv] if d[f"pixwin_{sv}"]["pix"] == "CAR" else None
+
                         split = kspace.filter_map(split,
                                                   filters[sv],
                                                   win_kspace,
-                                                  inv_pixwin = inv_pixwin[sv],
+                                                  inv_pixwin = inv_pixwin,
                                                   weighted_filter=filter_dicts[sv]["weighted"],
                                                   use_ducc_rfft=True)
+
 
                         del win_kspace
 
@@ -167,11 +185,11 @@ for iii in subtasks:
     ps_dict = {}
 
     t7 = time.time()
-    
+
     n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
-    
+
     for i_spec in range(n_spec):
-    
+
         sv1, ar1, sv2, ar2 = sv1_list[i_spec], ar1_list[i_spec], sv2_list[i_spec], ar2_list[i_spec]
 
         for spec in spectra:
@@ -213,6 +231,20 @@ for iii in subtasks:
                                                                 kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
                                                                 spectra,
                                                                 xtra_corr=xtra_corr)
+
+                if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX":
+                    _, xtra_pw1 = pspy_utils.naive_binning(np.arange(len(pixwin[sv1])), pixwin[sv1], binning_file, lmax)
+                else:
+                    xtra_pw1 = None
+                if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX":
+                    _, xtra_pw2 = pspy_utils.naive_binning(np.arange(len(pixwin[sv2])), pixwin[sv2], binning_file, lmax)
+                else:
+                    xtra_pw2 = None
+                lb, ps = transfer_function.deconvolve_xtra_tf(lb,
+                                                              ps,
+                                                              spectra,
+                                                              xtra_pw1=xtra_pw1,
+                                                              xtra_pw2=xtra_pw2)
 
                 if write_all_spectra:
                     so_spectra.write_ps(spec_dir + f"/{spec_name}_%05d.dat" % (iii), lb, ps, type, spectra=spectra)

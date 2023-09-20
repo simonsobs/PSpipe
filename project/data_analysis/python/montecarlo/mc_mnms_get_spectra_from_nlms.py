@@ -158,12 +158,12 @@ for iii in subtasks:
 
                         win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
 
-                        inv_pixwin = inv_pixwin[sv] if d[f"pixwin_{sv}"]["pix"] == "CAR" else None
+                        inv_pwin = inv_pixwin[sv] if d[f"pixwin_{sv}"]["pix"] == "CAR" else None
 
                         split = kspace.filter_map(split,
                                                   filters[sv],
                                                   win_kspace,
-                                                  inv_pixwin = inv_pixwin,
+                                                  inv_pixwin = inv_pwin,
                                                   weighted_filter=filter_dicts[sv]["weighted"],
                                                   use_ducc_rfft=True)
 
@@ -218,8 +218,8 @@ for iii in subtasks:
                                                 mbb_inv=mbb_inv,
                                                 spectra=spectra,
                                                 binned_mcm=binned_mcm)
-                                                
-                                                
+
+
                     if kspace_tf_path == "analytical":
                         xtra_corr = None
                     else:

@@ -104,7 +104,7 @@ for test in tests:
         cov_dict = {}
         for i, (ms1, ms2, m1) in enumerate(spectra_for_cal):
             _, ps = so_spectra.read_ps(f"{spec_dir}/Dl_{ms1}x{ms2}_cross.dat",
-                                       spectra = spectra)
+                                       spectra=spectra)
             ps_dict[ms1, ms2, m1] = ps[m1]
             for j, (ms3, ms4, m2) in enumerate(spectra_for_cal):
                 if j < i: continue

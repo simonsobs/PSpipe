@@ -175,7 +175,7 @@ x = np.arange(1, len(d["arrays_dr6"]) + 1)
 plt.xticks(x, d["arrays_dr6"])
 plt.ylim(0.967, 1.06)
 plt.tight_layout()
-plt.savefig("{plot_output_dir}/calibs_summary.pdf", bbox_inches="tight")
+plt.savefig(f"{plot_output_dir}/calibs_summary.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()
 

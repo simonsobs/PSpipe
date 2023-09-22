@@ -171,7 +171,7 @@ for i, ar in enumerate(d["arrays_dr6"]):
     if i == 0:
         plt.legend(fontsize = 15)
 
-x = np.arange(1, len(d["arrays_dr6"] + 1)
+x = np.arange(1, len(d["arrays_dr6"]) + 1)
 plt.xticks(x, d["arrays_dr6"])
 plt.ylim(0.967, 1.06)
 plt.tight_layout()

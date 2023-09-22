@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("Agg")
 from pspy import pspy_utils, so_dict, so_spectra, so_cov
 from pspipe_utils import consistency, log
 import numpy as np

@@ -92,8 +92,6 @@ for test in tests:
         ref_map_set = ref_map_sets[map_set]
 
         name, proj_pattern = get_proj_pattern(test, map_set, ref_map_set)
-
-        results_dict[name] = {}
         
         spectra_for_cal = [(map_set, map_set, "TT"),
                            (map_set, ref_map_set, "TT"),

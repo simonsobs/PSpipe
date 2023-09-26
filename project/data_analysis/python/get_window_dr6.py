@@ -14,7 +14,7 @@ from pspipe_utils import pspipe_list
 from pixell import enmap
 
 import scipy
-from scipy.ndimage import morphology
+from scipy import ndimage
 
 def create_crosslink_mask(xlink_map, cross_link_threshold):
     # remove pixels with very little amount of cross linking
@@ -142,7 +142,7 @@ for task in subtasks:
         binary_without_holes = survey_mask.copy()
         # get intial filled binary, where we fill the holes then skip some distance from the edges
         binary_fill = survey_mask.copy()
-        binary_fill.data[:] = morphology.binary_fill_holes(binary_fill.data[:])
+        binary_fill.data[:] = ndimage.binary_fill_holes(binary_fill.data[:])
         
         dist_fill = so_window.get_distance(binary_fill, rmax=apod_survey_degree * np.pi / 180)
         

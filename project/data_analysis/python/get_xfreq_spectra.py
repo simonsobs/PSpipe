@@ -32,7 +32,6 @@ spec_dir = "spectra"
 like_product_dir = "like_product"
 plot_dir = "plots/combined_cov"
 
-
 pspy_utils.create_directory(like_product_dir)
 pspy_utils.create_directory(plot_dir)
 

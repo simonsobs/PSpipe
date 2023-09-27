@@ -314,7 +314,9 @@ for task in subtasks:
 
         log.info(f"[{task}] include ps mask")
 
-        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
+        # using the same ps mask for everything
+        #ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
+        ps_mask = so_map.read_map(d[f"ps_mask"])
         ps_mask = so_window.create_apodization(ps_mask, "C1", apod_pts_source_degree, use_rmax=True)
         my_masks[mask_type].data *= ps_mask.data
 
@@ -337,7 +339,7 @@ for task in subtasks:
 
         # does the ordering matter here? so smooth then sqrt vs sqrt them smooth? I don't think so...
         if d[f"take_sqrt_ivar"] == True:
-            ivar_all.data[:] = np.sqrt(ivar_all.data[:])        
+            ivar_all.data[:] = np.sqrt(ivar_all.data[:])
 
         my_masks[mask_type_w].data[:] *= ivar_all.data[:]
 

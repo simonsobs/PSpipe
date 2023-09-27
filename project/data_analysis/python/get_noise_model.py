@@ -1,12 +1,16 @@
 #TO BE TESTED MORE
 
 import matplotlib
+
 matplotlib.use("Agg")
+import sys
+
 import numpy as np
 import pylab as plt
-from pspy import so_dict, so_spectra, pspy_utils
-import sys
 import scipy.interpolate
+from pspipe_utils import log
+from pspy import pspy_utils, so_dict, so_spectra
+
 
 def interpolate_dict(lb, cb, lth, spectra, force_positive=True, l_inf_lmin_equal_lmin=True, discard_cross=True):
        cl_dict = {}
@@ -25,6 +29,7 @@ def interpolate_dict(lb, cb, lth, spectra, force_positive=True, l_inf_lmin_equal
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 spectra_dir = "spectra"
 ps_model_dir = "noise_model"
@@ -46,15 +51,17 @@ for sv in surveys:
     for id_ar1, ar1 in enumerate(arrays):
         for id_ar2, ar2 in enumerate(arrays):
             if id_ar1 > id_ar2: continue
-            
+
+            log.info(f"Computing noise for '{sv}' survey and '{ar1}x{ar2}' arrays")
+
             l, bl_ar1 = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar1}"])
             l, bl_ar2 = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar2}"])
 
-            
+
             lb, nbs_ar1xar1 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar1}_noise.dat", spectra=spectra)
             lb, nbs_ar1xar2 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar2}_noise.dat", spectra=spectra)
             lb, nbs_ar2xar2 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar2}x{sv}_{ar2}_noise.dat", spectra=spectra)
-            
+
             lb, bb_ar1 = pspy_utils.naive_binning(l, bl_ar1, binning_file, lmax)
             lb, bb_ar2 = pspy_utils.naive_binning(l, bl_ar2, binning_file, lmax)
 
@@ -64,7 +71,7 @@ for sv in surveys:
                 nbs_ar1xar2[spec] *= bb_ar1 * bb_ar2
                 nbs_ar2xar2[spec] *= bb_ar2 * bb_ar2
                 Rb[spec] = nbs_ar1xar2[spec] / np.sqrt(np.abs(nbs_ar1xar1[spec] * nbs_ar2xar2[spec]))
-                
+
             if ar1 == ar2:
                 nlth = interpolate_dict(lb, nbs_ar1xar1, lth, spectra)
             else:
@@ -74,8 +81,8 @@ for sv in surveys:
                 nlth = {}
                 for spec in spectra:
                     nlth[spec] = Rlth[spec] * np.sqrt(nlth_ar1xar1[spec] * nlth_ar2xar2[spec])
-            
-            
+
+
             for spec in spectra:
                 plt.figure(figsize=(12,12))
                 plt.plot(lth,

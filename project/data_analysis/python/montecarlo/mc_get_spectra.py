@@ -9,12 +9,13 @@ import numpy as np
 import sys
 import time
 from pixell import curvedsky, powspec
-from pspipe_utils import simulation, pspipe_list, best_fits, kspace, misc
+from pspipe_utils import simulation, pspipe_list, best_fits, kspace, misc, log
 
 
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 surveys = d["surveys"]
 lmax = d["lmax"]
@@ -44,16 +45,29 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 arrays, templates, filters, n_splits, filter_dicts = {}, {}, {}, {}, {}
 spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
 
+log.info(f"build template and filter")
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
-    template_name = d[f"maps_{sv}_{arrays[sv][0]}"][0]
-    n_splits[sv] = len(d[f"maps_{sv}_{arrays[sv][0]}"])
-    print(sv, "nsplits", n_splits[sv])
+    template_name = d[f"window_T_{sv}_{arrays[sv][0]}"]
+    n_splits[sv] = d[f"n_splits_{sv}"]
+    log.info(f"Running with {n_splits[sv]} splits for survey {sv}")
     templates[sv] = so_map.read_map(template_name)
+    if templates[sv].pixel == "CAR":
+        shape, wcs = templates[sv].data.geometry
+        if sim_alm_dtype == np.complex64:
+            templates[sv] = so_map.car_template_from_shape_wcs(3, shape, wcs, dtype=np.float32)
+        elif sim_alm_dtype == np.complex128:
+            templates[sv] = so_map.car_template_from_shape_wcs(3, shape, wcs, dtype=np.float64)
 
-    if apply_kspace_filter:
-        filter_dicts[sv] = d[f"k_filter"]
-        filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv])
+    elif templates[sv].pixel == "HEALPIX":
+        nside = templates[sv].nside
+        templates[sv] = so_map.healpix_template(3, nside)
+
+    if apply_kspace_filter & (templates[sv].pixel == "CAR"):
+        filter_dicts[sv] = d[f"k_filter_{sv}"]
+        filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv], dtype=np.float32)
+
+log.info(f"build kspace_transfer_matrix")
 
 if apply_kspace_filter:
     kspace_tf_path = d["kspace_tf_path"]
@@ -66,8 +80,11 @@ if apply_kspace_filter:
                                                                               lmax)
     else:
         kspace_transfer_matrix = {}
+        TE_corr = {}
+
         for spec_name in spec_name_list:
             kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
+            _, TE_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
 
 
 f_name_cmb = bestfit_dir + "/cmb.dat"
@@ -93,12 +110,16 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
 
 for iii in subtasks:
+    log.info(f"Simulation n° {iii:05d}/{d['iStop']:05d}")
+    log.info(f"-------------------------")
     t0 = time.time()
 
     # generate cmb alms and foreground alms
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
-    # fglms will be of shape (nfreq, lm) and is T only
 
+    # Set seed if needed
+    if d["seed_sims"]:
+        np.random.seed(iii)
     alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
     fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax)
 
@@ -114,8 +135,9 @@ for iii in subtasks:
             l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
             signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
 
-        print("generate signal sim in %.02f s" % (time.time()-t1))
+        log.info(f"[{iii}]  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):
+
             noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax)
             for ar in arrays[sv]:
 
@@ -124,115 +146,119 @@ for iii in subtasks:
                 win_T = so_map.read_map(d[f"window_T_{sv}_{ar}"])
                 win_pol = so_map.read_map(d[f"window_pol_{sv}_{ar}"])
                 window_tuple = (win_T, win_pol)
-                del win_T, win_pol
 
-                print("reading window in %.02f s" % (time.time()-t1))
+                log.info(f"[{iii}]  [split {k}] Reading window in {time.time()-t1:.02f} s")
 
                 t1 = time.time()
                 split = sph_tools.alm2map(signal_alms[ar] + noise_alms[ar], templates[sv])
-                print("alm2map in %.02f s" % (time.time()-t1))
+                log.info(f"[{iii}]  [split {k}] alm2map in {time.time()-t1:.02f} s")
 
                 t1 = time.time()
-                if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
+                if sv in filters:
+                    
+                    win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
+                    split = kspace.filter_map(split,
+                                              filters[sv],
+                                              win_kspace,
+                                              weighted_filter=filter_dicts[sv]["weighted"],
+                                              use_ducc_rfft=True)
 
-                        binary_file = misc.str_replace(d[f"window_T_{sv}_{ar}"], "window_", "binary_")
-                        binary = so_map.read_map(binary_file)
-                        split = kspace.filter_map(split,
-                                                  filters[sv],
-                                                  binary,
-                                                  weighted_filter=filter_dicts[sv]["weighted"])
-
-                        del binary
-                print("filtering in %.02f s" % (time.time()-t1))
-
+                    del win_kspace
+                    
+                log.info(f"[{iii}]  [split {k}] Filtering in {time.time()-t1:.02f} s")
 
                 if d["remove_mean"] == True:
                     split = split.subtract_mean(window_tuple)
 
                 t1 = time.time()
                 master_alms[sv, ar, k] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=sim_alm_dtype)
-                print("map2alm in %.02f s" % (time.time()-t1))
+                log.info(f"[{iii}]  [split {k}] map2alm in {time.time()-t1:.02f} s")
 
     ps_dict = {}
 
     t1 = time.time()
 
-    for id_sv1, sv1 in enumerate(surveys):
-        for id_ar1, ar1 in enumerate(arrays[sv1]):
-            for id_sv2, sv2 in enumerate(surveys):
-                for id_ar2, ar2 in enumerate(arrays[sv2]):
+    n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
+    
+    for i_spec in range(n_spec):
+    
+        sv1, ar1, sv2, ar2 = sv1_list[i_spec], ar1_list[i_spec], sv2_list[i_spec], ar2_list[i_spec]
 
-                    if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
-                    if  (id_sv1 > id_sv2) : continue
-                    if  ('north' in sv1) & ('south' in sv2) : continue
-                    if  ('south' in sv1) & ('north' in sv2) : continue
+        for spec in spectra:
+            ps_dict[spec, "auto"] = []
+            ps_dict[spec, "cross"] = []
 
-                    for spec in spectra:
-                        ps_dict[spec, "auto"] = []
-                        ps_dict[spec, "cross"] = []
+        mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}",
+                                            spin_pairs=spin_pairs)
 
-                    mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}",
-                                                        spin_pairs=spin_pairs)
-
-                    for s1 in range(n_splits[sv1]):
-                        for s2 in range(n_splits[sv2]):
-                            if (sv1 == sv2) & (ar1 == ar2) & (s1>s2) : continue
+        for s1 in range(n_splits[sv1]):
+            for s2 in range(n_splits[sv2]):
+                if (sv1 == sv2) & (ar1 == ar2) & (s1>s2) : continue
 
 
-                            l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, s1],
-                                                                         master_alms[sv2, ar2, s2],
-                                                                         spectra=spectra)
+                l, ps_master = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, s1],
+                                                             master_alms[sv2, ar2, s2],
+                                                             spectra=spectra)
 
-                            spec_name=f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_{s1}{s2}"
+                spec_name=f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_{s1}{s2}"
 
-                            lb, ps = so_spectra.bin_spectra(l,
-                                                            ps_master,
-                                                            binning_file,
-                                                            lmax,
-                                                            type=type,
-                                                            mbb_inv=mbb_inv,
-                                                            spectra=spectra,
-                                                            binned_mcm=binned_mcm)
+                lb, ps = so_spectra.bin_spectra(l,
+                                                ps_master,
+                                                binning_file,
+                                                lmax,
+                                                type=type,
+                                                mbb_inv=mbb_inv,
+                                                spectra=spectra,
+                                                binned_mcm=binned_mcm)
 
-                            lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
-                                                                            ps,
-                                                                            kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
-                                                                            spectra)
+                if (sv1 in filters) & (sv2 in filters):
+                
+                    if kspace_tf_path == "analytical":
+                        xtra_corr = None
+                    else:
+                        xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
 
-                            if write_all_spectra:
-                                so_spectra.write_ps(spec_dir + "/%s_%05d.dat" % (spec_name,iii), lb, ps, type, spectra=spectra)
+                    lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
+                                                                    ps,
+                                                                    kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
+                                                                    spectra,
+                                                                    xtra_corr=xtra_corr)
 
-                            for count, spec in enumerate(spectra):
-                                if (s1 == s2) & (sv1 == sv2):
-                                    if count == 0:  print(f"auto {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
-                                    ps_dict[spec, "auto"] += [ps[spec]]
-                                else:
-                                    if count == 0: print(f"cross {sv1}_{ar1} X {sv2}_{ar2} {s1}{s2}")
-                                    ps_dict[spec, "cross"] += [ps[spec]]
+                if write_all_spectra:
+                    so_spectra.write_ps(spec_dir + f"/{spec_name}_{iii:05d}.dat", lb, ps, type, spectra=spectra)
 
-                    ps_dict_auto_mean = {}
-                    ps_dict_cross_mean = {}
-                    ps_dict_noise_mean = {}
+                for count, spec in enumerate(spectra):
+                    if (s1 == s2) & (sv1 == sv2):
+                        ps_dict[spec, "auto"] += [ps[spec]]
+                    else:
+                        ps_dict[spec, "cross"] += [ps[spec]]
 
-                    for spec in spectra:
-                        ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
-                        spec_name_cross = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_cross_%05d" % iii
+        ps_dict_auto_mean = {}
+        ps_dict_cross_mean = {}
+        ps_dict_noise_mean = {}
 
-                        if ar1 == ar2 and sv1 == sv2:
-                            # Average TE / ET so that for same array same season TE = ET
-                            ps_dict_cross_mean[spec] = (np.mean(ps_dict[spec, "cross"], axis=0) + np.mean(ps_dict[spec[::-1], "cross"], axis=0)) / 2.
+        for spec in spectra:
+            ps_dict_cross_mean[spec] = np.mean(ps_dict[spec, "cross"], axis=0)
 
-                        if sv1 == sv2:
-                            ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
-                            spec_name_auto = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_auto_%05d" % iii
-                            ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / n_splits[sv1]
-                            spec_name_noise = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_noise_%05d" % iii
+            if ar1 == ar2 and sv1 == sv2:
+                # Average TE / ET so that for same array same season TE = ET
+                ps_dict_cross_mean[spec] = (np.mean(ps_dict[spec, "cross"], axis=0) + np.mean(ps_dict[spec[::-1], "cross"], axis=0)) / 2.
 
-                    so_spectra.write_ps(spec_dir + "/%s.dat" % spec_name_cross, lb, ps_dict_cross_mean, type, spectra=spectra)
+            if sv1 == sv2:
+                ps_dict_auto_mean[spec] = np.mean(ps_dict[spec, "auto"], axis=0)
+                ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / n_splits[sv1]
 
-                    if sv1 == sv2:
-                        so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_auto, lb, ps_dict_auto_mean, type, spectra=spectra)
-                        so_spectra.write_ps(spec_dir+"/%s.dat" % spec_name_noise, lb, ps_dict_noise_mean, type, spectra=spectra)
 
-    print("spectra computation in %.02f s" % (time.time()-t1))
-    print("sim number %05d done in %.02f s" % (iii, time.time()-t0))
+        spec_name_cross = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_cross_{iii:05d}"
+        so_spectra.write_ps(spec_dir + f"/{spec_name_cross}.dat", lb, ps_dict_cross_mean, type, spectra=spectra)
+
+        if sv1 == sv2:
+        
+            spec_name_auto = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_auto_{iii:05d}"
+            so_spectra.write_ps(spec_dir + f"/{spec_name_auto}.dat" , lb, ps_dict_auto_mean, type, spectra=spectra)
+            
+            spec_name_noise = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_noise_{iii:05d}"
+            so_spectra.write_ps(spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
+
+    log.info(f"[{iii}]  Spectra computation in {time.time()-t1:.02f} s")
+    log.info(f"[{iii}]  Simulation n° {iii:05d} done in {time.time()-t0:.02f} s")

@@ -3,13 +3,14 @@ This script compute the analytical covariance matrix elements.
 """
 import sys
 
-import numpy as np, pylab as plt
-from pspipe_utils import pspipe_list, best_fits
-
-from pspy import pspy_utils, so_cov, so_dict, so_map, so_mcm, so_mpi, so_spectra
+import numpy as np
+from pspipe_utils import best_fits, log, pspipe_list
+from pspy import pspy_utils, so_cov, so_dict, so_map, so_mcm, so_mpi
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+
+log = log.get_logger(**d)
 
 windows_dir = "windows"
 mcms_dir = "mcms"
@@ -26,6 +27,8 @@ lmax = d["lmax"]
 niter = d["niter"]
 binned_mcm = d["binned_mcm"]
 apply_kspace_filter = d["apply_kspace_filter"]
+cov_T_E_only = d["cov_T_E_only"]
+
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
@@ -41,7 +44,9 @@ for sv in surveys:
         l_beam, bl_dict[sv, ar] = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
         id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
         bl_dict[sv, ar] = bl_dict[sv, ar][id_beam]
-        n_splits[sv] = len(d[f"maps_{sv}_{ar}"])
+        n_splits[sv] = d[f"n_splits_{sv}"]
+        assert n_splits[sv] == len(d.get(f"maps_{sv}_{ar}", [0]*n_splits[sv])), "the number of splits does not correspond to the number of maps"
+
         if fast_coupling:
             # This loop check that this is what was specified in the dictfile
             assert d[f"window_T_{sv}_{ar}"] == d[f"window_pol_{sv}_{ar}"], "T and pol windows have to be the same"
@@ -52,7 +57,7 @@ array_list = [f"{sv}_{ar}" for sv in surveys for ar in arrays[sv]]
 l_fg, fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat", array_list, lmax, spectra)
 
 f_name_noise = noise_dir + "/mean_{}x{}_{}_noise.dat"
-l_noise, nl_dict = best_fits.noise_dict_from_files(f_name_noise,  surveys, arrays, lmax, spectra, n_splits=n_splits)
+l_noise, nl_dict = best_fits.noise_dict_from_files(f_name_noise, surveys, arrays, lmax, spectra, n_splits=n_splits)
 
 spec_name_list = pspipe_list.get_spec_name_list(d)
 l, ps_all, nl_all = best_fits.get_all_best_fit(spec_name_list,
@@ -66,21 +71,21 @@ l, ps_all, nl_all = best_fits.get_all_best_fit(spec_name_list,
 ncovs, na_list, nb_list, nc_list, nd_list = pspipe_list.get_covariances_list(d)
 
 if d["use_toeplitz_cov"] == True:
-    print("we will use the toeplitz approximation")
+    log.info("we will use the toeplitz approximation")
     l_exact, l_band, l_toep = 800, 2000, 2750
 else:
     l_exact, l_band, l_toep = None, None, None
 
-print(f"number of covariance matrices to compute : {ncovs}")
+log.info(f"number of covariance matrices to compute : {ncovs}")
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=ncovs - 1)
-print(subtasks)
+log.info(subtasks)
 for task in subtasks:
     task = int(task)
     na, nb, nc, nd = na_list[task], nb_list[task], nc_list[task], nd_list[task]
     na_r, nb_r, nc_r, nd_r = na.replace("&", "_"), nb.replace("&", "_"), nc.replace("&", "_"), nd.replace("&", "_")
-    print(f"cov element ({na_r} x {nb_r}, {nc_r} x {nd_r})")
 
+    log.info(f"[{task}] cov element ({na_r} x {nb_r}, {nc_r} x {nd_r})")
 
     if fast_coupling:
 
@@ -127,7 +132,9 @@ for task in subtasks:
                                                     binning_file,
                                                     mbb_inv_ab,
                                                     mbb_inv_cd,
-                                                    binned_mcm=binned_mcm)
+                                                    binned_mcm=binned_mcm,
+                                                    cov_T_E_only=cov_T_E_only,
+                                                    dtype=np.float32)
 
     if apply_kspace_filter == True:
         # Some heuristic correction for the number of modes lost due to the transfer function
@@ -138,6 +145,6 @@ for task in subtasks:
         one_d_tf = np.minimum(one_d_tf_ab, one_d_tf_cd)
         # sqrt(tf) is an approx for the number of modes masked in a given map so (2l+1)*fsky*sqrt(tf)
         # is our proxy for the number of modes
-        analytic_cov /= np.outer(one_d_tf ** (1./4.), one_d_tf ** (1./4.))
+        analytic_cov /= np.outer(one_d_tf ** (1.0 / 4.0), one_d_tf ** (1.0 / 4.0))
 
     np.save(f"{cov_dir}/analytic_cov_{na_r}x{nb_r}_{nc_r}x{nd_r}.npy", analytic_cov)

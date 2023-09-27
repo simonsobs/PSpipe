@@ -20,9 +20,9 @@ setup(
     install_requires=[
         "scipy",
         "camb",
-        "pspy>=1.2.1,<1.5.0",
-        "pymaster>=1.0.2",
-        "mflike @ git+https://github.com/simonsobs/LAT_MFLike@v0.7.0#egg=mflike",
+        "pspy>=1.6.1",
+        "pspipe_utils>=0.1.3",
         "wget",
     ],
+    package_data={"pspipe": ["js/multistep2.js"]},
 )

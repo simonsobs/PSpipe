@@ -126,10 +126,12 @@ for task in subtasks:
 
     ivar_all.data[:] /= np.max(ivar_all.data[:])
 
-    if d[f"extra_mask_{sv}_{ar}"] is not None:
-        log.info(f"[{task}] apply extra mask")
-        extra_mask = so_map.read_map(d[f"extra_mask_{sv}_{ar}"])
-        my_masks["baseline"].data[:] *= extra_mask.data[:]
+# NO EXTRA MASK FOR NOW
+
+#    if d[f"extra_mask_{sv}_{ar}"] is not None:
+#        log.info(f"[{task}] apply extra mask")
+#        extra_mask = so_map.read_map(d[f"extra_mask_{sv}_{ar}"])
+#        my_masks["baseline"].data[:] *= extra_mask.data[:]
 
     # N/S
     if sv[-5:] == 'north':

@@ -62,10 +62,7 @@ apod_pts_source_degree = d["apod_pts_source_degree"]
 # the apodisation length of the final survey mask
 apod_survey_degree = d["apod_survey_degree"]
 # the threshold on the amount of cross linking to keep the data in
-apply_cross_link_threshold = d["apply_cross_link_threshold"]
-
-apply_dec_cut = d["apply_dec_cut"]
-
+cross_link_threshold = d["cross_link_threshold"]
 # pixel weight with inverse variance above n_ivar * median are set to ivar
 # this ensure that the window is not totally dominated by few pixels with too much weight
 n_med_ivar = d["n_med_ivar"]

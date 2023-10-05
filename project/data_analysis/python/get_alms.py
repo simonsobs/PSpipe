@@ -89,7 +89,7 @@ for task in subtasks:
                         
             else:
                 log.info(f"[{task}] WARNING: no kspace filter is applied")
-                if deconvolve_pixwin:
+                if (deconvolve_pixwin) & (inv_pixwin_lxly is not None):
                     split = so_map.fourier_convolution(split,
                                                        inv_pixwin_lxly,
                                                        window=win_kspace,

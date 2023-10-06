@@ -220,11 +220,10 @@ for iii in subtasks:
                                                 binned_mcm=binned_mcm)
 
 
-                    if kspace_tf_path == "analytical":
-                        xtra_corr = None
-                    else:
-                        xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
-
+                if kspace_tf_path == "analytical":
+                    xtra_corr = None
+                else:
+                    xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
 
                 lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
                                                                 ps,

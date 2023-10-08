@@ -89,7 +89,7 @@ for sid1, spec1 in enumerate(spec_list):
         n3, n4 = spec2.split("x")
         
         analytic_cov = np.load(f"{cov_dir}/analytic_cov_{n1}x{n2}_{n3}x{n4}.npy")
-        mc_cov = np.load(f"{mc_dir}/mc_cov_{n1}x{n2}_{n3}x{n4}.npy")
+        mc_cov = np.load(f"{cov_dir}/mc_cov_{n1}x{n2}_{n3}x{n4}.npy")
         
         bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
         n_bins = len(bin_hi)
@@ -176,7 +176,7 @@ filename = "covariance_pseudo_diagonal"
 write_html(filename, spec_list, multistep_path, cov_plot_dir)
 
 
-x_ar_mc_cov = np.load(f"{mc_dir}/x_ar_mc_cov.npy")
+x_ar_mc_cov = np.load(f"{cov_dir}/x_ar_mc_cov.npy")
 x_ar_analytic_cov = np.load(f"{cov_dir}/x_ar_analytic_cov.npy")
 
 x_ar_mc_var = x_ar_mc_cov.diagonal()

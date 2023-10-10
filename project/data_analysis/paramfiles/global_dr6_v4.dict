@@ -18,6 +18,7 @@ multistep_path = data_dir
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
 use_beam_covariance = True
+seed_sims = False
 
 #window parameters
 
@@ -76,19 +77,19 @@ maps_dr6_pa6_f150 = [data_dir + 'maps/cmb_night_pa6_f150_3pass_4way_set%d_map_sr
 
 
 cal_dr6_pa4_f150 = 1.0072
-cal_dr6_pa4_f220 = 1.0340
-cal_dr6_pa5_f090 = 1.0219
-cal_dr6_pa5_f150 = 0.9877
-cal_dr6_pa6_f090 = 1.0182
+cal_dr6_pa4_f220 = 0.9969
+cal_dr6_pa5_f090 = 1.0181
+cal_dr6_pa5_f150 = 0.9856
+cal_dr6_pa6_f090 = 1.0154
 cal_dr6_pa6_f150 = 0.9699
 
 
 pol_eff_dr6_pa4_f150 = 0.9584
-pol_eff_dr6_pa4_f220 = 0.894
-pol_eff_dr6_pa5_f090 = 0.9646
-pol_eff_dr6_pa5_f150 = 0.9488
-pol_eff_dr6_pa6_f090 = 0.9789
-pol_eff_dr6_pa6_f150 = 0.9656
+pol_eff_dr6_pa4_f220 = 0.894 * 0.989
+pol_eff_dr6_pa5_f090 = 0.9646 * 1.0022
+pol_eff_dr6_pa5_f150 = 0.9488 * 1.0071
+pol_eff_dr6_pa6_f090 = 0.9789 * 0.9974
+pol_eff_dr6_pa6_f150 = 0.9656 * 0.9966
 
 
 passband_dir = data_dir + "passbands/"
@@ -101,21 +102,21 @@ freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_d
 freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
 
 
-beam_dr6_pa4_f150 = data_dir + 'beams/20230130_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa4_f220 = data_dir + 'beams/20230130_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa5_f090 = data_dir + 'beams/20230130_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa5_f150 = data_dir + 'beams/20230130_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa6_f090 = data_dir + 'beams/20230130_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa6_f150 = data_dir + 'beams/20230130_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa4_f150 = data_dir + 'beams/20230902_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa4_f220 = data_dir + 'beams/20230902_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f090 = data_dir + 'beams/20230902_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa5_f150 = data_dir + 'beams/20230902_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa6_f090 = data_dir + 'beams/20230902_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_dr6_pa6_f150 = data_dir + 'beams/20230902_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
 
-leakage_file_dir = data_dir + 'beams/20230130_beams/'
+leakage_file_dir = data_dir + 'beams/20230902_beams/'
 
-leakage_beam_dr6_pa4_f150 = 'gamma_mp_uranus_pa4_f150.txt'
-leakage_beam_dr6_pa4_f220 = 'gamma_mp_uranus_pa4_f220.txt'
-leakage_beam_dr6_pa5_f090 = 'gamma_mp_uranus_pa5_f090.txt'
-leakage_beam_dr6_pa5_f150 = 'gamma_mp_uranus_pa5_f150.txt'
-leakage_beam_dr6_pa6_f090 = 'gamma_mp_uranus_pa6_f090.txt'
-leakage_beam_dr6_pa6_f150 = 'gamma_mp_uranus_pa6_f150.txt'
+leakage_beam_dr6_pa4_f150 = 'gamma_ml_uranus_pa4_f150.txt'
+leakage_beam_dr6_pa4_f220 = 'gamma_ml_uranus_pa4_f220.txt'
+leakage_beam_dr6_pa5_f090 = 'gamma_ml_uranus_pa5_f090.txt'
+leakage_beam_dr6_pa5_f150 = 'gamma_ml_uranus_pa5_f150.txt'
+leakage_beam_dr6_pa6_f090 = 'gamma_ml_uranus_pa6_f090.txt'
+leakage_beam_dr6_pa6_f150 = 'gamma_ml_uranus_pa6_f150.txt'
 
 
 
@@ -148,11 +149,11 @@ window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.7,  "xi": 0.1, "T_d": 9.60, "a_gte": 0, "a_gtb": 0, "a_gee": 0,  "a_gbb": 0, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
 
 #sim
-iStart = 384
-iStop = 511
+iStart = 300
+iStop = 399
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

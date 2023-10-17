@@ -37,5 +37,5 @@ This directory also provides tools to get noise alms from NPIPE simulations to g
 .. code:: shell
 
     salloc -N 1 -C cpu -q interactive -t 01:00:00
-    srun -n 64 -c 4 --cpu_bind=cores python get_planck_npipe_sim_nlms.py
+    srun -n 64 -c 4 --cpu_bind=cores python get_planck_npipe_sim_nlms.py global_dr6v4xnpipe.dict
     #real 26m42.475s (128 sims at 100,143,217 GHz)

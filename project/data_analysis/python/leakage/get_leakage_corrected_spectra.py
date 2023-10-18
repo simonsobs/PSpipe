@@ -1,5 +1,5 @@
 """
-This script correct the dr6 power spectra from  T->P leakage
+This script correct the power spectra from  T->P leakage
 the idea is to subtract from each data spectra the expected contribution from the leakage
 computed from the planet beam leakage measurement and a best fit model.
 Note that this assume we have a best fit model, but realistically, not knowing the best fit
@@ -19,7 +19,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-surveys = ["dr6"]
+surveys = d["surveys"]
 lmax = d["lmax"]
 binning_file = d["binning_file"]
 type = d["type"]

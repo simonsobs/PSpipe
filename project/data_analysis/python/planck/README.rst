@@ -54,5 +54,6 @@ the ACT spectra, the way we get the correction is the following
 The first code is similar to the standard simulation spectra code, but it's residual only (no signal), the mc_analysis serve to produce the average of these spectra, then to correct the planck spectra run
 
 .. code:: shell
+
     salloc -N 1 -C cpu -q interactive -t 01:00:00
     srun -n 1 -c 256 --cpu_bind=cores python get_corrected_npipe_spectra.py global_dr6v4xnpipe.dict

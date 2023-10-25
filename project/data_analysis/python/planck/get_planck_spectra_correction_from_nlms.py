@@ -1,7 +1,5 @@
 """
-This script generate simulations of the actpol data
-it generates gaussian simulations of cmb, fg and add noise based on the mnms simulations
-the fg is based on fgspectra, note that the noise sim include the pixwin so we have to convolve the signal sim with it
+This script generate spectra to get the correction to apply to Planck Npipe data
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi

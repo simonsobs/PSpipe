@@ -15,7 +15,7 @@ Once projected we might want to use them to compute power spectra or to get sour
 
 .. code:: shell
 
-    python get_planck_npipe_beams.py
+    python extract_planck_beam.py
 
 To perform source subtraction using `dory`, one needs to get a single frequency source catalog by running ``reformat_source_catalog.py`` that produces three catalogs from the ACT DR6 multi-frequency catalog
 

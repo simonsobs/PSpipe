@@ -13,7 +13,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-surveys = d["surveys"]
+surveys = ["dr6"]
 lmax = d["lmax"]
 
 

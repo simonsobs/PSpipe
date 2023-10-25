@@ -29,8 +29,23 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+npipe_corr = True
+subtract_bf_fg = True
+
+
+output_dir = "calibration_results"
 spec_dir = "spectra"
+bestfir_dir = "best_fits"
 cov_dir = "covariances"
+
+if npipe_corr:
+    spec_dir = "spectra_npipe_bias_corrected"
+    output_dir += "_npipe_bias_corrected"
+
+if subtract_bf_fg:
+    output_dir += "_fg_sub"
+
+
 
 _, _, lb, _ = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
 n_bins = len(lb)
@@ -44,7 +59,7 @@ else:
 
 
 # Create output dirs
-output_dir = f"calibration_results"
+
 residual_output_dir = f"{output_dir}/residuals"
 plot_output_dir = f"{output_dir}/plots"
 chains_dir = f"{output_dir}/chains"
@@ -58,10 +73,10 @@ pspy_utils.create_directory(plot_output_dir)
 # the calibration amplitudes
 multipole_range = {"dr6_pa4_f150": [1250, 1800],
                    "dr6_pa4_f220": [1250, 2000],
-                   "dr6_pa5_f090": [800, 1100],
-                   "dr6_pa5_f150": [800, 1800],
-                   "dr6_pa6_f090": [600, 1100],
-                   "dr6_pa6_f150": [600, 1800]}
+                   "dr6_pa5_f090": [800, 1300],
+                   "dr6_pa5_f150": [800, 2000],
+                   "dr6_pa6_f090": [600, 1300],
+                   "dr6_pa6_f150": [600, 2000]}
 
 # Define the reference arrays
 ref_map_sets = {"dr6_pa4_f150": "Planck_f143",
@@ -105,6 +120,16 @@ for test in tests:
         for i, (ms1, ms2, m1) in enumerate(spectra_for_cal):
             _, ps = so_spectra.read_ps(f"{spec_dir}/Dl_{ms1}x{ms2}_cross.dat",
                                        spectra=spectra)
+                
+            ps_dict[ms1, ms2, m1] = ps[m1]
+            
+            if (m1 == "TT") & (subtract_bf_fg):
+                log.info(f"remove fg {m1}  {ms1} x {ms2}")
+                l_fg, bf_fg = so_spectra.read_ps(f"{bestfir_dir}/fg_{ms1}x{ms2}.dat", spectra=spectra)
+                _, bf_fg_TT_binned = pspy_utils.naive_binning(l_fg, bf_fg["TT"], d["binning_file"], d["lmax"])
+                ps_dict[ms1, ms2, m1] -= bf_fg_TT_binned
+
+
             ps_dict[ms1, ms2, m1] = ps[m1]
             for j, (ms3, ms4, m2) in enumerate(spectra_for_cal):
                 if j < i: continue

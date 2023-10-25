@@ -2,6 +2,10 @@ surveys = ["dr6", "Planck"]
 arrays_dr6 = [ "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 arrays_Planck = ["f100", "f143", "f217"]
 
+
+npipe_mc_correction = "/global/cfs/cdirs/act/data/tlouis/dr6v4/npipe_spectra_correction/15mJy_mask/"
+
+
 data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
 map_dir_Planck = f'{data_dir}/npipe6v20_maps_0923/'
 
@@ -61,11 +65,11 @@ maps_Planck_f100 = [map_dir_Planck + 'npipe6v20%s_f100_map_srcfree.fits' % split
 maps_Planck_f143 = [map_dir_Planck + 'npipe6v20%s_f143_map_srcfree.fits' % split for split in ["A", "B"]]
 maps_Planck_f217 = [map_dir_Planck + 'npipe6v20%s_f217_map_srcfree.fits' % split for split in ["A", "B"]]
 
-cal_dr6_pa4_f220 = 1.
-cal_dr6_pa5_f090 = 1.
-cal_dr6_pa5_f150 = 1.
-cal_dr6_pa6_f090 = 1.
-cal_dr6_pa6_f150 = 1.
+cal_dr6_pa4_f220 = 1.0274146516062883
+cal_dr6_pa5_f090 = 1.0156162524843904
+cal_dr6_pa5_f150 = 0.9850773599437168
+cal_dr6_pa6_f090 = 1.0140213622811152
+cal_dr6_pa6_f150 = 0.9686333859482543
 
 cal_Planck_f100 = 1.
 cal_Planck_f143 = 1.
@@ -94,7 +98,7 @@ freq_info_Planck_f143 = {"freq_tag": 143, "passband": passband_dir + "passband_n
 freq_info_Planck_f217 = {"freq_tag": 217, "passband": passband_dir + "passband_npipe_f217.dat"}
 
 beam_dir_dr6 = f'{data_dir}/beams/20230902_beams/'
-beam_dir_Planck = f'{data_dir}/beams/npipe6v20_beams/'
+beam_dir_Planck = f'{data_dir}/beams/npipe_DR6/'
 
 beam_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
@@ -102,20 +106,20 @@ beam_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.t
 beam_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
 beam_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
 
-beam_Planck_f100 = beam_dir_Planck + 'npipe6v20_beam_100_mean.dat'
-beam_Planck_f143 = beam_dir_Planck + 'npipe6v20_beam_143_mean.dat'
-beam_Planck_f217 = beam_dir_Planck + 'npipe6v20_beam_217_mean.dat'
+beam_Planck_f100 = beam_dir_Planck + 'bl_T_npipe_DR6_100Ax100B.dat'
+beam_Planck_f143 = beam_dir_Planck + 'bl_T_npipe_DR6_143Ax143B.dat'
+beam_Planck_f217 = beam_dir_Planck + 'bl_T_npipe_DR6_217Ax217B.dat'
 
 
-ps_mask_dr6_pa4_f220 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_21.0_monster_dust.fits'
-ps_mask_dr6_pa5_f090 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_21.0_monster_dust.fits'
-ps_mask_dr6_pa5_f150 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_21.0_monster_dust.fits'
-ps_mask_dr6_pa6_f090 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_21.0_monster_dust.fits'
-ps_mask_dr6_pa6_f150 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_21.0_monster_dust.fits'
+ps_mask_dr6_pa4_f220 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust.fits'
+ps_mask_dr6_pa5_f090 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust.fits'
+ps_mask_dr6_pa5_f150 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust.fits'
+ps_mask_dr6_pa6_f090 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust.fits'
+ps_mask_dr6_pa6_f150 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust.fits'
 
-ps_mask_Planck_f100 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_21.0_monster_dust.fits'
-ps_mask_Planck_f143 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_21.0_monster_dust.fits'
-ps_mask_Planck_f217 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_21.0_monster_dust.fits'
+ps_mask_Planck_f100 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust.fits'
+ps_mask_Planck_f143 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust.fits'
+ps_mask_Planck_f217 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust.fits'
 
 
 gal_mask_dr6_pa4_f220 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
@@ -188,7 +192,7 @@ fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4
 
 #sim
 iStart = 0
-iStop = 127
+iStop = 383
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

@@ -200,7 +200,7 @@ def fit_dust(ell, fg_components, fg_params):
     for key in priors[mode]:
         info["params"][key] = priors[mode][key]
 
-    run(info)
+    return run(info)
 
 
 ell = np.arange(2, lmax + 1)
@@ -208,10 +208,11 @@ fg_components = d["fg_components"]
 fg_params = d["fg_params"]
 
 if not args.no_fit:
-    fit_dust(ell, fg_components, fg_params)
+    updated_info, sampler = fit_dust(ell, fg_components, fg_params)
 
     # Load samples
-    samples = loadMCSamples(chain_name, settings={"ignore_rows": 0.5})
+    # samples = loadMCSamples(chain_name, settings={"ignore_rows": 0.5})
+    samples = sampler.products(to_getdist=True, skip_samples=0.5)["sample"]
     gdplot = gdplt.get_subplot_plotter()
     gdplot.triangle_plot(samples, params[mode], filled=True)
     plt.savefig(f"{plot_dir}/posterior_{mode}.png", dpi=300)

@@ -15,7 +15,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 # Set up directories
-ps_dir = "spectra"
+ps_dir = "spectra_corrected"
 cov_dir = "covariances"
 bestfit_dir = "best_fits"
 mcm_dir = "mcms"
@@ -32,20 +32,28 @@ lmax = 8000
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 # Load ps theory file
-l_th, ps_th = pspy_utils.ps_lensed_theory_to_dict(ps_filename, "Dl", lmax=lmax)
+l_th, ps_th = so_spectra.read_ps(ps_filename, spectra=spectra)
 l_th = l_th.astype(int)
-so_spectra.write_ps(f"{output_dir}/ps_theory_to_calibrate.dat", l_th, ps_th, type="Dl", spectra=spectra)
 
-# Load foreground dict (with polarized dust normalized to 1)
+
+# Load foreground dict and dust prior, then normalize (with polarized dust normalized to 1)
 do_bandpass_integration = d["do_bandpass_integration"]
 fg_components = d["fg_components"]
 fg_params = d["fg_params"]
 
+dust_priors = {
+    "EE": {"loc": fg_params["a_gee"], "scale": 0.008},
+    "TE": {"loc": fg_params["a_gte"], "scale": 0.015}
+}
+
 fg_components["ee"] = ["dust"]
 fg_components["te"] = ["dust"]
-
 fg_params["a_gee"] = 1.
 fg_params["a_gte"] = 1.
+
+print(dust_priors)
+
+
 
 passbands = {}
 for sv in surveys:
@@ -63,10 +71,7 @@ fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components, fg_param
 # Load priors on dust amplitudes
 # from Planck 353 GHz spectra
 # computed in ACT DR6 windows
-dust_priors = {
-    "EE": {"loc": 0.205, "scale": 0.008},
-    "TE": {"loc": 0.541, "scale": 0.015}
-}
+
 
 # Calibration range
 lmin_cal = 1000
@@ -77,10 +82,10 @@ def get_model(cmb_th, fg_th, Bbl, dust_amp, pol_eff, mode):
     ps_theory = (cmb_th + dust_amp * fg_th) * pol_eff ** mode.count("E")
     return Bbl @ ps_theory
 
-for spectrum in ["EE", "TE"]:
-    for sv in surveys:
-        for ar in arrays[sv]:
-
+pol_eff_mean, pol_eff_std, dust_mean, dust_std = {}, {}, {}, {}
+for sv in surveys:
+    for ar in arrays[sv]:
+        for spectrum in ["EE", "TE"]:
             # Load ps and cov
             spec_name = f"{sv}_{ar}x{sv}_{ar}"
             lb, ps = so_spectra.read_ps(f"{ps_dir}/Dl_{spec_name}_cross.dat", spectra=spectra)
@@ -89,6 +94,7 @@ for spectrum in ["EE", "TE"]:
             # Select the spectrum
             ps = ps[spectrum]
             n_bins = len(lb)
+            
             cov = so_cov.selectblock(cov, spectra, n_bins=n_bins, block=spectrum+spectrum)
 
             # Multipole cuts
@@ -154,6 +160,22 @@ for spectrum in ["EE", "TE"]:
             updated_info, sampler = run(info)
 
             samples = loadMCSamples(f"{output_dir}/chain_{spectrum}_{sv}_{ar}", settings={"ignore_rows": 0.5})
+            pol_eff_mean[sv, ar, spectrum] = samples.mean("pol_eff")
+            pol_eff_std[sv, ar, spectrum] = np.sqrt(samples.cov(["pol_eff"])[0, 0])
+            dust_mean[sv, ar, spectrum] = samples.mean("dust_amp")
+            dust_std[sv, ar, spectrum] = np.sqrt(samples.cov(["dust_amp"])[0, 0])
+
+            
             gdplot = gdplt.get_subplot_plotter()
             gdplot.triangle_plot(samples, ["pol_eff", "dust_amp"], filled=True, title_limit=1)
             plt.savefig(f"{output_dir}/posterior_dist_{spectrum}_{sv}_{ar}.png", dpi=300, bbox_inches="tight")
+
+
+for sv in surveys:
+    for ar in arrays[sv]:
+        print(f"**************")
+        for spectrum in ["EE", "TE"]:
+            p_eff, std = pol_eff_mean[sv, ar, spectrum], pol_eff_std[sv, ar, spectrum]
+            print(f"{sv} {ar} {spectrum} {p_eff} {std}")
+
+        print(f"**************")

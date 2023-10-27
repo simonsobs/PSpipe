@@ -36,18 +36,22 @@ for task in subtasks:
 
     log.info(f"[{task:02d}] mcm matrix for {sv1}_{ar1} x {sv2}_{ar2}")
 
-    l, bl1 = pspy_utils.read_beam_file(d[f"beam_{sv1}_{ar1}"])
+    l, bl1_T = pspy_utils.read_beam_file(d[f"beam_T_{sv1}_{ar1}"])
+    l, bl1_pol = pspy_utils.read_beam_file(d[f"beam_pol_{sv1}_{ar1}"])
+
     win1_T = so_map.read_map(d[f"window_T_{sv1}_{ar1}"])
     win1_pol = so_map.read_map(d[f"window_pol_{sv1}_{ar1}"])
 
-    l, bl2 = pspy_utils.read_beam_file(d[f"beam_{sv2}_{ar2}"])
+    l, bl2_T = pspy_utils.read_beam_file(d[f"beam_T_{sv2}_{ar2}"])
+    l, bl2_pol = pspy_utils.read_beam_file(d[f"beam_pol_{sv2}_{ar2}"])
+
     win2_T = so_map.read_map(d[f"window_T_{sv2}_{ar2}"])
     win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{ar2}"])
 
     mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(win1_T, win1_pol),
                                                 win2=(win2_T, win2_pol),
-                                                bl1=(bl1, bl1),
-                                                bl2=(bl2, bl2),
+                                                bl1=(bl1_T, bl1_pol),
+                                                bl2=(bl2_T, bl2_pol),
                                                 binning_file=d["binning_file"],
                                                 niter=d["niter"],
                                                 lmax=d["lmax"],

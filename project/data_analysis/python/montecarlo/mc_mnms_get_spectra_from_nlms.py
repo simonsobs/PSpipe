@@ -116,8 +116,9 @@ for iii in subtasks:
         for ar in arrays[sv]:
 
             signal_alms[ar] = alms_cmb + fglms[f"{sv}_{ar}"]
-            l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
-            signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
+            l, bl = misc.read_beams(d[f"beam_{sv}_{ar}_T"], d[f"beam_{sv}_{ar}_pol"])
+            signal_alms[ar] = misc.apply_beams(signal_alms[ar], bl)
+
             # since the mnms noise sim include a pixwin, we convolve the signal ones
             signal = sph_tools.alm2map(signal_alms[ar], templates[sv])
             win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])

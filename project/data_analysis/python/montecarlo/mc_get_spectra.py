@@ -132,8 +132,9 @@ for iii in subtasks:
         signal_alms = {}
         for ar in arrays[sv]:
             signal_alms[ar] = alms_cmb + fglms[f"{sv}_{ar}"]
-            l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
-            signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
+            l, bl = misc.read_beams(d[f"beam_{sv}_{ar}_T"], d[f"beam_{sv}_{ar}_pol"])
+            signal_alms[ar] = misc.apply_beams(signal_alms[ar], bl)
+
 
         log.info(f"[{iii}]  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):

@@ -91,8 +91,8 @@ for iii in subtasks:
                 alms_beamed += fglms[f"{sv}_{ar}"]
 
                 # we convolve signal + foreground with the beam of the array
-                l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
-                alms_beamed = curvedsky.almxfl(alms_beamed, bl)
+                l, bl = misc.read_beams(d[f"beam_{sv}_{ar}_T"], d[f"beam_{sv}_{ar}_pol"])
+                alms_beamed = misc.apply_beams(alms_beamed, bl)
 
                 if scenario == "noE": alms_beamed[1] *= 0
                 if scenario == "noB": alms_beamed[2] *= 0

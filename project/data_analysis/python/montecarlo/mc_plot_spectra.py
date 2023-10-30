@@ -74,13 +74,14 @@ for id_sv1, sv1 in enumerate(surveys):
                 
                 log.info(f"prepare theory spectra {sv1} {ar1} x {sv2} {ar2}")
 
-                l, bl1 = pspy_utils.read_beam_file(d[f"beam_{sv1}_{ar1}"], lmax=lmax)
-                l, bl2 = pspy_utils.read_beam_file(d[f"beam_{sv2}_{ar2}"], lmax=lmax)
+                l, bl1 = misc.read_beams(d[f"beam_{sv1}_{ar1}_T"], d[f"beam_{sv1}_{ar1}_pol"], lmax=lmax)
+                l, bl2 = misc.read_beams(d[f"beam_{sv2}_{ar2}_T"], d[f"beam_{sv2}_{ar2}_pol"],  lmax=lmax)
 
                 if sv1 == sv2:
                     lb, nlth = so_spectra.read_ps(f"{noise_model_dir}/mean_{ar1}x{ar2}_{sv1}_noise.dat", spectra=spectra)
                     for spec in spectra:
-                        nlth[spec]  /= (bl1 * bl2)
+                        X, Y = spec
+                        nlth[spec]  /= (bl1[X] * bl2[Y])
                 else:
                     nlth = {}
                     for spec in spectra:

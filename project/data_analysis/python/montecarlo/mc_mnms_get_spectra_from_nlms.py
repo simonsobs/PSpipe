@@ -116,7 +116,7 @@ for iii in subtasks:
         for ar in arrays[sv]:
 
             signal_alms[ar] = alms_cmb + fglms[f"{sv}_{ar}"]
-            l, bl = misc.read_beams(d[f"beam_{sv}_{ar}_T"], d[f"beam_{sv}_{ar}_pol"])
+            l, bl = misc.read_beams(d[f"beam_T_{sv}_{ar}"], d[f"beam_pol_{sv}_{ar}"])
             signal_alms[ar] = misc.apply_beams(signal_alms[ar], bl)
 
             # since the mnms noise sim include a pixwin, we convolve the signal ones

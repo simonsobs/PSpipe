@@ -41,7 +41,7 @@ arrays, n_splits, bl_dict = {}, {}, {}
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
     for ar in arrays[sv]:
-        l_beam, bl = misc.read_beams(d[f"beam_{sv}_{ar}_T"], d[f"beam_{sv}_{ar}_pol"])
+        l_beam, bl = misc.read_beams(d[f"beam_T_{sv}_{ar}"], d[f"beam_pol_{sv}_{ar}"])
         id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
         bl_dict[sv, ar] = {}
         for field in ["T", "E", "B"]:

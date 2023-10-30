@@ -36,12 +36,12 @@ for task in subtasks:
 
     log.info(f"[{task:02d}] mcm matrix for {sv1}_{ar1} x {sv2}_{ar2}")
 
-    l, bl1 = misc.read_beams(d[f"beam_{sv1}_{ar1}_T"], d[f"beam_{sv1}_{ar1}_pol"])
+    l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}"], d[f"beam_pol_{sv1}_{ar1}"])
 
     win1_T = so_map.read_map(d[f"window_T_{sv1}_{ar1}"])
     win1_pol = so_map.read_map(d[f"window_pol_{sv1}_{ar1}"])
 
-    l, bl2 = misc.read_beams(d[f"beam_{sv2}_{ar2}_T"], d[f"beam_{sv2}_{ar2}_pol"])
+    l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}"], d[f"beam_pol_{sv2}_{ar2}"])
 
     win2_T = so_map.read_map(d[f"window_T_{sv2}_{ar2}"])
     win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{ar2}"])

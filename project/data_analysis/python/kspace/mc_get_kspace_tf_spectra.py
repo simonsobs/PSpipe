@@ -91,7 +91,7 @@ for iii in subtasks:
                 alms_beamed += fglms[f"{sv}_{ar}"]
 
                 # we convolve signal + foreground with the beam of the array
-                l, bl = misc.read_beams(d[f"beam_{sv}_{ar}_T"], d[f"beam_{sv}_{ar}_pol"])
+                l, bl = misc.read_beams(d[f"beam_T_{sv}_{ar}"], d[f"beam_pol_{sv}_{ar}"])
                 alms_beamed = misc.apply_beams(alms_beamed, bl)
 
                 if scenario == "noE": alms_beamed[1] *= 0

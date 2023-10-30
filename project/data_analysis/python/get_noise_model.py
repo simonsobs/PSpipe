@@ -54,8 +54,8 @@ for sv in surveys:
 
             log.info(f"Computing noise for '{sv}' survey and '{ar1}x{ar2}' arrays")
 
-            l, bl_ar1 = misc.read_beams(d[f"beam_{sv}_{ar1}_T"], d[f"beam_{sv}_{ar1}_pol"])
-            l, bl_ar2 = misc.read_beams(d[f"beam_{sv}_{ar2}_T"], d[f"beam_{sv}_{ar2}_pol"])
+            l, bl_ar1 = misc.read_beams(d[f"beam_T_{sv}_{ar1}"], d[f"beam_pol_{sv}_{ar1}"])
+            l, bl_ar2 = misc.read_beams(d[f"beam_T_{sv}_{ar2}"], d[f"beam_pol_{sv}_{ar2}"])
 
             lb, nbs_ar1xar1 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar1}_noise.dat", spectra=spectra)
             lb, nbs_ar1xar2 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar2}_noise.dat", spectra=spectra)

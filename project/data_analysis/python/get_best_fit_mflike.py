@@ -71,7 +71,7 @@ for sv1, ar1 in zip(sv_list, ar_list):
         so_spectra.write_ps(f"{bestfit_dir}/fg_{name1}x{name2}.dat", l_th, fg, type, spectra=spectra)
 
 log.info("Writing best fit spectra")
-spectra_list = pspipe_list.get_spec_name_list(d, char = "_")
+spectra_list = pspipe_list.get_spec_name_list(d, delimiter = "_")
 best_fit_dict = {}
 for ps_name in spectra_list:
     best_fit_dict[ps_name] = {}

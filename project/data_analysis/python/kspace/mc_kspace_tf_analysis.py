@@ -39,7 +39,7 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 n_sims = iStop - iStart + 1
 scenarios = ["standard", "noE", "noB"]
 
-spec_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 _, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 array_list = [f"{sv}_{ar}" for (sv, ar) in zip(sv_list, ar_list)]

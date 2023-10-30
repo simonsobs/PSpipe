@@ -45,7 +45,7 @@ pspy_utils.create_directory(unblinding_dir)
 
 
 type = d["type"]
-spec_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 cov_dir = "covariances"
 bestfit_dir = "best_fits"

@@ -79,7 +79,7 @@ else:
 
 
 pspy_utils.create_directory(cov_plot_dir)
-spec_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 for sid1, spec1 in enumerate(spec_list):
     for sid2, spec2 in enumerate(spec_list):

@@ -71,7 +71,7 @@ for sv in surveys:
             plt.close()
         
 
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 ps_th_dict, residual = {}, {}
 for spec_name in spec_name_list:

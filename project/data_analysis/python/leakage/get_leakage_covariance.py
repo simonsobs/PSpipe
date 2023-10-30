@@ -38,7 +38,7 @@ if d["cov_T_E_only"] == True:
 else:
     modes_for_cov = spectra
 
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 ps_all_corrected = {}
 for iii in range(n_sims+1):

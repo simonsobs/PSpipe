@@ -29,7 +29,7 @@ cov_dir = "covariances"
 mc_dir = "montecarlo"
 plot_dir = "plots/x_ar_cov"
 
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 mc_correction = True

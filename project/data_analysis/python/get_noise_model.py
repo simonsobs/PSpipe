@@ -8,7 +8,7 @@ import sys
 import numpy as np
 import pylab as plt
 import scipy.interpolate
-from pspipe_utils import log
+from pspipe_utils import log, misc
 from pspy import pspy_utils, so_dict, so_spectra
 
 

@@ -7,7 +7,7 @@ Requirements
 ============
 
 * pspy >= 1.6.1
-* pspipe_utils >= 0.1.3
+* pspipe_utils >= 0.1.4
 
 dependency: pspy, pspipe_utils
 

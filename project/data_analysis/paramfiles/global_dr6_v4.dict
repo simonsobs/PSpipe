@@ -76,20 +76,20 @@ maps_dr6_pa6_f090 = [data_dir + 'maps/cmb_night_pa6_f090_3pass_4way_set%d_map_sr
 maps_dr6_pa6_f150 = [data_dir + 'maps/cmb_night_pa6_f150_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
 
 
-cal_dr6_pa4_f150 = 1.0072
-cal_dr6_pa4_f220 = 0.9969
-cal_dr6_pa5_f090 = 1.0181
-cal_dr6_pa5_f150 = 0.9856
-cal_dr6_pa6_f090 = 1.0154
-cal_dr6_pa6_f150 = 0.9699
+cal_dr6_pa4_f150 = 1.0
+cal_dr6_pa4_f220 = 1.0274146516062883
+cal_dr6_pa5_f090 = 1.0156162524843904
+cal_dr6_pa5_f150 = 0.9850773599437168
+cal_dr6_pa6_f090 = 1.0140213622811152
+cal_dr6_pa6_f150 = 0.9686333859482543
 
 
-pol_eff_dr6_pa4_f150 = 0.9584
-pol_eff_dr6_pa4_f220 = 0.894 * 0.989
-pol_eff_dr6_pa5_f090 = 0.9646 * 1.0022
-pol_eff_dr6_pa5_f150 = 0.9488 * 1.0071
-pol_eff_dr6_pa6_f090 = 0.9789 * 0.9974
-pol_eff_dr6_pa6_f150 = 0.9656 * 0.9966
+pol_eff_dr6_pa4_f150 = 1.
+pol_eff_dr6_pa4_f220 = 0.9110596207306271
+pol_eff_dr6_pa5_f090 = 0.9647236568554689
+pol_eff_dr6_pa5_f150 = 0.955357736304545
+pol_eff_dr6_pa6_f090 = 0.9749713898538074
+pol_eff_dr6_pa6_f150 = 0.9611809391254973
 
 
 passband_dir = data_dir + "passbands/"
@@ -102,12 +102,21 @@ freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_d
 freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
 
 
-beam_dr6_pa4_f150 = data_dir + 'beams/20230902_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa4_f220 = data_dir + 'beams/20230902_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa5_f090 = data_dir + 'beams/20230902_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa5_f150 = data_dir + 'beams/20230902_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa6_f090 = data_dir + 'beams/20230902_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa6_f150 = data_dir + 'beams/20230902_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa4_f150 = data_dir + 'beams/20230902_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa4_f220 = data_dir + 'beams/20230902_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa5_f090 = data_dir + 'beams/20230902_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa5_f150 = data_dir + 'beams/20230902_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa6_f090 = data_dir + 'beams/20230902_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa6_f150 = data_dir + 'beams/20230902_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+beam_pol_dr6_pa4_f150 = data_dir + 'beams/20230902_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa4_f220 = data_dir + 'beams/20230902_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa5_f090 = data_dir + 'beams/20230902_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa5_f150 = data_dir + 'beams/20230902_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa6_f090 = data_dir + 'beams/20230902_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa6_f150 = data_dir + 'beams/20230902_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+
 
 leakage_file_dir = data_dir + 'beams/20230902_beams/'
 
@@ -152,8 +161,8 @@ fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
 
 #sim
-iStart = 300
-iStop = 399
+iStart = 0
+iStop = 99
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

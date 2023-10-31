@@ -42,7 +42,7 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
 # prepare the tempalte and the filter
 arrays, templates, filters, n_splits, filter_dicts, pixwin, inv_pixwin = {}, {}, {}, {}, {}, {}, {}
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
@@ -116,8 +116,9 @@ for iii in subtasks:
         for ar in arrays[sv]:
 
             signal_alms[ar] = alms_cmb + fglms[f"{sv}_{ar}"]
-            l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
-            signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
+            l, bl = misc.read_beams(d[f"beam_T_{sv}_{ar}"], d[f"beam_pol_{sv}_{ar}"])
+            signal_alms[ar] = misc.apply_beams(signal_alms[ar], bl)
+
             # since the mnms noise sim include a pixwin, we convolve the signal ones
             signal = sph_tools.alm2map(signal_alms[ar], templates[sv])
             win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])

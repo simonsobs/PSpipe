@@ -41,7 +41,7 @@ else:
     modes_for_xar_cov = spectra
     modes_for_xfreq_cov = ["TT", "TE", "TB", "EE", "EB", "BB"]
     
-spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, char="_", return_nu_tag=True)
+spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, delimiter="_", return_nu_tag=True)
 freq_list = pspipe_list.get_freq_list(d)
 
 x_ar_cov_list = pspipe_list.x_ar_cov_order(spec_name_list, nu_tag_list, spectra_order=modes_for_xar_cov)

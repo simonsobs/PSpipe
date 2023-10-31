@@ -30,7 +30,7 @@ else:
     modes_for_cov = spectra
 
 
-spec_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 log.info(f"we start by constructing block mc covariances")
 

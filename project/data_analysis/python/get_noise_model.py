@@ -8,7 +8,7 @@ import sys
 import numpy as np
 import pylab as plt
 import scipy.interpolate
-from pspipe_utils import log
+from pspipe_utils import log, misc
 from pspy import pspy_utils, so_dict, so_spectra
 
 
@@ -54,22 +54,25 @@ for sv in surveys:
 
             log.info(f"Computing noise for '{sv}' survey and '{ar1}x{ar2}' arrays")
 
-            l, bl_ar1 = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar1}"])
-            l, bl_ar2 = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar2}"])
-
+            l, bl_ar1 = misc.read_beams(d[f"beam_T_{sv}_{ar1}"], d[f"beam_pol_{sv}_{ar1}"])
+            l, bl_ar2 = misc.read_beams(d[f"beam_T_{sv}_{ar2}"], d[f"beam_pol_{sv}_{ar2}"])
 
             lb, nbs_ar1xar1 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar1}_noise.dat", spectra=spectra)
             lb, nbs_ar1xar2 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar2}_noise.dat", spectra=spectra)
             lb, nbs_ar2xar2 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar2}x{sv}_{ar2}_noise.dat", spectra=spectra)
-
-            lb, bb_ar1 = pspy_utils.naive_binning(l, bl_ar1, binning_file, lmax)
-            lb, bb_ar2 = pspy_utils.naive_binning(l, bl_ar2, binning_file, lmax)
+        
+            bb_ar1, bb_ar2  = {}, {}
+            for field in ["T", "E", "B"]:
+                lb, bb_ar1[field] = pspy_utils.naive_binning(l, bl_ar1[field], binning_file, lmax)
+                lb, bb_ar2[field] = pspy_utils.naive_binning(l, bl_ar2[field], binning_file, lmax)
 
             Rb = {}
             for spec in spectra:
-                nbs_ar1xar1[spec] *= bb_ar1 * bb_ar1
-                nbs_ar1xar2[spec] *= bb_ar1 * bb_ar2
-                nbs_ar2xar2[spec] *= bb_ar2 * bb_ar2
+                X,Y = spec
+                nbs_ar1xar1[spec] *= bb_ar1[X] * bb_ar1[Y]
+                nbs_ar1xar2[spec] *= bb_ar1[X] * bb_ar2[Y]
+                nbs_ar2xar2[spec] *= bb_ar2[X] * bb_ar2[Y]
+                
                 Rb[spec] = nbs_ar1xar2[spec] / np.sqrt(np.abs(nbs_ar1xar1[spec] * nbs_ar2xar2[spec]))
 
             if ar1 == ar2:

@@ -63,3 +63,8 @@ For anisotropic covariances,
 ```bash
 10core2hr "srun --ntasks 1 --cpus-per-task 10 --cpu-bind=cores python -u python/get_split_covariance_aniso.py paramfiles/della/global_dr6_v4.dict 100 101"
 ```
+```bash
+for i in {0..21}; do \
+    10core2hr "srun --ntasks 1 --cpus-per-task 10 --cpu-bind=cores python -u python/get_split_covariance_aniso.py paramfiles/della/global_dr6_v4.dict $i $((i+1))"
+done
+```

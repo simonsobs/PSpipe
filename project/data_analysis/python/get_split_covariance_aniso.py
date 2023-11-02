@@ -124,7 +124,6 @@ for task in subtasks:
 
     splits = [split_a, split_b, split_c, split_d]
     survey_id = [pol_a + "a", pol_b + "b", pol_c + "c", pol_d + "d"]
-    splitname2splitindex = dict(zip(splits, range(len(splits))))
 
     survey_combo = sv_a, sv_b, sv_c, sv_d
     array_combo = ar_a, ar_b, ar_c, ar_d
@@ -132,8 +131,13 @@ for task in subtasks:
     win, var = {}, {}
     white_noise = {}
     for splitname1, id1, sv1, ar1 in zip(splits, survey_id, survey_combo, array_combo):
-    #    log.info(f"{name1}, {id1}, {sv1}, {ar1}")
-        split_index = splitname2splitindex[splitname1]
+        log.info(f"{splitname1}, {id1}, {sv1}, {ar1}")
+
+
+        all_splits = [f'set{i}' for i in range(n_splits[sv1])]
+        splitname2splitindex = dict(zip(all_splits,  range(n_splits[sv1])))
+
+        split_index = int(splitname1)
         ivar_fname = d[f"ivar_{sv1}_{ar1}"][split_index]
         ivar1 = so_map.read_map(ivar_fname).data
         var1 = np.reciprocal(ivar1,where=(ivar1!=0))
@@ -141,7 +145,6 @@ for task in subtasks:
         win[id1] = so_map.read_map(d[f"window_{maskpol}_{sv1}_{ar1}"])
         white_noise[id1] = so_cov.measure_white_noise_level(var1, win[id1].data)
         var[id1] = so_cov.make_weighted_variance_map(var1, win[id1])
-
 
     log.info(white_noise)
 

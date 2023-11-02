@@ -10,7 +10,6 @@
 
 cd /tigress/zequnl/PSpipe/project/data_analysis
 module load intel/2021.1 openmpi/intel-2021.1/4.1.0 anaconda3/2023.3
-export MPICC=$(which mpicc)
 conda activate ps 
 
 export OMP_NUM_THREADS=8

@@ -1,6 +1,6 @@
 surveys = ["dr6"]
 
-arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+arrays_dr6 = ["pa6_f150"]
 
 map_dir = '/scratch/gpfs/ACT/dr6v4/maps/dr6v4_20230316/release/'
 data_dir = '/tigress/zequnl/cmb/data/dr6/'

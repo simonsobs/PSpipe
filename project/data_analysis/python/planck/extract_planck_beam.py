@@ -82,15 +82,18 @@ for freq in freqs:
     plt.clf()
     plt.close()
 
-    np.savetxt(f"{release}/gamma_{release}_{freq}{s2}.dat", np.transpose([l, gamma_TE, gamma_TB]))
-    np.savetxt(f"{release}/gamma_{release}_{freq}{s1}.dat", np.transpose([l, gamma_ET, gamma_BT]))
+
+    zeros = np.zeros(len(l))
+
+    np.savetxt(f"{release}/gamma_{release}_{freq}{s2}.dat", np.transpose([l, gamma_TE, zeros, gamma_TB, zeros]))
+    np.savetxt(f"{release}/gamma_{release}_{freq}{s1}.dat", np.transpose([l, gamma_ET, zeros, gamma_BT, zeros]))
         
     gamma_mean_TE = (gamma_TE + gamma_ET) / 2
     gamma_mean_TB = (gamma_TB + gamma_BT) / 2
 
-    np.savetxt(f"{release}/gamma_mean_{release}_{freq}{s1}{s2}.dat", np.transpose([l, gamma_mean_TE, gamma_mean_TB]))
+    np.savetxt(f"{release}/gamma_mean_{release}_{freq}{s1}{s2}.dat", np.transpose([l, gamma_mean_TE, zeros,  gamma_mean_TB,  zeros]))
 
-    zeros = np.zeros(len(l))
+
     np.savetxt(f"{release}/error_modes_gamma_{release}_{freq}{s2}.dat", np.transpose([l, zeros, zeros, zeros, zeros, zeros, zeros]))
     np.savetxt(f"{release}/error_modes_gamma_{release}_{freq}{s1}.dat", np.transpose([l, zeros, zeros, zeros, zeros, zeros, zeros]))
     

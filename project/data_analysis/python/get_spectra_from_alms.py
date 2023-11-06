@@ -73,7 +73,7 @@ if apply_kspace_filter:
         for spec_name in spec_name_list:
             kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
             _, TE_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
-                
+
 
     # this will be used in the covariance computation
     for spec_name in spec_name_list:
@@ -147,7 +147,7 @@ for task in subtasks:
                     xtra_corr = None
                 else:
                     xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
-                    
+
                 lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
                                                                 ps,
                                                                 kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],

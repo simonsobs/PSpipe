@@ -11,7 +11,7 @@ from matplotlib.pyplot import cm
 import numpy as np
 import pylab as plt
 import os, sys
-from pspipe_utils import pspipe_list, best_fits, log
+from pspipe_utils import pspipe_list, best_fits, log, misc
 import pspipe
 
 d = so_dict.so_dict()

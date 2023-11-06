@@ -56,7 +56,7 @@ for sv in surveys:
 # compute the transfer functions
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(lb)
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 if apply_kspace_filter:
     kspace_tf_path = d["kspace_tf_path"]

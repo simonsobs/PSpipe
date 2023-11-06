@@ -4,14 +4,14 @@ it generates gaussian simulations of cmb, fg and add noise based on the mnms sim
 the fg is based on fgspectra, note that the noise sim include the pixwin so we have to convolve the signal sim with it
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
-import numpy as np
 import sys
 import time
+
 import healpy as hp
-from pixell import curvedsky
-from pspipe_utils import simulation, pspipe_list, kspace, misc, log, transfer_function
-import enmap
+import numpy as np
+from pixell import curvedsky, enmap
+from pspipe_utils import kspace, log, misc, pspipe_list, simulation, transfer_function
+from pspy import pspy_utils, so_dict, so_map, so_mcm, so_mpi, so_spectra, sph_tools
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])

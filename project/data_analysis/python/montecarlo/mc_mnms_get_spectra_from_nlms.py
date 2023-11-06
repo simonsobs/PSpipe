@@ -11,6 +11,7 @@ import time
 import healpy as hp
 from pixell import curvedsky
 from pspipe_utils import simulation, pspipe_list, kspace, misc, log, transfer_function
+import enmap
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])

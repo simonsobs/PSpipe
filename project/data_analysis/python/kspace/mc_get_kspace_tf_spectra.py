@@ -47,7 +47,9 @@ for sv in surveys:
     template_name = d[f"maps_{sv}_{arrays[sv][0]}"][0]
     templates[sv] = so_map.read_map(template_name)
     assert (templates[sv].pixel == "CAR"), "we only compute kspace tf in CAR pixellisation"
-    filter_dicts[sv] = d[f"k_filter_{sv}"]
+    # filter_dicts[sv] = d[f"k_filter_{sv}"]
+    # same for all sv
+    filter_dicts[sv] = d[f"k_filter"]
     filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv], dtype=np.float32)
 
 f_name_cmb = bestfit_dir + "/cmb.dat"

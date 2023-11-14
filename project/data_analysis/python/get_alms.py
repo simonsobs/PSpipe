@@ -24,7 +24,7 @@ apply_kspace_filter = d["apply_kspace_filter"]
 
 
 #window_dir = "windows"
-window_dir = d["window_dir"]
+#window_dir = d["window_dir"]
 alms_dir = "alms"
 pspy_utils.create_directory(alms_dir)
 
@@ -74,13 +74,20 @@ for task in subtasks:
             split = so_map.read_map(map, geometry=win_T.data.geometry)
 
             if d[f"src_free_maps_{sv}"] == True:
-                ps_map_name = map.replace("map_srcfree.fits", "srcs.fits")
-                if ps_map_name == map:
-                    raise ValueError("No model map is provided! Check map names!")
-                ps_map = so_map.read_map(ps_map_name)
+                tot_map_name = map.replace("map_srcfree.fits", "map.fits")
+                if tot_map_name == map:
+                    raise ValueError("No model/total map is provided! Check map names!")
+                tot_map = so_map.read_map(tot_map_name)
+                ps_map = tot_map.copy()
+                ps_map.data -= split.data
+                #ps_map_name = map.replace("map_srcfree.fits", "srcs.fits")
+                #if ps_map_name == map:
+                #    raise ValueError("No model map is provided! Check map names!")
+                #ps_map = so_map.read_map(ps_map_name)
                 ps_mask = so_map.read_map(d[f"ps_mask"])
                 ps_map.data *= ps_mask.data
                 split.data += ps_map.data
+                
 
             if apply_kspace_filter:
                 log.info(f"[{task}] apply kspace filter on {map}")

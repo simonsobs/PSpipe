@@ -37,8 +37,9 @@ log.info(f"we start by constructing block mc covariances")
 for sid1, spec1 in enumerate(spec_list):
     for sid2, spec2 in enumerate(spec_list):
         if sid1 > sid2 : continue
-        
-        log.info(f"mc cov block: {spec1} {spec2}")
+
+# commenting out because this prints out a lot for 18,401 cov blocks !
+#        log.info(f"mc cov block: {spec1} {spec2}")
 
         na, nb = spec1.split("x")
         nc, nd = spec2.split("x")

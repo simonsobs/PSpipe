@@ -64,7 +64,9 @@ for sv in surveys:
         templates[sv] = so_map.healpix_template(3, nside)
 
     if apply_kspace_filter & (templates[sv].pixel == "CAR"):
-        filter_dicts[sv] = d[f"k_filter_{sv}"]
+        # filter_dicts[sv] = d[f"k_filter_{sv}"]
+        # same kspace filter for all sv
+        filter_dicts[sv] = d[f"k_filter"]
         filters[sv] = kspace.get_kspace_filter(templates[sv], filter_dicts[sv], dtype=np.float32)
 
 log.info(f"build kspace_transfer_matrix")

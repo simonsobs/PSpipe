@@ -37,7 +37,7 @@ alms_dir = "alms"
 
 pspy_utils.create_directory(spec_dir)
 
-master_alms, nsplit, arrays, templates, filter_dicts = {}, {}, {}, {}, {}
+nsplit, arrays, templates, filter_dicts = {}, {}, {}, {}
 # read the alms
 
 for sv in surveys:
@@ -50,9 +50,6 @@ for sv in surveys:
         maps = d[f"maps_{sv}_{ar}"]
         nsplit[sv] = len(maps)
         log.info(f"{nsplit[sv]} split of survey: {sv}, array {ar}")
-        for k, map in enumerate(maps):
-            master_alms[sv, ar, k] = np.load(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy")
-            log.debug(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy")
 
 # compute the transfer functions
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
@@ -93,8 +90,8 @@ subtasks = so_mpi.taskrange(imin=0, imax=n_spec - 1)
 for task in subtasks:
     task = int(task)
     sv1, ar1, sv2, ar2 = sv1_list[task], ar1_list[task], sv2_list[task], ar2_list[task]
-
     log.info(f"[{task}] Computing spectra for {sv1}_{ar1} x {sv2}_{ar2}")
+
 
     xtra_pw1, xtra_pw2, mm_tf1, mm_tf2 = None, None, None, None
     if deconvolve_pixwin:
@@ -123,6 +120,16 @@ for task in subtasks:
 
     nsplits_1 = nsplit[sv1]
     nsplits_2 = nsplit[sv2]
+    
+    master_alms = {}
+    for s1 in range(nsplits_1):
+        master_alms[sv1, ar1, s1] = np.load(f"{alms_dir}/alms_{sv1}_{ar1}_{s1}.npy")
+        log.debug(f"{alms_dir}/alms_{sv1}_{ar1}_{s1}.npy")
+    
+    for s2 in range(nsplits_2):
+        master_alms[sv2, ar2, s2] = np.load(f"{alms_dir}/alms_{sv2}_{ar2}_{s2}.npy")
+        log.debug(f"{alms_dir}/alms_{sv2}_{ar2}_{s2}.npy")
+
 
     spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
     mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}",

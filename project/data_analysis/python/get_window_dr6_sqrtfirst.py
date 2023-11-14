@@ -343,13 +343,13 @@ for task in subtasks:
         med = np.median(ivar_all.data[id])
         ivar_all.data[ivar_all.data[:] > n_med_ivar * med] = n_med_ivar * med
         
-        if d[f"apply_ivar_smoothing"] == True:
-            ivar_smoothing_arcmin = d[f"ivar_smoothing_arcmin"]
-            ivar_all.data[:] = enmap.smooth_gauss(ivar_all.data[:], ivar_smoothing_arcmin*(1./60.)*(np.pi/180.))
-
         # does the ordering matter here? so smooth then sqrt vs sqrt them smooth? I don't think so...
         if d[f"take_sqrt_ivar"] == True:
             ivar_all.data[:] = np.sqrt(ivar_all.data[:])
+        
+        if d[f"apply_ivar_smoothing"] == True:
+            ivar_smoothing_arcmin = d[f"ivar_smoothing_arcmin"]
+            ivar_all.data[:] = enmap.smooth_gauss(ivar_all.data[:], ivar_smoothing_arcmin*(1./60.)*(np.pi/180.))
 
         my_masks[mask_type_w].data[:] *= ivar_all.data[:]
 

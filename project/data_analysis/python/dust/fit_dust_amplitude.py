@@ -1,20 +1,45 @@
-from itertools import combinations_with_replacement as cwr
-from pspy import so_dict, pspy_utils
-from pspy import so_spectra, so_cov
-import matplotlib.pyplot as plt
-from pspipe_utils import consistency, best_fits
-import numpy as np
-import sys
+# This script uses 143/353 GHz spectra from Planck to fit dust amplitude within ACT survey
+
+import argparse
 import os
+
+import getdist.plots as gdplt
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
 from cobaya.run import run
 from getdist.mcsamples import loadMCSamples
-import getdist.plots as gdplt
+from pspipe import conventions
+from pspipe_utils import best_fits, consistency
+from pspipe_utils import external_data as ext
+from pspy import pspy_utils, so_cov, so_dict, so_spectra
+
+matplotlib.use("Agg")
+
+# Parse arguments
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--use-220", action="store_true", default=False)
+parser.add_argument("--dr6-result-path", type=str, default=".")
+parser.add_argument("--use-passbands", action="store_true", default=False)
+parser.add_argument("--no-fit", action="store_true", default=False)
+parser.add_argument("-m", "--mode", type=str, required=True)
+args, dict_file = parser.parse_known_args()
+
+use_220 = args.use_220
+use_passbands = args.use_passbands
+mode = args.mode
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(dict_file[0])
 
-spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-modes = ["TT", "TE", "ET", "EE"]
+binning_file = d["binning_file"]
+bin_low, bin_high, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax=10_000)
+
+
+# spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+spectra = conventions.spectra
+modes = ["TT", "TE", "ET", "EE"] if d["cov_T_E_only"] else spectra
 
 spec_dir = "spectra"
 cov_dir = "covariances"
@@ -22,114 +47,116 @@ cov_dir = "covariances"
 ar = "Planck_f143"
 dust_ar = "Planck_f353"
 
-mode = "TE"
-
-use220 = False
-spec_dir_220 = "spectra"
-cov_dir_220 = "covariances"
-
-ar220 = "dr6_pa4_f220"
-
-# Multipole range
-lmin_res, lmax_res = 300, 2000
-lmin_220, lmax_220 = 3500, 7000
-
-chain_name = f"chains_dust_from_planck353_{mode}/dust"
-output_dir = f"plots/dust_from_planck353_{mode}"
-pspy_utils.create_directory(output_dir)
-
-
 # Build ps and cov dict
 array_list = [ar, dust_ar]
-ps_list = []
-for i, ar1 in enumerate(array_list):
-    for j, ar2 in enumerate(array_list):
-        if j < i: continue
-        ps_list.append((ar1, ar2, mode))
-
-ps_dict = {}
-cov_dict = {}
-for i, (ar1, ar2, m1) in enumerate(ps_list):
-    lb_res, ps = so_spectra.read_ps(f"{spec_dir}/Dl_{ar1}x{ar2}_cross.dat", spectra = spectra)
-    ps_dict[ar1, ar2, m1] = ps[m1]
-    for j, (ar3, ar4, m2) in enumerate(ps_list):
-        if j < i: continue
-        cov = np.load(f"{cov_dir}/analytic_cov_{ar1}x{ar2}_{ar3}x{ar4}.npy")
-        cov = so_cov.selectblock(cov, modes, n_bins = len(lb_res),
-                                 block = m1 + m2)
-        cov_dict[(ar1, ar2, m1), (ar3, ar4, m2)] = cov
-
 
 # Compute power spectrum of the map residual 353 - 143
-ps_vec, full_cov = consistency.append_spectra_and_cov(ps_dict, cov_dict,
-                                                         [(ar, ar, mode),
-                                                          (ar, dust_ar, mode),
-                                                          (dust_ar, dust_ar, mode)])
+ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
+cov_template = cov_dir + "/analytic_cov_{}x{}_{}x{}.npy"
+ps_dict, cov_dict = consistency.get_ps_and_cov_dict(
+    array_list, ps_template, cov_template, spectra_order=spectra
+)
+lb, ps, cov, _, _ = consistency.compare_spectra(
+    array_list, "aa+bb-2ab", ps_dict, cov_dict, mode=mode
+)
 
-ps_res, cov_res = consistency.project_spectra_vec_and_cov(ps_vec, full_cov, [1, -2, 1])
-id_res = np.where((lb_res >= lmin_res) & (lb_res <= lmax_res))[0]
-lb_res, ps_res, cov_res = lb_res[id_res], ps_res[id_res], cov_res[np.ix_(id_res, id_res)]
+# Multipole range
+lmin, lmax = 300, 2000
+idx = np.where((bin_low >= lmin) & (bin_high <= lmax))[0]
+res_dict = {"ps": ps[idx], "cov": cov[np.ix_(idx, idx)], "lrange": idx}
 
-if use220:
-    # Load high-ell 220 GHz spectra from ACT DR6
-    lb_220, ps_220 = so_spectra.read_ps(f"{spec_dir_220}/Dl_{ar220}x{ar220}_cross.dat", spectra = spectra)
-    ps_220 = ps_220[mode]
+# High-ell 220 GHz spectra from ACT DR6
+ar220 = "dr6_pa4_f220"
+if use_220:
+    spec_dir = os.path.join(args.dr6_result_path, "spectra")
+    cov_dir = os.path.join(args.dr6_result_path, "covariances")
 
-    cov_220 = np.load(f"{cov_dir_220}/analytic_cov_{ar220}x{ar220}_{ar220}x{ar220}.npy")
-    cov_220 = so_cov.selectblock(cov_220, modes, n_bins = len(lb_220),
-                                 block = mode + mode)
+    lb, ps = so_spectra.read_ps(f"{spec_dir}/Dl_{ar220}x{ar220}_cross.dat", spectra=spectra)
 
-    id_220 = np.where((lb_220 >= lmin_220) & (lb_220 <= lmax_220))[0]
-    lb_220, ps_220, cov_220 = lb_220[id_220], ps_220[id_220], cov_220[np.ix_(id_220, id_220)]
+    cov = np.load(f"{cov_dir}/analytic_cov_{ar220}x{ar220}_{ar220}x{ar220}.npy")
+    cov = so_cov.selectblock(cov, modes, n_bins=len(lb), block=mode + mode)
 
-def model_res(ell, fg_components, fg_params, mode, binning_file):
+    lmin, lmax = 3500, 7125 + 10
+    idx = np.where((bin_low >= lmin) & (bin_high <= lmax))[0]
+
+    dict_220 = {"ps": ps[mode][idx], "cov": cov[np.ix_(idx, idx)], "lrange": idx}
+
+if use_passbands:
+    npipe_wafers = [ar.replace("Planck", "npipe") for ar in array_list]
+    npipe_freq_range = [(50, 1100) for array in array_list]
+    npipe_passbands = ext.get_passband_dict_npipe(npipe_wafers, freq_range_list=npipe_freq_range)
+    npipe_passbands = {k.replace("npipe", "Planck"): v for k, v in npipe_passbands.items()}
+
+    dr6_wafer = "pa4_f220"
+    dr6_passbands = ext.get_passband_dict_dr6([dr6_wafer])
+    dr6_passbands = {ar220: dr6_passbands[dr6_wafer]}
+else:
+    npipe_passbands = {ar: [[d[f"freq_info_{ar}"]["freq_tag"]], [1.0]] for ar in array_list}
+    dr6_passbands = {ar220: [[220], [1.0]]}
+
+passbands = npipe_passbands
+if use_220:
+    passbands.update(**dr6_passbands)
 
 
-    fg_dict = best_fits.get_foreground_dict(ell, [143, 353],
-                                            fg_components, fg_params)
+chain_name = f"chains/dust_from_planck353_{mode}/dust"
+plot_dir = f"plots/dust_from_planck353_{mode}"
+if use_220:
+    chain_name = f"{chain_name}_with_220"
+    plot_dir = f"{plot_dir}_with_220"
+if use_passbands:
+    chain_name = f"{chain_name}_passbands"
+    plot_dir = f"{plot_dir}_passbands"
+pspy_utils.create_directory(plot_dir)
 
-    fg_143 = fg_dict[mode.lower(), "all", 143, 143]
-    fg_353 = fg_dict[mode.lower(), "all", 353, 353]
-    fg_cross = fg_dict[mode.lower(), "all", 143, 353]
-    fg_res = fg_143 + fg_353 - 2 * fg_cross
+params = {"TT": ["a_c", "a_p", "a_gtt"]}
+for m in ["TE", "EE", "BB", "TB"]:
+    params[m] = [f"a_g{m.lower()}"]
 
-    lmax = ell[-1]
-    lb, fg_res_b = pspy_utils.naive_binning(ell, fg_res, binning_file, lmax)
 
-    return lb, fg_res_b
+def compute_fg_ps(ell, fg_dict, exp1, exp2=None):
+    if exp2 is None:
+        ps = fg_dict[mode.lower(), "all", exp1, exp1]
+    else:
+        ps = (
+            fg_dict[mode.lower(), "all", exp1, exp1]
+            + fg_dict[mode.lower(), "all", exp2, exp2]
+            - 2 * fg_dict[mode.lower(), "all", exp1, exp2]
+        )
 
-def model_220(ell, fg_components, fg_params, mode, binning_file):
+    return pspy_utils.naive_binning(ell, ps, binning_file, lmax)
 
-    fg_dict = best_fits.get_foreground_dict(ell, [220],
-                                            fg_components, fg_params)
-    fg = fg_dict[mode.lower(), "all", 220, 220]
 
-    lmax = ell[-1]
-    lb, fg_b = pspy_utils.naive_binning(ell, fg, binning_file, lmax)
-
-    return lb, fg_b
-
-def fit_dust(ell, ps_res, cov_res, id_res, mode, binning_file, chain_name,
-             fg_components, fg_params, ps_220 = None, cov_220 = None, id_220 = None):
-
-    def loglike(a_p, a_c, a_gtt, a_gte, a_gee):
-
+def fit_dust(ell, fg_components, fg_params):
+    def loglike(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb):
         fg_params["a_p"] = a_p
         fg_params["a_c"] = a_c
         fg_params["a_gtt"] = a_gtt
         fg_params["a_gte"] = a_gte
         fg_params["a_gee"] = a_gee
+        fg_params["a_gbb"] = a_gbb
+        fg_params["a_gtb"] = a_gtb
 
-        lb_fg, ps_res_th = model_res(ell, fg_components, fg_params, mode, binning_file)
-        lb_fg, ps_res_th = lb_fg[id_res], ps_res_th[id_res]
+        fg_dict = best_fits.get_foreground_dict(ell, passbands, fg_components, fg_params)
 
-        chi2 = (ps_res - ps_res_th) @ np.linalg.inv(cov_res) @ (ps_res - ps_res_th)
+        lrange = res_dict["lrange"]
+        lb, ps_res_th = compute_fg_ps(ell, fg_dict, *array_list)
 
-        if ps_220 is not None:
-            lb_220, ps_220_th = model_220(ell, fg_components, fg_params, mode, binning_file)
-            lb_220, ps_220_th = lb_220[id_220], ps_220_th[id_220]
+        chi2 = (
+            (res_dict["ps"] - ps_res_th[lrange])
+            @ np.linalg.inv(res_dict["cov"])
+            @ (res_dict["ps"] - ps_res_th[lrange])
+        )
 
-            chi2 += (ps_220 - ps_220_th) @ np.linalg.inv(cov_220) @ (ps_220 - ps_220_th)
+        if use_220:
+            lrange = dict_220["lrange"]
+            lb, ps_220_th = compute_fg_ps(ell, fg_dict, ar220)
+
+            chi2 += (
+                (dict_220["ps"] - ps_220_th[lrange])
+                @ np.linalg.inv(dict_220["cov"])
+                @ (dict_220["ps"] - ps_220_th[lrange])
+            )
 
         return -0.5 * chi2
 
@@ -137,125 +164,121 @@ def fit_dust(ell, ps_res, cov_res, id_res, mode, binning_file, chain_name,
         "likelihood": {"my_like": loglike},
         "sampler": {
             "mcmc": {
-                "max_tries": 1e4,
-                "Rminus1_stop": 0.005,
-                "Rminus1_cl_stop": 0.05,
-                    }
-                   },
+                "max_tries": 10_000,
+                # "Rminus1_stop": 0.001,
+                "Rminus1_stop": 0.05,
+                # "Rminus1_cl_stop": 0.05,
+            }
+        },
         "output": chain_name,
         "force": True,
-        "resume": False
-           }
-    info["params"] = {"a_p": fg_params["a_p"],
-                      "a_c": fg_params["a_c"],
-                      "a_gtt": fg_params["a_gtt"],
-                      "a_gte": fg_params["a_gte"],
-                      "a_gee": fg_params["a_gee"]}
+        "resume": False,
+        "debug": False,
+        "stop_at_error": True,
+    }
+    info["params"] = {par: fg_params[par] for par in sum(params.values(), [])}
 
-    priors = {"TT": {
-                  "a_p": {"prior": {"min": 0, "max": 15},
-                          "proposal": 0.1,
-                          "latex": "a_p"},
-                  "a_c":{"prior": {"min": 0, "max": 8},
-                         "proposal": 0.12,
-                         "latex": "a_c"},
-                  "a_gtt": {"prior": {"min": 1.0, "max": 20},
-                            "proposal": 0.1,
-                            "latex": "a_\mathrm{dust}^\mathrm{TT}"}},
-              "TE": {
-                  "a_gte": {"prior": {"min": 0, "max": 1},
-                                   "proposal": 0.05,
-                                   "latex": "a_\mathrm{dust}^\mathrm{TE}"}},
-              "EE": {
-                  "a_gee": {"prior": {"min": 0, "max": 1},
-                                   "proposal": 0.03,
-                                   "latex": "a_\mathrm{dust}^\mathrm{EE}"}},
-              }
+    priors = {
+        "TT": {
+            "a_p": {"prior": {"min": 0, "max": 15}, "proposal": 0.1, "latex": "a_p"},
+            "a_c": {"prior": {"min": 0, "max": 8}, "proposal": 0.12, "latex": "a_c"},
+            "a_gtt": {
+                "prior": {"min": 1.0, "max": 20},
+                "proposal": 0.1,
+                "latex": r"a_\mathrm{dust}^\mathrm{TT}",
+            },
+        }
+    }
+    for m in ["TE", "EE", "BB", "TB"]:
+        priors[m] = {
+            f"a_g{m.lower()}": {
+                "prior": {"min": 0, "max": 1},
+                "proposal": 0.05,
+                "latex": r"a\mathrm{dust}^\mathrm{%s}" % m,
+            }
+        }
     for key in priors[mode]:
         info["params"][key] = priors[mode][key]
 
-    updated_info, sampler = run(info)
-    pars = list(priors[mode].keys())
+    return run(info)
 
-    samples = loadMCSamples(chain_name, settings = {"ignore_rows": 0.5})
+
+ell = np.arange(2, lmax + 1)
+fg_components = d["fg_components"]
+fg_params = d["fg_params"]
+
+if not args.no_fit:
+    updated_info, sampler = fit_dust(ell, fg_components, fg_params)
+
+    # Load samples
+    # samples = loadMCSamples(chain_name, settings={"ignore_rows": 0.5})
+    samples = sampler.products(to_getdist=True, skip_samples=0.5)["sample"]
     gdplot = gdplt.get_subplot_plotter()
-    gdplot.triangle_plot(samples, pars, filled = True)
-    plt.savefig(f"{output_dir}/posterior_{mode}.png", dpi = 300)
+    gdplot.triangle_plot(samples, params[mode], filled=True)
+    plt.savefig(f"{plot_dir}/posterior_{mode}.png", dpi=300)
 
-ell = np.arange(2, 7001)
-fg_components = {"tt": ["tSZ_and_CIB", "cibp", "kSZ", "radio", "dust"],
-                 "te": ["radio", "dust"],
-                 "ee": ["radio", "dust"],
-                 "bb": ["radio", "dust"],
-                 "tb": ["radio", "dust"],
-                 "eb": []}
-
-fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 5.97, "beta_p": 2.2,
-             "a_c": 6.32, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 13.86,
-             "a_gte": 0.69, "a_gee": 0.27, "a_psee": 0.05, "a_pste": 0,
-             "a_gbb": 0, "a_psbb": 0, "a_gtb": 0, "a_pstb": 0,
-             "xi": 0.1, "T_d": 9.60}
-if use220:
-    fit_dust(ell, ps_res, cov_res, id_res, mode, d["binning_file"],
-             chain_name, fg_components, fg_params,
-             ps_220, cov_220, id_220)
-else:
-    fit_dust(ell, ps_res, cov_res, id_res, mode, d["binning_file"],
-             chain_name, fg_components, fg_params)
-
-params = {"TT": ["a_c", "a_p", "a_gtt"],
-          "TE": ["a_gte"],
-          "EE": ["a_gee"]}
-
-samples = loadMCSamples(chain_name, settings = {"ignore_rows": 0.5})
+# Plot residuals
 bf_fg_params = fg_params.copy()
-for par_name in params[mode]:
-    bf_fg_params[par_name] = samples.mean(par_name)
+if not args.no_fit:
+    for par_name in params[mode]:
+        bf_fg_params[par_name] = samples.mean(par_name)
+        print(par_name, bf_fg_params[par_name])
 
-lb_res_th, fg_res_th = model_res(ell, fg_components, fg_params, mode, d["binning_file"])
-id_plot_theory = np.where((lb_res_th >= lmin_res) & (lb_res_th <= lmax_res))
+fg_dict = best_fits.get_foreground_dict(ell, passbands, fg_components, bf_fg_params)
+lb, fg_th = compute_fg_ps(ell, fg_dict, *array_list)
 
-plt.figure(figsize = (8, 6))
-grid = plt.GridSpec(4, 1, hspace = 0, wspace = 0)
+plt.figure(figsize=(8, 6))
+grid = plt.GridSpec(4, 1, hspace=0, wspace=0)
 
+upper = plt.subplot(grid[:3], xticklabels=[], ylabel=r"$D_\ell^{%s}, 353-143}$" % mode)
+idx = res_dict["lrange"]
+lb, fg_th = lb[idx], fg_th[idx]
+ps_res, cov_res = res_dict["ps"], res_dict["cov"]
+chi2_res = (ps_res - fg_th) @ np.linalg.inv(cov_res) @ (ps_res - fg_th)
 
-upper = plt.subplot(grid[:3], xticklabels = [], ylabel = r"$D_\ell^{%s}, 353-143}$" % mode)
-chi2_res = (ps_res - fg_res_th[id_res]) @ np.linalg.inv(cov_res) @ (ps_res - fg_res_th[id_res])
-ndof_res = len(ps_res)
-upper.plot(lb_res_th[id_plot_theory], fg_res_th[id_plot_theory], color = "k")
-upper.errorbar(lb_res, ps_res, np.sqrt(cov_res.diagonal()), ls = "None", marker = ".",
-               label = r"$\chi^2 = %.2f/%d$" % (chi2_res, ndof_res))
+upper.plot(lb, fg_th, color="k")
+upper.errorbar(
+    lb,
+    ps_res,
+    np.sqrt(cov_res.diagonal()),
+    fmt=".",
+    label=r"$\chi^2 = %.2f/%d$" % (chi2_res, len(ps_res)),
+)
 upper.legend()
 if mode == "TT":
     upper.set_yscale("log")
 
-lower = plt.subplot(grid[-1], xlabel = r"$\ell$", ylabel = r"$\Delta D_\ell^{%s}, 353-143}$" % mode)
-lower.axhline(0, color = "k", ls = "--")
-lower.errorbar(lb_res, ps_res - fg_res_th[id_res], np.sqrt(cov_res.diagonal()),
-               ls = "None", marker = ".")
+lower = plt.subplot(grid[-1], xlabel=r"$\ell$", ylabel=r"$\Delta D_\ell^{%s}, 353-143}$" % mode)
+lower.axhline(0, color="k", ls="--")
+lower.errorbar(lb, ps_res - fg_th, np.sqrt(cov_res.diagonal()), ls="None", marker=".")
 plt.tight_layout()
-plt.savefig(f"{output_dir}/res_fg_{mode}.png", dpi = 300)
+plt.savefig(f"{plot_dir}/res_fg_{mode}.png", dpi=300)
 
 
+if use_220:
+    lb, fg_th = compute_fg_ps(ell, fg_dict, ar220)
+    idx = dict_220["lrange"]
+    lb, fg_th = lb[idx], fg_th[idx]
+    ps_220, cov_220 = dict_220["ps"], dict_220["cov"]
 
-if use220:
-    lb_220_th, fg_220_th = model_220(ell, fg_components, fg_params, mode, d["binning_file"])
-    id_plot_theory = np.where((lb_220_th >= lmin_220) & (lb_220_th <= lmax_220))
-    plt.figure(figsize = (8, 6))
-    grid = plt.GridSpec(4, 1, hspace = 0, wspace = 0)
+    plt.figure(figsize=(8, 6))
+    grid = plt.GridSpec(4, 1, hspace=0, wspace=0)
 
+    upper = plt.subplot(grid[:3], xticklabels=[], ylabel=r"$D_\ell^{%s}, 220}$" % mode)
+    chi2_220 = (ps_220 - fg_th) @ np.linalg.inv(cov_220) @ (ps_220 - fg_th)
 
-    upper = plt.subplot(grid[:3], xticklabels = [], ylabel = r"$D_\ell^{%s}, 220}$" % mode)
-    chi2_220 = (ps_220 - fg_220_th[id_220]) @ np.linalg.inv(cov_220) @ (ps_220 - fg_220_th[id_220])
-    ndof_220 = len(ps_220)
-    upper.plot(lb_220_th[id_plot_theory], fg_220_th[id_plot_theory], color = "k")
-    upper.errorbar(lb_220, ps_220, np.sqrt(cov_220.diagonal()), ls = "None", marker = ".",
-                   label = r"$\chi^2 = %.2f/%d$" % (chi2_220, ndof_220))
+    upper.plot(lb, fg_th, color="k")
+    upper.errorbar(
+        lb,
+        ps_220,
+        np.sqrt(cov_220.diagonal()),
+        fmt=".",
+        label=r"$\chi^2 = %.2f/%d$" % (chi2_220, len(ps_220)),
+    )
     upper.legend()
 
-    lower = plt.subplot(grid[-1], xlabel = r"$\ell$", ylabel = r"$\Delta D_\ell^{%s}, 220}$" % mode)
-    lower.axhline(0, color = "k", ls = "--")
-    lower.errorbar(lb_220, ps_220 - fg_220_th[id_220], np.sqrt(cov_220.diagonal()),
-                   ls = "None", marker = ".")
+    lower = plt.subplot(grid[-1], xlabel=r"$\ell$", ylabel=r"$\Delta D_\ell^{%s}, 220}$" % mode)
+    lower.axhline(0, color="k", ls="--")
+    lower.errorbar(lb, ps_220 - fg_th, np.sqrt(cov_220.diagonal()), ls="None", marker=".")
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/res_220_{mode}.png", dpi = 300)
+    plt.savefig(f"{plot_dir}/res_220_{mode}.png", dpi=300)

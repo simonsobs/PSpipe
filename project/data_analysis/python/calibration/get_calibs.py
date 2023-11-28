@@ -74,8 +74,8 @@ pspy_utils.create_directory(plot_output_dir)
 multipole_range = {"dr6_pa4_f150": [1250, 1800],
                    "dr6_pa4_f220": [1250, 2000],
                    "dr6_pa5_f090": [1000, 1500],
-                   "dr6_pa5_f150": [1000, 2000],
-                   "dr6_pa6_f090": [600, 1500],
+                   "dr6_pa5_f150": [800, 2000],
+                   "dr6_pa6_f090": [1000, 1500],
                    "dr6_pa6_f150": [600, 2000]}
 
 # Define the reference arrays

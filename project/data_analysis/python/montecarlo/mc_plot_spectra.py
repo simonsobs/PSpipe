@@ -200,6 +200,17 @@ for kind in ["cross", "noise", "auto"]:
                         plt.clf()
                         plt.close()
 
+
+
+                        if kind == "noise":
+                            plt.errorbar(lb, mean / ps_th_binned, color="red")
+                            plt.title(r"$ (D^{\rm MC}/D^{\rm data})^{ %s %s x %s %s }_{%s, %s, \ell} $" % (sv1, ar1, sv2, ar2, spec, kind), fontsize=20)
+                            plt.xlabel(r"$\ell$", fontsize=20)
+                            plt.ylim(0.7, 1.3)
+                            plt.savefig("%s/ratio_%s.png" % (plot_dir, spec_name), bbox_inches="tight")
+                            plt.clf()
+                            plt.close()
+
                         str = "%s.png" % (spec_name)
 
                         g.write('<div class=type>\n')

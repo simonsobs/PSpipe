@@ -22,12 +22,12 @@ seed_sims = False
 
 #window parameters
 
-ps_mask_dr6_pa4_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa4_f220 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa5_f090 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa5_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa6_f090 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa6_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
+ps_mask_dr6_pa4_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa4_f220 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa5_f090 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa5_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa6_f090 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa6_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
 
 gal_mask_dr6_pa4_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
 gal_mask_dr6_pa4_f220 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
@@ -78,18 +78,18 @@ maps_dr6_pa6_f150 = [data_dir + 'maps/cmb_night_pa6_f150_3pass_4way_set%d_map_sr
 
 cal_dr6_pa4_f150 = 1.0
 cal_dr6_pa4_f220 = 1.0274146516062883
-cal_dr6_pa5_f090 = 1.0156162524843904
+cal_dr6_pa5_f090 = 1.009463740391127
 cal_dr6_pa5_f150 = 0.9850773599437168
-cal_dr6_pa6_f090 = 1.0140213622811152
+cal_dr6_pa6_f090 = 1.0058561071340915
 cal_dr6_pa6_f150 = 0.9686333859482543
 
 
 pol_eff_dr6_pa4_f150 = 1.
-pol_eff_dr6_pa4_f220 = 0.9110596207306271
-pol_eff_dr6_pa5_f090 = 0.9647236568554689
-pol_eff_dr6_pa5_f150 = 0.955357736304545
-pol_eff_dr6_pa6_f090 = 0.9749713898538074
-pol_eff_dr6_pa6_f150 = 0.9611809391254973
+pol_eff_dr6_pa4_f220 = 0.9110596207306271 * 0.9750378395268338
+pol_eff_dr6_pa5_f090 = 0.95863404483436 * 0.993377678803953
+pol_eff_dr6_pa5_f150 = 0.955357736304545 * 0.99519087646282
+pol_eff_dr6_pa6_f090 = 0.9671205787611336 * 0.9984067543051879
+pol_eff_dr6_pa6_f150 = 0.9611809391254973 * 1.0014494501275761
 
 
 passband_dir = data_dir + "passbands/"
@@ -120,12 +120,12 @@ beam_pol_dr6_pa6_f150 = data_dir + 'beams/20230902_beams/coadd_pa6_f150_night_be
 
 leakage_file_dir = data_dir + 'beams/20230902_beams/'
 
-leakage_beam_dr6_pa4_f150 = 'gamma_ml_uranus_pa4_f150.txt'
-leakage_beam_dr6_pa4_f220 = 'gamma_ml_uranus_pa4_f220.txt'
-leakage_beam_dr6_pa5_f090 = 'gamma_ml_uranus_pa5_f090.txt'
-leakage_beam_dr6_pa5_f150 = 'gamma_ml_uranus_pa5_f150.txt'
-leakage_beam_dr6_pa6_f090 = 'gamma_ml_uranus_pa6_f090.txt'
-leakage_beam_dr6_pa6_f150 = 'gamma_ml_uranus_pa6_f150.txt'
+leakage_beam_dr6_pa4_f150 = ['gamma_ml_uranus_pa4_f150.txt' for i in range(4)]
+leakage_beam_dr6_pa4_f220 = ['gamma_ml_uranus_pa4_f220.txt' for i in range(4)]
+leakage_beam_dr6_pa5_f090 = ['gamma_ml_uranus_pa5_f090.txt' for i in range(4)]
+leakage_beam_dr6_pa5_f150 = ['gamma_ml_uranus_pa5_f150.txt' for i in range(4)]
+leakage_beam_dr6_pa6_f090 = ['gamma_ml_uranus_pa6_f090.txt' for i in range(4)]
+leakage_beam_dr6_pa6_f150 = ['gamma_ml_uranus_pa6_f150.txt' for i in range(4)]
 
 
 
@@ -162,7 +162,7 @@ fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4
 
 #sim
 iStart = 0
-iStop = 99
+iStop = 199
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

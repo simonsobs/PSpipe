@@ -43,7 +43,7 @@ for sv in surveys:
         name = f"{sv}_{ar}"
         gamma[name], var[name] = {}, {}
         l, gamma[name]["TE"], err_m_TE, gamma[name]["TB"], err_m_TB = leakage.read_leakage_model(leakage_file_dir,
-                                                                                                 d[f"leakage_beam_{name}"],
+                                                                                                 d[f"leakage_beam_{name}"][0],
                                                                                                  lmax,
                                                                                                  lmin=2)
 

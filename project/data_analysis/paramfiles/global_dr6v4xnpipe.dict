@@ -17,7 +17,7 @@ remove_mean = False
 binned_mcm = False
 lmax = 3000
 type = 'Dl'
-write_splits_spectra = False
+write_splits_spectra = True
 cov_T_E_only = False
 multistep_path = data_dir
 
@@ -32,6 +32,7 @@ k_filter_Planck = {"type":"binary_cross","vk_mask":[-90, 90], "hk_mask":[-50, 50
 
 deconvolve_map_maker_tf_dr6 = False
 deconvolve_map_maker_tf_Planck = False
+
 
 mm_tf_dr6_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
 mm_tf_dr6_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
@@ -63,27 +64,28 @@ maps_Planck_f143 = [map_dir_Planck + 'npipe6v20%s_f143_map_srcfree.fits' % split
 maps_Planck_f217 = [map_dir_Planck + 'npipe6v20%s_f217_map_srcfree.fits' % split for split in ["A", "B"]]
 
 
-cal_dr6_pa4_f150 = 1.0 
+cal_dr6_pa4_f150 = 1.0
 cal_dr6_pa4_f220 = 1.0274146516062883
-cal_dr6_pa5_f090 = 1.0156162524843904
+cal_dr6_pa5_f090 = 1.009463740391127
 cal_dr6_pa5_f150 = 0.9850773599437168
-cal_dr6_pa6_f090 = 1.0140213622811152
+cal_dr6_pa6_f090 = 1.0058561071340915
 cal_dr6_pa6_f150 = 0.9686333859482543
+
+
+pol_eff_dr6_pa4_f150 = 1.
+pol_eff_dr6_pa4_f220 = 0.9110596207306271 * 0.9750378395268338 * 1.011
+pol_eff_dr6_pa5_f090 = 0.95863404483436 * 0.993377678803953 * 0.995
+pol_eff_dr6_pa5_f150 = 0.955357736304545 * 0.99519087646282 * 0.9996
+pol_eff_dr6_pa6_f090 = 0.9671205787611336 * 0.9984067543051879 * 0.9994
+pol_eff_dr6_pa6_f150 = 0.9611809391254973 * 1.0014494501275761 * 0.9995
 
 cal_Planck_f100 = 1.
 cal_Planck_f143 = 1.
 cal_Planck_f217 = 1.
 
-pol_eff_dr6_pa4_f150 = 1.
-pol_eff_dr6_pa4_f220 = 0.9110596207306271
-pol_eff_dr6_pa5_f090 = 0.9647236568554689
-pol_eff_dr6_pa5_f150 = 0.955357736304545
-pol_eff_dr6_pa6_f090 = 0.9749713898538074
-pol_eff_dr6_pa6_f150 = 0.9611809391254973
-
-pol_eff_Planck_f100 = 1.
-pol_eff_Planck_f143 = 1.
-pol_eff_Planck_f217 = 1.
+pol_eff_Planck_f100 = 1.011
+pol_eff_Planck_f143 = 1.0153
+pol_eff_Planck_f217 = 0.9668
 
 do_bandpass_integration = True
 passband_dir = data_dir + "passbands/"
@@ -110,7 +112,6 @@ beam_T_Planck_f100 = beam_dir_Planck + 'bl_T_npipe_DR6_100Ax100B.dat'
 beam_T_Planck_f143 = beam_dir_Planck + 'bl_T_npipe_DR6_143Ax143B.dat'
 beam_T_Planck_f217 = beam_dir_Planck + 'bl_T_npipe_DR6_217Ax217B.dat'
 
-
 beam_pol_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
 beam_pol_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
 beam_pol_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
@@ -120,6 +121,24 @@ beam_pol_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_c
 beam_pol_Planck_f100 = beam_dir_Planck + 'bl_pol_npipe_DR6_100Ax100B.dat'
 beam_pol_Planck_f143 = beam_dir_Planck + 'bl_pol_npipe_DR6_143Ax143B.dat'
 beam_pol_Planck_f217 = beam_dir_Planck + 'bl_pol_npipe_DR6_217Ax217B.dat'
+
+leakage_file_dir = data_dir + 'beams/20230902_beams/'
+
+leakage_beam_dr6_pa4_f150 = ['gamma_ml_uranus_pa4_f150.txt' for i in range(n_splits_dr6)]
+leakage_beam_dr6_pa4_f220 = ['gamma_ml_uranus_pa4_f220.txt' for i in range(n_splits_dr6)]
+leakage_beam_dr6_pa5_f090 = ['gamma_ml_uranus_pa5_f090.txt' for i in range(n_splits_dr6)]
+leakage_beam_dr6_pa5_f150 = ['gamma_ml_uranus_pa5_f150.txt' for i in range(n_splits_dr6)]
+leakage_beam_dr6_pa6_f090 = ['gamma_ml_uranus_pa6_f090.txt' for i in range(n_splits_dr6)]
+leakage_beam_dr6_pa6_f150 = ['gamma_ml_uranus_pa6_f150.txt' for i in range(n_splits_dr6)]
+
+leakage_beam_Planck_f100 = ['gamma_npipe_DR6_100%s.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f143 = ['gamma_npipe_DR6_143%s.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f217 = ['gamma_npipe_DR6_217%s.dat' % split for split in ["A", "B"]]
+
+
+#leakage_beam_Planck_f100 = ['gamma_mean_npipe_DR6_100AB.dat'] 
+#leakage_beam_Planck_f143 = ['gamma_mean_npipe_DR6_143AB.dat']
+#leakage_beam_Planck_f217 = ['gamma_mean_npipe_DR6_217AB.dat']
 
 
 ps_mask_dr6_pa4_f220 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust.fits'
@@ -199,12 +218,14 @@ window_pol_Planck_f217 = win_dir + "window_dr6_pa4_f220_baseline.fits"
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165, "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+
+
 
 #sim
 seed_sims = False
-iStart = 0
-iStop = 127
+iStart = 200
+iStop = 299
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

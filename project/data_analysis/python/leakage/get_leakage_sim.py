@@ -3,6 +3,8 @@ This script does montecarlo simulation to estimate the covariance of the spectra
 leakage beam model.
 We generate a bunch of simulations of the leakage beam, apply it to a theory spectra, and correct assuming the average leakage beam.
 This should look like what happens to the actual data.
+Note that here we use only the leakage beam associated to split0, this is because for ACT the leakage beam is the same for all split, and for Planck
+we don't have an estimate of the beam leakage errors
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -47,7 +49,7 @@ for sv in surveys:
 
         gamma[name], err_m[name], var[name] = {}, {}, {}
         l, gamma[name]["TE"], err_m[name]["TE"], gamma[name]["TB"], err_m[name]["TB"] = leakage.read_leakage_model(leakage_file_dir,
-                                                                                                                   d[f"leakage_beam_{name}"],
+                                                                                                                   d[f"leakage_beam_{name}"][0],
                                                                                                                    lmax,
                                                                                                                    lmin=2)
 

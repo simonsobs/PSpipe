@@ -39,7 +39,7 @@ bestfir_dir = "best_fits"
 cov_dir = "covariances"
 
 if npipe_corr:
-    spec_dir = "spectra_npipe_bias_corrected"
+    spec_dir = "spectra_leak_corr_npipe_bias_corr"
     output_dir += "_npipe_bias_corrected"
 
 if subtract_bf_fg:

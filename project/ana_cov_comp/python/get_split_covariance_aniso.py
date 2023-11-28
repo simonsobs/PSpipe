@@ -60,14 +60,6 @@ for sv in surveys:
         _, nlth = best_fits.noise_dict_from_files(f_name_noise, [sv], split_list, lmax=d["lmax"],spectra=spectra)
         noise_dict.update(nlth)
 
-
-bl_dict = {}
-for sv in surveys:
-    for ar in arrays[sv]:
-        l_beam, bl_dict[sv, ar] = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
-        id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
-        bl_dict[sv, ar] = bl_dict[sv, ar][id_beam]
-
 cov_name = []
 for sv in surveys:
     for ar in arrays[sv]:

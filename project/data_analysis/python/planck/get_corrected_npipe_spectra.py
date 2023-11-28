@@ -28,8 +28,8 @@ mc_corr_dir = d["npipe_mc_correction"]
 type = d["type"]
 n_sims = d["iStop"] - d["iStart"] + 1
 
-spec_dir = "spectra"
-spec_corr_dir = "spectra_npipe_bias_corrected"
+spec_dir = "spectra_leak_corr"
+spec_corr_dir = "spectra_leak_corr_npipe_bias_corr"
 bestfit_dir = "best_fits"
 plot_dir = "plots/npipe_correction/"
 

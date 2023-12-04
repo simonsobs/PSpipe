@@ -1,5 +1,28 @@
 
 # Define the multipole range
+
+skip_EB = True
+fudge = False
+skip_pa4_pol = True
+plot_dir = "plots/array_nulls"
+
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+
+if skip_EB == True:
+    tested_spectra = ["TT", "TE", "ET", "TB", "BT", "EE", "BB"]
+    plot_dir = "plots/array_nulls_skip_EB"
+else:
+    tested_spectra = spectra
+    plot_dir = "plots/array_nulls"
+
+
+
+hist_label = ""
+
+if skip_pa4_pol == True:
+    hist_label = "skip_pa4pol"
+
+
 multipole_range = {
     "dr6_pa4_f150": {
         "T": [1250, 8500],
@@ -12,7 +35,7 @@ multipole_range = {
         "B": [500, 8500]
     },
     "dr6_pa5_f090": {
-        "T": [800, 8500],
+        "T": [1000, 8500],
         "E": [500, 8500],
         "B": [500, 8500]
     },
@@ -22,7 +45,7 @@ multipole_range = {
         "B": [500, 8500]
     },
     "dr6_pa6_f090": {
-        "T": [600, 8500],
+        "T": [1000, 8500],
         "E": [500, 8500],
         "B": [500, 8500]
     },

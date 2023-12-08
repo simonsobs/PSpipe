@@ -11,7 +11,7 @@ from matplotlib.pyplot import cm
 import numpy as np
 import pylab as plt
 import os, sys
-from pspipe_utils import pspipe_list, best_fits, log
+from pspipe_utils import pspipe_list, best_fits, log, misc
 import pspipe
 
 d = so_dict.so_dict()
@@ -74,13 +74,14 @@ for id_sv1, sv1 in enumerate(surveys):
                 
                 log.info(f"prepare theory spectra {sv1} {ar1} x {sv2} {ar2}")
 
-                l, bl1 = pspy_utils.read_beam_file(d[f"beam_{sv1}_{ar1}"], lmax=lmax)
-                l, bl2 = pspy_utils.read_beam_file(d[f"beam_{sv2}_{ar2}"], lmax=lmax)
+                l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}"], d[f"beam_pol_{sv1}_{ar1}"], lmax=lmax)
+                l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}"], d[f"beam_pol_{sv2}_{ar2}"],  lmax=lmax)
 
                 if sv1 == sv2:
                     lb, nlth = so_spectra.read_ps(f"{noise_model_dir}/mean_{ar1}x{ar2}_{sv1}_noise.dat", spectra=spectra)
                     for spec in spectra:
-                        nlth[spec]  /= (bl1 * bl2)
+                        X, Y = spec
+                        nlth[spec]  /= (bl1[X] * bl2[Y])
                 else:
                     nlth = {}
                     for spec in spectra:
@@ -198,6 +199,17 @@ for kind in ["cross", "noise", "auto"]:
                         plt.savefig("%s/frac_%s.png" % (plot_dir, spec_name), bbox_inches="tight")
                         plt.clf()
                         plt.close()
+
+
+
+                        if kind == "noise":
+                            plt.errorbar(lb, mean / ps_th_binned, color="red")
+                            plt.title(r"$ (D^{\rm MC}/D^{\rm data})^{ %s %s x %s %s }_{%s, %s, \ell} $" % (sv1, ar1, sv2, ar2, spec, kind), fontsize=20)
+                            plt.xlabel(r"$\ell$", fontsize=20)
+                            plt.ylim(0.7, 1.3)
+                            plt.savefig("%s/ratio_%s.png" % (plot_dir, spec_name), bbox_inches="tight")
+                            plt.clf()
+                            plt.close()
 
                         str = "%s.png" % (spec_name)
 

@@ -18,9 +18,9 @@ iStart = d["iStart"]
 iStop = d["iStop"]
 
 spec_dir = "sim_spectra"
-mc_dir = "montecarlo"
+cov_dir = "covariances"
 
-pspy_utils.create_directory(mc_dir)
+pspy_utils.create_directory(cov_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -30,7 +30,7 @@ else:
     modes_for_cov = spectra
 
 
-spec_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 log.info(f"we start by constructing block mc covariances")
 
@@ -67,16 +67,16 @@ for sid1, spec1 in enumerate(spec_list):
 
         cov_mc = cov_mc / (iStop + 1 - iStart) - np.outer(np.mean(ps_list_ab, axis=0), np.mean(ps_list_cd, axis=0))
 
-        np.save(f"{mc_dir}/mc_cov_{na}x{nb}_{nc}x{nd}.npy", cov_mc)
+        np.save(f"{cov_dir}/mc_cov_{na}x{nb}_{nc}x{nd}.npy", cov_mc)
 
 n_bins = len(lb)
 
 log.info(f"create full montecarlo covariance using the different block")
 
 x_ar_mc_cov = covariance.read_cov_block_and_build_full_cov(spec_list,
-                                                           mc_dir,
+                                                           cov_dir,
                                                            cov_type = "mc_cov",
                                                            spectra_order = modes_for_cov,
                                                            remove_doublon=True)
 
-np.save(f"{mc_dir}/x_ar_mc_cov.npy", x_ar_mc_cov)
+np.save(f"{cov_dir}/x_ar_mc_cov.npy", x_ar_mc_cov)

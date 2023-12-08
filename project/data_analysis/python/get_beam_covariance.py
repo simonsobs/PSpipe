@@ -39,7 +39,9 @@ log.info(f"construct best fit for all cross array spectra")
 for id_sv1, sv1 in enumerate(surveys):
     for id_ar1, ar1 in enumerate(d[f"arrays_{sv1}"]):
 
-        data = np.loadtxt(d[f"beam_{sv1}_{ar1}"])
+        # technically we should treat both T and P beam, but they are the same for ACT
+        # and for Planck beam cov is assumed to be negligible
+        data = np.loadtxt(d[f"beam_T_{sv1}_{ar1}"])
 
         _, bl, error_modes  = data[2: lmax, 0], data[2: lmax, 1], data[2: lmax, 2:]
         beam_cov =  error_modes.dot(error_modes.T)

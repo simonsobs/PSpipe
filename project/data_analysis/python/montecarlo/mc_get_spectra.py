@@ -43,7 +43,7 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
 # prepare the tempalte and the filter
 arrays, templates, filters, n_splits, filter_dicts = {}, {}, {}, {}, {}
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 log.info(f"build template and filter")
 for sv in surveys:
@@ -80,8 +80,11 @@ if apply_kspace_filter:
                                                                               lmax)
     else:
         kspace_transfer_matrix = {}
+        TE_corr = {}
+
         for spec_name in spec_name_list:
             kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
+            _, TE_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
 
 
 f_name_cmb = bestfit_dir + "/cmb.dat"
@@ -114,6 +117,9 @@ for iii in subtasks:
     # generate cmb alms and foreground alms
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
 
+    # Set seed if needed
+    if d["seed_sims"]:
+        np.random.seed(iii)
     alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
     fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax)
 
@@ -126,11 +132,13 @@ for iii in subtasks:
         signal_alms = {}
         for ar in arrays[sv]:
             signal_alms[ar] = alms_cmb + fglms[f"{sv}_{ar}"]
-            l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
-            signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
+            l, bl = misc.read_beams(d[f"beam_T_{sv}_{ar}"], d[f"beam_pol_{sv}_{ar}"])
+            signal_alms[ar] = misc.apply_beams(signal_alms[ar], bl)
+
 
         log.info(f"[{iii}]  Generate signal sim in {time.time() - t1:.02f} s")
         for k in range(n_splits[sv]):
+
             noise_alms = simulation.generate_noise_alms(noise_mat[sv], arrays[sv], lmax)
             for ar in arrays[sv]:
 
@@ -205,10 +213,17 @@ for iii in subtasks:
                                                 binned_mcm=binned_mcm)
 
                 if (sv1 in filters) & (sv2 in filters):
+                
+                    if kspace_tf_path == "analytical":
+                        xtra_corr = None
+                    else:
+                        xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
+
                     lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
                                                                     ps,
                                                                     kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
-                                                                    spectra)
+                                                                    spectra,
+                                                                    xtra_corr=xtra_corr)
 
                 if write_all_spectra:
                     so_spectra.write_ps(spec_dir + f"/{spec_name}_{iii:05d}.dat", lb, ps, type, spectra=spectra)

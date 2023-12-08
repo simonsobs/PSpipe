@@ -4,12 +4,14 @@ it generates gaussian simulations of cmb, fg and add noise based on the mnms sim
 the fg is based on fgspectra, note that the noise sim include the pixwin so we have to convolve the signal sim with it
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
-import numpy as np
 import sys
 import time
-from pixell import curvedsky
-from pspipe_utils import simulation, pspipe_list, kspace, misc, log
+
+import healpy as hp
+import numpy as np
+from pixell import curvedsky, enmap
+from pspipe_utils import kspace, log, misc, pspipe_list, simulation, transfer_function
+from pspy import pspy_utils, so_dict, so_map, so_mcm, so_mpi, so_spectra, sph_tools
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -32,7 +34,7 @@ window_dir = "windows"
 mcm_dir = "mcms"
 spec_dir = "sim_spectra"
 bestfit_dir = "best_fits"
-nlms_dir = "mnms_noise_alms"
+nlms_dir = "noise_alms"
 
 pspy_utils.create_directory(spec_dir)
 
@@ -41,7 +43,7 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 
 # prepare the tempalte and the filter
 arrays, templates, filters, n_splits, filter_dicts, pixwin, inv_pixwin = {}, {}, {}, {}, {}, {}, {}
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
@@ -49,8 +51,16 @@ for sv in surveys:
     log.info(f"Running with {n_splits[sv]} splits for survey {sv}")
     template_name = d[f"maps_{sv}_{arrays[sv][0]}"][0]
     templates[sv] = so_map.read_map(template_name)
-    pixwin[sv] = templates[sv].get_pixwin(dtype=np.float32)
-    inv_pixwin[sv] = pixwin[sv] ** -1
+
+    if d[f"pixwin_{sv}"]["pix"] == "CAR":
+        wy, wx = enmap.calc_window(templates[sv].data.shape,
+                                   order=d[f"pixwin_{sv}"]["order"])
+        pixwin[sv] = (wy[:, None] * wx[None, :])
+        inv_pixwin[sv] = pixwin[sv] ** (-1)
+    elif d[f"pixwin_{sv}"]["pix"] == "HEALPIX":
+        pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"])
+        pixwin[sv] = pw_l
+        inv_pixwin[sv] = pw_l ** (-1)
 
     if apply_kspace_filter:
         filter_dicts[sv] = d[f"k_filter_{sv}"]
@@ -67,8 +77,10 @@ if apply_kspace_filter:
                                                                               lmax)
     else:
         kspace_transfer_matrix = {}
+        TE_corr = {}
         for spec_name in spec_name_list:
             kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy")
+            _, TE_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
 
 
 f_name_cmb = bestfit_dir + "/cmb.dat"
@@ -88,6 +100,9 @@ for iii in subtasks:
     # generate cmb alms and foreground alms
     # cmb alms will be of shape (3, lm) 3 standing for T,E,B
 
+    # Set seed if needed
+    if d["seed_sims"]:
+        np.random.seed(iii)
     alms_cmb = curvedsky.rand_alm(ps_mat, lmax=lmax, dtype="complex64")
     fglms = simulation.generate_fg_alms(fg_mat, array_list, lmax, dtype="complex64")
 
@@ -102,13 +117,19 @@ for iii in subtasks:
         for ar in arrays[sv]:
 
             signal_alms[ar] = alms_cmb + fglms[f"{sv}_{ar}"]
-            l, bl = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
-            signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], bl)
+            l, bl = misc.read_beams(d[f"beam_T_{sv}_{ar}"], d[f"beam_pol_{sv}_{ar}"])
+            signal_alms[ar] = misc.apply_beams(signal_alms[ar], bl)
+
             # since the mnms noise sim include a pixwin, we convolve the signal ones
             signal = sph_tools.alm2map(signal_alms[ar], templates[sv])
             win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
-            signal = signal.convolve_with_pixwin(niter=niter, pixwin=pixwin[sv], window=win_kspace, use_ducc_rfft=True)
+            # Convolve the signal map with the pixwin only for CAR pixellization
+            if d[f"pixwin_{sv}"]["pix"] == "CAR":
+                signal = signal.convolve_with_pixwin(niter=niter, pixwin=pixwin[sv], window=win_kspace, use_ducc_rfft=True)
             signal_alms[ar] = sph_tools.map2alm(signal, niter, lmax)
+            # Convolve the signal with the pixwin in harm. space for Planck sims
+            if d[f"pixwin_{sv}"]["pix"] == "HEALPIX":
+                signal_alms[ar] = curvedsky.almxfl(signal_alms[ar], pixwin[sv])
 
         log.info(f"[Sim n° {iii}] Convolve beam and pixwin in {time.time()-t1:.2f} s")
 
@@ -126,7 +147,7 @@ for iii in subtasks:
 
                 log.info(f"[Sim n° {iii}] Read window in {time.time()-t3:.2f} s")
 
-                noise_alms = np.load(f"{nlms_dir}/mnms_nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
+                noise_alms = np.load(f"{nlms_dir}/nlms_{sv}_{ar}_set{k}_{iii:05d}.npy")
 
                 t4 = time.time()
 
@@ -138,12 +159,16 @@ for iii in subtasks:
                 if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
 
                         win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
+
+                        inv_pwin = inv_pixwin[sv] if d[f"pixwin_{sv}"]["pix"] == "CAR" else None
+
                         split = kspace.filter_map(split,
                                                   filters[sv],
                                                   win_kspace,
-                                                  inv_pixwin = inv_pixwin[sv],
+                                                  inv_pixwin = inv_pwin,
                                                   weighted_filter=filter_dicts[sv]["weighted"],
                                                   use_ducc_rfft=True)
+
 
                         del win_kspace
 
@@ -162,11 +187,11 @@ for iii in subtasks:
     ps_dict = {}
 
     t7 = time.time()
-    
+
     n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
-    
+
     for i_spec in range(n_spec):
-    
+
         sv1, ar1, sv2, ar2 = sv1_list[i_spec], ar1_list[i_spec], sv2_list[i_spec], ar2_list[i_spec]
 
         for spec in spectra:
@@ -196,13 +221,34 @@ for iii in subtasks:
                                                 spectra=spectra,
                                                 binned_mcm=binned_mcm)
 
+
+                if kspace_tf_path == "analytical":
+                    xtra_corr = None
+                else:
+                    xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
+
                 lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
                                                                 ps,
                                                                 kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
-                                                                spectra)
+                                                                spectra,
+                                                                xtra_corr=xtra_corr)
+
+                if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX":
+                    _, xtra_pw1 = pspy_utils.naive_binning(np.arange(len(pixwin[sv1])), pixwin[sv1], binning_file, lmax)
+                else:
+                    xtra_pw1 = None
+                if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX":
+                    _, xtra_pw2 = pspy_utils.naive_binning(np.arange(len(pixwin[sv2])), pixwin[sv2], binning_file, lmax)
+                else:
+                    xtra_pw2 = None
+                lb, ps = transfer_function.deconvolve_xtra_tf(lb,
+                                                              ps,
+                                                              spectra,
+                                                              xtra_pw1=xtra_pw1,
+                                                              xtra_pw2=xtra_pw2)
 
                 if write_all_spectra:
-                    so_spectra.write_ps(spec_dir + "/{spec_name}_%05d.dat" % (iii), lb, ps, type, spectra=spectra)
+                    so_spectra.write_ps(spec_dir + f"/{spec_name}_%05d.dat" % (iii), lb, ps, type, spectra=spectra)
 
                 for count, spec in enumerate(spectra):
                     if (s1 == s2) & (sv1 == sv2):

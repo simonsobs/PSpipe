@@ -29,7 +29,7 @@ for scale in ["log", "linear"]:
     for kind in ["cross", "noise", "auto"]:
         for spec in ["TT", "TE", "ET", "EE"]:
         
-            spec_list = pspipe_list.get_spec_name_list(d, char="_", kind=kind)
+            spec_list = pspipe_list.get_spec_name_list(d, delimiter="_", kind=kind)
             nspec = len(spec_list)
             color = iter(cm.rainbow(np.linspace(0, 1, nspec + 1)))
 

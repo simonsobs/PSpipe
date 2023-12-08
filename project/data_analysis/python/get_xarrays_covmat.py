@@ -27,7 +27,7 @@ plot_dir = "plots/x_ar_cov"
 
 pspy_utils.create_directory(plot_dir)
 
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 log.info(f"create x array cov mat from analytic cov block")
 

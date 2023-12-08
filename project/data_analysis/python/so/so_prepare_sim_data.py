@@ -49,7 +49,7 @@ linestyle = {
 
 # Get survey, array lists & spectra name list
 n_arrays, sv_list, ar_list = pspipe_list.get_arrays_list(d)
-spec_name_list = pspipe_list.get_spec_name_list(d, char = "_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter = "_")
 sv_ar_list = [f"{sv}_{ar}" for sv, ar in zip(sv_list, ar_list)]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]

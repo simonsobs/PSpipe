@@ -9,9 +9,10 @@ We also produce a kspace-mask that will later be used for the kspace filtering o
 import sys
 
 import numpy as np
+from pixell import enmap
 from pspipe_utils import log, pspipe_list
 from pspy import pspy_utils, so_dict, so_map, so_mpi, so_window
-from pixell import enmap
+
 
 def create_crosslink_mask(xlink_map, cross_link_threshold):
     """
@@ -39,7 +40,7 @@ def create_crosslink_mask(xlink_map, cross_link_threshold):
     x_mask[x_mask >= cross_link_threshold] = 1
     x_mask[x_mask < cross_link_threshold] = 0
     x_mask = 1 - x_mask
-    
+
     xlink_lowres.data[0] = x_mask
     xlink = so_map.car2car(xlink_lowres, xlink)
     x_mask = xlink.data[0].copy()
@@ -48,30 +49,6 @@ def create_crosslink_mask(xlink_map, cross_link_threshold):
     x_mask[id] = 1
     return x_mask
 
-def apply_coordinate_mask(mask, coord):
-    """
-    Apply a mask based on coordinate
-    
-    Parameters
-    ----------
-    mask: so_map
-      the mask on which the coordinate mask will be applied
-    coord: list of list offloat
-        format is [[dec0, ra0], [dec1, ra1]]
-         we create a rectangle mask from this coordinate
-         in the convention assumed in this code
-         dec0, ra0 are the coordiante of the top left corner
-         dec1, ra1 are the coordinate of the bottom right corner
-    """
-        
-    dec_ra = np.deg2rad(coord)
-    pix1 = mask.data.sky2pix(dec_ra[0])
-    pix2 = mask.data.sky2pix(dec_ra[1])
-    min_pix = np.min([pix1, pix2], axis=0).astype(int)
-    max_pix = np.max([pix1, pix2], axis=0).astype(int)
-    mask.data[min_pix[0] : max_pix[0], min_pix[1] : max_pix[1]] = 0
-        
-    return mask
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -118,7 +95,7 @@ if len(sys.argv) == 4:
 for task in subtasks:
     task = int(task)
     sv, ar = sv_list[task], ar_list[task]
-    
+
     log.info(f"[{task}] create windows for '{sv}' survey and '{ar}' array...")
 
     gal_mask = so_map.read_map(d[f"gal_mask_{sv}_{ar}"])
@@ -130,13 +107,13 @@ for task in subtasks:
 
     ivar_all = gal_mask.copy()
     ivar_all.data[:] = 0
-    
+
     # the first step is to iterate on the maps of a given array to identify pixels with zero values
     # we will form a first survey mask as the union of all these split masks
     # we also compute the average ivar map
 
     log.info(f"[{task}] create survey mask from ivar maps")
-    
+
     for k, map in enumerate(maps):
         if d[f"src_free_maps_{sv}"] == True:
             index = map.find("map_srcfree.fits")
@@ -147,18 +124,19 @@ for task in subtasks:
         ivar_map = so_map.read_map(ivar_map)
         my_masks["baseline"].data[ivar_map.data[:] == 0.0] = 0.0
         ivar_all.data[:] += ivar_map.data[:]
-        
-    ivar_all.data[:] /= np.max(ivar_all.data[:])
-    
-    # optionnaly apply an extra coordinate mask
-    if  d[f"coord_mask_{sv}_{ar}"] is not None:
-        log.info(f"[{task}] apply coord mask")
-        my_masks["baseline"]  = apply_coordinate_mask(my_masks["baseline"], d[f"coord_mask_{sv}_{ar}"])
 
-    
-    log.info(f"[{task}] compute distance to the edges and remove {0.5*rescale:.2f} degree from the edges")
+    ivar_all.data[:] /= np.max(ivar_all.data[:])
+
+    if d[f"extra_mask_{sv}_{ar}"] is not None:
+        log.info(f"[{task}] apply extra mask")
+        extra_mask = so_map.read_map(d[f"extra_mask_{sv}_{ar}"])
+        my_masks["baseline"].data[:] *= extra_mask.data[:]
+
+    log.info(
+        f"[{task}] compute distance to the edges and remove {0.5*rescale:.2f} degree from the edges"
+    )
     # compute the distance to the nearest 0
-    dist = so_window.get_distance(my_masks["baseline"], rmax = 4 * rescale * np.pi / 180)
+    dist = so_window.get_distance(my_masks["baseline"], rmax=4 * rescale * np.pi / 180)
     # here we remove pixels near the edges in order to avoid pixels with very low hit count
     # note the hardcoded 0.5 degree value that can be rescale with the edge_skip_rescale argument in the dictfile.
     my_masks["baseline"].data[dist.data < 0.5 * rescale] = 0
@@ -170,7 +148,7 @@ for task in subtasks:
     # with this we can create the k space mask this will only be used for applying the kspace filter
     log.info(f"[{task}] appodize kspace mask with {rescale:.2f} apod and write it to disk")
     my_masks["kspace"] = my_masks["baseline"].copy()
-    
+
     # we apodize this k space mask with a 1 degree apodisation
     
     my_masks["kspace"] = so_window.create_apodization(my_masks["kspace"], "C1", 1 * rescale, use_rmax=True)
@@ -179,12 +157,12 @@ for task in subtasks:
 
     # compare to the kspace mask we will skip for the nominal mask
     # an additional 2 degrees to avoid ringing from the filter
-        
-    dist = so_window.get_distance(my_masks["baseline"], rmax = 4 * rescale * np.pi / 180)
+
+    dist = so_window.get_distance(my_masks["baseline"], rmax=4 * rescale * np.pi / 180)
     my_masks["baseline"].data[dist.data < 2 * rescale] = 0
 
     # now we create a xlink mask based on the xlink threshold
-    
+
     log.info(f"[{task}] create xlink mask")
 
     my_masks["xlink"] = my_masks["baseline"].copy()
@@ -198,16 +176,13 @@ for task in subtasks:
         x_mask = create_crosslink_mask(xlink_map, cross_link_threshold)
         my_masks["xlink"].data *= x_mask
 
-
     for mask_type in ["baseline", "xlink"]:
-    
         # optionnaly apply a patch mask
 
         if patch is not None:
             log.info(f"[{task}] apply patch mask")
 
             my_masks[mask_type].data *= patch.data
-            
 
         log.info(f"[{task}] apodize mask with {apod_survey_degree:.2f} apod")
 
@@ -229,7 +204,7 @@ for task in subtasks:
         log.info(f"[{task}] include ivar ")
 
         mask_type_w = mask_type + "_ivar"
-        
+
         my_masks[mask_type_w] = my_masks[mask_type].copy()
         id = np.where(ivar_all.data[:] * my_masks[mask_type_w].data[:] != 0)
         med = np.median(ivar_all.data[id])

@@ -13,11 +13,10 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-surveys = d["surveys"]
+surveys = ["dr6"]
 lmax = d["lmax"]
 
-# Read the noise sim type
-noise_sim_type = d["noise_sim_type"]
+
 
 # Set the lmax corresponding to a pre-computed noise model
 lmax_noise_sim = 10800 # Should be moved to the paramfile ?
@@ -31,12 +30,12 @@ arrays_alias = {
 
 # Load the noise models
 noise_models = {
-    wafer_name: nm.BaseNoiseModel.from_config("act_dr6v4", noise_sim_type, *arrays_alias[wafer_name].keys())
+    wafer_name: nm.BaseNoiseModel.from_config("act_dr6v4", d[f"noise_sim_type_{wafer_name}"], *arrays_alias[wafer_name].keys())
     for sv in surveys for wafer_name in sorted({ar.split("_")[0] for ar in d[f"arrays_{sv}"]})
 }
 
 # Create output dir
-nlms_dir = "mnms_noise_alms"
+nlms_dir = "noise_alms"
 pspy_utils.create_directory(nlms_dir)
 
 arrays = {sv: d[f"arrays_{sv}"] for sv in surveys}
@@ -81,7 +80,7 @@ for id_mpi in subtasks:
                 sim_arrays[i, 0, :][2] *= cal / pol_eff
                 noise_alms = curvedsky.map2alm(sim_arrays[i, 0, :], lmax=lmax, tweak=True)
 
-                np.save(f"{nlms_dir}/mnms_nlms_{sv}_{ar}_set{k}_{iii:05d}.npy", noise_alms)
+                np.save(f"{nlms_dir}/nlms_{sv}_{ar}_set{k}_{iii:05d}.npy", noise_alms)
 
         noise_models[wafer_name].cache_clear()
 

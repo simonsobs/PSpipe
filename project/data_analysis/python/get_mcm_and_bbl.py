@@ -5,7 +5,7 @@ for the different surveys and arrays.
 
 import sys
 
-from pspipe_utils import log, pspipe_list
+from pspipe_utils import log, pspipe_list, misc
 from pspy import pspy_utils, so_dict, so_map, so_mcm, so_mpi
 
 d = so_dict.so_dict()
@@ -41,18 +41,20 @@ for task in subtasks:
 
     log.info(f"[{task:02d}] mcm matrix for {sv1}_{ar1} x {sv2}_{ar2}")
 
-    l, bl1 = pspy_utils.read_beam_file(d[f"beam_{sv1}_{ar1}"])
+    l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}"], d[f"beam_pol_{sv1}_{ar1}"])
+
     win1_T = so_map.read_map(d[f"window_T_{sv1}_{ar1}"])
     win1_pol = so_map.read_map(d[f"window_pol_{sv1}_{ar1}"])
 
-    l, bl2 = pspy_utils.read_beam_file(d[f"beam_{sv2}_{ar2}"])
+    l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}"], d[f"beam_pol_{sv2}_{ar2}"])
+
     win2_T = so_map.read_map(d[f"window_T_{sv2}_{ar2}"])
     win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{ar2}"])
 
     mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(win1_T, win1_pol),
                                                 win2=(win2_T, win2_pol),
-                                                bl1=(bl1, bl1),
-                                                bl2=(bl2, bl2),
+                                                bl1=(bl1["T"], bl1["E"]),
+                                                bl2=(bl2["T"], bl2["E"]),
                                                 binning_file=d["binning_file"],
                                                 niter=d["niter"],
                                                 lmax=d["lmax"],

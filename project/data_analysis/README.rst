@@ -7,7 +7,7 @@ Requirements
 ============
 
 * pspy >= 1.6.1
-* pspipe_utils >= 0.1.3
+* pspipe_utils >= 0.1.4
 
 dependency: pspy, pspipe_utils
 
@@ -79,7 +79,6 @@ command is especially important @ NERSC)
             cd ${software_dir}
             git clone git@github.com:amaurea/enlib.git
             cd enlib
-            #sed 's/-liomp5/-lgomp/g' compile_opts/cca_intel.mk > compile_opts/cca_intel.mk
             export ENLIB_COMP=cca_intel
             make array_ops
         )
@@ -88,8 +87,6 @@ command is especially important @ NERSC)
             git clone git@github.com:simonsobs/sofind.git
             cd sofind
             python -m pip install -e .
-            cd sofind/products/masks
-            sed -i '/^system_paths:.*/a \ \ perlmutter: /global/cfs/cdirs/act/data/zatkins/data/simonsobs/mnms/masks' mnms_masks.yaml
         )
         (
             cd ${software_dir}
@@ -209,3 +206,14 @@ To generate a set of simulated spectra using the `mnms` noise simulation code yo
     salloc --nodes 4 --qos interactive --time 3:00:00 --constraint cpu
     srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_dr6_v4.dict
     # real time ~ 1100s for each sim
+
+
+To estimate the kspace filter transfer function from simulations
+
+.. code:: shell
+
+    salloc --nodes 4 --qos interactive --time 3:00:00 --constraint cpu
+    srun -n 32 -c 32 --cpu-bind=cores python mc_get_kspace_tf_spectra.py global_dr6_v4.dict
+
+    salloc --nodes 1 --qos interactive --time 1:00:00 --constraint cpu
+    srun -n 1 -c 256 --cpu_bind=cores python mc_kspace_tf_analysis.py global_dr6_v4.dict

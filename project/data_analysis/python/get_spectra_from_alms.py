@@ -28,6 +28,9 @@ binned_mcm = d["binned_mcm"]
 apply_kspace_filter = d["apply_kspace_filter"]
 cov_T_E_only = d["cov_T_E_only"]
 
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+
+
 mcm_dir = "mcms"
 spec_dir = "spectra"
 alms_dir = "alms"
@@ -53,7 +56,7 @@ for sv in surveys:
 # compute the transfer functions
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 n_bins = len(lb)
-spec_name_list = pspipe_list.get_spec_name_list(d, char="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 if apply_kspace_filter:
     kspace_tf_path = d["kspace_tf_path"]
@@ -66,8 +69,10 @@ if apply_kspace_filter:
                                                                               lmax)
     else:
         kspace_transfer_matrix = {}
+        TE_corr = {}
         for spec_name in spec_name_list:
             kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
+            _, TE_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
 
 
     # this will be used in the covariance computation
@@ -78,7 +83,6 @@ if apply_kspace_filter:
 
 # compute the power spectra
 
-spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
 log.info(f"number of spectra to compute : {n_spec}")
@@ -139,10 +143,16 @@ for task in subtasks:
                                             spectra=spectra,
                                             binned_mcm=binned_mcm)
             if apply_kspace_filter:
+                if kspace_tf_path == "analytical":
+                    xtra_corr = None
+                else:
+                    xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
+
                 lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
                                                                 ps,
                                                                 kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
-                                                                spectra)
+                                                                spectra,
+                                                                xtra_corr=xtra_corr)
 
 
             lb, ps = transfer_function.deconvolve_xtra_tf(lb,

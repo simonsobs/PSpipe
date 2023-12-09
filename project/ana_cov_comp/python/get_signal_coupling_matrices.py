@@ -5,7 +5,7 @@ between split power spectra
 import sys
 import numpy as np
 from pspipe_utils import log
-from pspy import so_dict, so_map, pspy_utils
+from pspy import so_dict, so_map, so_mcm, pspy_utils
 from itertools import product
 import os
 
@@ -98,10 +98,10 @@ for _f1, _f2 in product(fields, fields):
             log.info(base_fn)
             w1 = get_window(f1)
             w2 = get_window(f2)
-            coupling = 1 # so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                            #  lmax=lmax, l3_pad=lmax,
-                                            #  niter=niter, l_exact=l_exact,
-                                            #  l_toep=l_toep, l_band=l_band)
+            coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
+                                             lmax=lmax, l3_pad=lmax,
+                                             niter=niter, l_exact=l_exact,
+                                             l_toep=l_toep, l_band=l_band)
             np.save(full_fn, coupling)
         else:
             canonized_combos[(f1, f2, spintype)] += 1

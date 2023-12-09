@@ -1,8 +1,7 @@
-surveys = ["dr6"]
-
-arrays_dr6 = ["pa4_f150", "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
-
 data_dir = '/scratch/gpfs/zatkins/data/simonsobs/PSpipe/project/ana_cov_comp/'
+
+surveys = ["dr6"]
+arrays_dr6 = {'pa4': ['f150', 'f220'], 'pa5': ['f090', 'f150'], 'pa6': ['f090', 'f150']}
 
 # orphans
 use_beam_covariance = True
@@ -43,6 +42,7 @@ mm_tf_dr6_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
 mm_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
 
 # cov 
+couplings_dir = data_dir + 'couplings'
 sq_win_alms_dir = data_dir + 'sq_win_alms'
 covariances_dir = data_dir + 'covariances'
 split_covariances_dir = data_dir + 'split_covariances'

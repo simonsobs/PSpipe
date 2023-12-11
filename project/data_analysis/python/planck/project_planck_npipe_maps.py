@@ -72,7 +72,7 @@ for task in subtasks:
     npipe_map.data *= 10 ** 6 # Convert from K to uK
 
     # Subtract mono and dipole (temperature)
-    npipe_map.data[0] = so_map.subtract_mono_dipole(npipe_map.data[0], mono=monopole[freq], dipole=dipole)
+    npipe_map.data[0] = so_map.subtract_mono_dipole(npipe_map.data[0], values=(monopole[freq], dipole))
 
 
     log.info(f"[{freq} GHz - split {split}] Projecting in CAR pixellization ...")

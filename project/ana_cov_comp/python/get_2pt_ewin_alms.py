@@ -82,7 +82,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
         ewin12_data = 1
         for i, path12 in enumerate((*ewin_paths1, *ewin_paths2)):
             ewin12 = so_map.read_map(path12)
-            ewin12.data = psc.optags2ops((*ewin_ops1, *ewin_ops2)[i])(ewin12.data)
+            ewin12.data = psc.optags2ops[(*ewin_ops1, *ewin_ops2)[i]](ewin12.data)
             ewin12_data *= ewin12.data
         ewin12.data = ewin12_data
         ewin12_data = None
@@ -92,7 +92,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
         assert lmax <= ewin12.get_lmax_limit(), \
             "the requested lmax is too high with respect to the map pixellisation"
 
-        alm = sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
+        alm = 1 # sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
         np.save(alm_fn, alm)
     else:
         canonized_combos[(ewin_name1, ewin_name2)].append((field_info1, field_info2))
@@ -127,7 +127,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             ewin12_data = 1
             for i, path12 in enumerate((*ewin_paths1, *ewin_paths2)):
                 ewin12 = so_map.read_map(path12)
-                ewin12.data = psc.optags2ops((*ewin_ops1, *ewin_ops2)[i])(ewin12.data)
+                ewin12.data = psc.optags2ops[(*ewin_ops1, *ewin_ops2)[i]](ewin12.data)
                 ewin12_data *= ewin12.data
             ewin12.data = ewin12_data
             ewin12_data = None
@@ -140,7 +140,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             assert lmax <= ewin12.get_lmax_limit(), \
                 "the requested lmax is too high with respect to the map pixellisation"
 
-            alm = sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
+            alm = 1 # sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
             np.save(alm_fn, alm)
         else:
             canonized_combos[(ewin_name1, ewin_name2)].append((field_info1, field_info2))

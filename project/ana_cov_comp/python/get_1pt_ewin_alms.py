@@ -62,7 +62,7 @@ for field_info1 in field_infos:
         ewin1_data = 1
         for i, path1 in enumerate(ewin_paths1):
             ewin1 = so_map.read_map(path1)
-            ewin1.data = psc.optags2ops(ewin_ops1[i])(ewin1.data)
+            ewin1.data = psc.optags2ops[ewin_ops1[i]](ewin1.data)
             ewin1_data *= ewin1.data
         ewin1.data = ewin1_data
         ewin1_data = None
@@ -96,7 +96,7 @@ for field_info1 in field_infos:
         ewin1_data = 1
         for i, path1 in enumerate(ewin_paths1):
             ewin1 = so_map.read_map(path1)
-            ewin1.data = psc.optags2ops(ewin_ops1[i])(ewin1.data)
+            ewin1.data = psc.optags2ops[ewin_ops1[i]](ewin1.data)
             ewin1_data *= ewin1.data
         ewin1.data = ewin1_data
         ewin1_data = None

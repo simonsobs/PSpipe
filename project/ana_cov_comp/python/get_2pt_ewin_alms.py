@@ -92,7 +92,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
         assert lmax <= ewin12.get_lmax_limit(), \
             "the requested lmax is too high with respect to the map pixellisation"
 
-        alm = 1 # sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
+        alm = sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
         np.save(alm_fn, alm)
     else:
         canonized_combos[(ewin_name1, ewin_name2)].append((field_info1, field_info2))
@@ -140,7 +140,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             assert lmax <= ewin12.get_lmax_limit(), \
                 "the requested lmax is too high with respect to the map pixellisation"
 
-            alm = 1 # sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
+            alm = sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
             np.save(alm_fn, alm)
         else:
             canonized_combos[(ewin_name1, ewin_name2)].append((field_info1, field_info2))

@@ -1,4 +1,4 @@
-data_dir = '/scratch/gpfs/zatkins/data/simonsobs/PSpipe/project/ana_cov_comp/cov_dr6_v4_20231128/'
+data_dir = '/pscratch/sd/x/xzackli/so/data/dr6v4/'
 
 surveys = ["dr6"]
 arrays_dr6 = {'pa4': ['f220'], 'pa5': ['f090', 'f150'], 'pa6': ['f090', 'f150']}
@@ -11,7 +11,7 @@ multistep_path = data_dir
 mcms_dir = data_dir + 'mcms'
 
 binned_mcm = False
-lmax = 5400
+lmax = 8500
 use_toeplitz_mcm = False
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
 niter = 0
@@ -78,7 +78,7 @@ edge_skip_rescale = 1
 cross_link_threshold = 0.97
 n_med_ivar = 3
 
-window_dir = '/scratch/gpfs/zatkins/data/simonsobs/mnms/masks/tlouis/ACT/'
+window_dir = '/pscratch/sd/x/xzackli/so/data/windows/'
 
 window_T_dr6_pa4_f150 = window_dir + "window_dr6_pa4_f150_baseline.fits"
 window_pol_dr6_pa4_f150 = window_dir + "window_dr6_pa4_f150_baseline.fits"
@@ -116,7 +116,7 @@ window_T_dr6_pa6_f150_alias = "w_dr6_pa6_f150"
 window_pol_dr6_pa6_f150_alias = "w_dr6_pa6_f150"
 
 # maps
-map_dir = '/scratch/gpfs/ACT/dr6v4/maps/dr6v4_20230316/release/'
+map_dir = '/pscratch/sd/x/xzackli/so/data/dr6v4/maps/'
 
 n_splits_dr6 = 4
 src_free_maps_dr6 = True

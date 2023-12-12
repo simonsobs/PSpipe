@@ -45,7 +45,7 @@ for sv1 in surveys:
                     if field_info not in field_infos:
                         field_infos.append(field_info)
                     else:
-                        raise ValueError(f'{field_info=} is not unique')
+                        raise ValueError(f'{field_info} is not unique')
                     
                     ewin_info_s = psc.get_ewin_info_from_field_info(field_info, d, mode='w')
                     if ewin_info_s not in ewin_infos:

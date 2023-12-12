@@ -98,24 +98,25 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
         # the coupling
         if (ewin_name1, ewin_name2, spintype) not in canonized_combos:
             canonized_combos[(ewin_name1, ewin_name2, spintype)] = [(field_info1, field_info2, spintype)]
-            if not os.path.isfile(coupling_fn):
-                log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
-                
-                w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
-                w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
-                coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                                lmax=lmax, input_alm=True,
-                                                l_exact=l_exact, l_toep=l_toep,
-                                                l_band=l_band)
-                np.save(coupling_fn, coupling)  
+            assert not os.path.isfile(coupling_fn), \
+                f'{coupling_fn} exists but we should not yet have produced it in loop'
+            log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
+            
+            w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
+            w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
+            coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
+                                             lmax=lmax, input_alm=True,
+                                             l_exact=l_exact, l_toep=l_toep,
+                                             l_band=l_band)
+            np.save(coupling_fn, coupling)  
 
         # if we have already gotten to this canonized window pair, add the
         # fields to the tracked list and ensure we've already calculated the
         # coupling 
         else:
             canonized_combos[(ewin_name1, ewin_name2, spintype)].append((field_info1, field_info2, spintype))
-            # assert os.path.isfile(coupling_fn), \
-                # f'{coupling_fn} does not exist but we should have produced it in loop'
+            assert os.path.isfile(coupling_fn), \
+                f'{coupling_fn} does not exist but we should have produced it in loop'
             continue
 
 # N N
@@ -143,24 +144,25 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             # the coupling
             if (ewin_name1, ewin_name2, spintype) not in canonized_combos:
                 canonized_combos[(ewin_name1, ewin_name2, spintype)] = [(field_info1, field_info2, spintype)]
-                if not os.path.isfile(coupling_fn):
-                    log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
-                    
-                    w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
-                    w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
-                    coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                                    lmax=lmax, input_alm=True,
-                                                    l_exact=l_exact, l_toep=l_toep,
-                                                    l_band=l_band)
-                    np.save(coupling_fn, coupling)  
+                assert not os.path.isfile(coupling_fn), \
+                    f'{coupling_fn} exists but we should not yet have produced it in loop'
+                log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
+                
+                w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
+                w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
+                coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
+                                                 lmax=lmax, input_alm=True,
+                                                 l_exact=l_exact, l_toep=l_toep,
+                                                 l_band=l_band)
+                np.save(coupling_fn, coupling)  
 
             # if we have already gotten to this canonized window pair, add the
             # fields to the tracked list and ensure we've already calculated the
             # coupling 
             else:
                 canonized_combos[(ewin_name1, ewin_name2, spintype)].append((field_info1, field_info2, spintype))
-                # assert os.path.isfile(coupling_fn), \
-                    # f'{coupling_fn} does not exist but we should have produced it in loop'
+                assert os.path.isfile(coupling_fn), \
+                    f'{coupling_fn} does not exist but we should have produced it in loop'
                 continue
 
 np.save(f'{couplings_dir}/canonized_couplings_2pt_combos.npy', canonized_combos)

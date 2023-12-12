@@ -10,7 +10,9 @@ python python/get_2pt_ewin_alms.py paramfiles/cov_dr6_v4_20231128.dict"
 
 ## Couplings:
 ```bash
-sbatch paramfiles/2pt_coupling_matrices.slurm 
+alias shortjob="sbatch --time 2:00:00 paramfiles/1perlmutternode.slurm $1"  # short QOS
+shortjob "srun --ntasks 1 --cpus-per-task 128 --cpu-bind=cores python -u \
+python python/get_2pt_coupling_matrices.py paramfiles/cov_dr6_v4_20231128.dict"
 ```
 
 ```bash

@@ -44,6 +44,7 @@ lmax = d['lmax']
 # we define the canon by the windows order. we first build the fields,
 # then use a mapping from fields to windows to build the canonical
 # windows
+recipe = {'S_only':[], 'SxN':[], 'N_only':[]}
 field_infos = []
 ewin_infos = []
 for sv1 in surveys:
@@ -123,21 +124,29 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
                 f'{coupling_fn} exists but we should not yet have produced it in loop'
             log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
             
-            w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy')
-            w2 = np.load(f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy')
-            coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                             lmax=lmax, input_alm=True,
-                                             l_exact=l_exact, l_toep=l_toep,
-                                             l_band=l_band)
-            np.save(coupling_fn, coupling)  
+            recipe['S_only'].append({
+                'spintype': spintype,
+                'w1': f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy',
+                'w2': f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy',
+                'lmax':lmax,
+                'input_alm': True,
+                'coupling_fn': coupling_fn
+            })
+            # w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy')
+            # w2 = np.load(f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy')
+            # coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
+            #                                  lmax=lmax, input_alm=True,
+            #                                  l_exact=l_exact, l_toep=l_toep,
+            #                                  l_band=l_band)
+            # np.save(coupling_fn, coupling)  
 
         # if we have already gotten to this canonized window pair, add the
         # fields to the tracked list and ensure we've already calculated the
         # coupling 
         else:
             canonized_combos[(ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype)].append((field_info1, field_info2, field_info3, field_info4, spintype))
-            assert os.path.isfile(coupling_fn), \
-                f'{coupling_fn} does not exist but we should have produced it in loop'
+            # assert os.path.isfile(coupling_fn), \
+                # f'{coupling_fn} does not exist but we should have produced it in loop'
             continue
 
 # S S N N and N N S S
@@ -173,21 +182,29 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
                     f'{coupling_fn} exists but we should not yet have produced it in loop'
                 log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
                 
-                w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy')
-                w2 = np.load(f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy')
-                coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                                 lmax=lmax, input_alm=True,
-                                                 l_exact=l_exact, l_toep=l_toep,
-                                                 l_band=l_band)
-                np.save(coupling_fn, coupling)  
+                recipe['SxN'].append({
+                    'spintype': spintype,
+                    'w1': f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy',
+                    'w2': f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy',
+                    'lmax':lmax,
+                    'input_alm': True,
+                    'coupling_fn': coupling_fn
+                })
+                # w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy')
+                # w2 = np.load(f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy')
+                # coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
+                #                                  lmax=lmax, input_alm=True,
+                #                                  l_exact=l_exact, l_toep=l_toep,
+                #                                  l_band=l_band)
+                # np.save(coupling_fn, coupling)  
 
             # if we have already gotten to this canonized window pair, add the
             # fields to the tracked list and ensure we've already calculated the
             # coupling 
             else:
                 canonized_combos[(ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype)].append((field_info1, field_info2, field_info3, field_info4, spintype))
-                assert os.path.isfile(coupling_fn), \
-                    f'{coupling_fn} does not exist but we should have produced it in loop'
+                # assert os.path.isfile(coupling_fn), \
+                    # f'{coupling_fn} does not exist but we should have produced it in loop'
                 continue
 
 # N N N N
@@ -223,21 +240,36 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
                     f'{coupling_fn} exists but we should not yet have produced it in loop'
                 log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
                 
-                w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy')
-                w2 = np.load(f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy')
-                coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                                 lmax=lmax, input_alm=True,
-                                                 l_exact=l_exact, l_toep=l_toep,
-                                                 l_band=l_band)
-                np.save(coupling_fn, coupling)  
+
+                recipe['N_only'].append({
+                    'spintype': spintype,
+                    'w1': f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy',
+                    'w2': f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy',
+                    'lmax':lmax,
+                    'input_alm': True,
+                    'coupling_fn': coupling_fn
+                })
+
+                # w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy')
+                # w2 = np.load(f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy')
+                # coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
+                #                                  lmax=lmax, input_alm=True,
+                #                                  l_exact=l_exact, l_toep=l_toep,
+                #                                  l_band=l_band)
+                # np.save(coupling_fn, coupling)  
 
             # if we have already gotten to this canonized window pair, add the
             # fields to the tracked list and ensure we've already calculated the
             # coupling 
             else:
                 canonized_combos[(ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype)].append((field_info1, field_info2, field_info3, field_info4, spintype))
-                assert os.path.isfile(coupling_fn), \
-                    f'{coupling_fn} does not exist but we should have produced it in loop'
+                # assert os.path.isfile(coupling_fn), \
+                    # f'{coupling_fn} does not exist but we should have produced it in loop'
                 continue
 
+total_coupling_number = len(recipe['S_only']) + len(recipe['SxN']) + len(recipe['N_only'])
+recipe['total'] = total_coupling_number
+np.save(f'{couplings_dir}/4pt_recipe.npy', recipe)
+log.info(f"Total 4pt Couplings: {total_coupling_number}")
+np.save(f'{couplings_dir}/4pt_recipe.npy', recipe)
 np.save(f'{couplings_dir}/canonized_couplings_4pt_combos.npy', canonized_combos)

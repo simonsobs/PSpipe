@@ -11,6 +11,7 @@ import numpy as np
 import pylab as plt
 from pspipe_utils import best_fits, log, pspipe_list
 from pspy import pspy_utils, so_dict, so_spectra
+from itertools import combinations_with_replacement
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -47,7 +48,20 @@ do_bandpass_integration = d["do_bandpass_integration"]
 if do_bandpass_integration:
     log.info("Doing bandpass integration")
 
-narrays, sv_list, ar_list = pspipe_list.get_arrays_list(d)
+# compatibility with data_analysis, should be industrialized #FIXME
+def get_arrays_list(d):
+    surveys = d['surveys']
+    arrays = {sv: d[f'arrays_{sv}'] for sv in surveys}
+    sv_list, ar_list = [], []
+    for sv1 in surveys:
+        for ar1 in arrays[sv1]:
+            for chan1 in arrays[sv1][ar1]:
+                sv_list.append(sv1)
+                ar_list.append(f"{ar1}_{chan1}")
+    return len(sv_list), sv_list, ar_list
+
+narrays, sv_list, ar_list = get_arrays_list(d)
+
 for sv, ar in zip(sv_list, ar_list):
 
     freq_info = d[f"freq_info_{sv}_{ar}"]
@@ -57,6 +71,7 @@ for sv, ar in zip(sv_list, ar_list):
         nu_ghz, pb = np.array([freq_info["freq_tag"]]), np.array([1.])
 
     passbands[f"{sv}_{ar}"] = [nu_ghz, pb]
+
 
 log.info("Getting foregrounds contribution")
 fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components, fg_params, fg_norm)
@@ -71,7 +86,7 @@ for sv1, ar1 in zip(sv_list, ar_list):
         so_spectra.write_ps(f"{bestfit_dir}/fg_{name1}x{name2}.dat", l_th, fg, type, spectra=spectra)
 
 log.info("Writing best fit spectra")
-spectra_list = pspipe_list.get_spec_name_list(d, char = "_")
+spectra_list = ([f"{a}x{b}" for a,b in combinations_with_replacement(passbands.keys(), 2)])
 best_fit_dict = {}
 for ps_name in spectra_list:
     best_fit_dict[ps_name] = {}

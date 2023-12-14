@@ -167,12 +167,19 @@ freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_d
 freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
 
 # beams
-beam_dr6_pa4_f150 = data_dir + 'beams/20230130_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa4_f220 = data_dir + 'beams/20230130_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa5_f090 = data_dir + 'beams/20230130_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa5_f150 = data_dir + 'beams/20230130_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa6_f090 = data_dir + 'beams/20230130_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
-beam_dr6_pa6_f150 = data_dir + 'beams/20230130_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa4_f150 = data_dir + 'beams/20230902_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa4_f220 = data_dir + 'beams/20230902_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa5_f090 = data_dir + 'beams/20230902_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa5_f150 = data_dir + 'beams/20230902_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa6_f090 = data_dir + 'beams/20230902_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa6_f150 = data_dir + 'beams/20230902_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+beam_pol_dr6_pa4_f150 = data_dir + 'beams/20230902_beams/coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa4_f220 = data_dir + 'beams/20230902_beams/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa5_f090 = data_dir + 'beams/20230902_beams/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa5_f150 = data_dir + 'beams/20230902_beams/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa6_f090 = data_dir + 'beams/20230902_beams/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa6_f150 = data_dir + 'beams/20230902_beams/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
 
 leakage_file_dir = data_dir + 'beams/20230130_beams/'
 

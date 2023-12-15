@@ -11,7 +11,7 @@ multistep_path = data_dir
 mcms_dir = data_dir + 'mcms'
 
 binned_mcm = False
-lmax = 8500
+lmax = 10800
 use_toeplitz_mcm = False
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
 niter = 0

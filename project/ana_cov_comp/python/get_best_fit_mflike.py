@@ -19,7 +19,7 @@ log = log.get_logger(**d)
 
 # first let's get a list of all frequency we plan to study
 surveys = d["surveys"]
-lmax = d["lmax"]
+lmax = d["lmax"]  # models only go up to ell of 10000
 type = d["type"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -32,7 +32,7 @@ pspy_utils.create_directory(plot_dir)
 
 cosmo_params = d["cosmo_params"]
 log.info(f"Computing CMB spectra with cosmological parameters: {cosmo_params}")
-l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, lmax + 500)
+l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, min(10000,lmax + 500))
 
 f_name = f"{bestfit_dir}/cmb.dat"
 so_spectra.write_ps(f_name, l_th, ps_dict, type, spectra=spectra)

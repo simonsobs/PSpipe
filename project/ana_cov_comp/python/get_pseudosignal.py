@@ -11,7 +11,7 @@ import sys, os
 import numpy as np
 import pylab as plt
 from pspipe_utils import kspace, log, simulation, transfer_function
-from pspy import pspy_utils, so_dict
+from pspy import pspy_utils, so_dict, so_spectra
 from pspipe_utils import log, misc
 
 d = so_dict.so_dict()
@@ -51,15 +51,41 @@ def get_arrays_list(d):
 
 narrays, sv_list, ar_list = get_arrays_list(d)
 
+def cmb_matrix_from_file(f_name, _lmax, spectra, input_type="Dl"):
+    l, ps_theory = so_spectra.read_ps(f_name, spectra=spectra)
+    assert l[0] == 2, "the file is expected to start at l=2"
+    lmax = min(_lmax, len(ps_theory['TT'])+1)  # make sure lmax doesn't exceed model lmax
+    ps_mat = np.zeros((3, 3, lmax+1))
+    for i, f1 in enumerate("TEB"):
+        for j, f2 in enumerate("TEB"):
+            if input_type == "Dl":
+                ps_theory[f1+f2] *= 2 * np.pi / (l * (l + 1))
+            ps_mat[i, j][2:(lmax+1)] = ps_theory[f1+f2][:lmax]
+    return ps_mat
+
+def foreground_matrix_from_files(f_name_tmp, arrays_list, _lmax, spectra, input_type="Dl"):
+    narrays = len(arrays_list)
+    fl_array = np.zeros((3 * narrays, 3 * narrays, _lmax+1))
+    for c1, array1 in enumerate(arrays_list):
+        for c2, array2 in enumerate(arrays_list):
+            l, fl_dict = so_spectra.read_ps(f_name_tmp.format(array1, array2), spectra=spectra)
+            assert l[0] == 2, "the file is expected to start at l=2"
+            lmax = min(_lmax, len(fl_dict['TT'])+1)  # make sure lmax doesn't exceed model lmax
+            for s1, field1 in enumerate("TEB"):
+                for s2, field2 in enumerate("TEB"):
+                    if input_type == "Dl":
+                        fl_dict[field1 + field2] *=  2 * np.pi / (l * (l + 1))
+                    fl_array[c1 + narrays * s1, c2 + narrays * s2, 2:(lmax+1)] = fl_dict[field1 + field2][:lmax]
+    return l, fl_array
 
 f_name_cmb = bestfit_dir + "/cmb.dat"
-ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax, spectra)
+ps_mat = cmb_matrix_from_file(f_name_cmb, lmax, spectra)
 
 f_name_fg = bestfit_dir + "/fg_{}x{}.dat"
 array_list = [f"{sv}_{ar}" for sv, ar in zip(sv_list, ar_list)]
 
 # fg_mat starts from zero, is C_ell as is convention
-_, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, array_list, lmax+1, spectra) 
+_, fg_mat = foreground_matrix_from_files(f_name_fg, array_list, lmax, spectra) 
 np.save(f"{bestfit_dir}/signal_matrix.npy", fg_mat)
 
 narrays = len(array_list)

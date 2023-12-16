@@ -13,7 +13,7 @@ python/get_4pt_coupling_matrices_recipe.py paramfiles/cov_dr6_v4_20231128.dict"
 ## Couplings:
 2pt couplings:
 ```bash
-alias shortjob="sbatch --time 2:00:00 paramfiles/1perlmutternode.slurm $1"  # short QOS
+alias shortjob="sbatch --time 4:00:00 paramfiles/1perlmutternode.slurm $1"  # short QOS
 shortjob "srun --ntasks 1 --cpus-per-task 128 --cpu-bind=cores python -u \
 python/get_2pt_coupling_matrices.py paramfiles/cov_dr6_v4_20231128.dict"
 ```

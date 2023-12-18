@@ -44,7 +44,7 @@ lmax = d['lmax']
 # we define the canon by the windows order. we first build the fields,
 # then use a mapping from fields to windows to build the canonical
 # windows
-recipe = {'S_only':[], 'SxN':[], 'N_only':[]}
+recipe = {'S_only': [], 'SxN': [], 'N_only': []}
 field_infos = []
 ewin_infos = []
 for sv1 in surveys:
@@ -128,7 +128,7 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
                 'spintype': spintype,
                 'w1': f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy',
                 'w2': f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy',
-                'lmax':lmax,
+                'lmax': lmax,
                 'input_alm': True,
                 'coupling_fn': coupling_fn
             })
@@ -186,7 +186,7 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
                     'spintype': spintype,
                     'w1': f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy',
                     'w2': f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy',
-                    'lmax':lmax,
+                    'lmax': lmax,
                     'input_alm': True,
                     'coupling_fn': coupling_fn
                 })
@@ -245,7 +245,7 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
                     'spintype': spintype,
                     'w1': f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy',
                     'w2': f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy',
-                    'lmax':lmax,
+                    'lmax': lmax,
                     'input_alm': True,
                     'coupling_fn': coupling_fn
                 })

@@ -1,4 +1,6 @@
-data_dir = '/pscratch/sd/x/xzackli/so/data/dr6v4/'
+iam = 'zatkins_on_della' # 'xzackli_on_perlmutter'
+
+data_dir = {'zatkins_on_della': '/scratch/gpfs/zatkins/data/simonsobs/PSpipe/project/ana_cov_comp/cov_dr6_v4_20231128/', 'xzackli_on_perlmutter': '/pscratch/sd/x/xzackli/so/data/dr6v4/'}[iam]
 
 surveys = ["dr6"]
 arrays_dr6 = {'pa4': ['f220'], 'pa5': ['f090', 'f150'], 'pa6': ['f090', 'f150']}
@@ -47,6 +49,8 @@ couplings_dir = data_dir + 'couplings'
 sq_win_alms_dir = data_dir + 'sq_win_alms'
 covariances_dir = data_dir + 'covariances'
 split_covariances_dir = data_dir + 'split_covariances'
+noise_model_savgol_w = 75
+noise_model_savgol_k = 4
 
 use_toeplitz_cov = True
 
@@ -78,31 +82,29 @@ edge_skip_rescale = 1
 cross_link_threshold = 0.97
 n_med_ivar = 3
 
-window_dir = '/pscratch/sd/x/xzackli/so/data/windows/'
+window_T_dr6_pa4_f150 = data_dir + "windows/window_dr6_pa4_f150_baseline.fits"
+window_pol_dr6_pa4_f150 = data_dir + "windows/window_dr6_pa4_f150_baseline.fits"
+window_kspace_dr6_pa4_f150 = data_dir + "windows/kspace_mask_dr6_pa4_f150.fits"
 
-window_T_dr6_pa4_f150 = window_dir + "window_dr6_pa4_f150_baseline.fits"
-window_pol_dr6_pa4_f150 = window_dir + "window_dr6_pa4_f150_baseline.fits"
-window_kspace_dr6_pa4_f150 = window_dir + "kspace_mask_dr6_pa4_f150.fits"
+window_T_dr6_pa4_f220 = data_dir + "windows/window_dr6_pa4_f220_baseline.fits"
+window_pol_dr6_pa4_f220 = data_dir + "windows/window_dr6_pa4_f220_baseline.fits"
+window_kspace_dr6_pa4_f220 = data_dir + "windows/kspace_mask_dr6_pa4_f220.fits"
 
-window_T_dr6_pa4_f220 = window_dir + "window_dr6_pa4_f220_baseline.fits"
-window_pol_dr6_pa4_f220 = window_dir + "window_dr6_pa4_f220_baseline.fits"
-window_kspace_dr6_pa4_f220 = window_dir + "kspace_mask_dr6_pa4_f220.fits"
+window_T_dr6_pa5_f090 = data_dir + "windows/window_dr6_pa5_f090_baseline.fits"
+window_pol_dr6_pa5_f090 = data_dir + "windows/window_dr6_pa5_f090_baseline.fits"
+window_kspace_dr6_pa5_f090 = data_dir + "windows/kspace_mask_dr6_pa5_f090.fits"
 
-window_T_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
-window_pol_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
-window_kspace_dr6_pa5_f090 = window_dir + "kspace_mask_dr6_pa5_f090.fits"
+window_T_dr6_pa5_f150 = data_dir + "windows/window_dr6_pa5_f150_baseline.fits"
+window_pol_dr6_pa5_f150 = data_dir + "windows/window_dr6_pa5_f150_baseline.fits"
+window_kspace_dr6_pa5_f150 = data_dir + "windows/kspace_mask_dr6_pa5_f150.fits"
 
-window_T_dr6_pa5_f150 = window_dir + "window_dr6_pa5_f150_baseline.fits"
-window_pol_dr6_pa5_f150 = window_dir + "window_dr6_pa5_f150_baseline.fits"
-window_kspace_dr6_pa5_f150 = window_dir + "kspace_mask_dr6_pa5_f150.fits"
+window_T_dr6_pa6_f090 = data_dir + "windows/window_dr6_pa6_f090_baseline.fits"
+window_pol_dr6_pa6_f090 = data_dir + "windows/window_dr6_pa6_f090_baseline.fits"
+window_kspace_dr6_pa6_f090 = data_dir + "windows/kspace_mask_dr6_pa6_f090.fits"
 
-window_T_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
-window_pol_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
-window_kspace_dr6_pa6_f090 = window_dir + "kspace_mask_dr6_pa6_f090.fits"
-
-window_T_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
-window_pol_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
-window_kspace_dr6_pa6_f150 = window_dir + "kspace_mask_dr6_pa6_f150.fits"
+window_T_dr6_pa6_f150 = data_dir + "windows/window_dr6_pa6_f150_baseline.fits"
+window_pol_dr6_pa6_f150 = data_dir + "windows/window_dr6_pa6_f150_baseline.fits"
+window_kspace_dr6_pa6_f150 = data_dir + "windows/kspace_mask_dr6_pa6_f150.fits"
 
 window_T_dr6_pa4_f220_alias = "w_dr6_pa4_f220"
 window_pol_dr6_pa4_f220_alias = "w_dr6_pa4_f220"
@@ -116,7 +118,7 @@ window_T_dr6_pa6_f150_alias = "w_dr6_pa6_f150"
 window_pol_dr6_pa6_f150_alias = "w_dr6_pa6_f150"
 
 # maps
-map_dir = '/pscratch/sd/x/xzackli/so/data/dr6v4/maps/'
+map_dir = {'zatkins_on_della': '/scratch/gpfs/ACT/dr6v4/maps/dr6v4_20230316/release/', 'xzackli_on_perlmutter': '/pscratch/sd/x/xzackli/so/data/dr6v4/maps/'}[iam]
 
 n_splits_dr6 = 4
 src_free_maps_dr6 = True

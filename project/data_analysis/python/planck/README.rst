@@ -23,12 +23,13 @@ To perform source subtraction using `dory`, one needs to get a single frequency 
 
     python reformat_source_catalog.py
 
-The source subtraction can then be performed at ``NERSC`` using the following instructions
+The source subtraction can then be performed at ``NERSC`` using the following instructions for npipe or legacy maps. You will have to update the `dory_path` field to point to your local `tenki` library.
 
 .. code:: shell
 
     salloc -N 1 -C cpu -q interactive -t 02:30:00
     ./run_npipe_src_subtraction.sh
+    ./run_legacy_src_subtraction.sh
 
 and the source subtraction process can be checked by running the ``check_src_subtraction.py`` script which displays the residual maps around point sources.
 

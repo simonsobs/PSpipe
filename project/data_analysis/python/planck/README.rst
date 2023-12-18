@@ -4,12 +4,12 @@ Planck maps pre-processing
 
 This directory holds tools to pre-process Planck NPIPE maps used to perform calibration and consistency tests.
 
-The first step is the projection Planck NPIPE maps publicly available at ``NERSC`` into a CAR pixellization. To project 100,143,217 and 353 GHz maps (8 maps), one should run
+The first step is the projection Planck NPIPE/legacy maps publicly available at ``NERSC`` into a CAR pixellization. To project 100,143,217 and 353 GHz maps (8 maps), one should run
 
 .. code:: shell
 
     salloc -N 1 -C cpu -q interactive -t 02:00:00
-    srun -n 8 -c 32 --cpu_bind=cores python project_planck_npipe_maps.py planck_pre_processing.dict
+    srun -n 8 -c 32 --cpu_bind=cores python project_planck_maps.py
 
 Once projected we might want to use them to compute power spectra or to get source subtracted maps. It requires to get data products such as beams which can be written to disk with
 

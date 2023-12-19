@@ -283,7 +283,7 @@ for sv1 in surveys:
                         plt.savefig(plt_fn, bbox_inches='tight')
                         plt.close()
 
-            noise_model_fn = f'{noise_model_dir}/{sv1}_{ar1}_set{split1}.npy'
+            noise_model_fn = f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_noise_model.npy'
             np.save(noise_model_fn, out_noise_model)
 
         alms = None # help with memory

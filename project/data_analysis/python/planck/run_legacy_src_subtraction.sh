@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 # This bash script is used to run the dory src subtraction code
+# on Planck legacy maps. Note that we use the Planck NPIPE beams
+# because legacy beams are truncated at l=4000 and the dory source
+# subtraction code does not work properly with truncated beams.
 
 # Path to dory.py (part of the tenki python package)
 dory_path=/path/to/tenki/point_sources

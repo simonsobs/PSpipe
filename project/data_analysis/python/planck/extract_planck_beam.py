@@ -10,7 +10,7 @@ from pspy import pspy_utils
 freqs = [100, 143, 217]
 lmax_for_plot = 2000
 beam_path = "/global/cfs/cdirs/act/data/tlouis/dr6v4/beams/planck_beams/"
-release = "npipe_DR6"
+release = "legacy"
 
 pspy_utils.create_directory(release)
 
@@ -29,6 +29,7 @@ for freq in freqs:
         split_pairs = [("hm1", "hm1"), ("hm1", "hm2"), ("hm2", "hm2")]
         file_root = f"{beam_path}/BeamWf_HFI_R3.01/Wl_R3.01_plikmask"
     
+    bl_dict = {}
     for s1, s2 in split_pairs:
 
         Wl = fits.open(f"{file_root}_{freq}{s1}x{freq}{s2}.fits")
@@ -55,7 +56,9 @@ for freq in freqs:
             plt.savefig(f"{release}/beam_{freq}.png")
             plt.clf()
             plt.close()
-            
+
+        bl_dict[s1, s2, "T"] = bl_T
+        bl_dict[s1, s2, "pol"] = bl_pol
         np.savetxt(f"{release}/bl_T_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, bl_T]))
         np.savetxt(f"{release}/bl_pol_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, bl_pol]))
 
@@ -103,3 +106,13 @@ for freq in freqs:
         
         np.savetxt(f"{release}/error_modes_gamma_mean_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, zeros, zeros, zeros, zeros, zeros, zeros]))
 
+    if "npipe" in release:
+        bl_T_coadd = (bl_dict["A", "A", "T"] + bl_dict["B", "B", "T"]) / 2.
+        bl_pol_coadd = (bl_dict["A", "A", "pol"] + bl_dict["B", "B", "pol"]) / 2.
+    
+    elif release == "legacy":
+        bl_T_coadd = (bl_dict["hm1", "hm1", "T"] + bl_dict["hm2", "hm2", "T"]) / 2.
+        bl_pol_coadd = (bl_dict["hm1", "hm1", "pol"] + bl_dict["hm2", "hm2", "pol"]) / 2.
+
+    np.savetxt(f"{release}/bl_T_{release}_{freq}_coadd.dat", np.transpose([l, bl_T_coadd]))
+    np.savetxt(f"{release}/bl_pol_{release}_{freq}_coadd.dat", np.transpose([l, bl_pol_coadd]))

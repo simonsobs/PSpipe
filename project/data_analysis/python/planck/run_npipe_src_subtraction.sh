@@ -3,14 +3,14 @@
 # This bash script is used to run the dory src subtraction code
 
 # Path to dory.py (part of the tenki python package)
-dory_path=/path/to/tenki/point_sources/
+dory_path=/path/to/tenki/point_sources
 
 # Path to npipe maps & beams
-npipe_map_path=/global/cfs/cdirs/act/data/tlouis/dr6v4/planck/
-beam_path=/global/cfs/cdirs/act/data/tlouis/dr6v4/beams/npipe6v20_beams/
+map_path=planck_projected
+beam_path=npipe
 
 # Path to the input point source catalog
-ps_catalog_path=cat_skn_090_20220526_nightonly.txt
+ps_catalog_path=cat_skn_090_20220526_nightonly_ordered.txt
 # Note that we chose here to use the 90 GHz catalog
 
 # Path to galactic mask
@@ -37,14 +37,14 @@ freqs=("100" "143" "217")
 for freq in ${freqs[@]}; do
   for split in ${splits[@]}; do
 
-    beam_file=${beam_path}/npipe6v20_beam_${freq}${split}.dat
-    map_file=${npipe_map_path}/npipe6v20${split}_f${freq}_map.fits
-    ivar_file=${npipe_map_path}/npipe6v20${split}_f${freq}_ivar.fits
+    beam_file=${beam_path}/bl_T_npipe_${freq}${split}x${freq}${split}.dat
+    map_file=${map_path}/npipe6v20${split}_f${freq}_map.fits
+    ivar_file=${map_path}/npipe6v20${split}_f${freq}_ivar.fits
 
-    out_map_file=${npipe_map_path}/npipe6v20${split}_f${freq}_map_srcfree.fits
-    out_map_model_file=${npipe_map_path}/npipe6v20${split}_f${freq}_map_model.fits
+    out_map_file=${map_path}/npipe6v20${split}_f${freq}_map_srcfree.fits
+    out_map_model_file=${map_path}/npipe6v20${split}_f${freq}_map_model.fits
 
-    out_cat_path=${npipe_map_path}/catalogs/cats_${freq}${split}
+    out_cat_path=${map_path}/catalogs/cats_${freq}${split}
 
     time srun -n 64 -c 4 --cpu_bind=cores python "${dory_path}/dory.py" fit "${map_file}" "${ivar_file}" "${ps_catalog_path}" "${out_cat_path}" -R "tile:${tile_size}" -f "${freq}" -b "${beam_file}" --ncomp 3 --hack ${hack} -P ${prior} -m "${mask_path}" -s ${sigma_cat}
     time srun -n 1 -c 256 --cpu_bind=cores python "${dory_path}/dory.py" subtract "${map_file}" "${out_cat_path}/cat.fits" "${out_map_file}" "${out_map_model_file}" -R "tile:${tile_size}" -f "${freq}" -b "${beam_file}" --ncomp 3 -s ${sigma_sub}

@@ -4,8 +4,10 @@ and plot a submap centered on individual sources
 of the residual map (i.e. the source subtracted map)
 """
 from pspy import so_map, pspy_utils, so_map
-import sys
+import numpy as np
 import pandas as pd
+import os
+import pspipe
 from pspipe_utils import log
 from pspy import so_mpi
 
@@ -36,7 +38,7 @@ dec_list = [dec for i, dec in enumerate(cat.dec) if i < n_src_max]
 n = len(ra_list)
 log.info(f"Display {n} sources with 150 GHz flux >= {flux_cut:.1f} mJy and SNR >= {snr_cut:.1f}")
 
-release = "npipe"
+release = "legacy"
 map_dir = "planck_projected"
 if release == "legacy":
     map_root = "HFI_SkyMap_2048_R3.01_halfmission-{}_f{}_map.fits"
@@ -75,9 +77,56 @@ for freq in map_freqs:
 
             sub.plot(file_name=f"{out_dir}/{release}_f{freq}_{split}_{task:03d}", 
                      color_range=[250, 100, 100],
-                     ticks_spacing_car=0.3
+                     ticks_spacing_car=0.6
             )
             sub_srcfree.plot(file_name=f"{out_dir}/{release}_srcfree_f{freq}_{split}_{task:03d}", 
                      color_range=[250, 100, 100],
-                     ticks_spacing_car=0.3
+                     ticks_spacing_car=0.6
             )
+
+
+# Generate HTML file for visualization
+ids_src = np.arange(n)
+multistep_path = os.path.join(os.path.dirname(pspipe.__file__), "js")
+os.system(f"cp {multistep_path}/multistep2.js {out_dir}/")
+
+maps = [f"{freq}_{split}" for freq in map_freqs for split in map_splits]
+
+filename = f"{out_dir}/{release}_sources.html"
+g = open(filename, mode='w')
+g.write('<html>\n')
+g.write('<head>\n')
+g.write(f'<title> Source subtraction for Planck {release} </title>\n')
+g.write(f'<script src="multistep2.js"></script>\n')
+g.write('<script> add_step("src_id", ["c","v"]) </script> \n')
+g.write('<script> add_step("srcfree", ["j","k"]) </script> \n')
+g.write('<script> add_step("map", ["a","z"]) </script> \n')
+g.write('</head> \n')
+g.write('<body> \n')
+g.write(f'<h1> Source subtraction for Planck {release} </h1>')
+g.write('<p> This webpage display the 100 brightest sources at 150 GHz, with a flux higher than 150mJy detected with a SNR > 5. </p> \n')
+g.write('<p> You can switch between sources (c/v), between the map and source free map (j/k) and between the maps (a/z). </p> \n')
+g.write('<div class=src_id> \n')
+for src_id in ids_src:
+
+
+    g.write('<div class=srcfree>\n')
+    for type in ["", "_srcfree"]:
+
+        prefix = f"{release}{type}"
+        g.write('<div class=map>\n')
+        for map_name in maps:
+            
+            freq, split = map_name.split("_")
+            file_name = f"{prefix}_f{freq}_{split}_{src_id:03d}_T.png"
+            g.write(f'<h2> {freq} GHz split {split} - {prefix} [Source no {src_id:03d}] </p> \n')
+            g.write('<img src="' + file_name + '" width="40%" /> \n')
+        g.write('</div>\n')
+
+    g.write('</div>\n')
+g.write('</div> \n')
+g.write('</body> \n')
+g.write('</html> \n')
+g.close()
+
+

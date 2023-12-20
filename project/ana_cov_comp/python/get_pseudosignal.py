@@ -175,4 +175,4 @@ for a1, array1 in enumerate(array_list):
 
 
 np.save(f'{bestfit_dir}/pseudo_beamed_signal_model.npy', pseudo_beamed_signal_model/4/np.pi) # FIXME: /4pi cause pspy convention
-np.save(f'{bestfit_dir}/pseudo_tfed_beamed_signal_model.npy', pseudo_beamed_signal_model/4/np.pi) # FIXME: /4pi cause pspy convention
+np.save(f'{bestfit_dir}/pseudo_tfed_beamed_signal_model.npy', pseudo_tfed_beamed_signal_model/4/np.pi) # FIXME: /4pi cause pspy convention

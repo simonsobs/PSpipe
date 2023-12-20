@@ -91,6 +91,7 @@ array_list = [f'{sv}_{ar}' for sv, ar in zip(sv_list, ar_list)]
 fg_mat = foreground_matrix_from_files(f_name_fg, array_list, lmax, spectra) 
 
 # apply beam and transfer function
+log.info("Getting beamed and tf'ed signal")
 beamed_signal_model = np.zeros_like(fg_mat)
 tfed_beamed_signal_model = np.zeros_like(fg_mat)
 for a1, array1 in enumerate(array_list):
@@ -129,39 +130,43 @@ np.save(f'{bestfit_dir}/beamed_signal_model.npy', beamed_signal_model)
 np.save(f'{bestfit_dir}/tfed_beamed_signal_model.npy', tfed_beamed_signal_model)
 
 # Next, we loop over each of them and apply the appropriate MCM
+log.info("Getting pseudo beamed and tf'ed signal")
+
 pseudo_beamed_signal_model = np.zeros_like(beamed_signal_model)
 pseudo_tfed_beamed_signal_model = np.zeros_like(tfed_beamed_signal_model)
 single_coupling_pols = {'TT': '00', 'TE': '02', 'ET': '02', 'TB': '02', 'BT': '02'}
 
 for a1, array1 in enumerate(array_list):
     for a2, array2 in enumerate(array_list):
+        log.info(f"{array1}x{array2}")
         arrs = f'w_{array1}xw_{array2}' if a1 <= a2 else f'w_{array2}xw_{array1}' # canonical
 
-        for inp, out in ((beamed_signal_model, pseudo_beamed_signal_model), (tfed_beamed_signal_model, pseudo_tfed_beamed_signal_model)):
-            # handle single coupling polarization combos
-            for P1P2 in single_coupling_pols:
-                spin = single_coupling_pols[P1P2]
-                mcm_file = f'{couplings_dir}/{arrs}_{spin}_coupling.npy'
-                M = np.load(mcm_file) * (2*ells + 1) # 2l + 1 across rows
-                pol1, pol2 = P1P2
-                p1, p2 = 'TEB'.index(pol1), 'TEB'.index(pol2)
-                
+        # handle single coupling polarization combos
+        for P1P2 in single_coupling_pols:
+            spin = single_coupling_pols[P1P2]
+            mcm_file = f'{couplings_dir}/{arrs}_{spin}_coupling.npy'
+            M = np.load(mcm_file) * (2*ells + 1) # 2l + 1 across rows
+            pol1, pol2 = P1P2
+            p1, p2 = 'TEB'.index(pol1), 'TEB'.index(pol2)
+            for inp, out in ((beamed_signal_model, pseudo_beamed_signal_model), (tfed_beamed_signal_model, pseudo_tfed_beamed_signal_model)):
                 out[a1, p1, a2, p2] = M @ inp[a1, p1, a2, p2]
 
-            # read 22 couplings
-            Mpp = np.load( f'{couplings_dir}/{arrs}_pp_coupling.npy') * (2*ells + 1) # 2l + 1 across rows
-            Mmm = np.load( f'{couplings_dir}/{arrs}_mm_coupling.npy') * (2*ells + 1) # 2l + 1 across rows
+        # read 22 couplings
+        Mpp = np.load( f'{couplings_dir}/{arrs}_pp_coupling.npy') * (2*ells + 1) # 2l + 1 across rows
+        Mmm = np.load( f'{couplings_dir}/{arrs}_mm_coupling.npy') * (2*ells + 1) # 2l + 1 across rows
 
-            # handle EE BB
-            M = np.block([[Mpp, Mmm], [Mmm, Mpp]])
+        # handle EE BB
+        M = np.block([[Mpp, Mmm], [Mmm, Mpp]])
+        for inp, out in ((beamed_signal_model, pseudo_beamed_signal_model), (tfed_beamed_signal_model, pseudo_tfed_beamed_signal_model)):
             clee = inp[a1, 1, a2, 1]
             clbb = inp[a1, 2, a2, 2]
             pcl = M @ np.hstack([clee, clbb])
             out[a1, 1, a2, 1] = pcl[:len(clee)]
             out[a1, 2, a2, 2] = pcl[len(clee):]
-            
-            # handle EB BE
-            M = np.block([[Mpp, -Mmm], [-Mmm, Mpp]])
+        
+        # handle EB BE
+        M = np.block([[Mpp, -Mmm], [-Mmm, Mpp]])
+        for inp, out in ((beamed_signal_model, pseudo_beamed_signal_model), (tfed_beamed_signal_model, pseudo_tfed_beamed_signal_model)):
             cleb = inp[a1, 1, a2, 2]
             clbe = inp[a1, 2, a2, 1]
             pcl = M @ np.hstack([cleb, clbe])

@@ -174,5 +174,5 @@ for a1, array1 in enumerate(array_list):
             out[a1, 2, a2, 1] = pcl[len(cleb):]
 
 
-np.save(f'{bestfit_dir}/pseudo_beamed_signal_model.npy', pseudo_beamed_signal_model)
-np.save(f'{bestfit_dir}/pseudo_tfed_beamed_signal_model.npy', pseudo_beamed_signal_model)
+np.save(f'{bestfit_dir}/pseudo_beamed_signal_model.npy', pseudo_beamed_signal_model/4/np.pi) # FIXME: /4pi cause pspy convention
+np.save(f'{bestfit_dir}/pseudo_tfed_beamed_signal_model.npy', pseudo_beamed_signal_model/4/np.pi) # FIXME: /4pi cause pspy convention

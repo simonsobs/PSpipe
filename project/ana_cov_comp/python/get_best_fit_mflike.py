@@ -32,7 +32,7 @@ pspy_utils.create_directory(plot_dir)
 
 cosmo_params = d["cosmo_params"]
 log.info(f"Computing CMB spectra with cosmological parameters: {cosmo_params}")
-l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, min(10000,lmax + 500))
+l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, lmax + 1)
 
 f_name = f"{bestfit_dir}/cmb.dat"
 so_spectra.write_ps(f_name, l_th, ps_dict, type, spectra=spectra)
@@ -72,8 +72,8 @@ for sv, ar in zip(sv_list, ar_list):
 
     passbands[f"{sv}_{ar}"] = [nu_ghz, pb]
 
-
 log.info("Getting foregrounds contribution")
+l_th = l_th[l_th < 10_000] # models only go up to 9_999
 fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components, fg_params, fg_norm)
 
 for sv1, ar1 in zip(sv_list, ar_list):
@@ -85,6 +85,10 @@ for sv1, ar1 in zip(sv_list, ar_list):
             fg[spec] = fg_dict[spec.lower(), "all", name1, name2]
         so_spectra.write_ps(f"{bestfit_dir}/fg_{name1}x{name2}.dat", l_th, fg, type, spectra=spectra)
 
+############################################################
+### after this, we are done, the rest is legacy/plotting ###
+############################################################
+
 log.info("Writing best fit spectra")
 spectra_list = ([f"{a}x{b}" for a,b in combinations_with_replacement(passbands.keys(), 2)])
 best_fit_dict = {}
@@ -92,11 +96,8 @@ for ps_name in spectra_list:
     best_fit_dict[ps_name] = {}
     name1, name2 = ps_name.split("x")
     for spec in spectra:
-        if spec.lower() in d["fg_components"].keys():
-            fg = fg_dict[spec.lower(), "all", name1, name2]
-        else:
-            fg = fg_dict[spec.lower()[::-1], "all", name1, name2]
-        best_fit_dict[ps_name][spec] = ps_dict[spec] + fg
+        fg = fg_dict[spec.lower(), "all", name1, name2]
+        best_fit_dict[ps_name][spec] = ps_dict[spec][:(9_999 + 1) - 2] + fg
     so_spectra.write_ps(f"{bestfit_dir}/cmb_and_fg_{ps_name}.dat", l_th, best_fit_dict[ps_name], type, spectra=spectra)
 
 
@@ -128,7 +129,7 @@ for mode in ["tt", "te", "tb", "ee", "eb", "bb"]:
         for comp in fg_components[mode]:
             ax.plot(l_th, fg_dict[mode, comp, name1, name2])
         ax.plot(l_th, fg_dict[mode, "all", name1, name2], color="k")
-        ax.plot(l_th, ps_dict[mode.upper()], color="gray")
+        ax.plot(l_th, ps_dict[mode.upper()][:(9_999 + 1) - 2], color="gray")
         ax.set_title(cross)
         if mode == "tt":
             ax.set_yscale("log")
@@ -143,7 +144,7 @@ for mode in ["tt", "te", "tb", "ee", "eb", "bb"]:
             for comp in fg_components[mode]:
                 ax.plot(l_th, fg_dict[mode, comp, name2, name1])
             ax.plot(l_th, fg_dict[mode, "all", name2, name1])
-            ax.plot(l_th, ps_dict[mode.upper()], color="gray")
+            ax.plot(l_th, ps_dict[mode.upper()][:(9_999 + 1) - 2], color="gray")
             ax.set_title(f"{name2}x{name1}")
 
     if mode[0] == mode[1]:

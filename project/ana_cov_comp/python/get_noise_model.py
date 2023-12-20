@@ -1,115 +1,289 @@
-#TO BE TESTED MORE
-
-import matplotlib
-
-matplotlib.use("Agg")
+"""
+This script computes the noise model for the covariance from the measured alms,
+using auto - crosses. For INKA covariances, we only need the pseudospectra.
+"""
 import sys
 
-import numpy as np
-import pylab as plt
-import scipy.interpolate
 from pspipe_utils import log
-from pspy import pspy_utils, so_dict, so_spectra
+from pspy import so_dict, pspy_utils
 
+from pixell import curvedsky
 
-def interpolate_dict(lb, cb, lth, spectra, force_positive=True, l_inf_lmin_equal_lmin=True, discard_cross=True):
-       cl_dict = {}
-       for spec in spectra:
-            cl = scipy.interpolate.interp1d(lb, cb[spec], fill_value = "extrapolate")
-            cl_dict[spec] = cl(lth)
-            if l_inf_lmin_equal_lmin:
-                id = np.where(lth <= np.min(lb))
-                cl_dict[spec][id]= cb[spec][0]
-            if force_positive:
-                cl_dict[spec] = np.abs(cl_dict[spec])
-            if discard_cross:
-                if spec not in ["TT", "EE", "BB"]:
-                    cl_dict[spec] = np.zeros(len(lth))
-       return cl_dict
+import numpy as np
+from scipy.signal import savgol_filter
+import matplotlib.pyplot as plt
+
+from itertools import combinations, combinations_with_replacement as cwr, product
+import os
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+
 log = log.get_logger(**d)
 
-spectra_dir = d["spectra_dir"]
+alms_dir = d['alms_dir']
+savgol_w = d['noise_model_savgol_w']
+savgol_k = d['noise_model_savgol_k']
 
-ps_model_dir = d["noise_model_dir"]
-plot_dir = d["plot_dir"] + "/noise_model"
-
-pspy_utils.create_directory(ps_model_dir)
+noise_model_dir = d["noise_model_dir"]
+plot_dir = os.path.join(d["plot_dir"], "noise_model")
+pspy_utils.create_directory(noise_model_dir)
 pspy_utils.create_directory(plot_dir)
 
-spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-surveys = d["surveys"]
-lmax = d["lmax"]
-type = d["type"]
-binning_file = d["binning_file"]
+surveys = d['surveys']
+arrays = {sv: d[f'arrays_{sv}'] for sv in surveys}
 
-lth = np.arange(2, lmax+2)
+# we will make noise models for each survey and array,
+# so "everything" happens inside this loop
+for sv1 in surveys:
+    for ar1 in arrays[sv1]:
+        print(f'Doing {sv1}, {ar1}')
 
-for sv in surveys:
-    arrays = d[f"arrays_{sv}"]
-    for id_ar1, ar1 in enumerate(arrays):
-        for id_ar2, ar2 in enumerate(arrays):
-            if id_ar1 > id_ar2: continue
-
-            log.info(f"Computing noise for '{sv}' survey and '{ar1}x{ar2}' arrays")
-
-            l, bl_ar1 = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar1}"])
-            l, bl_ar2 = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar2}"])
-
-
-            lb, nbs_ar1xar1 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar1}_noise.dat", spectra=spectra)
-            lb, nbs_ar1xar2 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar1}x{sv}_{ar2}_noise.dat", spectra=spectra)
-            lb, nbs_ar2xar2 = so_spectra.read_ps(f"{spectra_dir}/{type}_{sv}_{ar2}x{sv}_{ar2}_noise.dat", spectra=spectra)
-
-            lb, bb_ar1 = pspy_utils.naive_binning(l, bl_ar1, binning_file, lmax)
-            lb, bb_ar2 = pspy_utils.naive_binning(l, bl_ar2, binning_file, lmax)
-
-            Rb = {}
-            for spec in spectra:
-                nbs_ar1xar1[spec] *= bb_ar1 * bb_ar1
-                nbs_ar1xar2[spec] *= bb_ar1 * bb_ar2
-                nbs_ar2xar2[spec] *= bb_ar2 * bb_ar2
-                Rb[spec] = nbs_ar1xar2[spec] / np.sqrt(np.abs(nbs_ar1xar1[spec] * nbs_ar2xar2[spec]))
-
-            if ar1 == ar2:
-                nlth = interpolate_dict(lb, nbs_ar1xar1, lth, spectra)
+        # load alms for this survey and array
+        # we are assuming:
+        # - noise is uncorrelated between surveys 
+        # - noise is uncorrelated between arrays within surveys
+        # - alms have shape (npol=3, nalm)
+        alms = []
+        nchan = len(arrays[sv1][ar1])
+        
+        for i, chan1 in enumerate(arrays[sv1][ar1]):
+            if i == 0:
+                nsplit = len(d[f'maps_{sv1}_{ar1}_{chan1}'])
             else:
-                Rlth = interpolate_dict(lb, Rb, lth, spectra)
-                nlth_ar1xar1 = interpolate_dict(lb, nbs_ar1xar1, lth, spectra)
-                nlth_ar2xar2 = interpolate_dict(lb, nbs_ar2xar2, lth, spectra)
-                nlth = {}
-                for spec in spectra:
-                    nlth[spec] = Rlth[spec] * np.sqrt(nlth_ar1xar1[spec] * nlth_ar2xar2[spec])
+                _nsplit = len(d[f'maps_{sv1}_{ar1}_{chan1}'])
+                assert _nsplit == nsplit, \
+                    f'sv={sv1}, ar={ar1}, chan={chan1}, nsplit={_nsplit}, expected {nsplit}'
+            
+            for split1 in range(nsplit):
+                alms.append(np.load(f'{alms_dir}/alms_{sv1}_{ar1}_{chan1}_{split1}.npy'))
+                assert alms[-1].ndim == 2, \
+                    f'sv={sv1}, ar={ar1}, chan={chan1}, split={split1} alm.ndim={alms[-1].ndim}, expected 2'
+                assert alms[-1].shape[0] == 3, \
+                    f'sv={sv1}, ar={ar1}, chan={chan1}, split={split1} alm.shape[0]={alms[-1].shape[0]}, expected 3'
+        
+        alms = np.asarray(alms).reshape(nchan, nsplit, 3, -1) # will fail if shape mismatches
 
+        # get the signal model for this survey and array from
+        # the average of split cross spectra. 
+        # we are assuming:
+        # - noise is uncorrelated between splits within arrays
+        nell = curvedsky.nalm2lmax(alms.shape[-1]) + 1
 
-            for spec in spectra:
-                plt.figure(figsize=(12,12))
-                plt.plot(lth,
-                        nlth[spec],
-                        label="interpolate",
-                        color="lightblue")
-                if ar1 == ar2:
-                    nbs= nbs_ar1xar1[spec]
+        signal_model = 0
+        count = 0
+        for split1, split2 in combinations(range(nsplit), r=2):
+            alms1, alms2 = alms[:, split1], alms[:, split2]
+            
+            _signal_model = np.zeros((nchan, 3, nchan, 3, nell), dtype=alms.real.dtype)
+            
+            # signal model is not guaranteed to be symmetric cause of split crosses
+            for preidx1, preidx2 in product(np.ndindex((nchan, 3)), repeat=2):
+                _signal_model[(*preidx1, *preidx2)] = curvedsky.alm2cl(alms1[preidx1], alms2[preidx2])
+            
+            signal_model += _signal_model
+            count += 1
+        assert count == nsplit * (nsplit - 1) / 2, \
+            f'Calculated {count=} but expected {nsplit * (nsplit - 1) / 2}'
+        signal_model /= count
+        
+        # signal model is not guaranteed to be symmetric cause of split crosses,
+        # but we know it should be. in effect, we get extra independent samples
+        # of the off diagonals by virtue of there being 2 of them. alternatively,
+        # could have iterated split1, split2 over permutations in above loop
+        signal_model = (signal_model + np.moveaxis(signal_model, (0, 1), (2, 3))) / 2
+
+        # each noise model will have the following shape:
+        # (nchan, npol=3, nchan, npol=3, nell)
+        # we are assuming:
+        # - noise may be correlated between channels and pols
+        # - beams and masks don't vary over split
+        for split1 in range(nsplit):
+            print(f'Doing {sv1}, {ar1}, set{split1}')
+
+            alms1 = alms[:, split1]
+            total_model = np.zeros((nchan, 3, nchan, 3, nell), dtype=alms.real.dtype)
+            
+            # signal model is guaranteed to be symmetric cause of split auto
+            for preidx1, preidx2 in cwr(np.ndindex((nchan, 3)), r=2):
+                total_model[(*preidx1, *preidx2)] = curvedsky.alm2cl(alms1[preidx1], alms1[preidx2])
+                if preidx1 != preidx2:
+                    total_model[(*preidx2, *preidx1)] = total_model[(*preidx1, *preidx2)]
+
+            inp_noise_model = total_model - signal_model
+            out_noise_model = np.zeros_like(inp_noise_model)
+
+            inp_corr_model = np.zeros_like(inp_noise_model)
+            out_corr_model = np.zeros_like(inp_noise_model)
+            
+            mask_model = np.zeros_like(inp_noise_model, dtype=bool)
+
+            # huzzah! now we have a noisy thing that we want to smooth, 
+            # nonparametrically. we need to fit the diagonals first, because
+            # we will fit the off-diagonal corrs, and need to convert them back
+            # to cross-spectra using the fit diagonals; i.e., the fit diagonals
+            # all need to exist before doing the off-diagonals.
+            for preidx1 in np.ndindex(nchan, 3):
+
+                # only if we are TT, we start at l=0, otherwise l=2
+                if preidx1[1] == 0:
+                    start = 0
                 else:
-                    nbs= nbs_ar1xar2[spec]
+                    assert np.all(inp_noise_model[(*preidx1, *preidx1)][:2] == 0), \
+                        f'{preidx1=}; expected 0 for l=0,1'
+                    start = 2
 
-                plt.plot(lb,
-                         nbs,
-                         ".",
-                         label = f"{sv} {ar1}x{ar2}",
-                         color="red")
-                plt.legend(fontsize=20)
-                plt.savefig(f"{plot_dir}/noise_interpolate_{ar1}x{ar2}_{sv}_{spec}.png", bbox_inches="tight")
-                plt.clf()
-                plt.close()
+                y = inp_noise_model[(*preidx1, *preidx1)][start:].copy()
 
-            spec_name_noise_mean = f"mean_{ar1}x{ar2}_{sv}_noise"
-            so_spectra.write_ps(ps_model_dir + f"/{spec_name_noise_mean}.dat", lth, nlth, type, spectra=spectra)
+                # might start <= 0, so first we clip and fit without log, and
+                # add fitted pts back where it is <= 0. in principle
+                # this could still fail, so if it doesn't, then this was a 
+                # fluctuation consistent with noise
+                mask = y <= 0
+                if np.any(mask):
+                    print(f'{preidx1=} has {np.sum(mask)} values <= 0')
+                np.clip(y, 0, None, out=y)
+                fit_y = savgol_filter(y, savgol_w, savgol_k)
+                y[mask] = fit_y[mask]
+                assert not np.any(y <= 0), \
+                    print(f'{preidx1=} still has {np.sum(y <= 0)} values <= 0 after correcting')
+                mask_model[(*preidx1, *preidx1)][start:] = mask
 
-            if ar2 != ar1:
-                spec_name_noise_mean = f"mean_{ar2}x{ar1}_{sv}_noise"
-                TE, ET, TB, BT, EB, BE = nlth["ET"], nlth["TE"], nlth["BT"], nlth["TB"], nlth["BE"], nlth["EB"]
-                nlth["TE"], nlth["ET"], nlth["TB"], nlth["BT"], nlth["EB"], nlth["BE"] = TE, ET, TB, BT, EB, BE
-                so_spectra.write_ps(ps_model_dir + f"/{spec_name_noise_mean}.dat", lth, nlth, type, spectra=spectra)
+                # now fit in log space
+                fit_y = savgol_filter(np.log(y), savgol_w, savgol_k)
+                fit_y = np.exp(fit_y)
+                out_noise_model[(*preidx1, *preidx1)][start:] = fit_y
+
+            for preidx1, preidx2 in combinations(np.ndindex((nchan, 3)), r=2):
+
+                # only if we are TT, we start at l=0, otherwise l=2
+                if preidx1[1] == 0 and preidx2[1] == 0:
+                    start = 0
+                else:
+                    assert np.all(inp_noise_model[(*preidx1, *preidx2)][:2] == 0), \
+                        f'{preidx1=}, {preidx2=}; expected 0 for l=0,1'
+                    start = 2
+
+                y = inp_noise_model[(*preidx1, *preidx2)][start:].copy()
+                y /= np.sqrt(out_noise_model[(*preidx1, *preidx1)][start:])
+                y /= np.sqrt(out_noise_model[(*preidx2, *preidx2)][start:])
+
+                inp_corr_model[(*preidx1, *preidx2)][start:] = y
+                inp_corr_model[(*preidx2, *preidx1)][start:] = y
+
+                # might start >= |1|, so first we clip and fit without arctanh, and
+                # add fitted pts back where it is >= |1|. in principle
+                # this could still fail, so if it doesn't, then this was a 
+                # fluctuation consistent with noise
+                mask = np.logical_or(y <= -1, 1 <= y) 
+                if np.any(mask):
+                    print(f'{preidx1=}, {preidx2=} has {np.sum(mask)} values >= |1|')
+                np.clip(y, -1, 1, out=y)
+                fit_y = savgol_filter(y, savgol_w, savgol_k)
+                y[mask] = fit_y[mask]
+                assert not np.any(np.logical_or(y <= -1, 1 <= y)), \
+                    print(f'{preidx1=}, {preidx2=} still has {np.logical_or(y <= -1, 1 <= y)} values >= |1| after correcting')
+                mask_model[(*preidx1, *preidx2)][start:] = mask
+                mask_model[(*preidx2, *preidx1)][start:] = mask
+
+                # now fit in arctanh space
+                fit_y = savgol_filter(np.arctanh(y), savgol_w, savgol_k)
+                fit_y = np.tanh(fit_y)
+                out_corr_model[(*preidx1, *preidx2)][start:] = fit_y
+                out_corr_model[(*preidx2, *preidx1)][start:] = fit_y
+
+                fit_y *= np.sqrt(out_noise_model[(*preidx1, *preidx1)][start:])
+                fit_y *= np.sqrt(out_noise_model[(*preidx2, *preidx2)][start:])
+                out_noise_model[(*preidx1, *preidx2)][start:] = fit_y
+                out_noise_model[(*preidx2, *preidx1)][start:] = fit_y
+
+            # plot and save
+            for preidx1, preidx2 in cwr(np.ndindex((nchan, 3)), r=2):
+
+                if preidx1 == preidx2:
+                    # ps
+                    raw_y = inp_noise_model[(*preidx1, *preidx2)]
+                    fit_y = out_noise_model[(*preidx1, *preidx2)]
+                    red_mask = mask_model[(*preidx1, *preidx2)]
+                    l = np.arange(raw_y.size)
+                    fig, axs = plt.subplots(ncols=2, nrows=2, sharex='col', sharey='row',
+                                            figsize=(12, 8), dpi=100, height_ratios=(2, 1),
+                                            layout='constrained')
+                    axs[0, 0].loglog(l, raw_y, alpha=0.3, label='raw')
+                    axs[0, 0].loglog(l, fit_y, alpha=1, label='fit')
+                    axs[0, 0].scatter(l[red_mask], fit_y[red_mask], alpha=1, c='r')
+                    axs[0, 0].set_ylabel('$N_{\ell}$', fontsize=12)
+                    axs[0, 0].legend()
+                    axs[0, 0].grid()
+
+                    axs[1, 0].semilogx(l, (fit_y / raw_y), alpha=1, color='k')
+                    axs[1, 0].scatter(l[red_mask], (fit_y / raw_y)[red_mask], alpha=1, c='r')
+                    axs[1, 0].set_xlabel('$\ell$', fontsize=12)
+                    axs[1, 0].set_ylabel('fit / raw', fontsize=12)
+                    axs[1, 0].grid()
+
+                    axs[0, 1].semilogy(l, raw_y, alpha=0.3, label='raw')
+                    axs[0, 1].semilogy(l, fit_y, alpha=1, label='fit')
+                    axs[0, 1].scatter(l[red_mask], fit_y[red_mask], alpha=1, c='r')
+                    axs[0, 1].legend()
+                    axs[0, 1].grid()
+
+                    axs[1, 1].plot(l, (fit_y / raw_y), alpha=1, color='k')
+                    axs[1, 1].scatter(l[red_mask], (fit_y / raw_y)[red_mask], alpha=1, c='r')
+                    axs[1, 1].set_xlabel('$\ell$', fontsize=12)
+                    axs[1, 1].grid()
+
+                    chan1, chan2 = arrays[sv1][ar1][preidx1[0]], arrays[sv1][ar1][preidx2[0]]
+                    pol1, pol2 = 'TEB'[preidx1[1]], 'TEB'[preidx2[1]]
+                    fig.suptitle(f'{sv1}_{ar1}_set{split1} {chan1}_{pol1}x{chan2}_{pol2}')
+
+                    plt_fn = f'{plot_dir}/{sv1}_{ar1}_set{split1}_{chan1}_{pol1}x{chan2}_{pol2}_ps.png'
+                    plt.savefig(plt_fn, bbox_inches='tight')
+                    plt.close()
+
+                else:
+                    # corrs, ps
+                    for i, (raw_y, fit_y) in enumerate(((inp_corr_model[(*preidx1, *preidx2)], out_corr_model[(*preidx1, *preidx2)]),
+                                                        (inp_noise_model[(*preidx1, *preidx2)], out_noise_model[(*preidx1, *preidx2)]))):
+                        red_mask = mask_model[(*preidx1, *preidx2)]
+                        l = np.arange(raw_y.size)
+                        fig, axs = plt.subplots(ncols=2, nrows=2, sharex='col', sharey='row',
+                                                figsize=(12, 8), dpi=100, height_ratios=(2, 1),
+                                                layout='constrained')
+                        axs[0, 0].semilogx(l, raw_y, alpha=0.3, label='raw')
+                        axs[0, 0].semilogx(l, fit_y, alpha=1, label='fit')
+                        axs[0, 0].scatter(l[red_mask], fit_y[red_mask], alpha=1, c='r')
+                        axs[0, 0].set_ylabel(['$r_{\ell}$', '$N_{\ell}$'][i], fontsize=12)
+                        axs[0, 0].legend()
+                        axs[0, 0].grid()
+
+                        axs[1, 0].semilogx(l, (fit_y - raw_y), alpha=1, color='k')
+                        axs[1, 0].scatter(l[red_mask], (fit_y - raw_y)[red_mask], alpha=1, c='r')
+                        axs[1, 0].set_xlabel('$\ell$', fontsize=12)
+                        axs[1, 0].set_ylabel('fit - raw', fontsize=12)
+                        axs[1, 0].grid()
+
+                        axs[0, 1].plot(l, raw_y, alpha=0.3, label='raw')
+                        axs[0, 1].plot(l, fit_y, alpha=1, label='fit')
+                        axs[0, 1].scatter(l[red_mask], fit_y[red_mask], alpha=1, c='r')
+
+                        axs[0, 1].legend()
+                        axs[0, 1].grid()
+
+                        axs[1, 1].plot(l, (fit_y - raw_y), alpha=1, color='k')
+                        axs[1, 1].scatter(l[red_mask], (fit_y - raw_y)[red_mask], alpha=1, c='r')
+                        axs[1, 1].set_xlabel('$\ell$', fontsize=12)
+                        axs[1, 1].grid()
+
+                        chan1, chan2 = arrays[sv1][ar1][preidx1[0]], arrays[sv1][ar1][preidx2[0]]
+                        pol1, pol2 = 'TEB'[preidx1[1]], 'TEB'[preidx2[1]]
+                        fig.suptitle(f'{sv1}_{ar1}_set{split1} {chan1}_{pol1}x{chan2}_{pol2}')
+
+                        plt_fn = f"{plot_dir}/{sv1}_{ar1}_set{split1}_{chan1}_{pol1}x{chan2}_{pol2}_{['corr', 'ps'][i]}.png"
+                        plt.savefig(plt_fn, bbox_inches='tight')
+                        plt.close()
+
+            noise_model_fn = f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_noise_model.npy'
+            np.save(noise_model_fn, out_noise_model)
+
+        alms = None # help with memory

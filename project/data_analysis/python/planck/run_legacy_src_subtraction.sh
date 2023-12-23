@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 # This bash script is used to run the dory src subtraction code
+# on Planck legacy maps. Note that we use the Planck NPIPE beams
+# because legacy beams are truncated at l=4000 and the dory source
+# subtraction code does not work properly with truncated beams.
 
 # Path to dory.py (part of the tenki python package)
 dory_path=/path/to/tenki/point_sources
@@ -29,7 +32,7 @@ sigma_cat=15
 sigma_sub=2
 
 # Splits and frequencies
-splits=("A" "B")
+splits=("1" "2")
 freqs=("100" "143" "217")
 
 # Using 256 cpus, this should run in ~10mins per map
@@ -37,12 +40,12 @@ freqs=("100" "143" "217")
 for freq in ${freqs[@]}; do
   for split in ${splits[@]}; do
 
-    beam_file=${beam_path}/bl_T_npipe_${freq}${split}x${freq}${split}.dat
-    map_file=${map_path}/npipe6v20${split}_f${freq}_map.fits
-    ivar_file=${map_path}/npipe6v20${split}_f${freq}_ivar.fits
 
-    out_map_file=${map_path}/npipe6v20${split}_f${freq}_map_srcfree.fits
-    out_map_model_file=${map_path}/npipe6v20${split}_f${freq}_map_model.fits
+    map_file=${map_path}/HFI_SkyMap_2048_R3.01_halfmission-${split}_f${freq}_map.fits
+    ivar_file=${map_path}/HFI_SkyMap_2048_R3.01_halfmission-${split}_f${freq}_ivar.fits
+    beam_file=${beam_path}/bl_T_npipe_${freq}_coadd.dat
+    out_map_file=${map_path}/HFI_SkyMap_2048_R3.01_halfmission-${split}_f${freq}_map_srcfree.fits
+    out_map_model_file=${map_path}/HFI_SkyMap_2048_R3.01_halfmission-${split}_f${freq}_map_model.fits
 
     out_cat_path=${map_path}/catalogs/cats_${freq}${split}
 

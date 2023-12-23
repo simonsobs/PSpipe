@@ -1,5 +1,5 @@
 """
-This script is used to get the noise alms for Planck NPIPE
+This script is used to get the noise alms for Planck NPIPE or legacy
 noise simulations and to save them to disk in a format
 compatible with the requirements of `mc_mnms_get_spectra.py`
 Disk usage: 144M per alm
@@ -19,9 +19,16 @@ lmax = d["lmax"]
 niter = d["niter"]
 sv = "Planck"
 planck_arrays = d[f"arrays_{sv}"]
-planck_splits = ["A", "B"]
+
+version = "legacy"
 
 npipe_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
+legacy_dir = "/pscratch/sd/t/tlouis/data_analysis_v4_dec/planck_co_analysis/planck_legacy_sim/"
+
+if version == "npipe":
+    planck_splits = ["A", "B"]
+if version == "legacy":
+    planck_splits = ["hm1", "hm2"]
 
 output_dir = "noise_alms"
 pspy_utils.create_directory(output_dir)
@@ -43,15 +50,21 @@ for id_mpi in subtasks:
 
     cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]
 
-    # Note that and we are using the sim index 0 as the first simulation (corresponding to the 200th NPIPE sim.)
-    map_name = f"{npipe_dir}/npipe6v20{split}_sim/{iii+200:04d}/residual/residual_npipe6v20{split}_{freq}_{iii+200:04d}.fits"
-    map_name_noise_fix  = f"{npipe_dir}/npipe6v20{split}_sim/{iii+200:04d}/noisefix/noisefix_{freq}{split}_{iii+200:04d}.fits"
+    if version == "npipe":
+        # Note that and we are using the sim index 0 as the first simulation (corresponding to the 200th NPIPE sim.)
+        map_name = f"{npipe_dir}/npipe6v20{split}_sim/{iii+200:04d}/residual/residual_npipe6v20{split}_{freq}_{iii+200:04d}.fits"
+        map_name_noise_fix  = f"{npipe_dir}/npipe6v20{split}_sim/{iii+200:04d}/noisefix/noisefix_{freq}{split}_{iii+200:04d}.fits"
 
-    hp_map = so_map.read_map(map_name, coordinate="gal", fields_healpix=[0,1,2])
-    noise_fix = so_map.read_map(map_name_noise_fix, coordinate="gal", fields_healpix=[0,1,2])
+        hp_map = so_map.read_map(map_name, coordinate="gal", fields_healpix=[0,1,2])
+        noise_fix = so_map.read_map(map_name_noise_fix, coordinate="gal", fields_healpix=[0,1,2])
 
-    hp_map.data[:] += noise_fix.data[:]
+        hp_map.data[:] += noise_fix.data[:]
 
+    if version == "legacy":
+        map_name = f"{legacy_dir}/legacy_noise_sim_{freq}_{split}_{iii:05d}.fits"
+        hp_map = so_map.read_map(map_name, coordinate="gal", fields_healpix=[0,1,2])
+
+        
     hp_map.data *= 1e6 # from K to uK
 
     alms = sph_tools.map2alm(hp_map, niter=niter, lmax=lmax, dtype=np.complex64)
@@ -67,5 +80,5 @@ for id_mpi in subtasks:
     # Note that we use the PSpipe conventions : i.e. indexing splits with an integer (here 0,1)
     np.save(f"{output_dir}/nlms_{sv}_f{freq}_set{planck_splits.index(split)}_{iii:05d}.npy", alms)
 
-    log.info(f"[NPIPE {freq}{split} sim n°{iii:05d}] Saved to disk in {time.time()-t0:.2f} s")
+    log.info(f"[Planck {version} {freq}{split} sim n°{iii:05d}] Saved to disk in {time.time()-t0:.2f} s")
 

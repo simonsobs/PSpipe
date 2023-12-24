@@ -1,5 +1,5 @@
 """
-This script correct the npipe power spectra from correlated residual measured in the AxB npipe simulations
+This script correct the npipe power spectra from correlated residual measured in the AxB npipe simulations or hm1xhm2 simulation in the case of legacy
 The correction has been precomputed using
 python get_planck_spectra_correction_from_nlms.py global_dr6v4xnpipe.dict
 python mc_spectra_analysis.py global_dr6v4xnpipe.dict

@@ -2,7 +2,7 @@ surveys = ["dr6", "Planck"]
 arrays_dr6 = [ "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 arrays_Planck = ["f100", "f143", "f217"]
 
-npipe_mc_correction = "/global/cfs/cdirs/act/data/tlouis/dr6v4/npipe_spectra_correction/15mJy_mask/"
+planck_mc_correction = "/global/cfs/cdirs/act/data/tlouis/dr6v4/npipe_spectra_correction/15mJy_mask/"
 
 data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
 map_dir_Planck = f'{data_dir}/npipe6v20_maps_0923/'

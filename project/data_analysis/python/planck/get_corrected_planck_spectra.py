@@ -24,14 +24,14 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
 
-mc_corr_dir = d["npipe_mc_correction"]
+mc_corr_dir = d["planck_mc_correction"]
 type = d["type"]
 n_sims = d["iStop"] - d["iStart"] + 1
 
 spec_dir = "spectra_leak_corr"
-spec_corr_dir = "spectra_leak_corr_npipe_bias_corr"
+spec_corr_dir = "spectra_leak_corr_planck_bias_corr"
 bestfit_dir = "best_fits"
-plot_dir = "plots/npipe_correction/"
+plot_dir = "plots/planck_mc_correction/"
 
 pspy_utils.create_directory(spec_corr_dir)
 pspy_utils.create_directory(plot_dir)

@@ -29,7 +29,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-npipe_corr = True
+planck_corr = True
 subtract_bf_fg = True
 
 
@@ -38,9 +38,9 @@ spec_dir = "spectra"
 bestfir_dir = "best_fits"
 cov_dir = "covariances"
 
-if npipe_corr:
-    spec_dir = "spectra_leak_corr_npipe_bias_corr"
-    output_dir += "_npipe_bias_corrected"
+if planck_corr:
+    spec_dir = "spectra_leak_corr_planck_bias_corr"
+    output_dir += "_planck_bias_corrected"
 
 if subtract_bf_fg:
     output_dir += "_fg_sub"

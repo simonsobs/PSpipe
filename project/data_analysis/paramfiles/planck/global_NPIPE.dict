@@ -1,0 +1,99 @@
+surveys = ["Planck"]
+arrays_Planck = ["f100", "f143", "f217"]
+
+data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
+npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
+
+deconvolve_pixwin = True
+pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
+
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
+niter = 3
+remove_mean = False
+binned_mcm = False
+lmax = 3000
+type = 'Dl'
+write_splits_spectra = True
+cov_T_E_only = False
+multistep_path = data_dir
+apply_kspace_filter = False
+use_toeplitz_mcm  = False
+use_toeplitz_cov  = True
+remove_mono_dipole = True
+
+# kspace filter parameters
+deconvolve_map_maker_tf_Planck = False
+mm_tf_Planck_f100 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_Planck_f143 = data_dir + "transfer_fcns/tf_unity.dat"
+mm_tf_Planck_f217 = data_dir + "transfer_fcns/tf_unity.dat"
+
+# maps
+n_splits_Planck = 2
+
+maps_Planck_f100 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_100_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_100_map.fits']
+maps_Planck_f143 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_143_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_143_map.fits']
+maps_Planck_f217 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_217_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_217_map.fits']
+
+cal_Planck_f100_per_split = [10**6, 10**6]
+cal_Planck_f143_per_split = [10**6, 10**6]
+cal_Planck_f217_per_split = [10**6, 10**6]
+
+pol_eff_Planck_f100_per_split = [1., 1.]
+pol_eff_Planck_f143_per_split = [1., 1.]
+pol_eff_Planck_f217_per_split = [1., 1.]
+
+do_bandpass_integration = True
+passband_dir = data_dir + "passbands/"
+
+freq_info_Planck_f100 = {"freq_tag": 100, "passband": passband_dir + "passband_npipe_f100.dat"}
+freq_info_Planck_f143 = {"freq_tag": 143, "passband": passband_dir + "passband_npipe_f143.dat"}
+freq_info_Planck_f217 = {"freq_tag": 217, "passband": passband_dir + "passband_npipe_f217.dat"}
+
+beam_dir_Planck = f'{data_dir}/beams/npipe/'
+
+beam_T_Planck_f100_per_split = [beam_dir_Planck + 'bl_T_npipe_100Ax100A.dat', beam_dir_Planck + 'bl_T_npipe_100Bx100B.dat']
+beam_T_Planck_f143_per_split = [beam_dir_Planck + 'bl_T_npipe_143Ax143A.dat', beam_dir_Planck + 'bl_T_npipe_143Bx143B.dat']
+beam_T_Planck_f217_per_split = [beam_dir_Planck + 'bl_T_npipe_217Ax217A.dat', beam_dir_Planck + 'bl_T_npipe_217Bx217B.dat']
+
+beam_pol_Planck_f100_per_split = [beam_dir_Planck + 'bl_pol_npipe_100Ax100A.dat', beam_dir_Planck + 'bl_pol_npipe_100Bx100B.dat']
+beam_pol_Planck_f143_per_split = [beam_dir_Planck + 'bl_pol_npipe_143Ax143A.dat', beam_dir_Planck + 'bl_pol_npipe_143Bx143B.dat']
+beam_pol_Planck_f217_per_split = [beam_dir_Planck + 'bl_pol_npipe_217Ax217A.dat', beam_dir_Planck + 'bl_pol_npipe_217Bx217B.dat']
+
+leakage_file_dir = beam_dir_Planck
+leakage_beam_Planck_f100 = ['gamma_npipe_100%s.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f143 = ['gamma_npipe_143%s.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f217 = ['gamma_npipe_217%s.dat' % split for split in ["A", "B"]]
+
+win_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/planck/download/planck_data/likelihood_mask/"
+
+window_T_Planck_f100_per_split = [win_dir + "COM_Mask_Likelihood-temperature-100-hm1_2048_R3.00.fits", win_dir + "COM_Mask_Likelihood-temperature-100-hm2_2048_R3.00.fits"]
+window_pol_Planck_f100_per_split =[win_dir + "COM_Mask_Likelihood-polarization-100-hm1_2048_R3.00.fits", win_dir + "COM_Mask_Likelihood-polarization-100-hm2_2048_R3.00.fits"]
+
+window_T_Planck_f143_per_split = [win_dir + "COM_Mask_Likelihood-temperature-143-hm1_2048_R3.00.fits", win_dir + "COM_Mask_Likelihood-temperature-143-hm2_2048_R3.00.fits"]
+window_pol_Planck_f143_per_split =[win_dir + "COM_Mask_Likelihood-polarization-143-hm1_2048_R3.00.fits", win_dir + "COM_Mask_Likelihood-polarization-143-hm2_2048_R3.00.fits"]
+
+window_T_Planck_f217_per_split = [win_dir + "COM_Mask_Likelihood-temperature-217-hm1_2048_R3.00.fits", win_dir + "COM_Mask_Likelihood-temperature-217-hm2_2048_R3.00.fits"]
+window_pol_Planck_f217_per_split =[win_dir + "COM_Mask_Likelihood-polarization-217-hm1_2048_R3.00.fits", win_dir + "COM_Mask_Likelihood-polarization-217-hm2_2048_R3.00.fits"]
+
+# best fit params (only used for sim generation and covariances computation)
+cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
+fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+
+#sim
+seed_sims = False
+iStart = 0
+iStop = 299
+sim_alm_dtype = "complex64"
+noise_sim_type_pa4 = 'tile_cmbmask'
+noise_sim_type_pa5 = 'tile_cmbmask'
+noise_sim_type_pa6 = 'tile_cmbmask_ivfwhm2'
+
+#plot
+range_TT = [10, 8000]
+range_TE = [-150, 150]
+range_ET = [-150, 150]
+range_EE = [-20, 50]
+
+planck_data_dir = data_dir + "planck_data/"

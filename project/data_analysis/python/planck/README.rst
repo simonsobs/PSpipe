@@ -9,7 +9,7 @@ The first step is the projection Planck NPIPE/legacy maps publicly available at 
 .. code:: shell
 
     salloc -N 1 -C cpu -q interactive -t 02:00:00
-    srun -n 8 -c 32 --cpu_bind=cores python project_planck_maps.py
+    OMP_NUM_THREADS=32 srun -n 8 -c 32 --cpu_bind=cores python project_planck_maps.py
 
 Once projected we might want to use them to compute power spectra or to get source subtracted maps. It requires to get data products such as beams which can be written to disk with
 
@@ -38,7 +38,7 @@ This directory also provides tools to get noise alms from NPIPE/legacy simulatio
 .. code:: shell
 
     salloc -N 1 -C cpu -q interactive -t 01:00:00
-    srun -n 64 -c 4 --cpu_bind=cores python get_planck_sim_nlms.py global_dr6v4xnpipe.dict
+    OMP_NUM_THREADS=64 srun -n 64 -c 4 --cpu_bind=cores python get_planck_sim_nlms.py global_dr6v4xnpipe.dict
     #real 26m42.475s (128 sims at 100,143,217 GHz)
 
 Note that the Planck Npipe spectra are biased, and we do need to correct the bias before comparing them to
@@ -47,14 +47,14 @@ the ACT spectra, the way we get the correction is the following
 .. code:: shell
 
     salloc -N 4 -C cpu -q interactive -t 03:00:00
-    srun -n 32 -c 32 --cpu_bind=cores python get_planck_spectra_correction_from_nlms.py global_dr6v4xnpipe.dict
+    OMP_NUM_THREADS=32 srun -n 32 -c 32 --cpu_bind=cores python get_planck_spectra_correction_from_nlms.py global_dr6v4xnpipe.dict
 
     salloc -N 1 -C cpu -q interactive -t 01:00:00
-    srun -n 1 -c 256 --cpu_bind=cores python mc_analysis.py global_dr6v4xnpipe.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_analysis.py global_dr6v4xnpipe.dict
 
 The first code is similar to the standard simulation spectra code, but it's residual only (no signal), the mc_analysis serve to produce the average of these spectra, then to correct the planck spectra run
 
 .. code:: shell
 
     salloc -N 1 -C cpu -q interactive -t 01:00:00
-    srun -n 1 -c 256 --cpu_bind=cores python get_corrected_planck_spectra.py global_dr6v4xnpipe.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_corrected_planck_spectra.py global_dr6v4xnpipe.dict

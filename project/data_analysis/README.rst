@@ -199,11 +199,11 @@ To generate a set of simulated spectra using the `mnms` noise simulation code yo
 
 .. code:: shell
 
-    salloc --nodes 2 --qos interactive --time 3:30:00 --constraint cpu
+    salloc --nodes 2 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=128 srun -n 4 -c 128 --cpu_bind=cores python mc_mnms_get_nlms.py global_dr6_v4.dict
     # real time ~ 3h (for 100 sims)
 
-    salloc --nodes 4 --qos interactive --time 3:00:00 --constraint cpu
+    salloc --nodes 4 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_dr6_v4.dict
     # real time ~ 1100s for each sim
 

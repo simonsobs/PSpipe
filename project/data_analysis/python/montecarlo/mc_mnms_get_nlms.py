@@ -78,7 +78,7 @@ for id_mpi in subtasks:
                 sim_arrays[i, 0, :][0] *= cal
                 sim_arrays[i, 0, :][1] *= cal / pol_eff
                 sim_arrays[i, 0, :][2] *= cal / pol_eff
-                noise_alms = curvedsky.map2alm(sim_arrays[i, 0, :], lmax=lmax, tweak=True)
+                noise_alms = curvedsky.map2alm(sim_arrays[i, 0, :], lmax=lmax)
 
                 np.save(f"{nlms_dir}/nlms_{sv}_{ar}_set{k}_{iii:05d}.npy", noise_alms)
 

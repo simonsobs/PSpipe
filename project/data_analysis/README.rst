@@ -120,7 +120,7 @@ First we need to create all the window functions. In the following we will assum
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
-    srun -n 5 -c 48 --cpu-bind=cores python get_window_dr6.py global_dr6_v4.dict
+    OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_window_dr6.py global_dr6_v4.dict
     # real	10m2.348s
 
 The next step is to precompute the mode coupling matrices associated with these window functions, we have N window functions corresponding to each (season X array a) data set, we will have to compute all the cross power spectra of the form

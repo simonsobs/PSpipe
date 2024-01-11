@@ -12,7 +12,7 @@ remove_mean = False
 binned_mcm = False
 lmax = 8500
 type = 'Dl'
-write_splits_spectra = True
+write_splits_spectra = False
 cov_T_E_only = False
 multistep_path = data_dir
 use_toeplitz_mcm  = False
@@ -77,19 +77,19 @@ maps_dr6_pa6_f150 = [data_dir + 'maps/cmb_night_pa6_f150_3pass_4way_set%d_map_sr
 
 
 cal_dr6_pa4_f150 = 1.0
-cal_dr6_pa4_f220 = 1.0274146516062883
-cal_dr6_pa5_f090 = 1.009463740391127
-cal_dr6_pa5_f150 = 0.9850773599437168
-cal_dr6_pa6_f090 = 1.0058561071340915
-cal_dr6_pa6_f150 = 0.9686333859482543
+cal_dr6_pa4_f220 = 1.03311
+cal_dr6_pa5_f090 = 1.00915
+cal_dr6_pa5_f150 = 0.98694
+cal_dr6_pa6_f090 = 1.00700
+cal_dr6_pa6_f150 = 0.97050
 
 
 pol_eff_dr6_pa4_f150 = 1.
-pol_eff_dr6_pa4_f220 = 0.9110596207306271 * 0.9750378395268338
-pol_eff_dr6_pa5_f090 = 0.95863404483436 * 0.993377678803953
-pol_eff_dr6_pa5_f150 = 0.955357736304545 * 0.99519087646282
-pol_eff_dr6_pa6_f090 = 0.9671205787611336 * 0.9984067543051879
-pol_eff_dr6_pa6_f150 = 0.9611809391254973 * 1.0014494501275761
+pol_eff_dr6_pa4_f220 = 0.9102043215105964
+pol_eff_dr6_pa5_f090 = 0.9474889080448128
+pol_eff_dr6_pa5_f150 = 0.9522047622130759
+pol_eff_dr6_pa6_f090 = 0.9663618697786318
+pol_eff_dr6_pa6_f150 = 0.9636718928481605
 
 
 passband_dir = data_dir + "passbands/"
@@ -156,13 +156,16 @@ window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
 
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
+
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+fg_params = {"a_tSZ": 2.97135917, "a_kSZ": 1.60, "a_p": 7.6142249, "beta_p": 2.2, "a_c": 2.75493343, "beta_c": 2.20, "a_s": 3.69978282, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+
 
 #sim
-iStart = 0
-iStop = 199
+iStart = 200
+iStop = 299
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

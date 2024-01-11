@@ -67,11 +67,11 @@ maps_Planck_f217 = [map_dir_Planck + 'HFI_SkyMap_2048_R3.01_halfmission-%d_f217_
 
 
 cal_dr6_pa4_f150 = 1.0
-cal_dr6_pa4_f220 = 1.0413683149640287
-cal_dr6_pa5_f090 = 1.009248781530139
-cal_dr6_pa5_f150 = 0.9868360445434046
-cal_dr6_pa6_f090 = 1.0071628126571666
-cal_dr6_pa6_f150 = 0.9702236210951761
+cal_dr6_pa4_f220 = 1.03311
+cal_dr6_pa5_f090 = 1.00915
+cal_dr6_pa5_f150 = 0.98694
+cal_dr6_pa6_f090 = 1.00700
+cal_dr6_pa6_f150 = 0.97050
 
 
 pol_eff_dr6_pa4_f150 = 1.
@@ -216,7 +216,9 @@ window_pol_Planck_f217 = win_dir + "window_dr6_pa4_f220_baseline.fits"
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+fg_params = {"a_tSZ": 2.97135917, "a_kSZ": 1.60, "a_p": 7.6142249, "beta_p": 2.2, "a_c": 2.75493343, "beta_c": 2.20, "a_s": 3.69978282, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+
+
 
 
 

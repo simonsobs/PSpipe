@@ -31,7 +31,7 @@ pspy_utils.create_directory(plot_dir)
 
 cosmo_params = d["cosmo_params"]
 log.info(f"Computing CMB spectra with cosmological parameters: {cosmo_params}")
-l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, lmax + 500)
+l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, lmax + 500, **d["accuracy_params"])
 
 f_name = f"{bestfit_dir}/cmb.dat"
 so_spectra.write_ps(f_name, l_th, ps_dict, type, spectra=spectra)

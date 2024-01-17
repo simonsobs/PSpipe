@@ -2,7 +2,7 @@
 #
 #SBATCH --nodes=1                # node count
 #SBATCH --ntasks-per-node=1      # total number of tasks per node
-#SBATCH -p physics
+#SBATCH --partition=physics
 #SBATCH --output=slurmoutput/R-%j.out
 #SBATCH --mail-type=begin        # send email when job begins
 #SBATCH --mail-type=end          # send email when job ends

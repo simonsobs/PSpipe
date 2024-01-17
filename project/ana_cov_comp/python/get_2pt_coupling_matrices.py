@@ -82,8 +82,7 @@ canonized_combos = {}
 # S S
 # iterate over all pairs/orders of fields, and get the canonized window pairs
 for field_info1, field_info2 in product(field_infos, repeat=2):
-    (ewin_name1, _, _), \
-    (ewin_name2, _, _) = psc.canonize_connected_2pt(
+    ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
         psc.get_ewin_info_from_field_info(field_info1, d, mode='w'),
         psc.get_ewin_info_from_field_info(field_info2, d, mode='w'),
         ewin_infos
@@ -98,17 +97,18 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
         # the coupling
         if (ewin_name1, ewin_name2, spintype) not in canonized_combos:
             canonized_combos[(ewin_name1, ewin_name2, spintype)] = [(field_info1, field_info2, spintype)]
-            assert not os.path.isfile(coupling_fn), \
-                f'{coupling_fn} exists but we should not yet have produced it in loop'
-            log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
-            
-            w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
-            w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
-            coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                             lmax=lmax, input_alm=True,
-                                             l_exact=l_exact, l_toep=l_toep,
-                                             l_band=l_band)
-            np.save(coupling_fn, coupling)  
+            if os.path.isfile(coupling_fn):
+                log.info(f'{coupling_fn} exists, skipping')
+            else:
+                log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
+                
+                w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
+                w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
+                coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
+                                                lmax=lmax, input_alm=True,
+                                                l_exact=l_exact, l_toep=l_toep,
+                                                l_band=l_band)
+                np.save(coupling_fn, coupling)  
 
         # if we have already gotten to this canonized window pair, add the
         # fields to the tracked list and ensure we've already calculated the
@@ -128,8 +128,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
     if (sv1 != sv2) or (ar1 != ar2) or (split1 != split2):
         continue
     else:
-        (ewin_name1, _, _), \
-        (ewin_name2, _, _) = psc.canonize_connected_2pt(
+        ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
             psc.get_ewin_info_from_field_info(field_info1, d, mode='ws', extra='sqrt_pixar'),
             psc.get_ewin_info_from_field_info(field_info2, d, mode='ws', extra='sqrt_pixar'),
             ewin_infos
@@ -144,17 +143,18 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             # the coupling
             if (ewin_name1, ewin_name2, spintype) not in canonized_combos:
                 canonized_combos[(ewin_name1, ewin_name2, spintype)] = [(field_info1, field_info2, spintype)]
-                assert not os.path.isfile(coupling_fn), \
-                    f'{coupling_fn} exists but we should not yet have produced it in loop'
-                log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
-                
-                w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
-                w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
-                coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                                 lmax=lmax, input_alm=True,
-                                                 l_exact=l_exact, l_toep=l_toep,
-                                                 l_band=l_band)
-                np.save(coupling_fn, coupling)  
+                if os.path.isfile(coupling_fn):
+                    log.info(f'{coupling_fn} exists, skipping')
+                else:
+                    log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
+                    
+                    w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
+                    w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
+                    coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
+                                                    lmax=lmax, input_alm=True,
+                                                    l_exact=l_exact, l_toep=l_toep,
+                                                    l_band=l_band)
+                    np.save(coupling_fn, coupling)  
 
             # if we have already gotten to this canonized window pair, add the
             # fields to the tracked list and ensure we've already calculated the

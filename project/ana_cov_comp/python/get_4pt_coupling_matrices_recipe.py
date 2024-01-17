@@ -100,10 +100,7 @@ canonized_combos = {}
 # S S S S
 # iterate over all pairs/orders of fields, and get the canonized window pairs
 for field_info1, field_info2, field_info3, field_info4 in product(field_infos, repeat=4):
-    (ewin_name1, _, _), \
-    (ewin_name2, _, _), \
-    (ewin_name3, _, _), \
-    (ewin_name4, _, _) = psc.canonize_disconnected_4pt(
+    ewin_name1, ewin_name2, ewin_name3, ewin_name4 = psc.canonize_disconnected_4pt(
         psc.get_ewin_info_from_field_info(field_info1, d, mode='w'),
         psc.get_ewin_info_from_field_info(field_info2, d, mode='w'),
         psc.get_ewin_info_from_field_info(field_info3, d, mode='w'),
@@ -158,10 +155,7 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
     if (sv3 != sv4) or (ar3 != ar4) or (split3 != split4):
         continue
     else:
-        (ewin_name1, _, _), \
-        (ewin_name2, _, _), \
-        (ewin_name3, _, _), \
-        (ewin_name4, _, _) = psc.canonize_disconnected_4pt(
+        ewin_name1, ewin_name2, ewin_name3, ewin_name4 = psc.canonize_disconnected_4pt(
             psc.get_ewin_info_from_field_info(field_info1, d, mode='w'),
             psc.get_ewin_info_from_field_info(field_info2, d, mode='w'),
             psc.get_ewin_info_from_field_info(field_info3, d, mode='ws', extra='sqrt_pixar'),
@@ -216,10 +210,7 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
     if (sv1 != sv2) or (sv3 != sv4) or (ar1 != ar2) or (ar3 != ar4) or (split1 != split2) or (split3 != split4):
         continue
     else:
-        (ewin_name1, _, _), \
-        (ewin_name2, _, _), \
-        (ewin_name3, _, _), \
-        (ewin_name4, _, _) = psc.canonize_disconnected_4pt(
+        ewin_name1, ewin_name2, ewin_name3, ewin_name4 = psc.canonize_disconnected_4pt(
             psc.get_ewin_info_from_field_info(field_info1, d, mode='ws', extra='sqrt_pixar'),
             psc.get_ewin_info_from_field_info(field_info2, d, mode='ws', extra='sqrt_pixar'),
             psc.get_ewin_info_from_field_info(field_info3, d, mode='ws', extra='sqrt_pixar'),

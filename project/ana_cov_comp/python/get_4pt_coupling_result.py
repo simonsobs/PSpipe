@@ -56,9 +56,12 @@ for k in unrolled:
     spintype, filename1, filename2, coupling_fn = k['spintype'], k['w1'], k['w2'], k['coupling_fn']
     w1 = np.load(filename1)
     w2 = np.load(filename2)
-    log.info(f"{spintype} {coupling_fn} from {filename1} {filename2}")
-    coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
+    if os.path.isfile(coupling_fn):
+        log.info(f'{coupling_fn} exists, skipping')
+    else:
+        log.info(f"{spintype} {coupling_fn} from {filename1} {filename2}")
+        coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
                                         lmax=lmax, input_alm=True,
                                         l_exact=l_exact, l_toep=l_toep,
                                         l_band=l_band)
-    np.save(coupling_fn, coupling)  
+        np.save(coupling_fn, coupling)  

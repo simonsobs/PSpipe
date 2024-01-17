@@ -29,8 +29,6 @@ remove_mean = False
 
 # spectra
 spectra_dir = data_dir + 'spectra'
-noise_model_dir = data_dir + 'noise_model'
-split_noise_dir = data_dir + 'split_noise'
 
 write_splits_spectra = True
 cov_T_E_only = False
@@ -49,8 +47,15 @@ couplings_dir = data_dir + 'couplings'
 sq_win_alms_dir = data_dir + 'sq_win_alms'
 covariances_dir = data_dir + 'covariances'
 split_covariances_dir = data_dir + 'split_covariances'
-noise_model_savgol_w = 75
-noise_model_savgol_k = 4
+filters_dir = data_dir + 'filters'
+noise_model_dir = data_dir + 'noise_model'
+split_noise_dir = data_dir + 'split_noise'
+savgol_w = 100
+savgol_k = 4
+num_flm_sims = 300
+num_tf_sims = 1000
+
+mock_ps_dr6 = {'T': {'lknee': 3000, 'lcap': 300, 'pow': -4}, 'pol': {'lknee': 300, 'lcap': 100, 'pow': -4}}
 
 use_toeplitz_cov = True
 

@@ -10,6 +10,7 @@ from datetime import datetime
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+from pspipe import conventions as cvt
 from pspipe_utils import covariance, io, log, misc, pspipe_list
 from pspy import pspy_utils, so_dict
 
@@ -20,22 +21,21 @@ d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
 # Either use simulation or real data
-store_data = False
+store_data = True
 
 # Set covariance file name
 cov_name = "analytic_cov"
 
-mcm_dir = "mcms"
-cov_dir = "covariances"
-spec_dir = "spectra" if store_data else "sim_spectra"
-sacc_dir = "sacc"
-pspy_utils.create_directory(sacc_dir)
+mcm_dir = cvt.get_mcms_dir()
+cov_dir = cvt.get_covariances_dir()
+spec_dir = cvt.get_spectra_dir() if store_data else cvt.get_sim_spectra_dir()
+sacc_dir = cvt.get_sacc_dir(create=True)
 
 spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, delimiter="_", return_nu_tag=True)
 log.info(f"Spectra name list: {spec_name_list}")
 
 # Get spectra/cov orders
-spectra_order = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+spectra_order = cvt.get_spectra_order()
 cov_order = pspipe_list.x_ar_cov_order(spec_name_list, nu_tag_list, spectra_order=spectra_order)
 
 # Reading covariance
@@ -116,9 +116,8 @@ if store_data:
 else:
     chi2_list = []
     # Get theory vec for chi2 check
-    bestfit_dir = "best_fits"
     theory_vec = covariance.read_x_ar_theory_vec(
-        bestfit_dir, mcm_dir, spec_name_list, d["lmax"], spectra_order=spectra_order
+        cvt.get_best_fits_dir(), mcm_dir, spec_name_list, d["lmax"], spectra_order=spectra_order
     )
     # Inverting covariance
     log.info(f"Inverting '{cov_name}' covariance...")
@@ -167,5 +166,4 @@ else:
     ax.plot(x, y_pdf, color="forestgreen", label=r"$\chi^2$ dist.")
     ax.legend()
     fig.tight_layout()
-    plot_dir = "plots"
-    fig.savefig(os.path.join(plot_dir, "chi2_sacc.png"), dpi=300)
+    fig.savefig(os.path.join(cvt.get_plots_dir(), "chi2_sacc.png"), dpi=300)

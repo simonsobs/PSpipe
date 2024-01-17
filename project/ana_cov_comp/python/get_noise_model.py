@@ -1,6 +1,9 @@
 """
 This script computes the noise model for the covariance from the measured alms,
-using auto - crosses. For INKA covariances, we only need the pseudospectra.
+using auto - crosses. Because the covariance has a different effective kspace
+tf applied to the power spectra, we need to deconvolve the mask and the 2pt
+tf from the pseudospectra. Later, we'll reapply the 4pt tf and mask in 
+get_pseudonoise.py.
 """
 import sys
 
@@ -22,22 +25,28 @@ d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
 alms_dir = d['alms_dir']
-savgol_w = d['noise_model_savgol_w']
-savgol_k = d['noise_model_savgol_k']
+savgol_w = d['savgol_w']
+savgol_k = d['savgol_k']
 
-noise_model_dir = d["noise_model_dir"]
-plot_dir = os.path.join(d["plot_dir"], "noise_model")
+noise_model_dir = d['noise_model_dir']
+couplings_dir = d['couplings_dir']
+filters_dir = d['filters_dir']
+plot_dir = os.path.join(d['plot_dir'], 'noise_model')
 pspy_utils.create_directory(noise_model_dir)
 pspy_utils.create_directory(plot_dir)
 
 surveys = d['surveys']
 arrays = {sv: d[f'arrays_{sv}'] for sv in surveys}
 
+apply_kspace_filter = d["apply_kspace_filter"]
+
+single_coupling_pols = {'TT': '00', 'TE': '02', 'ET': '02', 'TB': '02', 'BT': '02'}
+
 # we will make noise models for each survey and array,
 # so "everything" happens inside this loop
 for sv1 in surveys:
     for ar1 in arrays[sv1]:
-        print(f'Doing {sv1}, {ar1}')
+        log.info(f'Doing {sv1}, {ar1}')
 
         # load alms for this survey and array
         # we are assuming:
@@ -99,18 +108,24 @@ for sv1 in surveys:
         # - noise may be correlated between channels and pols
         # - beams and masks don't vary over split
         for split1 in range(nsplit):
-            print(f'Doing {sv1}, {ar1}, set{split1}')
+            log.info(f'Doing {sv1}, {ar1}, set{split1}')
 
             alms1 = alms[:, split1]
             total_model = np.zeros((nchan, 3, nchan, 3, nell), dtype=alms.real.dtype)
             
-            # signal model is guaranteed to be symmetric cause of split auto
+            # total model is guaranteed to be symmetric cause of split auto
             for preidx1, preidx2 in cwr(np.ndindex((nchan, 3)), r=2):
                 total_model[(*preidx1, *preidx2)] = curvedsky.alm2cl(alms1[preidx1], alms1[preidx2])
                 if preidx1 != preidx2:
                     total_model[(*preidx2, *preidx1)] = total_model[(*preidx1, *preidx2)]
 
             inp_noise_model = total_model - signal_model
+
+            # huzzah! now we have a noisy thing that we want to smooth, 
+            # nonparametrically. we need to fit the diagonals first, because
+            # we will fit the off-diagonal corrs, and need to convert them back
+            # to cross-spectra using the fit diagonals; i.e., the fit diagonals
+            # all need to exist before doing the off-diagonals.
             out_noise_model = np.zeros_like(inp_noise_model)
 
             inp_corr_model = np.zeros_like(inp_noise_model)
@@ -118,11 +133,6 @@ for sv1 in surveys:
             
             mask_model = np.zeros_like(inp_noise_model, dtype=bool)
 
-            # huzzah! now we have a noisy thing that we want to smooth, 
-            # nonparametrically. we need to fit the diagonals first, because
-            # we will fit the off-diagonal corrs, and need to convert them back
-            # to cross-spectra using the fit diagonals; i.e., the fit diagonals
-            # all need to exist before doing the off-diagonals.
             for preidx1 in np.ndindex(nchan, 3):
 
                 # only if we are TT, we start at l=0, otherwise l=2
@@ -141,12 +151,12 @@ for sv1 in surveys:
                 # fluctuation consistent with noise
                 mask = y <= 0
                 if np.any(mask):
-                    print(f'{preidx1=} has {np.sum(mask)} values <= 0')
+                    log.info(f'{preidx1=} has {np.sum(mask)} values <= 0')
                 np.clip(y, 0, None, out=y)
                 fit_y = savgol_filter(y, savgol_w, savgol_k)
                 y[mask] = fit_y[mask]
                 assert not np.any(y <= 0), \
-                    print(f'{preidx1=} still has {np.sum(y <= 0)} values <= 0 after correcting')
+                    log.info(f'{preidx1=} still has {np.sum(y <= 0)} values <= 0 after correcting')
                 mask_model[(*preidx1, *preidx1)][start:] = mask
 
                 # now fit in log space
@@ -177,12 +187,12 @@ for sv1 in surveys:
                 # fluctuation consistent with noise
                 mask = np.logical_or(y <= -1, 1 <= y) 
                 if np.any(mask):
-                    print(f'{preidx1=}, {preidx2=} has {np.sum(mask)} values >= |1|')
+                    log.info(f'{preidx1=}, {preidx2=} has {np.sum(mask)} values >= |1|')
                 np.clip(y, -1, 1, out=y)
                 fit_y = savgol_filter(y, savgol_w, savgol_k)
                 y[mask] = fit_y[mask]
                 assert not np.any(np.logical_or(y <= -1, 1 <= y)), \
-                    print(f'{preidx1=}, {preidx2=} still has {np.logical_or(y <= -1, 1 <= y)} values >= |1| after correcting')
+                    log.info(f'{preidx1=}, {preidx2=} still has {np.logical_or(y <= -1, 1 <= y)} values >= |1| after correcting')
                 mask_model[(*preidx1, *preidx2)][start:] = mask
                 mask_model[(*preidx2, *preidx1)][start:] = mask
 
@@ -196,6 +206,65 @@ for sv1 in surveys:
                 fit_y *= np.sqrt(out_noise_model[(*preidx2, *preidx2)][start:])
                 out_noise_model[(*preidx1, *preidx2)][start:] = fit_y
                 out_noise_model[(*preidx2, *preidx1)][start:] = fit_y
+
+            np.save(f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_pseudo.npy', out_noise_model)
+
+            out_noise_model_spec = np.zeros_like(out_noise_model)
+
+            # now we need to deconvolve the mask
+            for c1, chan1 in enumerate(arrays[sv1][ar1]):
+                for c2, chan2 in enumerate(arrays[sv1][ar1]):
+                    # canonical
+                    if c1 <= c2:
+                        arrs = f'w_{sv1}_{ar1}_{chan1}_s_{sv1}_{ar1}_{chan1}_set{split1}_sqrt_pixarxw_{sv1}_{ar1}_{chan2}_s_{sv1}_{ar1}_{chan2}_set{split1}_sqrt_pixar'
+                    else:
+                        arrs = f'w_{sv1}_{ar1}_{chan2}_s_{sv1}_{ar1}_{chan2}_set{split1}_sqrt_pixarxw_{sv1}_{ar1}_{chan1}_s_{sv1}_{ar1}_{chan1}_set{split1}_sqrt_pixar'
+                    log.info(f'Deconvolving {arrs}')
+
+                    # handle single coupling polarization combos
+                    for P1P2, spin in single_coupling_pols.items():
+                        Minv = np.load(f'{couplings_dir}/{arrs}_{spin}_mcm_inv.npy')
+                        pol1, pol2 = P1P2
+                        p1, p2 = 'TEB'.index(pol1), 'TEB'.index(pol2)
+                        out_noise_model_spec[c1, p1, c2, p2] = Minv @ out_noise_model[c1, p1, c2, p2]
+
+                    # handle EE BB
+                    Minv = np.load(f'{couplings_dir}/{arrs}_diag_mcm_inv.npy')
+                    pclee = out_noise_model[c1, 1, c2, 1]
+                    pclbb = out_noise_model[c1, 2, c2, 2]
+                    cl = Minv @ np.hstack([pclee, pclbb])
+                    out_noise_model_spec[c1, 1, c2, 1] = cl[:len(pclee)]
+                    out_noise_model_spec[c1, 2, c2, 2] = cl[len(pclee):]
+                    
+                    # handle EB BE
+                    Minv = np.load(f'{couplings_dir}/{arrs}_off_mcm_inv.npy')
+                    pcleb = out_noise_model[c1, 1, c2, 2]
+                    pclbe = out_noise_model[c1, 2, c2, 1]
+                    cl = Minv @ np.hstack([pcleb, pclbe])
+                    out_noise_model_spec[c1, 1, c2, 2] = cl[:len(pcleb)]
+                    out_noise_model_spec[c1, 2, c2, 1] = cl[len(pcleb):]
+            
+            # now we deconvolve the tf
+            if apply_kspace_filter: 
+                fl2 = np.load(f'{filters_dir}/{sv1}_fl2_fullsky.npy')
+
+                for p1, pol1 in enumerate('TEB'):
+                    for p2, pol2 in enumerate('TEB'):      
+                        polstr1 = 'T' if pol1 == 'T' else 'pol'
+                        rd1 = np.load(f'{filters_dir}/{sv1}_{polstr1}_res_dict.npy', allow_pickle=True).item()
+                        tf1 = fl2 ** rd1['pseudo_alpha']
+                        
+                        polstr2 = 'T' if pol2 == 'T' else 'pol'
+                        rd2 = np.load(f'{filters_dir}/{sv1}_{polstr2}_res_dict.npy', allow_pickle=True).item()
+                        tf2 = fl2 ** rd2['pseudo_alpha']
+
+                        tf = np.sqrt(tf1 * tf2) # tf defined at ps level
+
+                        out_noise_model_spec[:, p1, :, p2] = np.divide(
+                            out_noise_model_spec[:, p1, :, p2], tf, where=tf!=0, out=np.zeros_like(out_noise_model_spec[:, p1, :, p2])
+                            )
+
+            np.save(f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_spec.npy', out_noise_model_spec)
 
             # plot and save
             for preidx1, preidx2 in cwr(np.ndindex((nchan, 3)), r=2):
@@ -282,8 +351,5 @@ for sv1 in surveys:
                         plt_fn = f"{plot_dir}/{sv1}_{ar1}_set{split1}_{chan1}_{pol1}x{chan2}_{pol2}_{['corr', 'ps'][i]}.png"
                         plt.savefig(plt_fn, bbox_inches='tight')
                         plt.close()
-
-            noise_model_fn = f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_noise_model.npy'
-            np.save(noise_model_fn, out_noise_model)
 
         alms = None # help with memory

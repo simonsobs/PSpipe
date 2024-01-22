@@ -23,6 +23,8 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_coup - 1)
 for task in subtasks:
     fname = coupling_files[int(task)]
-    if 'coupling' in fname:
+    try:
         np.savez_compressed(join(out_dir, fname), 
             data=np.load(join(coupling_dir, fname)).astype(np.float32))
+    except:
+        print(f"task {task} failed, {fname}")

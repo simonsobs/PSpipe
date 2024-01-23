@@ -1,6 +1,5 @@
 """
-This script performs null tests
-and plot residual power spectra and a summary PTE distribution
+This script performs EB and TB null tests and additionaly fit for a polarisation angle
 """
 
 from pspy import so_dict, pspy_utils, so_cov, so_spectra
@@ -10,7 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 from null_infos import *
-from copy import deepcopy
 from cobaya.run import run
 import getdist.plots as gdplt
 from getdist.mcsamples import loadMCSamples
@@ -34,7 +32,6 @@ def get_covariance(cov_dir, spec_name, use_mc_cov, use_beam_cov, use_leakage_cov
     return cov
 
 
-
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
@@ -50,7 +47,7 @@ spec_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 cov_dir = "covariances"
 bestfit_dir = "best_fits"
 if data == True:
-    spec_dir = "spectra_corrected"
+    spec_dir = "spectra_leak_corr"
 else:
     spec_dir = "sim_spectra"
 

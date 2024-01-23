@@ -1,6 +1,5 @@
 """
-This script performs null tests
-and plot residual power spectra and a summary PTE distribution
+This script performs array null tests and plot residual power spectra and a summary PTE distribution
 """
 
 from pspy import so_dict, pspy_utils, so_cov, so_spectra
@@ -18,17 +17,14 @@ def get_lmin_lmax(null, multipole_range):
     """
     m, ar1, ar2, ar3, ar4 = null
     m0, m1 = m[0], m[1]
-
     lmin0, lmax0 = multipole_range[ar1][m0]
     lmin1, lmax1 = multipole_range[ar2][m1]
     ps12_lmin = max(lmin0, lmin1)
     ps12_lmax = min(lmax0, lmax1)
-
     lmin2, lmax2 = multipole_range[ar3][m0]
     lmin3, lmax3 = multipole_range[ar4][m1]
     ps34_lmin = max(lmin2, lmin3)
     ps34_lmax = min(lmax2, lmax3)
-
     lmin = max(ps12_lmin, ps34_lmin)
     lmax = min(ps12_lmax, ps34_lmax)
     
@@ -37,10 +33,7 @@ def get_lmin_lmax(null, multipole_range):
 def pte_histo(pte_list, file_name, n_bins):
     n_samples = len(pte_list)
     bins = np.linspace(0, 1, n_bins + 1)
-    
     min, max = np.min(pte_list), np.max(pte_list)
-
-
     plt.figure(figsize=(8,6))
     plt.xlabel(r"Probability to exceed (PTE)")
     plt.hist(pte_list, bins=bins, label=f"n tests: {n_samples}, min: {min:.4f}, max: {max:.4f}")
@@ -50,12 +43,42 @@ def pte_histo(pte_list, file_name, n_bins):
     plt.savefig(f"{file_name}", dpi=300)
     plt.clf()
     plt.close()
+    
+def check_freq_pair(f1, f2, f3, f4):
+    count = 0
+    if (f1 == f3) & (f2 == f4):
+        count += 1
+    if (f1 == f4) & (f2 == f3):
+        count += 1
+    if count != 0:
+        return True
+    else:
+        return False
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 pte_threshold = 0.01
 remove_first_bin = True
+
+skip_pa4_pol = True
+skip_diff_freq_TT = True
+skip_EB = True
+fudge = False
+
+plot_dir = "plots/array_nulls"
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+hist_label = ""
+if skip_pa4_pol == True:
+    hist_label += "skip_pa4pol"
+if fudge == True:
+    hist_label += "_fudge"
+if skip_EB == True:
+    hist_label += "_skip_EB"
+if skip_diff_freq_TT == True:
+    hist_label += "_skip_TT_diff_freq"
+
+
 
 cov_dir = "covariances"
 null_test_dir = "null_test"
@@ -66,16 +89,10 @@ pspy_utils.create_directory(null_test_dir)
 pspy_utils.create_directory(plot_dir)
 
 test_list = [{"name":  "spectra_corrected+mc_cov+beam_cov+leakage_cov",
-              "spec_dir": "spectra_corrected",
+              "spec_dir": "spectra_leak_corr",
               "cov_correction": ["mc_cov", "beam_cov","leakage_cov"]}]
                
 
-#test_list += [{"name": "spectra_with_analytic_cov",
-#               "spec_dir": "spectra",
-#               "cov_correction": []}]
-
-# we start by making list of all the elements we need to load in memory
-# for this we loop on the differnet test and identify which elements are required for them
 spec_dir_list = []
 cov_type_list = ["analytic_cov"]
 label_list = []
@@ -88,8 +105,6 @@ cov_type_list = list(dict.fromkeys(cov_type_list)) #remove doublon
 spec_dir_list = list(dict.fromkeys(spec_dir_list)) #remove doublon
 map_set_list = pspipe_list.get_map_set_list(d)
 
-# we now read all covariances, note that the function call is a bit annoying
-# this is because the function is supposed to load spectra and cov at the same time
 
 all_cov = {}
 _ps_temp = "spectra" + "/Dl_{}x{}_cross.dat"
@@ -97,8 +112,6 @@ for cov in cov_type_list:
     cov_template = f"{cov_dir}/{cov}" + "_{}x{}_{}x{}.npy"
     _, all_cov[cov] =  consistency.get_ps_and_cov_dict(map_set_list, _ps_temp, cov_template, spectra_order=spectra)
     
-# now I'm reading all spectra
-
 all_ps = {}
 for spec_dir in spec_dir_list:
     ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
@@ -111,22 +124,15 @@ fg_file_name = "best_fits/fg_{}x{}.dat"
 l_fg, fg_dict = best_fits.fg_dict_from_files(fg_file_name, map_set_list, d["lmax"], spectra=spectra)
 
 # Define PTE dict
-
 pte_dict = {}
 for label in label_list:
     pte_dict[label, "all"] = []
-    for spec in tested_spectra:
+    for spec in spectra:
         pte_dict[label, spec] = []
     
 operations = {"diff": "ab-cd"}
 
-null_list = pspipe_list.get_null_list(d, spectra=tested_spectra) #skip_EB
-
-
-print(label_list)
-
-
-
+null_list = pspipe_list.get_null_list(d, spectra=spectra, remove_TT_diff_freq=False)
 
 for null in null_list:
 
@@ -136,8 +142,6 @@ for null in null_list:
 
     res_ps, res_cov = {}, {}
 
-    # same comment as before in the current implementation residual ps and cov
-    # are read at the same time while for us we prefer to read ps and cov separately, so the ugly hack
     for spec_dir in spec_dir_list:
         lb, res_ps[spec_dir], _,  = consistency.compare_spectra([ms1, ms2, ms3, ms4],
                                                                 "ab-cd",
@@ -225,31 +229,42 @@ for null in null_list:
                                           ylims=ylims)
                                           
                  
-
+    
     if skip_pa4_pol == True:
         if ("pa4" in fname) & (mode != "TT"):
+            print(f"skip {ms1}x{ms2}- {ms3}x{ms4} {mode}, we don't use pa4 in pol")
+
             continue
-        
+    if (skip_EB == True) & (mode in ["EB", "BE"]):
+        print(f"skip {ms1}x{ms2}- {ms3}x{ms4} {mode}, EB is used as a test of the polarisation angle")
+        continue
     if (ms1 == ms2) & (ms3 == ms4) & (mode in ["ET", "BT", "BE"]) :
-        print("")
         print(f"skip {ms1}x{ms2}- {ms3}x{ms4} {mode} since it's a doublon of {mode[::-1]}")
-        print("")
+        continue
+    f1, f2 = d[f"freq_info_{ms1}"]["freq_tag"],  d[f"freq_info_{ms2}"]["freq_tag"]
+    f3, f4 = d[f"freq_info_{ms3}"]["freq_tag"],  d[f"freq_info_{ms4}"]["freq_tag"]
+    if (mode == "TT") & (skip_diff_freq_TT == True) & (check_freq_pair(f1, f2, f3, f4) == False):
+        print(f"skip {ms1}x{ms2}- {ms3}x{ms4} {mode} since TT has different frequencies")
 
         continue
-    else:
-        # Fill pte_dict
-        for label in label_list:
-            pte = 1-ss.chi2(chi2_dict[label]["ndof"]).cdf(chi2_dict[label]["chi2"])
-            pte_dict[label, mode].append(pte)
-            pte_dict[label, "all"].append(pte)
+    
+    # Fill pte_dict
+    for label in label_list:
+        pte = 1-ss.chi2(chi2_dict[label]["ndof"]).cdf(chi2_dict[label]["chi2"])
+        pte_dict[label, mode].append(pte)
+        pte_dict[label, "all"].append(pte)
 
-            if (pte <= pte_threshold) or (pte >= 1-pte_threshold):
-                print(f"[{label}] [{plot_title} {mode}] PTE = {pte:.04f}")
-
+        if (pte <= pte_threshold) or (pte >= 1-pte_threshold):
+            print(f"[{label}] [{plot_title} {mode}] PTE = {pte:.04f}")
 
 
 # Save pte to pickle
 pickle.dump(pte_dict, open(f"{plot_dir}/pte_dict.pkl", "wb"))
+  
+if skip_EB == True:
+    tested_spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "BB"]
+else:
+    tested_spectra = spectra
 
 # Plot PTE histogram for each cov type
 for label in label_list:

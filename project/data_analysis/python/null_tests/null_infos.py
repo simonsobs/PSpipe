@@ -1,28 +1,4 @@
 
-# Define the multipole range
-
-skip_EB = True
-fudge = False
-skip_pa4_pol = True
-plot_dir = "plots/array_nulls"
-
-spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-
-if skip_EB == True:
-    tested_spectra = ["TT", "TE", "ET", "TB", "BT", "EE", "BB"]
-    plot_dir = "plots/array_nulls_skip_EB"
-else:
-    tested_spectra = spectra
-    plot_dir = "plots/array_nulls"
-
-
-
-hist_label = ""
-
-if skip_pa4_pol == True:
-    hist_label = "skip_pa4pol"
-
-
 multipole_range = {
     "dr6_pa4_f150": {
         "T": [1250, 8500],

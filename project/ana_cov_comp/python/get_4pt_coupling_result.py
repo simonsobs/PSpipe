@@ -41,7 +41,6 @@ else:
 
 lmax = d['lmax']
 
-
 recipe = np.load(f'{couplings_dir}/4pt_recipe.npy', allow_pickle=True)[()]
 
 unrolled = recipe['S_only'] + recipe['SxN'] + recipe['N_only']

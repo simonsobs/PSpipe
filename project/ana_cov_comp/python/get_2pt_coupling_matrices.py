@@ -72,8 +72,10 @@ for sv1 in surveys:
 # we will reduce some of the loop by this mapping
 pols2spintypes = {
     ('T', 'T'): ['00'],
+
     ('T', 'P'): ['02'],
     ('P', 'T'): ['02'],
+    
     ('P', 'P'): ['++', '--']
 }
 

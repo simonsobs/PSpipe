@@ -117,8 +117,6 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
         # the coupling
         if (ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype) not in canonized_combos:
             canonized_combos[(ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype)] = [(field_info1, field_info2, field_info3, field_info4, spintype)]
-            assert not os.path.isfile(coupling_fn), \
-                f'{coupling_fn} exists but we should not yet have produced it in loop'
             log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
             
             recipe['S_only'].append({
@@ -172,8 +170,6 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
             # the coupling
             if (ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype) not in canonized_combos:
                 canonized_combos[(ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype)] = [(field_info1, field_info2, field_info3, field_info4, spintype)]
-                assert not os.path.isfile(coupling_fn), \
-                    f'{coupling_fn} exists but we should not yet have produced it in loop'
                 log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
                 
                 recipe['SxN'].append({
@@ -227,11 +223,8 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
             # the coupling
             if (ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype) not in canonized_combos:
                 canonized_combos[(ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype)] = [(field_info1, field_info2, field_info3, field_info4, spintype)]
-                assert not os.path.isfile(coupling_fn), \
-                    f'{coupling_fn} exists but we should not yet have produced it in loop'
                 log.info(os.path.splitext(os.path.basename(coupling_fn))[0])
                 
-
                 recipe['N_only'].append({
                     'spintype': spintype,
                     'w1': f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy',
@@ -260,7 +253,6 @@ for field_info1, field_info2, field_info3, field_info4 in product(field_infos, r
 
 total_coupling_number = len(recipe['S_only']) + len(recipe['SxN']) + len(recipe['N_only'])
 recipe['total'] = total_coupling_number
-np.save(f'{couplings_dir}/4pt_recipe.npy', recipe)
 log.info(f"Total 4pt Couplings: {total_coupling_number}")
 np.save(f'{couplings_dir}/4pt_recipe.npy', recipe)
 np.save(f'{couplings_dir}/canonized_couplings_4pt_combos.npy', canonized_combos)

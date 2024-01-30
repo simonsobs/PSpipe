@@ -46,9 +46,9 @@ for sv1 in surveys:
 
 canonized_combos = {}
 
-# S
 # iterate over all canonized windows
 for field_info1 in field_infos:
+    # S
     ewin_name1, ewin_paths1, ewin_ops1 = psc.get_ewin_info_from_field_info(
         field_info1, d, mode='w', return_paths_ops=True
         )
@@ -81,11 +81,8 @@ for field_info1 in field_infos:
         canonized_combos[ewin_name1].append(field_info1)
         assert os.path.isfile(alm_fn), \
             f'{alm_fn} does not exist but we should have produced it in loop'
-        continue
 
-# N
-# iterate over all canonized windows
-for field_info1 in field_infos:
+    # N
     ewin_name1, ewin_paths1, ewin_ops1 = psc.get_ewin_info_from_field_info(
         field_info1, d, mode='ws', extra='sqrt_pixar', return_paths_ops=True
         )
@@ -121,6 +118,5 @@ for field_info1 in field_infos:
         canonized_combos[ewin_name1].append(field_info1)
         assert os.path.isfile(alm_fn), \
             f'{alm_fn} does not exist but we should have produced it in loop'
-        continue
 
 np.save(f'{ewin_alms_dir}/canonized_ewin_alms_1pt_combos.npy', canonized_combos)

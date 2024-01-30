@@ -61,9 +61,9 @@ for sv1 in surveys:
 
 canonized_combos = {}
 
-# S S 
 # iterate over all pairs/orders of fields, and get the canonized window pairs
 for field_info1, field_info2 in product(field_infos, repeat=2):
+    # S S 
     (ewin_name1, ewin_paths1, ewin_ops1), \
     (ewin_name2, ewin_paths2, ewin_ops2) = psc.canonize_connected_2pt(
         psc.get_ewin_info_from_field_info(field_info1, d, mode='w', return_paths_ops=True),
@@ -110,16 +110,13 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
         canonized_combos[(ewin_name1, ewin_name2)].append((field_info1, field_info2))
         assert os.path.isfile(alm_fn) and os.path.isfile(w2_fn), \
             f'{alm_fn} and {w2_fn} do not exist but we should have produced them in loop'
-        continue
 
-# N N 
-# iterate over all pairs/orders of fields, and get the canonized window pairs
-for field_info1, field_info2 in product(field_infos, repeat=2):
+    # N N
     sv1, sv2 = field_info1[0], field_info2[0]
     ar1, ar2 = field_info1[1], field_info2[1]
     split1, split2 = field_info1[3], field_info2[3]
     if (sv1 != sv2) or (ar1 != ar2) or (split1 != split2):
-        continue
+        pass
     else:
         (ewin_name1, ewin_paths1, ewin_ops1), \
         (ewin_name2, ewin_paths2, ewin_ops2) = psc.canonize_connected_2pt(
@@ -170,6 +167,5 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             canonized_combos[(ewin_name1, ewin_name2)].append((field_info1, field_info2))
             assert os.path.isfile(alm_fn) and os.path.isfile(w2_fn), \
                 f'{alm_fn} and {w2_fn} do not exist but we should have produced them in loop'
-            continue
 
 np.save(f'{ewin_alms_dir}/canonized_ewin_alms_2pt_combos.npy', canonized_combos)

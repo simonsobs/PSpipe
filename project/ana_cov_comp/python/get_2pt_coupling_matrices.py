@@ -81,15 +81,18 @@ pols2spintypes = {
 
 canonized_combos = {}
 
-# S S
 # iterate over all pairs/orders of fields, and get the canonized window pairs
 for field_info1, field_info2 in product(field_infos, repeat=2):
+    # pols split into canonical blocks, so it's safe to grab from field_info
+    # instead of canonized field_info
+    pol1, pol2 = field_info1[4], field_info2[4]
+
+    # S S
     ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
         psc.get_ewin_info_from_field_info(field_info1, d, mode='w'),
         psc.get_ewin_info_from_field_info(field_info2, d, mode='w'),
         ewin_infos
         ) 
-    pol1, pol2 = field_info1[4], field_info2[4]
     
     for spintype in pols2spintypes[(pol1, pol2)]:
         coupling_fn = f'{couplings_dir}/{ewin_name1}x{ewin_name2}_{psc.spintypes2fntags[spintype]}_coupling.npy'
@@ -119,23 +122,19 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             canonized_combos[(ewin_name1, ewin_name2, spintype)].append((field_info1, field_info2, spintype))
             assert os.path.isfile(coupling_fn), \
                 f'{coupling_fn} does not exist but we should have produced it in loop'
-            continue
 
-# N N
-# iterate over all pairs/orders of fields, and get the canonized window pairs
-for field_info1, field_info2 in product(field_infos, repeat=2):
+    # N N
     sv1, sv2 = field_info1[0], field_info2[0]
     ar1, ar2 = field_info1[1], field_info2[1]
     split1, split2 = field_info1[3], field_info2[3]
     if (sv1 != sv2) or (ar1 != ar2) or (split1 != split2):
-        continue
+        pass
     else:
         ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
             psc.get_ewin_info_from_field_info(field_info1, d, mode='ws', extra='sqrt_pixar'),
             psc.get_ewin_info_from_field_info(field_info2, d, mode='ws', extra='sqrt_pixar'),
             ewin_infos
             ) 
-        pol1, pol2 = field_info1[4], field_info2[4]
         
         for spintype in pols2spintypes[(pol1, pol2)]:
             coupling_fn = f'{couplings_dir}/{ewin_name1}x{ewin_name2}_{psc.spintypes2fntags[spintype]}_coupling.npy'
@@ -165,6 +164,5 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 canonized_combos[(ewin_name1, ewin_name2, spintype)].append((field_info1, field_info2, spintype))
                 assert os.path.isfile(coupling_fn), \
                     f'{coupling_fn} does not exist but we should have produced it in loop'
-                continue
 
 np.save(f'{couplings_dir}/canonized_couplings_2pt_combos.npy', canonized_combos)

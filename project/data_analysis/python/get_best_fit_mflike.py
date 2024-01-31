@@ -40,6 +40,8 @@ so_spectra.write_ps(f_name, l_th, ps_dict, type, spectra=spectra)
 fg_norm = d["fg_norm"]
 fg_params = d["fg_params"]
 fg_components = d["fg_components"]
+log.info(f"Computing fg spectra with components: {fg_components}")
+log.info(f"Computing fg spectra with params: {fg_params}")
 
 passbands = {}
 do_bandpass_integration = d["do_bandpass_integration"]

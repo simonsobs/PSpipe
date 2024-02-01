@@ -21,7 +21,7 @@ setup(
         "scipy",
         "camb",
         "pspy>=1.7.0",
-        "pspipe_utils>=0.1.3",
+        "pspipe_utils>=0.1.5",
         "wget",
     ],
     package_data={"pspipe": ["js/multistep2.js"]},

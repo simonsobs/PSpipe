@@ -49,13 +49,16 @@ spectra_cuts = {
     "dr6_pa6_f090": dict(T=[lmin, lmax], P=[lmin, lmax]),
 }
 
-my_spectra, indices = covariance.get_indices(bin_lo,
-                                             bin_hi,
-                                             spec_name_list,
-                                             spectra_cuts=spectra_cuts,
-                                             spectra_order=spectra,
-                                             selected_spectra=selected_spectra,
-                                             excluded_arrays=None)
+bin_out_dict, indices = covariance.get_indices(bin_lo,
+                                               bin_hi,
+                                               lb,
+                                               spec_name_list,
+                                               spectra_cuts=spectra_cuts,
+                                               spectra_order=spectra,
+                                               selected_spectra=selected_spectra,
+                                               excluded_arrays=None)
+                                             
+my_spectra = bin_out_dict.keys()
 ################################################################################################
 
 
@@ -94,6 +97,11 @@ plt.close()
 # do the max likelihood combination of all spectra
 
 i_cov_TB = np.linalg.inv(cov_TB)
+chi2 = vec_TB @ i_cov_TB @  vec_TB
+ndof = len(vec_TB)
+pte = 1 - ss.chi2(ndof).cdf(chi2)
+print(chi2, pte)
+
 
 cov_TB_ML = covariance.get_max_likelihood_cov(P_mat,
                                               i_cov_TB,
@@ -116,6 +124,16 @@ pte = 1 - ss.chi2(ndof).cdf(chi2)
 lth, psth = so_spectra.read_ps(f"{best_fit_dir}/cmb.dat", spectra=spectra)
 
 std = np.sqrt(cov_TB_ML.diagonal())
+
+plt.figure(figsize=(16, 16))
+plt.imshow(so_cov.cov2corr(cov_TB_ML, remove_diag=True))
+plt.xticks(ticks=np.arange(len(lb)), labels = lb, rotation=90)
+plt.yticks(ticks=np.arange(len(lb)), labels = lb)
+plt.colorbar()
+plt.plt.savefig(f"{result_dir}/cov_TB_ML.png")
+plt.clf()
+plt.close()
+
 
 plt.figure(figsize=(12, 8))
 plt.errorbar(lb, vec_ML, std, fmt="o", label=r"$\chi^{2}$=%.02f, $n_{DoF}$ = %d, PTE = %.02f" % (chi2, ndof, pte), color="red")

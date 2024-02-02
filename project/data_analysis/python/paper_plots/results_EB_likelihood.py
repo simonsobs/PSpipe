@@ -55,13 +55,17 @@ spectra_cuts = {
     "dr6_pa6_f090": dict(T=[lmin, lmax], P=[lmin, lmax]),
 }
 
-my_spectra, indices = covariance.get_indices(bin_lo,
-                                                   bin_hi,
-                                                   spec_name_list,
-                                                   spectra_cuts=spectra_cuts,
-                                                   spectra_order=spectra,
-                                                   selected_spectra=["EB", "BE"],
-                                                   excluded_arrays=None)
+bin_out_dict, indices = covariance.get_indices(bin_lo,
+                                               bin_hi,
+                                               lb,
+                                               spec_name_list,
+                                               spectra_cuts=spectra_cuts,
+                                               spectra_order=spectra,
+                                               selected_spectra=["EB", "BE"],
+                                               excluded_arrays=None)
+                                               
+my_spectra = bin_out_dict.keys()
+
 ################################################################################################
 cov_EB = cov_xar[np.ix_(indices, indices)]
 vec_EB = vec_xar[indices]
@@ -135,7 +139,7 @@ info["params"] = { "alpha_pa5_f090": {  "prior": {  "min": -0.5,  "max": 0.5},  
                    "alpha_pa5_f150": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa5 f150}"},
                    "alpha_pa6_f090": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa6 f090}"},
                    "alpha_pa6_f150": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa6 f150}"}}
-info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.1, "Rminus1_cl_stop": 0.2}}
+info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.02, "Rminus1_cl_stop": 0.4}}
 info["output"] = f"{result_dir}/chains/{roots[0]}"
 info["force"] = True
 info["debug"] = False

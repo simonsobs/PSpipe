@@ -35,7 +35,7 @@ vec_xar = covariance.read_x_ar_spectra_vec(spec_dir,
                                            spectra_order = spectra,
                                            type="Dl")
 
-cov_xar = np.load(f"{cov_dir}/final_cov_data.npy")
+cov_xar = np.load(f"{cov_dir}/x_ar_final_cov_data.npy")
 
 ################################################################################################
 # Start at l=500, remove pa4_f220 pol and only include TB/BT

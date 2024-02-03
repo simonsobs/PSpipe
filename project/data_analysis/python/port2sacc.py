@@ -20,7 +20,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-# choose which type of sacc you to create: data_sacc, ng_sim_sacc, simu_sacc
+# choose which type of sacc you to create: data_sacc, ng_simu_sacc, simu_sacc
 sacc_fname = "ng_simu_sacc"
 
 # Set covariance file name

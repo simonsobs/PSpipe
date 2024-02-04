@@ -20,7 +20,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-# choose which type of sacc you to create: data_sacc, ng_simu_sacc, simu_sacc
+# choose which type of sacc you to create: data_sacc, ng_simu_sacc, simu_sacc, simu_and_syst_sacc
 sacc_fname = "ng_simu_sacc"
 
 # Set covariance file name
@@ -88,14 +88,17 @@ common_kwargs = dict(
     log=log,
 )
 
+if sacc_fname in ["simu_sacc", "simu_w_syst_sacc"]:
 
-if sacc_fname == "simu_sacc":
+    if sacc_fname == "simu_sacc":
+        spec_dir = "sim_spectra"
+        cov_name = "final_cov_sim"
 
-    spec_dir = "sim_spectra"
-    cov_name = "final_cov_sim"
+    if sacc_fname == "simu_w_syst_sacc":
+        spec_dir = "sim_spectra_syst"
+        cov_name = "final_cov_data"
 
     cov = np.load(os.path.join(cov_dir, f"x_ar_{cov_name}.npy"))
-
 
     i_start = d["iStart"]
     i_stop = d["iStop"] + 1
@@ -126,12 +129,10 @@ if sacc_fname == "simu_sacc":
 else:
 
     if sacc_fname == "data_sacc":
-    
         spec_dir = "spectra_leak_corr_ab_corr"
         cov_name = "final_cov_data"
         
     if sacc_fname == "ng_simu_sacc":
-    
         spec_dir = "sim_spectra_ng"
         cov_name = "final_cov_sim"
 
@@ -148,9 +149,8 @@ else:
         **common_kwargs, data_vec=data_vec, cov=cov, bbls=bbls, sacc_file_name=sacc_file_name
     )
 
-
 log.info(f"Spectra name list: {spec_name_list} \n")
 log.info(f"spectra_order '{spectra_order}' \n")
-log.info(f"WE HAVE WRITTEN THE SACC FILE IDENTIFIED BY {sacc_fname.upper()} \n ")
-log.info(f"WE USED THE '{cov_name.upper()}' COVARIANCE \n")
-log.info(f"AND THE SPECTRA LOCATED IN '{spec_dir.upper()}'  \n")
+log.info(f"we have written the sacc file identified as {sacc_fname} \n ")
+log.info(f"we used the'{cov_name}' covariance \n")
+log.info(f"and the spectra located in '{spec_dir}'  \n")

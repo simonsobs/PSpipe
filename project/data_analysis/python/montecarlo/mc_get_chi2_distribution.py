@@ -1,5 +1,7 @@
 """
 This script compute the montecarlo chi2 distribution using the estimted simulation power spectra, the covariance matrix and the input theory, we use the ell cut of ACT DR6
+You can choose sim_spec_dir = "sim_spectra" for sim without systematic model or sim_spec_dir = "sim_spectra_syst" for sim with systematic, the code will choose
+the corresponding covariance matrix
 """
 import numpy as np
 import pylab as plt
@@ -24,7 +26,7 @@ iStop = d["iStop"]
 
 cov_dir = "covariances"
 bestfit_dir = "best_fits"
-sim_spec_dir = "sim_spectra"
+sim_spec_dir = "sim_spectra_syst"
 mcm_dir = "mcms"
 plot_dir = "plots/chi2_distrib"
 
@@ -34,7 +36,11 @@ bin_low, bin_high, bin_mean, bin_size = pspy_utils.read_binning_file(binning_fil
 
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
-x_ar_cov = np.load(f"{cov_dir}/x_ar_final_cov_sim.npy")
+if sim_spec_dir == "sim_spectra":
+    x_ar_cov = np.load(f"{cov_dir}/x_ar_final_cov_sim.npy")
+if sim_spec_dir == "sim_spectra_syst":
+    x_ar_cov = np.load(f"{cov_dir}/x_ar_final_cov_data.npy")
+
 
 selected_spectra = [spectra, ["TT", "TE", "ET", "EE"], ["TT"], ["TE"], ["ET"], ["TB"], ["BT"], ["EE"], ["EB"], ["BE"], ["BB"]]
 name_list = ["all", "TT-TE-ET-EE", "TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]

@@ -62,9 +62,9 @@ for sv1 in surveys:
 
 canonized_combos = {}
 
-# S S 
 # iterate over all pairs/orders of fields, and get the canonized window pairs
 for field_info1, field_info2 in product(field_infos, repeat=2):
+    # S S 
     (ewin_name1, ewin_paths1, ewin_ops1), \
     (ewin_name2, ewin_paths2, ewin_ops2) = psc.canonize_connected_2pt(
         psc.get_ewin_info_from_field_info(field_info1, d, mode='w', return_paths_ops=True),
@@ -106,8 +106,10 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             log.info(os.path.splitext(os.path.basename(mcm_fn))[0])
             log.info(os.path.splitext(os.path.basename(mcm_inv_fn))[0])
 
-            w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
             mcm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_02_coupling.npy')
+            
+            # fill upper left diag with w2
+            w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
             mcm[0, 0] = w2
             mcm[1, 1] = w2
 
@@ -126,11 +128,13 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             log.info(os.path.splitext(os.path.basename(mcm_fn))[0])
             log.info(os.path.splitext(os.path.basename(mcm_inv_fn))[0])
 
-            w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
             mcm_pp = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_pp_coupling.npy')
+            mcm_mm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_mm_coupling.npy')
+
+            # fill upper left diag with w2
+            w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
             mcm_pp[0, 0] = w2
             mcm_pp[1, 1] = w2
-            mcm_mm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_mm_coupling.npy')
             mcm_mm[0, 0] = 0
             mcm_mm[1, 1] = 0
 
@@ -150,11 +154,13 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             log.info(os.path.splitext(os.path.basename(mcm_fn))[0])
             log.info(os.path.splitext(os.path.basename(mcm_inv_fn))[0])
 
-            w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
             mcm_pp = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_pp_coupling.npy')
+            mcm_mm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_mm_coupling.npy')
+            
+            # fill upper left diag with w2
+            w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
             mcm_pp[0, 0] = w2
             mcm_pp[1, 1] = w2
-            mcm_mm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_mm_coupling.npy')
             mcm_mm[0, 0] = 0
             mcm_mm[1, 1] = 0
 
@@ -170,16 +176,13 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
         for mcm_fn, mcm_inv_fn in zip(mcm_fns, mcm_inv_fns):
             assert os.path.isfile(mcm_fn) and os.path.isfile(mcm_inv_fn), \
                 f'{mcm_fn} and {mcm_inv_fn} do not exist but we should have produced them in loop'
-            continue
 
-# N N 
-# iterate over all pairs/orders of fields, and get the canonized window pairs
-for field_info1, field_info2 in product(field_infos, repeat=2):
+    # N N 
     sv1, sv2 = field_info1[0], field_info2[0]
     ar1, ar2 = field_info1[1], field_info2[1]
     split1, split2 = field_info1[3], field_info2[3]
     if (sv1 != sv2) or (ar1 != ar2) or (split1 != split2):
-        continue
+        pass
     else:
         (ewin_name1, ewin_paths1, ewin_ops1), \
         (ewin_name2, ewin_paths2, ewin_ops2) = psc.canonize_connected_2pt(
@@ -222,8 +225,10 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 log.info(os.path.splitext(os.path.basename(mcm_fn))[0])
                 log.info(os.path.splitext(os.path.basename(mcm_inv_fn))[0])
 
-                w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
                 mcm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_02_coupling.npy')
+
+                # fill upper left diag with w2
+                w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
                 mcm[0, 0] = w2
                 mcm[1, 1] = w2
 
@@ -242,11 +247,13 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 log.info(os.path.splitext(os.path.basename(mcm_fn))[0])
                 log.info(os.path.splitext(os.path.basename(mcm_inv_fn))[0])
 
-                w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
                 mcm_pp = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_pp_coupling.npy')
+                mcm_mm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_mm_coupling.npy')
+
+                # fill upper left diag with w2
+                w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
                 mcm_pp[0, 0] = w2
                 mcm_pp[1, 1] = w2
-                mcm_mm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_mm_coupling.npy')
                 mcm_mm[0, 0] = 0
                 mcm_mm[1, 1] = 0
 
@@ -266,11 +273,13 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 log.info(os.path.splitext(os.path.basename(mcm_fn))[0])
                 log.info(os.path.splitext(os.path.basename(mcm_inv_fn))[0])
 
-                w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
                 mcm_pp = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_pp_coupling.npy')
+                mcm_mm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_mm_coupling.npy')
+
+                # fill upper left diag with w2
+                w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
                 mcm_pp[0, 0] = w2
                 mcm_pp[1, 1] = w2
-                mcm_mm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_mm_coupling.npy')
                 mcm_mm[0, 0] = 0
                 mcm_mm[1, 1] = 0
 
@@ -286,6 +295,5 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             for mcm_fn, mcm_inv_fn in zip(mcm_fns, mcm_inv_fns):
                 assert os.path.isfile(mcm_fn) and os.path.isfile(mcm_inv_fn), \
                     f'{mcm_fn} and {mcm_inv_fn} do not exist but we should have produced them in loop'
-                continue
 
 np.save(f'{couplings_dir}/canonized_mcms_and_mcm_invs_combos.npy', canonized_combos)

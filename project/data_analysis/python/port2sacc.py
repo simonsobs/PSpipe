@@ -108,7 +108,7 @@ if sacc_fname in ["simu_sacc", "simu_w_syst_sacc"]:
 
         # Reading the flat data vector
         data_vec = covariance.read_x_ar_spectra_vec(
-            spec_dir, spec_name_list, f"cross_{i:05d}", spectra_order=spectra_order, type=d["type"]
+            spec_dir, spec_name_list, f"cross_{iii:05d}", spectra_order=spectra_order, type=d["type"]
         )
 
         # Let's store covariance and bbl in one extra file

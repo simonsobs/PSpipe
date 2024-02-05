@@ -6,7 +6,7 @@ the corresponding covariance matrix
 import numpy as np
 import pylab as plt
 from pspipe_utils import covariance, pspipe_list, log
-from pspy import so_cov, so_dict, pspy_utils
+from pspy import so_cov, so_dict, pspy_utils, so_spectra
 from pixell import utils
 import sys
 import scipy.stats as stats
@@ -43,7 +43,7 @@ if sim_spec_dir == "sim_spectra_syst":
 
 
 selected_spectra = [spectra, ["TT", "TE", "ET", "EE"], ["TT"], ["TE"], ["ET"], ["TB"], ["BT"], ["EE"], ["EB"], ["BE"], ["BB"]]
-name_list = ["all", "TT-TE-ET-EE", "TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+name_list = ["all", "TT-TE-ET-EE", "TT", "TE", "ET", "TB", "BT", "EE", "EB", "BE", "BB"]
 
 # Note that to match the null test selection and likelihood selection, we use a slightly different lmin
 # This is because the likelihood cut based on the bin center, while most of the power spectrum pipeline cut
@@ -69,6 +69,39 @@ for name, select in zip(name_list, selected_spectra):
                                                    spectra_order=spectra,
                                                    selected_spectra=select,
                                                    only_TT_map_set=only_TT_map_set)
+                                                   
+                                                   
+                                                   
+
+    # some plot to check that the selection worked
+    spec_plot_dir = f"{plot_dir}/{name}"
+    pspy_utils.create_directory(spec_plot_dir)
+    for my_spec in bin_out_dict.keys():
+    
+        id, lb = bin_out_dict[my_spec]
+        
+        s_name, spectrum = my_spec
+        
+        data_vec = covariance.read_x_ar_spectra_vec(sim_spec_dir, spec_name_list, f"cross_00000", spectra_order=spectra, type=type)
+        data_vec_my_spec = data_vec[indices]
+        theory_vec_my_spec = theory_vec[indices]
+        
+        sub_cov = x_ar_cov[np.ix_(indices,indices)]
+        error_my_spec = np.sqrt(sub_cov[np.ix_(id,id)].diagonal())
+
+        lb_, Db = so_spectra.read_ps(f"sim_spectra_syst/Dl_{s_name}_cross_00000.dat", spectra=spectra)
+        plt.figure(figsize=(12,8))
+        plt.title(f"{my_spec}, min={np.min(lb)}, max={np.max(lb)}")
+        if spectrum == "TT":
+            plt.semilogy()
+        plt.plot(lb_, Db[spectrum], label="original spectrum")
+        plt.errorbar(lb, data_vec[indices][id], error_my_spec, fmt=".", label="selected spectrum")
+        plt.plot(lb, theory_vec[indices][id], "--", color="gray",alpha=0.3, label="theory")
+        plt.legend()
+        plt.savefig(f"{spec_plot_dir}/{spectrum}_{s_name}.png", bbox_inches="tight")
+        plt.clf()
+        plt.close()
+
 
     inv_sub_cov = np.linalg.inv(x_ar_cov[np.ix_(indices,indices)])
 

@@ -44,13 +44,18 @@ if sim_spec_dir == "sim_spectra_syst":
 
 selected_spectra = [spectra, ["TT", "TE", "ET", "EE"], ["TT"], ["TE"], ["ET"], ["TB"], ["BT"], ["EE"], ["EB"], ["BE"], ["BB"]]
 name_list = ["all", "TT-TE-ET-EE", "TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+
+# Note that to match the null test selection and likelihood selection, we use a slightly different lmin
+# This is because the likelihood cut based on the bin center, while most of the power spectrum pipeline cut
+# based on the bin edges.
 spectra_cuts = {
-    "dr6_pa4_f220": dict(T=[1000, lmax], P=[lmax, lmax]),
-    "dr6_pa5_f150": dict(T=[800, lmax], P=[500, lmax]),
-    "dr6_pa6_f150": dict(T=[600, lmax], P=[500, lmax]),
-    "dr6_pa5_f090": dict(T=[1000, lmax], P=[500, lmax]),
-    "dr6_pa6_f090": dict(T=[1000, lmax], P=[500, lmax]),
+    "dr6_pa4_f220": dict(T=[975, lmax], P=[lmax, lmax]),
+    "dr6_pa5_f150": dict(T=[775, lmax], P=[475, lmax]),
+    "dr6_pa6_f150": dict(T=[575, lmax], P=[475, lmax]),
+    "dr6_pa5_f090": dict(T=[975, lmax], P=[475, lmax]),
+    "dr6_pa6_f090": dict(T=[975, lmax], P=[475, lmax]),
 }
+only_TT_map_set = ["dr6_pa4_f220"]
 
 theory_vec = covariance.read_x_ar_theory_vec(bestfit_dir, mcm_dir, spec_name_list, lmax, spectra_order=spectra)
 
@@ -62,7 +67,8 @@ for name, select in zip(name_list, selected_spectra):
                                                    spec_name_list,
                                                    spectra_cuts=spectra_cuts,
                                                    spectra_order=spectra,
-                                                   selected_spectra=select)
+                                                   selected_spectra=select,
+                                                   only_TT_map_set=only_TT_map_set)
 
     inv_sub_cov = np.linalg.inv(x_ar_cov[np.ix_(indices,indices)])
 

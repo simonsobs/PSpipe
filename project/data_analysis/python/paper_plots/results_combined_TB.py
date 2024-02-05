@@ -24,7 +24,7 @@ type = d["type"]
 lmax = d["lmax"]
 binning_file = d["binning_file"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-lmin = 500
+lmin = 475
 
 bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, delimiter="_", return_nu_tag=True)
@@ -35,7 +35,7 @@ vec_xar = covariance.read_x_ar_spectra_vec(spec_dir,
                                            spectra_order = spectra,
                                            type="Dl")
 
-cov_xar = np.load(f"{cov_dir}/x_ar_final_cov_data.npy")
+cov_xar = np.load(f"{cov_dir}/final_cov_data.npy")
 
 ################################################################################################
 # Start at l=500, remove pa4_f220 pol and only include TB/BT
@@ -49,6 +49,8 @@ spectra_cuts = {
     "dr6_pa6_f090": dict(T=[lmin, lmax], P=[lmin, lmax]),
 }
 
+only_TT_map_set = ["dr6_pa4_f220"]
+
 bin_out_dict, indices = covariance.get_indices(bin_lo,
                                                bin_hi,
                                                lb,
@@ -56,7 +58,7 @@ bin_out_dict, indices = covariance.get_indices(bin_lo,
                                                spectra_cuts=spectra_cuts,
                                                spectra_order=spectra,
                                                selected_spectra=selected_spectra,
-                                               excluded_arrays=None)
+                                               only_TT_map_set=only_TT_map_set)
                                              
 my_spectra = bin_out_dict.keys()
 ################################################################################################

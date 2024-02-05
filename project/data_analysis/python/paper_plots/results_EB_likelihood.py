@@ -27,7 +27,7 @@ type = d["type"]
 lmax = d["lmax"]
 binning_file = d["binning_file"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-lmin = 500
+lmin = 475
 
 bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 id = np.where(bin_lo > lmin)
@@ -41,7 +41,7 @@ vec_xar = covariance.read_x_ar_spectra_vec(spec_dir,
                                            spectra_order = spectra,
                                            type="Dl")
 
-cov_xar = np.load(f"{cov_dir}/x_ar_final_cov_data.npy")
+cov_xar = np.load(f"{cov_dir}/final_cov_data.npy")
 
 
 ################################################################################################
@@ -61,8 +61,7 @@ bin_out_dict, indices = covariance.get_indices(bin_lo,
                                                spec_name_list,
                                                spectra_cuts=spectra_cuts,
                                                spectra_order=spectra,
-                                               selected_spectra=["EB", "BE"],
-                                               excluded_arrays=None)
+                                               selected_spectra=["EB", "BE"])
                                                
 my_spectra = bin_out_dict.keys()
 
@@ -139,7 +138,7 @@ info["params"] = { "alpha_pa5_f090": {  "prior": {  "min": -0.5,  "max": 0.5},  
                    "alpha_pa5_f150": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa5 f150}"},
                    "alpha_pa6_f090": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa6 f090}"},
                    "alpha_pa6_f150": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa6 f150}"}}
-info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.02, "Rminus1_cl_stop": 0.4}}
+info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.02, "Rminus1_cl_stop": 0.04}}
 info["output"] = f"{result_dir}/chains/{roots[0]}"
 info["force"] = True
 info["debug"] = False

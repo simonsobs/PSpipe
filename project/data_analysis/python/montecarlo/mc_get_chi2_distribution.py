@@ -73,30 +73,28 @@ for name, select in zip(name_list, selected_spectra):
                                                    
                                                    
 
-    # some plot to check that the selection worked
+    # some plot to check that the selection worked, we use sim 00000
     spec_plot_dir = f"{plot_dir}/{name}"
     pspy_utils.create_directory(spec_plot_dir)
-    for my_spec in bin_out_dict.keys():
     
-        id, lb = bin_out_dict[my_spec]
-        
+    data_vec = covariance.read_x_ar_spectra_vec(sim_spec_dir, spec_name_list, f"cross_00000", spectra_order=spectra, type=type)
+    sub_data_vec = data_vec[indices]
+    sub_theory_vec = theory_vec[indices]
+    sub_cov = x_ar_cov[np.ix_(indices,indices)]
+
+    for my_spec in bin_out_dict.keys():
         s_name, spectrum = my_spec
-        
-        data_vec = covariance.read_x_ar_spectra_vec(sim_spec_dir, spec_name_list, f"cross_00000", spectra_order=spectra, type=type)
-        data_vec_my_spec = data_vec[indices]
-        theory_vec_my_spec = theory_vec[indices]
-        
-        sub_cov = x_ar_cov[np.ix_(indices,indices)]
-        error_my_spec = np.sqrt(sub_cov[np.ix_(id,id)].diagonal())
+        id, lb = bin_out_dict[my_spec]
 
         lb_, Db = so_spectra.read_ps(f"sim_spectra_syst/Dl_{s_name}_cross_00000.dat", spectra=spectra)
+        
         plt.figure(figsize=(12,8))
         plt.title(f"{my_spec}, min={np.min(lb)}, max={np.max(lb)}")
         if spectrum == "TT":
             plt.semilogy()
         plt.plot(lb_, Db[spectrum], label="original spectrum")
-        plt.errorbar(lb, data_vec[indices][id], error_my_spec, fmt=".", label="selected spectrum")
-        plt.plot(lb, theory_vec[indices][id], "--", color="gray",alpha=0.3, label="theory")
+        plt.errorbar(lb, sub_data_vec[id], np.sqrt(sub_cov[np.ix_(id,id)].diagonal()), fmt=".", label="selected spectrum")
+        plt.plot(lb, sub_theory_vec[id], "--", color="gray",alpha=0.3, label="theory")
         plt.legend()
         plt.savefig(f"{spec_plot_dir}/{spectrum}_{s_name}.png", bbox_inches="tight")
         plt.clf()

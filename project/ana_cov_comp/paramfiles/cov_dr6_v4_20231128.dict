@@ -4,9 +4,9 @@ data_dir = {'zatkins_on_della': '/scratch/gpfs/zatkins/data/simonsobs/PSpipe/pro
 
 surveys = ["dr6"]
 arrays_dr6 = {'pa4': ['f220'], 'pa5': ['f090', 'f150'], 'pa6': ['f090', 'f150']}
+# arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
 
 # orphans
-use_beam_covariance = True
 multistep_path = data_dir
 
 # mcms
@@ -45,18 +45,20 @@ mm_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
 ewin_alms_dir = data_dir + 'ewin_alms'
 couplings_dir = data_dir + 'couplings'
 sq_win_alms_dir = data_dir + 'sq_win_alms'
-covariances_dir = data_dir + 'covariances'
+covariances_dir = data_dir + 'covariances_efficient'
+pspipe_operators_dir = data_dir + 'pspipe_operators'
 split_covariances_dir = data_dir + 'split_covariances'
 filters_dir = data_dir + 'filters'
 noise_model_dir = data_dir + 'noise_model'
 split_noise_dir = data_dir + 'split_noise'
+
 savgol_w = 100
 savgol_k = 4
 num_flm_sims = 300
 num_tf_sims = 1000
-
 mock_ps_dr6 = {'T': {'lknee': 3000, 'lcap': 300, 'pow': -4}, 'pol': {'lknee': 300, 'lcap': 100, 'pow': -4}}
 
+use_beam_covariance = False
 use_toeplitz_cov = True
 
 # window parameters
@@ -201,9 +203,10 @@ leakage_beam_dr6_pa6_f150 = 'gamma_mp_uranus_pa6_f150.txt'
 best_fits_dir = data_dir + 'best_fits'
 
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
+fg_params = {"a_tSZ": 2.97135917, "a_kSZ": 1.60, "a_p": 7.6142249, "beta_p": 2.2, "a_c": 2.75493343, "beta_c": 2.20, "a_s": 3.69978282, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
 
 # sim
 iStart = 0

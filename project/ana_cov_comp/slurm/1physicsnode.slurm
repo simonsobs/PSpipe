@@ -3,7 +3,7 @@
 #SBATCH --nodes=1                # node count
 #SBATCH --ntasks-per-node=1      # total number of tasks per node
 #SBATCH --partition=physics
-#SBATCH --output=slurmoutput/R-%j.out
+#SBATCH --output=slurmoutput/slurm-%A_%a.out
 #SBATCH --mail-type=begin        # send email when job begins
 #SBATCH --mail-type=end          # send email when job ends
 #SBATCH --mail-user=zatkins@princeton.edu
@@ -20,4 +20,10 @@ conda activate pspy-della8
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export JULIA_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-srun $1
+if [[ -z "${SLURM_ARRAY_TASK_ID}" ]]; then
+    srun $1
+elif [[ -z "$2" ]]; then
+    srun $1 $SLURM_ARRAY_TASK_ID
+else
+    srun $1 $(($2*$SLURM_ARRAY_TASK_ID)) $(($2*$SLURM_ARRAY_TASK_ID + $2))
+fi

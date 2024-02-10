@@ -49,11 +49,11 @@ np.save(f"{cov_dir}/x_ar_final_cov_data.npy", full_x_ar_cov)
 
 selected_spectra = spectra
 spectra_cuts = {
-    "dr6_pa4_f220": dict(T=[1000, lmax], P=[lmax, lmax]),
-    "dr6_pa5_f150": dict(T=[800, lmax], P=[500, lmax]),
-    "dr6_pa6_f150": dict(T=[600, lmax], P=[500, lmax]),
-    "dr6_pa5_f090": dict(T=[1000, lmax], P=[500, lmax]),
-    "dr6_pa6_f090": dict(T=[1000, lmax], P=[500, lmax]),
+    "dr6_pa4_f220": dict(T=[975, lmax], P=[lmax, lmax]),
+    "dr6_pa5_f150": dict(T=[775, lmax], P=[475, lmax]),
+    "dr6_pa6_f150": dict(T=[575, lmax], P=[475, lmax]),
+    "dr6_pa5_f090": dict(T=[975, lmax], P=[475, lmax]),
+    "dr6_pa6_f090": dict(T=[975, lmax], P=[475, lmax]),
 }
 
 bin_out_dict,  all_indices = covariance.get_indices(bin_low,
@@ -62,8 +62,7 @@ bin_out_dict,  all_indices = covariance.get_indices(bin_low,
                                                     spec_name_list,
                                                     spectra_cuts=spectra_cuts,
                                                     spectra_order=spectra,
-                                                    selected_spectra=selected_spectra,
-                                                    excluded_arrays=None)
+                                                    selected_spectra=selected_spectra)
 
 
 sub_full_x_ar_cov = full_x_ar_cov[np.ix_(all_indices, all_indices)]

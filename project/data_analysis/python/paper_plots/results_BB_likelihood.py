@@ -3,7 +3,7 @@ This script compute the amplitude of the BB power spectra of ACT DR6 using a dus
 """
 
 from pspy import so_dict, pspy_utils, so_spectra, so_cov
-from pspipe_utils import covariance, pspipe_list, log, best_fits
+from pspipe_utils import covariance, pspipe_list, log, best_fits, external_data
 import numpy as np
 import pylab as plt
 import sys, os
@@ -347,11 +347,24 @@ else:
     
     lb_ml_BB, vec_ml_BB, cov_ml_BB = get_ML_solution(vec_data_BB, vec_fg_BB, i_cov_BB, n_spec, n_bins, meta_bin_scheme)
     
+    
+    add_BK = True
+    add_sptpol = True
+    
     plt.figure(figsize=(12,8))
     plt.plot(l_th, ps_dict["BB"], color="gray")
     plt.ylim(-0.1, 0.25)
-    plt.xlim(0, 4000)
-    plt.errorbar(lb_ml_BB, vec_ml_BB, np.sqrt(np.diagonal(cov_ml_BB)), fmt="o", color="red", label="BB ACT DR6")
+    plt.xlim(30, 4000)
+    plt.errorbar(lb_ml_BB, vec_ml_BB, np.sqrt(np.diagonal(cov_ml_BB)), fmt="o", color="red", label="ACT DR6")
+    if add_BK:
+        plt.semilogx()
+        lb_bicep, Db_bicep, err_bicep = external_data.get_bicep_BB_spectrum()
+        plt.errorbar(lb_bicep, Db_bicep, err_bicep, fmt="o", color="blue", label="BICEP/Keck (2021)")
+    if add_sptpol:
+        lb_sptpol, Db_sptpol, err_sptpol = external_data.get_sptpol_BB_spectrum()
+        plt.errorbar(lb_sptpol, Db_sptpol, err_sptpol, fmt="o", color="orange", label="SPTpol (2020)")
+
+
     plt.plot(l_th, ps_dict["BB"] * 0, linestyle="--", color="black")
     plt.legend(fontsize=16)
     plt.ylabel(r"$D_{\ell}^{BB}$", fontsize=22)

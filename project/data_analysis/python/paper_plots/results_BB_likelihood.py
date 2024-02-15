@@ -200,7 +200,7 @@ fg_params = d["fg_params"]
 fg_components = d["fg_components"]
 do_bandpass_integration = d["do_bandpass_integration"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-lmin = 475
+lmin = 450
 
 l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, lmax + 500, **accuracy_params)
 
@@ -255,6 +255,7 @@ bin_lo, bin_hi, lb, bin_size = bin_lo[id], bin_hi[id], lb[id], bin_size[id]
 n_bins = len(bin_hi)
 print(n_bins)
 
+
 cov_xar = np.load(f"{cov_dir}/x_ar_final_cov_data.npy")
 
 cov_BB = cov_xar[np.ix_(indices, indices)]
@@ -287,9 +288,11 @@ vec_fg_BB_template = vec_fg_BB / fg_params["a_gbb"]
 # we will rebin according the this scheme
 #(the entry of the list correspond to the number of old bin
 
-meta_bin_scheme = [3, 3, 3, 3, 3, 3, 3, 6, 5, 7, 8]
+meta_bin_scheme = [3, 3, 3, 3, 3, 4, 4, 11, 15]
+print(np.sum(meta_bin_scheme), n_bins)
+assert(np.sum(meta_bin_scheme)  == n_bins)
 
-sim = False
+sim = True
 if sim == True:
     n_sims = 100
     mean_dust, std_dust = 0.114, 0.0084 #prior on sim gal amplitude
@@ -298,24 +301,24 @@ if sim == True:
     
     for iii in range(n_sims):
         vec_data_BB  = get_and_select_data_vec(sim_spec_dir, f"cross_{iii:05d}", spec_name_list, spectra, type, indices)
-        samples = mcmc(mean_dust, std_dust, Rminus1_stop=0.03, Rminus1_cl_stop=0.03)
+        #samples = mcmc(mean_dust, std_dust, Rminus1_stop=0.03, Rminus1_cl_stop=0.03)
         
-        a_BB_cmb_list += [samples.mean("a_BB_cmb")]
+       # a_BB_cmb_list += [samples.mean("a_BB_cmb")]
         
         lb_ml_BB, vec_ml_BB, cov_ml_BB = get_ML_solution(vec_data_BB, vec_fg_BB, i_cov_BB, n_spec, n_bins, meta_bin_scheme)
         vec_ml_BB_list += [vec_ml_BB]
         
-        if iii == 0:
-            gdplot = gdplt.get_subplot_plotter()
-            gdplot.triangle_plot(samples, ["a_BB_cmb", "a_BB_dust"], filled=True, title_limit=1)
-            plt.savefig(f"{BB_dir}/posterior_sim_BB.png", dpi=300, bbox_inches="tight")
-            plt.clf()
-            plt.close()
+       # if iii == 0:
+        #    gdplot = gdplt.get_subplot_plotter()
+        #    gdplot.triangle_plot(samples, ["a_BB_cmb", "a_BB_dust"], filled=True, title_limit=1)
+        #    plt.savefig(f"{BB_dir}/posterior_sim_BB.png", dpi=300, bbox_inches="tight")
+        #    plt.clf()
+        #    plt.close()
             
-    mean, std = np.mean(a_BB_cmb_list, axis=0), np.std(a_BB_cmb_list, axis=0)
+#    mean, std = np.mean(a_BB_cmb_list, axis=0), np.std(a_BB_cmb_list, axis=0)
     mean_vec, std_vec = np.mean(vec_ml_BB_list, axis=0), np.std(vec_ml_BB_list, axis=0)
     
-    print("mean", mean, "std", std, "std MC", np.sqrt(samples.cov(["a_BB_cmb"])[0, 0]), std/np.sqrt(n_sims))
+    #print("mean", mean, "std", std, "std MC", np.sqrt(samples.cov(["a_BB_cmb"])[0, 0]), std/np.sqrt(n_sims))
     
     plt.figure(figsize=(12,8))
     plt.ylim(-0.1, 0.25)
@@ -332,7 +335,7 @@ else:
     mean_dust, std_dust = 0.113, 0.0084 #prior on data gal amplitude
 
     vec_data_BB  = get_and_select_data_vec(spec_dir, f"cross", spec_name_list, spectra, type, indices)
-    samples = mcmc(mean_dust, std_dust, Rminus1_stop=0.01, Rminus1_cl_stop=0.01)
+    samples = mcmc(mean_dust, std_dust, Rminus1_stop=0.03, Rminus1_cl_stop=0.03)
     gdplot = gdplt.get_subplot_plotter()
     gdplot.triangle_plot(samples, ["a_BB_cmb", "a_BB_dust"], filled=True, title_limit=1)
     plt.savefig(f"{BB_dir}/posterior_BB.png", dpi=300, bbox_inches="tight")

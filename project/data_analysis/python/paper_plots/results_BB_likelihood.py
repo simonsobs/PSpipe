@@ -116,8 +116,9 @@ def get_ML_solution(vec_data_BB, vec_fg_BB, i_cov_BB, n_spec, n_bins, meta_bin_s
         
     full_P_mat = get_P_mat(n_spec, n_bins,  meta_bin_scheme)
     
-    plt.figure(figsize=(8,12))
+    plt.figure(figsize=(12, 12))
     plt.imshow(full_P_mat)
+    plt.gca().set_aspect(0.02)
     plt.savefig(f"{BB_dir}/P_mat.png", dpi=300, bbox_inches="tight")
     plt.clf()
     plt.close()
@@ -166,7 +167,7 @@ def mcmc(mean_dust, std_dust, Rminus1_stop, Rminus1_cl_stop):
             "a_BB_dust": {"prior": {"dist": "norm", "loc": mean_dust,"scale": std_dust}, "latex": r"A_{BB}^{dust}"}},
             "sampler": {"mcmc": {"max_tries": 10**6, "Rminus1_stop": Rminus1_stop, "Rminus1_cl_stop": Rminus1_cl_stop}},
             "resume": False,
-            "output": f"{BB_dir}/chain", "force": True}
+            "output": f"{BB_dir}/mcmc/chain", "force": True}
 
     updated_info, sampler = run(info)
 
@@ -184,7 +185,7 @@ spec_dir = "spectra_leak_corr"
 sim_spec_dir = "sim_spectra"
 BB_dir = "results_BB"
 
-pspy_utils.create_directory(BB_dir)
+pspy_utils.create_directory(f"{BB_dir}/mcmc")
 
 
 surveys = d["surveys"]
@@ -298,7 +299,8 @@ if sim == True:
     mean_dust, std_dust = 0.114, 0.0084 #prior on sim gal amplitude
 
     a_BB_cmb_list, vec_ml_BB_list = [], []
-    
+    cov_mc = 0
+
     for iii in range(n_sims):
         vec_data_BB  = get_and_select_data_vec(sim_spec_dir, f"cross_{iii:05d}", spec_name_list, spectra, type, indices)
         samples = mcmc(mean_dust, std_dust, Rminus1_stop=0.03, Rminus1_cl_stop=0.03)
@@ -314,12 +316,32 @@ if sim == True:
             plt.savefig(f"{BB_dir}/posterior_sim_BB.png", dpi=300, bbox_inches="tight")
             plt.clf()
             plt.close()
-            
+        
+        
+        cov_mc += np.outer(vec_ml_BB, vec_ml_BB)
+
     mean, std = np.mean(a_BB_cmb_list, axis=0), np.std(a_BB_cmb_list, axis=0)
     mean_vec, std_vec = np.mean(vec_ml_BB_list, axis=0), np.std(vec_ml_BB_list, axis=0)
     
     print("mean", mean, "std", std, "std MC", np.sqrt(samples.cov(["a_BB_cmb"])[0, 0]), std/np.sqrt(n_sims))
     
+    
+    cov_mc = cov_mc/n_sims -  np.outer(mean_vec, mean_vec)
+    
+    plt.figure(figsize=(12,8))
+    plt.plot(lb_ml_BB, np.sqrt(cov_ml_BB.diagonal()))
+    plt.plot(lb_ml_BB, std_vec)
+    plt.savefig(f"{BB_dir}/error_comp.png", dpi=300, bbox_inches="tight")
+    plt.clf()
+    plt.close()
+
+    plt.figure(figsize=(12,8))
+    plt.imshow(so_cov.cov2corr(cov_mc, remove_diag=True))
+    plt.colorbar()
+    plt.savefig(f"{BB_dir}/mc_correlation.png", dpi=300, bbox_inches="tight")
+    plt.clf()
+    plt.close()
+
     plt.figure(figsize=(12,8))
     plt.ylim(-0.1, 0.25)
     plt.xlim(0, 4000)
@@ -375,7 +397,6 @@ else:
     plt.savefig(f"{BB_dir}/combined_BB.png", dpi=300, bbox_inches="tight")
     plt.clf()
     plt.close()
-    
     
     
     plt.figure(figsize=(12,8))

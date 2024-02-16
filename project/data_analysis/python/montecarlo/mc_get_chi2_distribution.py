@@ -86,7 +86,7 @@ for name, select in zip(name_list, selected_spectra):
         s_name, spectrum = my_spec
         id, lb = bin_out_dict[my_spec]
 
-        lb_, Db = so_spectra.read_ps(f"sim_spectra_syst/Dl_{s_name}_cross_00000.dat", spectra=spectra)
+        lb_, Db = so_spectra.read_ps(f"{sim_spec_dir}/Dl_{s_name}_cross_00000.dat", spectra=spectra)
         
         plt.figure(figsize=(12,8))
         plt.title(f"{my_spec}, min={np.min(lb)}, max={np.max(lb)}")

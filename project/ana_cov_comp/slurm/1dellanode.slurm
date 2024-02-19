@@ -8,14 +8,17 @@
 #SBATCH --mail-type=end          # send email when job ends
 #SBATCH --mail-user=zatkins@princeton.edu
 
+### REQUIRED USER CHANGE ###
+# CD TO PSPIPE INSTALLATION
 cd /home/zatkins/repos/simonsobs/PSpipe/project/ana_cov_comp
+############################
 
-### set environment ###
+### REQUIRED USER CHANGE ###
+# SET PSPIPE ENVIRONMENT
 module purge
 module load cmb-della8/220426
-
-# activate conda
 conda activate pspy-della8
+############################
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export JULIA_NUM_THREADS=$SLURM_CPUS_PER_TASK

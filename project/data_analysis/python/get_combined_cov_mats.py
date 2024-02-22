@@ -47,7 +47,7 @@ np.save(f"{cov_dir}/x_ar_final_cov_data.npy", full_x_ar_cov)
 
 ### plot and test covariance in the used ell range
 
-selected_spectra = "TT"
+selected_spectra = spectra
 spectra_cuts = {
     "dr6_pa4_f220": dict(T=[975, lmax], P=[lmax, lmax]),
     "dr6_pa5_f150": dict(T=[775, lmax], P=[475, lmax]),

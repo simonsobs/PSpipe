@@ -73,8 +73,7 @@ if apply_kspace_filter:
         # processes writing to the same filename at the same time can 
         # crash. so here, other jobs will wait for the first job to create
         # the masks
-        cond = lambda x, y, z: not os.path.isfile(x) or not os.path.isfile(y) or not os.path.isfile(z)
-        if start == 0 and cond(fn_T, fn_pol, fn_k):
+        if start == 0 and (not os.path.isfile(fn_T) or not os.path.isfile(fn_pol) or not os.path.isfile(fn_k)):
             w_T = 0
             w_pol = 0
             w_k = 0
@@ -110,7 +109,7 @@ if apply_kspace_filter:
             enmap.write_map(fn_pol, w_pol.astype(np.float32, copy=False))
             enmap.write_map(fn_k, w_k.astype(np.float32, copy=False))
         else:
-            while cond(fn_T, fn_pol, fn_k):
+            while not os.path.isfile(fn_T) or not os.path.isfile(fn_pol) or not os.path.isfile(fn_k):
                 time.sleep(1)
             w_T = enmap.read_map(fn_T)
             w_pol = enmap.read_map(fn_pol)

@@ -86,7 +86,7 @@ if apply_kspace_filter:
             full_shape, full_wcs = enmap.fullsky_geometry(
                 res=np.deg2rad(np.abs(template_wcs.wcs.cdelt[::-1])), # res assumes y-major ordering, wcs is opposite
                 variant=utils.get_variant(template_shape, template_wcs)
-                ) # FIXME: get full shape by resolution, for noise nup -> padding
+                ) # FIXME: for noise nup -> padding
 
             # FIXME: for now, assume x-direction is fullsky
             assert full_shape[1] == template_shape[1], \
@@ -117,7 +117,6 @@ if apply_kspace_filter:
                 fk_fullsky = np.load(fn_fk_fullsky)
 
             # now we can accumulate the fullsky white noise sims
-            # FIXME: fl2 and fl4 only, fl4 from sq in kspace
             fk_4pt_fullsky = fk_fullsky**2               
 
             flm_2pt = np.zeros(ainfo.nelem, dtype=np.float64) # double prec result

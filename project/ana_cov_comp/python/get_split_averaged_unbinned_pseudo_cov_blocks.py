@@ -174,7 +174,7 @@ if mode == 'recipe':
 
 # else, we first need to load all our products for the computation: signal model,
 # noise model, mask w2 factors, and couplings. we do so in two stages: we load
-# all possible signal models, noise models, and w2 factors, and will grab them
+# all possible signal models and noise models, and will grab them
 # as necessary in the computation loop. then, we load just the couplings 
 # required for the particular group of covariance blocks we will actually
 # compute in this script. finally, the iterable is over the blocks in that group 
@@ -188,14 +188,7 @@ else:
                 for split1 in range(len(d[f'maps_{sv1}_{ar1}_{chan1}'])):
                     key = (sv1, ar1, split1)
                     if key not in noise_mats:
-                        noise_mats[key] = np.load(f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_pseudo_tfed_spec.npy') # FIXME: change spec to noise_model
-
-    # hold the w2 factors on disk
-    w2s = {}
-    canonized_w2s = list(np.load(f'{ewin_alms_dir}/canonized_ewin_alms_2pt_combos.npy', allow_pickle=True).item().keys())
-    for (ewin_name1, ewin_name2) in canonized_w2s:
-        w2_fn = f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy'
-        w2s[(ewin_name1, ewin_name2)] = np.load(w2_fn)
+                        noise_mats[key] = np.load(f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_pseudo_tfed_noise_model.npy')
 
     # hold only the couplings we need on disk
     recipe = np.load(f'{covariances_dir}/canonized_split_averaged_unbinned_pseudo_cov_blocks_recipe.npz')
@@ -220,8 +213,8 @@ else:
 
 # numba can help speed up the basic array operations ~2x
 @numba.njit
-def add_term_to_pseudo_cov(pseudo_cov, w2_12, w2_34, C12, C34, coupling):
-    pseudo_cov += (1/w2_12/w2_34) * (C12 + C12[:, None]) * (C34 + C34[:, None]) * coupling
+def add_term_to_pseudo_cov(pseudo_cov, C12, C34, coupling):
+    pseudo_cov += (C12 + C12[:, None]) * (C34 + C34[:, None]) * coupling
 
 # # main loop, we will add all S, N terms together here
 # # iterate over all pairs/orders of coadded fields
@@ -315,14 +308,12 @@ for i in blocks_iterable:
                     j = canonized_couplings.index(coupling_info)
                     coup2block[i, j] += 1
                 else:
-                    w2_12 = w2s[(ewin_name1, ewin_name2)]
-                    w2_34 = w2s[(ewin_name3, ewin_name4)]
                     coupling = couplings[coupling_info]
 
                     Sip = signal_mat[saci, pi, sacp, pp] 
                     Sjq = signal_mat[sacj, pj, sacq, pq]
 
-                    add_term_to_pseudo_cov(pseudo_cov, w2_12, w2_34, Sip, Sjq, coupling)
+                    add_term_to_pseudo_cov(pseudo_cov, Sip, Sjq, coupling)
 
                 # Sip Njq
                 if (svj != svq) or (arj != arq) or (sj != sq):
@@ -340,13 +331,11 @@ for i in blocks_iterable:
                         j = canonized_couplings.index(coupling_info)
                         coup2block[i, j] += 1
                     else:
-                        w2_12 = w2s[(ewin_name1, ewin_name2)]
-                        w2_34 = w2s[(ewin_name3, ewin_name4)]
                         coupling = couplings[coupling_info]
 
                         Njq = noise_mats[(svj, arj, sj)][cj, pj, cq, pq]
                     
-                        add_term_to_pseudo_cov(pseudo_cov, w2_12, w2_34, Sip, Njq, coupling)
+                        add_term_to_pseudo_cov(pseudo_cov, Sip, Njq, coupling)
 
                 # Nip Sjq
                 if (svi != svp) or (ari != arp) or (si != sp):
@@ -364,13 +353,11 @@ for i in blocks_iterable:
                         j = canonized_couplings.index(coupling_info)
                         coup2block[i, j] += 1
                     else:
-                        w2_12 = w2s[(ewin_name1, ewin_name2)]
-                        w2_34 = w2s[(ewin_name3, ewin_name4)]
                         coupling = couplings[coupling_info]
 
                         Nip = noise_mats[(svi, ari, si)][ci, pi, cp, pp]
                         
-                        add_term_to_pseudo_cov(pseudo_cov, w2_12, w2_34, Nip, Sjq, coupling)
+                        add_term_to_pseudo_cov(pseudo_cov, Nip, Sjq, coupling)
 
                 # Nip Njq
                 if (svi != svp) or (ari != arp) or (si != sp) or (svj != svq) or (arj != arq) or (sj != sq):
@@ -388,11 +375,9 @@ for i in blocks_iterable:
                         j = canonized_couplings.index(coupling_info)
                         coup2block[i, j] += 1
                     else:
-                        w2_12 = w2s[(ewin_name1, ewin_name2)]
-                        w2_34 = w2s[(ewin_name3, ewin_name4)]
                         coupling = couplings[coupling_info]
 
-                        add_term_to_pseudo_cov(pseudo_cov, w2_12, w2_34, Nip, Njq, coupling)
+                        add_term_to_pseudo_cov(pseudo_cov, Nip, Njq, coupling)
 
                 # Siq Sjp
                 ewin_name1, ewin_name2, ewin_name3, ewin_name4 = psc.canonize_disconnected_4pt(
@@ -407,14 +392,12 @@ for i in blocks_iterable:
                     j = canonized_couplings.index(coupling_info)
                     coup2block[i, j] += 1
                 else:
-                    w2_12 = w2s[(ewin_name1, ewin_name2)]
-                    w2_34 = w2s[(ewin_name3, ewin_name4)]
                     coupling = couplings[coupling_info]
 
                     Siq = signal_mat[saci, pi, sacq, pq]
                     Sjp = signal_mat[sacj, pj, sacp, pp]
 
-                    add_term_to_pseudo_cov(pseudo_cov, w2_12, w2_34, Siq, Sjp, coupling)
+                    add_term_to_pseudo_cov(pseudo_cov, Siq, Sjp, coupling)
 
                 # Siq Njp
                 if (svj != svp) or (arj != arp) or (sj != sp):
@@ -432,13 +415,11 @@ for i in blocks_iterable:
                         j = canonized_couplings.index(coupling_info)
                         coup2block[i, j] += 1
                     else:
-                        w2_12 = w2s[(ewin_name1, ewin_name2)]
-                        w2_34 = w2s[(ewin_name3, ewin_name4)]
                         coupling = couplings[coupling_info]
 
                         Njp = noise_mats[(svj, arj, sj)][cj, pj, cp, pp] 
                         
-                        add_term_to_pseudo_cov(pseudo_cov, w2_12, w2_34, Siq, Njp, coupling)
+                        add_term_to_pseudo_cov(pseudo_cov, Siq, Njp, coupling)
 
                 # Niq Sjp
                 if (svi != svq) or (ari != arq) or (si != sq):
@@ -456,13 +437,11 @@ for i in blocks_iterable:
                         j = canonized_couplings.index(coupling_info)
                         coup2block[i, j] += 1
                     else:
-                        w2_12 = w2s[(ewin_name1, ewin_name2)]
-                        w2_34 = w2s[(ewin_name3, ewin_name4)]
                         coupling = couplings[coupling_info]
 
                         Niq = noise_mats[(svi, ari, si)][ci, pi, cq, pq]
                         
-                        add_term_to_pseudo_cov(pseudo_cov, w2_12, w2_34, Niq, Sjp, coupling)
+                        add_term_to_pseudo_cov(pseudo_cov, Niq, Sjp, coupling)
 
                 # Niq Njp
                 if (svi != svq) or (ari != arq) or (si != sq) or (svj != svp) or (arj != arp) or (sj != sp):
@@ -480,11 +459,9 @@ for i in blocks_iterable:
                         j = canonized_couplings.index(coupling_info)
                         coup2block[i, j] += 1
                     else:
-                        w2_12 = w2s[(ewin_name1, ewin_name2)]
-                        w2_34 = w2s[(ewin_name3, ewin_name4)]
                         coupling = couplings[coupling_info]
                         
-                        add_term_to_pseudo_cov(pseudo_cov, w2_12, w2_34, Niq, Njp, coupling)
+                        add_term_to_pseudo_cov(pseudo_cov, Niq, Njp, coupling)
         
         if mode == 'compute':
             # .25 is leftover from symmetrization, 4pi is due to convention definition

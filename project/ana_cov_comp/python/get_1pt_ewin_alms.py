@@ -1,9 +1,16 @@
+# FIXME: make these comments more verbose!
 """
-This script computes the alms for covariance couplings
+This script computes the "1 point" window alms for covariance couplings. 
+That is, for all the windows we have (whether signal-weighted i.e. 
+analaysis masks or noise-weighted i.e. analysis masks * sigma maps), it
+computes the alm of that window. Later on, in get_2pt_coupling_matrices,
+we will use a pair of 1pt window alms to make "2pt" couplings a.k.a. 
+mode-coupling matrices. These mode coupling matrices are necessary
+for obtaining pseudospectra as part of the INKA perscription.
 """
 import sys
 import numpy as np
-from pspipe_utils import log, covariance as psc
+from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, so_map, sph_tools, pspy_utils
 import os
 
@@ -15,8 +22,7 @@ log = log.get_logger(**d)
 ewin_alms_dir = d['ewin_alms_dir']
 pspy_utils.create_directory(ewin_alms_dir)
 
-surveys = d['surveys']
-arrays = {sv: d[f'arrays_{sv}'] for sv in surveys}
+sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 lmax = d['lmax']
 niter = d['niter']
@@ -33,9 +39,9 @@ niter = d['niter']
 # then use a mapping from fields to windows to build the canonical
 # windows
 field_infos = []
-for sv1 in surveys:
-    for ar1 in arrays[sv1]:
-        for chan1 in arrays[sv1][ar1]:
+for sv1 in sv2arrs2chans:
+    for ar1 in sv2arrs2chans[sv1]:
+        for chan1 in sv2arrs2chans[sv1][ar1]:
             for split1 in range(len(d[f'maps_{sv1}_{ar1}_{chan1}'])):
                 for pol1 in ['T', 'P']:
                     field_info = (sv1, ar1, chan1, split1, pol1)

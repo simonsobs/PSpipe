@@ -1,11 +1,15 @@
 """
-This script computes the alms for covariance couplings
+Like get_1pt_ewin_alms, except for windows that are formed as products of 
+two 1pt windows. Alms of such products of two windows are then used in
+get_4pt_coupling_matrices.py to calculate the covariance couplings that form
+the basis of the covariance. By including noise-weighted windows here, we
+naturally account for the contribution of noise inhomogeneity to the covariance.
 """
 import sys
 import numpy as np
-from pspipe_utils import log, covariance as psc
+from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, so_map, sph_tools, pspy_utils
-from itertools import product, combinations_with_replacement as cwr
+from itertools import product
 import os
 
 d = so_dict.so_dict()
@@ -16,8 +20,7 @@ log = log.get_logger(**d)
 ewin_alms_dir = d['ewin_alms_dir']
 pspy_utils.create_directory(ewin_alms_dir)
 
-surveys = d['surveys']
-arrays = {sv: d[f'arrays_{sv}'] for sv in surveys}
+sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 lmax = d['lmax']
 niter = d['niter']
@@ -36,9 +39,9 @@ niter = d['niter']
 # windows
 field_infos = []
 ewin_infos = []
-for sv1 in surveys:
-    for ar1 in arrays[sv1]:
-        for chan1 in arrays[sv1][ar1]:
+for sv1 in sv2arrs2chans:
+    for ar1 in sv2arrs2chans[sv1]:
+        for chan1 in sv2arrs2chans[sv1][ar1]:
             for split1 in range(len(d[f'maps_{sv1}_{ar1}_{chan1}'])):
                 for pol1 in ['T', 'P']:
                     field_info = (sv1, ar1, chan1, split1, pol1)
@@ -134,7 +137,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 log.info(f'{alm_fn} exists and {w2_fn} exists, skipping')
             else:
                 ewin12_data = 1
-                for i, path12 in enumerate((*ewin_paths1, *ewin_paths2)):
+                for i, path12 in enumerate((*ewin_paths1, *ewin_paths2)): # there are 4 paths in this smushed tuple!
                     ewin12 = so_map.read_map(path12)
                     ewin12.data = psc.optags2ops[(*ewin_ops1, *ewin_ops2)[i]](ewin12.data)
                     ewin12_data *= ewin12.data

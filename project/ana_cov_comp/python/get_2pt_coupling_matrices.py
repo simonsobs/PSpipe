@@ -1,12 +1,14 @@
 """
-This script computes the analytical covariance matrix elements
-between split power spectra
+This script uses pairs of 1pt window alms from get_1pt_ewin_alms.py to make
+the "2pt couplings" a.k.a. mode-coupling matrices. These matrices are used 
+in get_pseudonoise.py and get_pseudosignal.py to turn power spectra into
+pseudospectra in accordance with the INKA perscription.
 """
 import sys
 import numpy as np
-from pspipe_utils import log, covariance as psc
-from pspy import so_dict, so_map, so_mcm, pspy_utils
-from itertools import product, combinations_with_replacement as cwr
+from pspipe_utils import log, pspipe_list, covariance as psc
+from pspy import so_dict, so_mcm, pspy_utils
+from itertools import product
 import os
 
 d = so_dict.so_dict()
@@ -18,8 +20,7 @@ ewin_alms_dir = d['ewin_alms_dir']
 couplings_dir = d['couplings_dir']
 pspy_utils.create_directory(couplings_dir)
 
-surveys = d['surveys']
-arrays = {sv: d[f'arrays_{sv}'] for sv in surveys}
+sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 if d['use_toeplitz_mcm'] == True:
     log.info('we will use the toeplitz approximation')
@@ -46,9 +47,9 @@ lmax = d['lmax']
 # windows
 field_infos = []
 ewin_infos = []
-for sv1 in surveys:
-    for ar1 in arrays[sv1]:
-        for chan1 in arrays[sv1][ar1]:
+for sv1 in sv2arrs2chans:
+    for ar1 in sv2arrs2chans[sv1]:
+        for chan1 in sv2arrs2chans[sv1][ar1]:
             for split1 in range(len(d[f'maps_{sv1}_{ar1}_{chan1}'])):
                 for pol1 in ['T', 'P']:
                     field_info = (sv1, ar1, chan1, split1, pol1)
@@ -84,7 +85,9 @@ canonized_combos = {}
 # iterate over all pairs/orders of fields, and get the canonized window pairs
 for field_info1, field_info2 in product(field_infos, repeat=2):
     # pols split into canonical blocks, so it's safe to grab from field_info
-    # instead of canonized field_info
+    # instead of canonized field_info --> they key is e.g. whether our 
+    # canonized field infos are T, P or P, T ordering, they both point
+    # to the same flavor of coupling
     pol1, pol2 = field_info1[4], field_info2[4]
 
     # S S

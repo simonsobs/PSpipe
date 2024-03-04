@@ -1,9 +1,14 @@
 """
-This script computes the mcms and mcm_invs from 2pt covariance couplings
+This script computes the mcms and mcm_invs from 2pt covariance couplings. These
+matrices are needed in get_noise_model.py, get_pseudonoise.py, and 
+get_pseudosignal.py, where e.g. we need to take an unbinned power spectrum and 
+turn it into an unbinned pseudospectrum in accordance with the INKA
+prescription. The default PSpipe products include the effects of the beam and
+the binning, whereas for these operations we need the "pure" mode coupling.
 """
 import sys
 import numpy as np
-from pspipe_utils import log, covariance as psc
+from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, pspy_utils
 from itertools import product, combinations_with_replacement as cwr
 import os
@@ -17,8 +22,7 @@ ewin_alms_dir = d['ewin_alms_dir']
 couplings_dir = d['couplings_dir']
 pspy_utils.create_directory(couplings_dir)
 
-surveys = d['surveys']
-arrays = {sv: d[f'arrays_{sv}'] for sv in surveys}
+sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 lmax = d['lmax']
 niter = d['niter']
@@ -37,9 +41,9 @@ niter = d['niter']
 # windows
 field_infos = []
 ewin_infos = []
-for sv1 in surveys:
-    for ar1 in arrays[sv1]:
-        for chan1 in arrays[sv1][ar1]:
+for sv1 in sv2arrs2chans:
+    for ar1 in sv2arrs2chans[sv1]:
+        for chan1 in sv2arrs2chans[sv1][ar1]:
             for split1 in range(len(d[f'maps_{sv1}_{ar1}_{chan1}'])):
                 for pol1 in ['T', 'P']:
                     field_info = (sv1, ar1, chan1, split1, pol1)
@@ -74,7 +78,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
     
     mcm_fns = []
     mcm_inv_fns = []
-    for fntag in ('00', '02', 'diag', 'off'):
+    for fntag in ('00', '02', 'diag', 'off'): # diag is for EE, BB subblock; off is for EB, BE subblock
         mcm_fns.append(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_{fntag}_mcm.npy')
         mcm_inv_fns.append(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_{fntag}_mcm_inv.npy')
     
@@ -82,8 +86,8 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
         canonized_combos[(ewin_name1, ewin_name2)] = [(field_info1, field_info2)]
 
         # Need to do 00, 02 individually
-        mcm_fn = mcm_fns[0]
-        mcm_inv_fn = mcm_inv_fns[0]
+        mcm_fn = mcm_fns[0] # 00
+        mcm_inv_fn = mcm_inv_fns[0] # 00
         if os.path.isfile(mcm_fn) and os.path.isfile(mcm_inv_fn):
             log.info(f'{mcm_fn} exists and {mcm_inv_fn} exists, skipping')
         else:
@@ -98,8 +102,8 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             mcm_inv = np.linalg.inv(mcm)
             np.save(mcm_inv_fn, mcm_inv)
 
-        mcm_fn = mcm_fns[1]
-        mcm_inv_fn = mcm_inv_fns[1]
+        mcm_fn = mcm_fns[1] # 02
+        mcm_inv_fn = mcm_inv_fns[1] # 02
         if os.path.isfile(mcm_fn) and os.path.isfile(mcm_inv_fn):
             log.info(f'{mcm_fn} exists and {mcm_inv_fn} exists, skipping')
         else:
@@ -109,6 +113,11 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             mcm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_02_coupling.npy')
             
             # fill upper left diag with w2
+            # strictly speaking, this shouldn't be necessary (since the upper left
+            # 2-element block of the matrix is set to I2 by pspy); but, due to 
+            # paranoia, we want these numbers to be the same order-of-magnitude
+            # as the non-trivial part of the matrix, in case some shadowy numerics
+            # happen
             w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
             mcm[0, 0] = w2
             mcm[1, 1] = w2
@@ -120,8 +129,8 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             np.save(mcm_inv_fn, mcm_inv)
 
         # Then need to do pp, mm jointly
-        mcm_fn = mcm_fns[2]
-        mcm_inv_fn = mcm_inv_fns[2]
+        mcm_fn = mcm_fns[2] # diag
+        mcm_inv_fn = mcm_inv_fns[2] # diag
         if os.path.isfile(mcm_fn) and os.path.isfile(mcm_inv_fn):
             log.info(f'{mcm_fn} exists and {mcm_inv_fn} exists, skipping')
         else:
@@ -146,8 +155,8 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             mcm_inv = np.linalg.inv(mcm)
             np.save(mcm_inv_fn, mcm_inv)
 
-        mcm_fn = mcm_fns[3]
-        mcm_inv_fn = mcm_inv_fns[3]
+        mcm_fn = mcm_fns[3] # off 
+        mcm_inv_fn = mcm_inv_fns[3] # off
         if os.path.isfile(mcm_fn) and os.path.isfile(mcm_inv_fn):
             log.info(f'{mcm_fn} exists and {mcm_inv_fn} exists, skipping')
         else:

@@ -28,6 +28,8 @@ import os
 import sys
 import time
 
+# FIXME: explicitly loop over channels/pols
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 

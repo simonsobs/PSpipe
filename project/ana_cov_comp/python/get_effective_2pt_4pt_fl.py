@@ -28,6 +28,8 @@ from scipy.signal import savgol_filter
 import os
 import sys
 
+# FIXME: allow array over channels/pols
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 

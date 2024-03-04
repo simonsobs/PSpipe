@@ -21,7 +21,7 @@ This script assumes:
 1. No cross-survey spectra.
 2. All power spectra and masks are similar enough for all fields in a survey.
 """
-from pspipe_utils import log, covariance as psc
+from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, so_map, so_mcm, pspy_utils
 
 from pixell import curvedsky
@@ -31,6 +31,8 @@ import matplotlib.pyplot as plt
 
 import os
 import sys
+
+# FIXME: allow job array over channels/pols
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -42,8 +44,7 @@ plot_dir = os.path.join(d['plot_dir'], 'filters')
 pspy_utils.create_directory(filters_dir)
 pspy_utils.create_directory(plot_dir)
 
-surveys = d['surveys']
-arrays = {sv: d[f'arrays_{sv}'] for sv in surveys}
+sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 apply_kspace_filter = d["apply_kspace_filter"]
 lmax = d['lmax']
@@ -54,7 +55,7 @@ bin_low, bin_high, bin_cent, _ = pspy_utils.read_binning_file(d['binning_file'],
 
 if apply_kspace_filter:
 
-    for sv1 in surveys:
+    for sv1 in sv2arrs2chans:
         # get the filter tf templates lmins for the fitting
         log.info(f'Getting filter tf templates for {sv1=}')
         fl2 = np.load(f'{filters_dir}/{sv1}_fl_2pt_fullsky.npy')

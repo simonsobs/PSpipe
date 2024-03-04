@@ -92,6 +92,7 @@ for sv1 in sv2arrs2chans:
                         arrs = f'w_{sv1}_{ar1}_{chan1}_s_{sv1}_{ar1}_{chan1}_set{split1}_sqrt_pixarxw_{sv1}_{ar1}_{chan2}_s_{sv1}_{ar1}_{chan2}_set{split1}_sqrt_pixar'
                     else:
                         arrs = f'w_{sv1}_{ar1}_{chan2}_s_{sv1}_{ar1}_{chan2}_set{split1}_sqrt_pixarxw_{sv1}_{ar1}_{chan1}_s_{sv1}_{ar1}_{chan1}_set{split1}_sqrt_pixar'
+                    
                     log.info(f'Convolving {arrs} and dividing by w2')
 
                     w2 = np.load(f'{couplings_dir}/{arrs}_w2.npy')
@@ -119,5 +120,6 @@ for sv1 in sv2arrs2chans:
                     pseudo_tfed_noise_model[c1, 1, c2, 2] = pcl[:len(cleb)]
                     pseudo_tfed_noise_model[c1, 2, c2, 1] = pcl[len(cleb):]
 
-            pseudo_tfed_noise_model /= w2
+                    pseudo_tfed_noise_model[c1, :, c2, :] /= w2
+            
             np.save(f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_pseudo_tfed_noise_model.npy', pseudo_tfed_noise_model)

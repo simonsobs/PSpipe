@@ -7,9 +7,9 @@ Dl factors, and kspace deconvolving.
 """
 import sys
 import numpy as np
-from pspipe_utils import log, covariance as psc
-from pspy import so_dict, so_map, so_mcm, pspy_utils
-from itertools import product, permutations
+from pspipe_utils import log, pspipe_list, covariance as psc
+from pspy import so_dict, pspy_utils
+from itertools import product
 import os
 
 d = so_dict.so_dict()
@@ -21,8 +21,7 @@ pspipe_ops_dir = d['pspipe_operators_dir']
 covariances_dir = d['covariances_dir']
 pspy_utils.create_directory(covariances_dir)
 
-surveys = d['surveys']
-arrays = {sv: d[f'arrays_{sv}'] for sv in surveys}
+sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 lmax = 8500 # FIXME
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -44,9 +43,9 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 # windows
 sv_ar_chans = [] # necessary for indexing signal model
 coadd_infos = [] # no splits, can't think of a better name
-for sv1 in surveys:
-    for ar1 in arrays[sv1]:
-        for chan1 in arrays[sv1][ar1]:
+for sv1 in sv2arrs2chans:
+    for ar1 in sv2arrs2chans[sv1]:
+        for chan1 in sv2arrs2chans[sv1][ar1]:
             sv_ar_chans.append((sv1, ar1, chan1)) 
             for split1 in range(len(d[f'maps_{sv1}_{ar1}_{chan1}'])):
                 for pol1 in ('T', 'E', 'B'):                    
@@ -83,7 +82,7 @@ if len(sys.argv) == 4:
 for i in range(start, stop):
     (sv_ar_chani, sv_ar_chanj, sv_ar_chanp, sv_ar_chanq) = list(canonized_combos.keys())[i]
 
-    spec_cov_fn = f"{covariances_dir}/spec_cov_{'_'.join(sv_ar_chani)}x{'_'.join(sv_ar_chanj)}"
+    spec_cov_fn = f"{covariances_dir}/analytic_cov_{'_'.join(sv_ar_chani)}x{'_'.join(sv_ar_chanj)}"
     spec_cov_fn += f"_{'_'.join(sv_ar_chanp)}x{'_'.join(sv_ar_chanq)}.npy"
 
     if os.path.isfile(spec_cov_fn):

@@ -1,6 +1,9 @@
 """
-This script computes the analytical covariance matrix elements
-between split power spectra
+Like get_2pt_coupling_matrices, except using pairs of windows that are
+themselves formed from a product of a pair of windows, i.e., pairs of the "2pt"
+windows alms calculated in get_2pt_ewin_alms_and_w2.py. Couplings formed from
+a combination of 4 such windows become the "4pt couplings". These matrices are used 
+as the basis of the covariance matrix itself.
 """
 import sys
 import numpy as np

@@ -1,12 +1,14 @@
 """
 Given the grouping of blocks produced by
-get_split_averaged_unbinned_pseudo_cov_blocks_recipe.py, this script submits
-jobs for all groups of blocks to run 
-get_split_averaged_unbinned_pseudo_cov_blocks.py.
+get_split_averaged_unbinned_pseudo_cov_blocks.py run in recipe mode, this
+script submits jobs for all groups of blocks to run 
+get_split_averaged_unbinned_pseudo_cov_blocks.py in compute mode. Thus, the
+user should never run get_split_averaged_unbinned_pseudo_cov_blocks.py in
+compute mode directly, they should only run this script.
 
-This script is necessary because each group of block has different memory
+This script is necessary because each group of blocks has different memory
 requirements, set by the number of files loaded in each group, so a job array
-is not really possible.
+is not easily possible.
 """
 from pspy import so_dict
 from pspipe_utils import log 
@@ -17,8 +19,10 @@ import os
 import subprocess
 import argparse
 
-REL_MEM_SAFETY_FAC = 1.2
-ABS_MEM_SAFETY_FAC_GB = 5
+# FIXME: submit as array with dependency on self, then modify each task in array
+
+REL_MEM_SAFETY_FAC = 1.1
+ABS_MEM_SAFETY_FAC_GB = 4
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('paramfile', 
@@ -39,7 +43,7 @@ log = log.get_logger(**d)
 covariances_dir = d['covariances_dir']
 
 lmax = d['lmax']
-coupling_template = np.zeros((lmax + 1, lmax + 1), dtype=np.float64)
+coupling_template = np.zeros((lmax + 1, lmax + 1), dtype=np.float64) # FIXME: dynamic dtype
 mem_per_coupling_gb = coupling_template.size * coupling_template.itemsize / 1e9
 
 # our job is to:

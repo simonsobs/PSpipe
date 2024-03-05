@@ -37,8 +37,6 @@ d.read_from_file(sys.argv[1])
 
 log = log.get_logger(**d)
 
-# FIXME: move w2's into definition of pseudocl's
-
 # we have two modes: a recipe mode and a compute mode
 
 # NOTE: by using the 3rd command-line arg, we are saying we can never
@@ -207,7 +205,6 @@ else:
     for (ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype) in canonized_couplings_to_load:
         coupling_fn = f'{couplings_dir}/{ewin_name1}x{ewin_name2}x{ewin_name3}x{ewin_name4}_{psc.spintypes2fntags[spintype]}_coupling.npy'
         couplings[(ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype)] = np.load(coupling_fn)
-
 
     blocks_iterable = group
 
@@ -478,72 +475,72 @@ for i in blocks_iterable:
 # metrics: the distribution of the number of distinct coupling files per group,
 # and the distribution of the number of distinct terms entering all the 
 # covariance blocks in the group
+if mode == 'recipe':
+    np.save(f'{covariances_dir}/canonized_couplings2blocks.npy', coup2block)
 
-np.save(f'{covariances_dir}/canonized_couplings2blocks.npy', coup2block)
+    # now that we know which blocks load which couplings and how many times
+    # per coupling, we try to group blocks to minimize the number of total
+    # times a given group of blocks needs to read couplings from disk
+    target_num_ops = coup2block.sum() // target_ngroups
 
-# now that we know which blocks load which couplings and how many times
-# per coupling, we try to group blocks to minimize the number of total
-# times a given group of blocks needs to read couplings from disk
-target_num_ops = coup2block.sum() // target_ngroups
+    groups = []
+    group_total_reads = []
+    group_total_ops = []
 
-groups = []
-group_total_reads = []
-group_total_ops = []
+    ungrouped = np.arange(len(coup2block), dtype=int) # rows of coup2block (blocks) that are not yet assigned to a group
+    while(len(ungrouped) > 0):    
+        # get the row of coup2block, among rows that haven't yet been assigned, that has the largest sum 
+        maxidx = ungrouped[np.argmax(coup2block.sum(axis=1)[ungrouped])] 
+        
+        # get the dot products with this row among rows that haven't yet been assigned (including this row)
+        dot_prods = coup2block[ungrouped] @ coup2block[maxidx]
 
-ungrouped = np.arange(len(coup2block), dtype=int) # rows of coup2block (blocks) that are not yet assigned to a group
-while(len(ungrouped) > 0):    
-    # get the row of coup2block, among rows that haven't yet been assigned, that has the largest sum 
-    maxidx = ungrouped[np.argmax(coup2block.sum(axis=1)[ungrouped])] 
-    
-    # get the dot products with this row among rows that haven't yet been assigned (including this row)
-    dot_prods = coup2block[ungrouped] @ coup2block[maxidx]
+        # idxs into ungrouped sorted by highest dot products with high-norm row of coup2block
+        ungrouped_idxs_by_high_to_low_dot_prods = np.argsort(dot_prods)[::-1]
 
-    # idxs into ungrouped sorted by highest dot products with high-norm row of coup2block
-    ungrouped_idxs_by_high_to_low_dot_prods = np.argsort(dot_prods)[::-1]
+        # total operations by highest dot products
+        total_ops_by_high_to_low_dot_prods = coup2block.sum(axis=1)[ungrouped[ungrouped_idxs_by_high_to_low_dot_prods]] 
+        cum_total_ops = np.cumsum(total_ops_by_high_to_low_dot_prods)
 
-    # total operations by highest dot products
-    total_ops_by_high_to_low_dot_prods = coup2block.sum(axis=1)[ungrouped[ungrouped_idxs_by_high_to_low_dot_prods]] 
-    cum_total_ops = np.cumsum(total_ops_by_high_to_low_dot_prods)
+        try:
+            # idx of first ungrouped row of coup2block, when sorted by high to low dot prods, 
+            # where the cumulative total number of ops is greater than the target
+            cut_idx = np.where(cum_total_ops >= target_num_ops)[0].min() 
+        except ValueError:
+            # if not enough ungrouped rows left to reach target, grab everything remaining
+            cut_idx = len(ungrouped_idxs_by_high_to_low_dot_prods) - 1
 
-    try:
-        # idx of first ungrouped row of coup2block, when sorted by high to low dot prods, 
-        # where the cumulative total number of ops is greater than the target
-        cut_idx = np.where(cum_total_ops >= target_num_ops)[0].min() 
-    except ValueError:
-        # if not enough ungrouped rows left to reach target, grab everything remaining
-        cut_idx = len(ungrouped_idxs_by_high_to_low_dot_prods) - 1
+        ungrouped_idxs = ungrouped_idxs_by_high_to_low_dot_prods[:cut_idx + 1]
+        group_idxs = ungrouped[ungrouped_idxs]
+        total_reads = (coup2block[group_idxs].sum(axis=0) > 0).sum()
+        total_ops = coup2block[group_idxs].sum()
 
-    ungrouped_idxs = ungrouped_idxs_by_high_to_low_dot_prods[:cut_idx + 1]
-    group_idxs = ungrouped[ungrouped_idxs]
-    total_reads = (coup2block[group_idxs].sum(axis=0) > 0).sum()
-    total_ops = coup2block[group_idxs].sum()
+        groups.append(group_idxs)
+        group_total_reads.append(total_reads)
+        group_total_ops.append(total_ops)
 
-    groups.append(group_idxs)
-    group_total_reads.append(total_reads)
-    group_total_ops.append(total_ops)
+        assert total_ops == cum_total_ops[cut_idx], \
+            f'Expected the total operations in this group to be equal to the ' + \
+            f'cumulative total operations at the cut index, but got ' + \
+            f'{total_ops=} and {cum_total_ops[cut_idx]=}' 
+        
+        ungrouped = np.delete(ungrouped, ungrouped_idxs)
 
-    assert total_ops == cum_total_ops[cut_idx], \
-        f'Expected the total operations in this group to be equal to the ' + \
-        f'cumulative total operations at the cut index, but got ' + \
-        f'{total_ops=} and {cum_total_ops[cut_idx]=}' 
-    
-    ungrouped = np.delete(ungrouped, ungrouped_idxs)
+    # save and plot
+    np.savez(f'{covariances_dir}/canonized_split_averaged_unbinned_pseudo_cov_blocks_recipe.npz',
+            *groups,
+            group_total_reads=np.array(group_total_reads),
+            group_total_ops=np.array(group_total_ops)
+            )
 
-# save and plot
-np.savez(f'{covariances_dir}/canonized_split_averaged_unbinned_pseudo_cov_blocks_recipe.npz',
-         *groups,
-         group_total_reads=np.array(group_total_reads),
-         group_total_ops=np.array(group_total_ops)
-         )
+    plt.figure()
+    _ = plt.hist(group_total_reads, histtype='step', bins=25, label=f'min={np.min(group_total_reads)}, median={np.median(group_total_reads)}, max={np.max(group_total_reads)}')
+    plt.legend()
+    plt.title('total reads per group')
+    plt.savefig(f'{plot_dir}/group_total_reads.png')
 
-plt.figure()
-_ = plt.hist(group_total_reads, histtype='step', bins=25, label=f'min={np.min(group_total_reads)}, median={np.median(group_total_reads)}, max={np.max(group_total_reads)}')
-plt.legend()
-plt.title('total reads per group')
-plt.savefig(f'{plot_dir}/group_total_reads.png')
-
-plt.figure()
-_ = plt.hist(group_total_ops, histtype='step', bins=25, label=f'min={np.min(group_total_ops)}, median={np.median(group_total_ops)}, max={np.max(group_total_ops)}')
-plt.legend()
-plt.title('total terms to calculate per group')
-plt.savefig(f'{plot_dir}/group_total_ops.png')
+    plt.figure()
+    _ = plt.hist(group_total_ops, histtype='step', bins=25, label=f'min={np.min(group_total_ops)}, median={np.median(group_total_ops)}, max={np.max(group_total_ops)}')
+    plt.legend()
+    plt.title('total terms to calculate per group')
+    plt.savefig(f'{plot_dir}/group_total_ops.png')

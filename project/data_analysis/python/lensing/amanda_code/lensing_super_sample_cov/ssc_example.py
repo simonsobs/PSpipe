@@ -21,7 +21,7 @@ Lmax = 8500 # used in sigma_kappa^2 calculation (eq. 3 of arXiv:1401.7992)
 ell_ranges = {'tt': [lmin, lmax], 'te': [lmin, lmax], 'ee': [lmin, lmax], 'bb': [lmin, lmax], 'kk': [Lmin, Lmax]} 
 
 # the mask (including point source masks, etc.) 
-mask_fname = 'window.fits'
+mask_fname = '/pscratch/sd/t/tlouis/data_analysis_v4_march24/final/dr6/windows/window_dr6_pa5_f090_baseline.fits'
 
 # file holding the LENSED CMB theory and CMB lensing convergence spectrum
 lensed_theory_file = 'lensed_theory_cls.txt'

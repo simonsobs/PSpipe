@@ -124,4 +124,4 @@ for id_el1, x_ar_el1 in enumerate(x_ar_cov_list):
         log.info(f"{x_ar_el1}, {x_ar_el2}, fsky = {fsky:.3f}, freq_scaling = {nu_scaling:.3f}, trispectrum {flux_cut_Jy*1000} mJy = {trispectrum}")
 
 x_ar_non_gaussian_cov_radio  = np.triu(x_ar_non_gaussian_cov_radio) + np.tril(x_ar_non_gaussian_cov_radio.T, -1)
-np.save("x_ar_non_gaussian_cov_radio.npy", x_ar_non_gaussian_cov_radio)
+np.save(f"{cov_dir}/x_ar_non_gaussian_cov_radio.npy", x_ar_non_gaussian_cov_radio)

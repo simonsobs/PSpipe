@@ -81,20 +81,32 @@ n_el = len(x_ar_cov_list)
 
 x_ar_non_gaussian_cov_radio = np.zeros((n_el * n_bins, n_el * n_bins))
 
+
+# the effective frequencies have been computed by Benjamin Beringue using equation D4 of: https://arxiv.org/pdf/2007.07289.pdf for the DR6 arrays
+radio_nu_eff = {}
+radio_nu_eff["dr6_pa4_f220"] = 216.60
+radio_nu_eff["dr6_pa5_f090"] = 97.35
+radio_nu_eff["dr6_pa5_f150"] = 149.36
+radio_nu_eff["dr6_pa6_f090"] = 96.32
+radio_nu_eff["dr6_pa6_f150"] = 147.99
+
+
 for id_el1, x_ar_el1 in enumerate(x_ar_cov_list):
     for id_el2, x_ar_el2 in enumerate(x_ar_cov_list):
         if id_el1 > id_el2: continue
 
-        spec_1, spec_name_1, nu_spec_1 = x_ar_el1
-        spec_2, spec_name_2, nu_spec_2 = x_ar_el2
+        spec_1, spec_name_1, _ = x_ar_el1
+        spec_2, spec_name_2, _ = x_ar_el2
         
         if (spec_1 != "TT") or (spec_2 != "TT"): continue
         
         name_a1, name_b1 = spec_name_1.split("x")
         name_a2, name_b2 = spec_name_2.split("x")
         
-        nu_a1, nu_b1 = nu_spec_1
-        nu_a2, nu_b2 = nu_spec_2
+        
+        nu_a1, nu_b1 = radio_nu_eff[name_a1], radio_nu_eff[name_b1]
+        nu_a2, nu_b2 = radio_nu_eff[name_a2], radio_nu_eff[name_b2]
+
 
         id1_low, id1_high = id_el1 * n_bins, (id_el1 + 1) * n_bins
         id2_low, id2_high = id_el2 * n_bins, (id_el2 + 1) * n_bins
@@ -121,7 +133,7 @@ for id_el1, x_ar_el1 in enumerate(x_ar_cov_list):
         
         fsky = 1 / (inv_Omega * 4 * np.pi)
         
-        log.info(f"{x_ar_el1}, {x_ar_el2}, fsky = {fsky:.3f}, freq_scaling = {nu_scaling:.3f}, trispectrum {flux_cut_Jy*1000} mJy = {trispectrum}")
+        log.info(f"({spec_name_1},{spec_name_2}),  ({nu_a1}, {nu_b1}, {nu_a2}, {nu_b2}), fsky = {fsky:.3f}, freq_scaling = {nu_scaling:.3f}, trispectrum {flux_cut_Jy*1000} mJy = {trispectrum:.3e}")
 
 x_ar_non_gaussian_cov_radio  = np.triu(x_ar_non_gaussian_cov_radio) + np.tril(x_ar_non_gaussian_cov_radio.T, -1)
 np.save(f"{cov_dir}/x_ar_non_gaussian_cov_radio.npy", x_ar_non_gaussian_cov_radio)

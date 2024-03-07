@@ -88,6 +88,7 @@ for sv1 in sv2arrs2chans:
             for c1, chan1 in enumerate(sv2arrs2chans[sv1][ar1]):
                 for c2, chan2 in enumerate(sv2arrs2chans[sv1][ar1]):
                     # canonical
+                    # FIXME: replace with actual ewin/canonization
                     if c1 <= c2:
                         arrs = f'w_{sv1}_{ar1}_{chan1}_s_{sv1}_{ar1}_{chan1}_set{split1}_sqrt_pixarxw_{sv1}_{ar1}_{chan2}_s_{sv1}_{ar1}_{chan2}_set{split1}_sqrt_pixar'
                     else:

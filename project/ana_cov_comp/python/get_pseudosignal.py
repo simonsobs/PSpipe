@@ -93,6 +93,7 @@ single_coupling_pols = {'TT': '00', 'TE': '02', 'ET': '02', 'TB': '02', 'BT': '0
 
 for a1, array1 in enumerate(array_list):
     for a2, array2 in enumerate(array_list):
+        # FIXME: replace with actual ewin/canonization
         arrs = f'w_{array1}xw_{array2}' if a1 <= a2 else f'w_{array2}xw_{array1}' # canonical
 
         log.info(f'Convolving {arrs} and dividing by w2')

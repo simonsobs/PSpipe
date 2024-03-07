@@ -1,4 +1,3 @@
-# FIXME: make these comments more verbose!
 """
 This script computes the "1 point" window alms for covariance couplings. 
 That is, for all the windows we have (whether signal-weighted i.e. 

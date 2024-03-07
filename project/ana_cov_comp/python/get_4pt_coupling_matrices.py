@@ -4,6 +4,20 @@ themselves formed from a product of a pair of windows, i.e., pairs of the "2pt"
 windows alms calculated in get_2pt_ewin_alms_and_w2.py. Couplings formed from
 a combination of 4 such windows become the "4pt couplings". These matrices are used 
 as the basis of the covariance matrix itself.
+
+This script operates in two modes. The first mode is "recipe" mode, in which
+after the paramfile argument the user just supplies the mode word
+"recipe". In this mode, the script loops over all combinations of 4 "fields,"
+where one "field" is a (survey, array, channel, split, pol) label, and
+tabulates how many unique couplings actually need to be computed. The number
+of 4-field combinations is in the several millions, but the unique couplings is 
+in the few thousands, because of canonization of filenames. This loop only needs
+to run once before any computation, but it takes a long time for python to 
+actually do it, so it's best to have one job do it than every job in an array do it.
+
+The second mode entails actual computation. In this mode, the user lists
+an integers after the paramfile, referring to the number of couplings per
+job in the job array (it must be submitted as a job array).
 """
 import sys
 import numpy as np

@@ -19,7 +19,7 @@ calc_lensingxcmb = True # CMB x lensing blocks; NOTE that you need the derivativ
 output_root = 'lmax8500_'
 
 # other inputs :
-fsky = 0.28
+fsky = 0.257
 cmb_spectra = ['tt', 'te', 'ee', 'bb'] # list of CMB spectra to use; C_L^kk is also included automatically if `calc_lensingxcmb = True`.
 
 # set the multipole ranges for CMB (all the same here) and for C_L^kk:

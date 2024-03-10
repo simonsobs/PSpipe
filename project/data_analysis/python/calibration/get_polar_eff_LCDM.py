@@ -15,7 +15,14 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 # Set up directories
-ps_dir = "spectra_leak_corr_npipe_bias_corr"
+ps_dir = "spectra_leak_corr"
+planck_corr = False
+
+if planck_corr:
+    ps_dir = "spectra_leak_corr_planck_bias_corr"
+
+
+
 cov_dir = "covariances"
 bestfit_dir = "best_fits"
 mcm_dir = "mcms"

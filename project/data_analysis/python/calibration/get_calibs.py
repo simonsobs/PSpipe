@@ -29,7 +29,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-npipe_corr = True
+planck_corr = True
 subtract_bf_fg = True
 
 
@@ -38,9 +38,9 @@ spec_dir = "spectra"
 bestfir_dir = "best_fits"
 cov_dir = "covariances"
 
-if npipe_corr:
-    spec_dir = "spectra_leak_corr_npipe_bias_corr"
-    output_dir += "_npipe_bias_corrected"
+if planck_corr:
+    spec_dir = "spectra_leak_corr_planck_bias_corr"
+    output_dir += "_planck_bias_corrected"
 
 if subtract_bf_fg:
     output_dir += "_fg_sub"
@@ -73,17 +73,17 @@ pspy_utils.create_directory(plot_output_dir)
 # the calibration amplitudes
 multipole_range = {"dr6_pa4_f150": [1250, 1800],
                    "dr6_pa4_f220": [1250, 2000],
-                   "dr6_pa5_f090": [1000, 1500],
+                   "dr6_pa5_f090": [1000, 2000],
                    "dr6_pa5_f150": [800, 2000],
-                   "dr6_pa6_f090": [1000, 1500],
+                   "dr6_pa6_f090": [1000, 2000],
                    "dr6_pa6_f150": [600, 2000]}
 
 # Define the reference arrays
 ref_map_sets = {"dr6_pa4_f150": "Planck_f143",
              "dr6_pa4_f220": "Planck_f217",
-             "dr6_pa5_f090": "Planck_f100",
+             "dr6_pa5_f090": "Planck_f143",
              "dr6_pa5_f150": "Planck_f143",
-             "dr6_pa6_f090": "Planck_f100",
+             "dr6_pa6_f090": "Planck_f143",
              "dr6_pa6_f150": "Planck_f143"}
 
 

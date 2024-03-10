@@ -78,7 +78,10 @@ patch = None
 if "patch" in d:
     patch = so_map.read_map(d["patch"])
 
+
 # here we list the different windows that need to be computed, we will then do a MPI loops over this list
+# we also force surveys to be dr6 (otherwise product will be missing)
+d["surveys"] = ["dr6"]
 n_wins, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 
 log.info(f"number of windows to compute : {n_wins}")

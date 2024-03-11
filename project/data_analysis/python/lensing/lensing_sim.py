@@ -14,28 +14,30 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+test_array = "pa5_f090"
 iStart = d["iStart"]
 iStop = d["iStop"]
 niter = d["niter"]
 binned_mcm = d["binned_mcm"]
 type = d["type"]
 binning_file = d["binning_file"]
-write_unbinned_spectra = True
+lmax = d["lmax"]
+
+write_unbinned_spectra = False
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 lensing_dir = "lensing"
-pspy_utils.create_directory(lensing_dir)
+mcm_dir = "mcms"
 
 
-window = so_map.read_map(f"{lensing_dir}/window.fits")
+window = so_map.read_map(d[f"window_T_dr6_{test_array}"])
 shape, wcs = window.data.shape, window.data.wcs
 lensed_map = so_map.car_template_from_shape_wcs(3, shape, wcs, dtype=np.float64)
     
-lmax_spec = int(window.get_lmax_limit()) # max l from template pixellisation
 
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
-mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{lensing_dir}/", spin_pairs=spin_pairs)
+mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{lensing_dir}/no_beam", spin_pairs=spin_pairs)
 
 ps_lensed_mat   = np.load(f"{lensing_dir}/ps_lensed_mat.npy")
 ps_unlensed_mat = np.load(f"{lensing_dir}/ps_unlensed_mat.npy")
@@ -53,16 +55,16 @@ for iii in subtasks:
             lensed_map.data[:] = curvedsky.rand_map((3,) + shape, wcs, ps_lensed_mat)
         if run_name == "non_gaussian":
             lensed_map.data[:], = lensing.rand_map((3,) + shape, wcs, ps_unlensed_mat,
-                                                   lmax=d["lmax_sim"],
+                                                   lmax=lmax,
                                                    output="l",
                                                    verbose = False)
 
-        alm =  sph_tools.get_alms(lensed_map, (window, window), niter, lmax_spec)
+        alm =  sph_tools.get_alms(lensed_map, (window, window), niter, lmax)
         l_, ps = so_spectra.get_spectra(alm, alm, spectra=spectra)
         
         if write_unbinned_spectra == True:
             ps_ = copy.deepcopy(ps)
-            ll = np.arange(2, lmax_spec)
+            ll = np.arange(2, lmax)
             cll = {f: ps_[f][ll] for f in spectra}
             ll, cll = so_spectra.deconvolve_mode_coupling_matrix(ll, cll, mbb_inv, spectra)
             for spec in spectra:
@@ -73,7 +75,7 @@ for iii in subtasks:
         lb, Db = so_spectra.bin_spectra(l_,
                                         ps,
                                         binning_file,
-                                        lmax_spec,
+                                        lmax,
                                         type=type,
                                         mbb_inv=mbb_inv,
                                         spectra=spectra,

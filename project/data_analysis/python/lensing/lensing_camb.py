@@ -31,9 +31,9 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-lmax_sim = d["lmax_sim"]
+lmax_sim = d["lmax"]
 cosmo_params = d["cosmo_params"]
-accuracy_pars = d["accuracy_pars"]
+accuracy_pars = d["accuracy_params"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 lensing_dir = "lensing"

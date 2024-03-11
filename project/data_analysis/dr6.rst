@@ -128,6 +128,8 @@ Aberration correction
 The spectra are aberrated and we need to correct for it, to do so we generate sims with aberration and compare them with sims without aberration, we then correct the effect on the data power spectra,
 grab the code in the aberration folder and run
 
+.. code:: shell
+
     salloc --nodes 4 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_get_aberrated_spectra.py global_dr6_v4.dict
     # real time 94m56.700s for 100 sims
@@ -144,6 +146,8 @@ Radio trispectrum
 
 To include the non gaussian contribution to the covariance matrix coming from the connected four point function of the Radio sources (assumed to be Poisson distributed), grab the code in the radio folder and run
 
+.. code:: shell
+
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_radio.py global_dr6_v4.dict
     # real 3m4.125s
@@ -155,6 +159,8 @@ To include the non gaussian contribution to the covariance matrix coming from th
 see the dedicated `README <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/lensing.rst/>`_ for how these terms are computed
 Once you have ran amanda code, run
 
+.. code:: shell
+
     salloc --nodes 1 --qos interactive --time 1:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_combine_cov_mat.py global_dr6_v4.dict
 
@@ -162,6 +168,9 @@ this will create all the blocks associated to the non lensing covariance term an
 
 
 We can check the analytic computation using PSpipe simulation code
+
+
+.. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_camb.py global_dr6_v4.dict

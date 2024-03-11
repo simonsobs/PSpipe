@@ -43,6 +43,8 @@ ACT/Planck cross correlation
     OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_window_dr6.py global_dr6v4xlegacy.dict
     # real    10m2.348s
 
+    OMP_NUM_THREADS=32 srun -n 8 -c 32 --cpu-bind=cores python get_mcm_and_bbl.py global_dr6v4xlegacy.dict
+
 .. code:: shell
     salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
     OMP_NUM_THREADS=20 srun -n 12 -c 20 --cpu-bind=cores python get_mcm_and_bbl.py global_dr6v4xlegacy.dict

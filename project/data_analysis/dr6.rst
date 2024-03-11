@@ -100,7 +100,6 @@ Monte Carlo correction to the covariance matrix
 --------------------
     
 To generate a set of simulated spectra using the `mnms` noise simulation code you first have to generate the noise `alms` for each split and wafer and store them to disk. Then you have to run a standard simulation routine that reads the precomputed noise `alms`. Remember to delete the noise `alms` when you are done with your simulations. For a set of 80 simulations, grab the code in the montecarlo folder.
- :
 
 .. code:: shell
 

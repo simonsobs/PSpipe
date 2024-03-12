@@ -85,7 +85,7 @@ to correct for the leakage, grab the code in the leakage folder
     # real 18m12.066s
 
 
-the planck spectra can have leftover systematic in them, we have estimated this using planck end-to-end simuation (see bottom of this page), grab the code in the planck folder
+the planck spectra can have leftover systematic in them, we have estimated this using planck end-to-end simulations (see bottom of this page), grab the code in the planck folder
 
 .. code:: shell
 
@@ -99,9 +99,8 @@ Now to calibrate and get the expected polarisation efficiencies, grab the code i
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_calibs.py global_dr6v4xlegacy.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_polar_eff_LCDM.py global_dr6v4xlegacy.dict
 
-
-
 In addition to the standard dr6 simulation tools (e.g:)
+
 .. code:: shell
 
     salloc --nodes 2 --qos interactive --time 4:00:00 --constraint cpu

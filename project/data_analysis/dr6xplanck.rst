@@ -108,11 +108,10 @@ In addition to the standard dr6 simulation tools (e.g:)
 we have code to get planks simulation nlms
 
 .. code:: shell
+
     salloc -N 1 -C cpu -q interactive -t 03:00:00
     OMP_NUM_THREADS=4 srun -n 64 -c 4 --cpu_bind=cores python get_planck_sim_nlms.py global_dr6v4xlegacy.dict
     #real 26m42.475s (300 sims at 100, 143, 217 GHz)
-
-
 
 *******************
 End-to-end sim correction

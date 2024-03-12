@@ -43,8 +43,6 @@ ACT/Planck cross correlation
     OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_window_dr6.py global_dr6v4xlegacy.dict
     # real    10m2.348s
 
-    OMP_NUM_THREADS=32 srun -n 8 -c 32 --cpu-bind=cores python get_mcm_and_bbl.py global_dr6v4xlegacy.dict
-
 .. code:: shell
     salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
     OMP_NUM_THREADS=20 srun -n 12 -c 20 --cpu-bind=cores python get_mcm_and_bbl.py global_dr6v4xlegacy.dict
@@ -73,6 +71,8 @@ ACT/Planck cross correlation
     salloc --nodes 4 --qos interactive --time 03:00:00 --constraint cpu
     OMP_NUM_THREADS=32 srun -n 32 -c 32 --cpu-bind=cores python get_covariance_blocks.py global_dr6v4xlegacy.dict
     # real    13m24.803s
+    
+to correct for the leakage, grab the code in the leakage folder
 
 .. code:: shell
 
@@ -84,22 +84,31 @@ ACT/Planck cross correlation
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_leakage_covariance.py global_dr6v4xlegacy.dict
     # real 18m12.066s
 
+
+the planck spectra can have leftover systematic in them, we have estimated this using planck end-to-end simuation (see bottom of this page), grab the code in the planck folder
+
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_corrected_planck_spectra.py global_dr6v4xlegacy.dict
+
+Now to calibrate and get the expected polarisation efficiencies, grab the code in the calibration folder
+
+.. code:: shell
+
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_calibs.py global_dr6v4xlegacy.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_polar_eff_LCDM.py global_dr6v4xlegacy.dict
 
 
 
+In addition to the standard dr6 simulation tools (e.g:)
 .. code:: shell
 
     salloc --nodes 2 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=128 srun -n 4 -c 128 --cpu_bind=cores python mc_mnms_get_nlms.py global_dr6_v4.dict
     # real time ~ 3h (for 100 sims)
 
-This directory also provides tools to get noise alms from NPIPE/legacy simulations to get montecarlo corrected errors. This script writes the alms in the same format as the ``mnms`` noise alms such that we can directly use the standard simulation script to get Planck simulations.
+we have code to get planks simulation nlms
 
 .. code:: shell
     salloc -N 1 -C cpu -q interactive -t 03:00:00
@@ -109,7 +118,7 @@ This directory also provides tools to get noise alms from NPIPE/legacy simulatio
 
 
 *******************
-Xtra correction
+End-to-end sim correction
 *******************
 
 
@@ -124,8 +133,5 @@ the ACT spectra, the way we get the correction is the following
     salloc -N 1 -C cpu -q interactive -t 01:00:00
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_analysis.py global_dr6v4xnpipe.dict
 
-The first code is similar to the standard simulation spectra code, but it's residual only (no signal), the mc_analysis serve to produce the average of these spectra, then to correct the planck spectra run
+The first code is similar to the standard simulation spectra code, but it's residual only (no signal), the mc_analysis serve to produce the average of these spectra.
 
-.. code:: shell
-    salloc -N 1 -C cpu -q interactive -t 01:00:00
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_corrected_planck_spectra.py global_dr6v4xnpipe.dict

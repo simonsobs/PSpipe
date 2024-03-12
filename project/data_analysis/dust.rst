@@ -21,9 +21,8 @@ for this you would need the window to be pre-computed, use the ones computed dur
     OMP_NUM_THREADS=42 srun -n 6 -c 42 --cpu-bind=cores python get_covariance_blocks.py global_dust.dict
     # real   0m58.895s
 
-you can send run simulation for 353 GHz and 143 GHz using the planck tool: get_planck_sim_nlms.py, and the montecarlo tool: mc_mnms_get_spectra_from_nlms.py.
-
-You can analyse and plot the sim results using
+you can run simulations for 353 GHz and 143 GHz using the code in the planck : get_planck_sim_nlms.py, and the one in the montecarlo folder: mc_mnms_get_spectra_from_nlms.py.
+You can analyse and plot the simulation results using
 
 .. code:: shell
 
@@ -39,6 +38,8 @@ You can then fit the dust amplitude using
 
     salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
     
-    
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python fit_dust_amplitude.py global_dust.dict --mode TT
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python fit_dust_amplitude.py global_dust.dict --mode TE
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python fit_dust_amplitude.py global_dust.dict --mode TB
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python fit_dust_amplitude.py global_dust.dict --mode EE
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python fit_dust_amplitude.py global_dust.dict --mode BB

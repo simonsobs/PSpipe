@@ -21,7 +21,9 @@ log = log.get_logger(**d)
 
 # first let's get a list of all frequency we plan to study
 surveys = d['surveys']
-lmax = d['lmax']
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
 type = d['type']
 spectra = ['TT', 'TE', 'TB', 'ET', 'BT', 'EE', 'EB', 'BE', 'BB']
 
@@ -35,15 +37,15 @@ apply_kspace_filter = d["apply_kspace_filter"]
 
 narrays, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 
-ells = np.arange(lmax+1)
+ells = np.arange(lmax_pseudocov+1)
 
 # ps_mat, fg_mat starts from zero, is C_ell as is convention
 f_name_cmb = bestfit_dir + '/cmb.dat'
-ps_mat = psc.cmb_matrix_from_file(f_name_cmb, lmax, spectra)
+ps_mat = psc.cmb_matrix_from_file(f_name_cmb, lmax_pseudocov, spectra)
 
 f_name_fg = bestfit_dir + '/fg_{}x{}.dat'
 array_list = [f'{sv}_{ar}' for sv, ar in zip(sv_list, ar_list)]
-fg_mat = psc.foreground_matrix_from_files(f_name_fg, array_list, lmax, spectra)
+fg_mat = psc.foreground_matrix_from_files(f_name_fg, array_list, lmax_pseudocov, spectra)
 
 # apply beam and transfer function
 log.info("Getting beamed and tf'ed signal")
@@ -53,8 +55,8 @@ for a1, array1 in enumerate(array_list):
     for a2, array2 in enumerate(array_list):
         l1, bl1 = misc.read_beams(d[f'beam_T_{array1}'], d[f'beam_pol_{array1}'])  # diag TEB, l
         l2, bl2 = misc.read_beams(d[f'beam_T_{array2}'], d[f'beam_pol_{array2}'])  # diag TEB, l
-        assert np.all(l1[:(lmax+1)] == ells), 'ell of beam from array1 != ells'
-        assert np.all(l2[:(lmax+1)] == ells), 'ell of beam from array2 != ells'
+        assert np.all(l1[:(lmax_pseudocov+1)] == ells), 'ell of beam from array1 != ells'
+        assert np.all(l2[:(lmax_pseudocov+1)] == ells), 'ell of beam from array2 != ells'
 
         if apply_kspace_filter:
             sv1, sv2 = sv_list[a1], sv_list[a2]
@@ -63,7 +65,7 @@ for a1, array1 in enumerate(array_list):
 
         for p1, pol1 in enumerate('TEB'):
             for p2, pol2 in enumerate('TEB'):
-                bl = bl1[pol1][:(lmax+1)] * bl2[pol2][:(lmax+1)] # beams defined at field level
+                bl = bl1[pol1][:(lmax_pseudocov+1)] * bl2[pol2][:(lmax_pseudocov+1)] # beams defined at field level
                 
                 if apply_kspace_filter:
                     polstr1 = 'T' if pol1 == 'T' else 'pol'

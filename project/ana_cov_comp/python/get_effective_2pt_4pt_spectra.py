@@ -41,8 +41,10 @@ pspy_utils.create_directory(filters_dir)
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 apply_kspace_filter = d["apply_kspace_filter"]
-lmax = d['lmax']
-ainfo = curvedsky.alm_info(lmax=lmax)
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
+ainfo = curvedsky.alm_info(lmax=lmax_pseudocov)
 
 num_tf_sims = d['num_tf_sims']
 start, stop = 0, num_tf_sims
@@ -60,7 +62,7 @@ if apply_kspace_filter:
 
         pss = {
             k: psc.get_mock_noise_ps(
-                lmax, lknee=ps_params[k]['lknee'], lcap=ps_params[k]['lcap'], pow=ps_params[k]['pow']
+                lmax_pseudocov, lknee=ps_params[k]['lknee'], lcap=ps_params[k]['lcap'], pow=ps_params[k]['pow']
                 ) for k in ('T', 'pol')
         }
 

@@ -43,9 +43,11 @@ pspy_utils.create_directory(plot_dir)
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 apply_kspace_filter = d["apply_kspace_filter"]
-lmax = d['lmax']
-ainfo = curvedsky.alm_info(lmax=lmax)
-ainfo_rect = curvedsky.alm_info(lmax=lmax, layout='rect')
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
+ainfo = curvedsky.alm_info(lmax=lmax_pseudocov)
+ainfo_rect = curvedsky.alm_info(lmax=lmax_pseudocov, layout='rect')
 
 num_flm_sims = d['num_flm_sims']
 
@@ -154,8 +156,8 @@ if apply_kspace_filter:
         # now do the the savitzky golay filter to smooth the transfer
         # function template as a function of ell
         if not os.path.isfile(fn_fl_2pt) or not os.path.isfile(fn_fl_4pt):
-            fl_2pt = np.zeros(lmax + 1)
-            fl_4pt = np.zeros(lmax + 1)
+            fl_2pt = np.zeros(lmax_pseudocov + 1)
+            fl_4pt = np.zeros(lmax_pseudocov + 1)
             for j, _flm in enumerate([flm_2pt, flm_4pt]):
                 _fl_data = curvedsky.alm2cl(_flm**(j+1)*(1+0j)) # at the "ps level" for 2pt, "covmat level" for 4pt
                 _fl = [fl_2pt, fl_4pt][j]
@@ -168,7 +170,7 @@ if apply_kspace_filter:
             fl_4pt = np.load(fn_fl_4pt)
 
         for j, _flm in enumerate([flm_2pt, flm_4pt]):
-            _flm_rect = curvedsky.transfer_alm(ainfo, _flm, ainfo_rect).reshape(lmax+1, -1)
+            _flm_rect = curvedsky.transfer_alm(ainfo, _flm, ainfo_rect).reshape(lmax_pseudocov+1, -1)
 
             plt.figure(figsize=(8, 8))
             plt.imshow(_flm_rect, vmin=0.5, vmax=1.5, origin='lower')
@@ -190,7 +192,7 @@ if apply_kspace_filter:
             edges = [np.argmin(abs(_fl - i)) for i in (.2, .4, .6, .8)]
             min_edge = max(min(80, edges[0] - 10), 0)
             _flm = [flm_2pt, flm_4pt][j]
-            for sel in [np.s_[min_edge:lmax+1], np.s_[min_edge:edges[0]]] + [np.s_[edges[i]:edges[i+1]] for i in range(0, len(edges)-1)] + [np.s_[edges[-1]:lmax+1]]:
+            for sel in [np.s_[min_edge:lmax_pseudocov+1], np.s_[min_edge:edges[0]]] + [np.s_[edges[i]:edges[i+1]] for i in range(0, len(edges)-1)] + [np.s_[edges[-1]:lmax_pseudocov+1]]:
                 plt.figure(figsize=(16, 8))
                 plt.semilogx(np.arange(sel.start, sel.stop), curvedsky.alm2cl(_flm**(j+1)*(1+0j))[sel], alpha=.3, label='sims')
                 plt.semilogx(np.arange(sel.start, sel.stop), _fl[sel], label='fit')

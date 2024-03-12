@@ -42,8 +42,10 @@ log = log.get_logger(**d)
 
 covariances_dir = d['covariances_dir']
 
-lmax = d['lmax']
-coupling_template = np.zeros((lmax + 1, lmax + 1), dtype=np.float64) # FIXME: dynamic dtype
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
+coupling_template = np.zeros((lmax_pseudocov + 1, lmax_pseudocov + 1), dtype=np.float64) # FIXME: dynamic dtype
 mem_per_coupling_gb = coupling_template.size * coupling_template.itemsize / 1e9
 
 # our job is to:

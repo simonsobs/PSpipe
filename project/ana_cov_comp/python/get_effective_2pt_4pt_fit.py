@@ -47,11 +47,13 @@ pspy_utils.create_directory(plot_dir)
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 apply_kspace_filter = d["apply_kspace_filter"]
-lmax = d['lmax']
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
 
 num_tf_sims = d['num_tf_sims']
 
-bin_low, bin_high, bin_cent, _ = pspy_utils.read_binning_file(d['binning_file'], lmax)
+bin_low, bin_high, bin_cent, _ = pspy_utils.read_binning_file(d['binning_file'], lmax_pseudocov)
 
 if apply_kspace_filter:
 
@@ -71,7 +73,7 @@ if apply_kspace_filter:
         
         ps_params = d[f'mock_ps_{sv1}']
         pss = {
-            k: psc.get_mock_noise_ps(lmax, lknee=ps_params[k]['lknee'], lcap=ps_params[k]['lcap'], pow=ps_params[k]['pow']) for k in ('T', 'pol')
+            k: psc.get_mock_noise_ps(lmax_pseudocov, lknee=ps_params[k]['lknee'], lcap=ps_params[k]['lcap'], pow=ps_params[k]['pow']) for k in ('T', 'pol')
         }
 
         # Get our average mask and couplings (total normalization doesn't matter)        
@@ -87,12 +89,12 @@ if apply_kspace_filter:
             else:
                 # note we are going to calculate window alm to 2lmax, but that's ok because
                 # the lmax_limit is half the Nyquist limit
-                assert lmax <= mask.get_lmax_limit(), \
+                assert lmax_pseudocov <= mask.get_lmax_limit(), \
                     "the requested lmax is too high with respect to the map pixellisation"
 
-                mask_alm = curvedsky.map2alm(mask.data, lmax=2*lmax, method='cyl')
-                mcm = so_mcm.coupling_block('00', mask_alm.astype(np.complex128, copy=False), lmax, input_alm=True)
-                mcm *= (2*np.arange(lmax + 1) + 1) / (4*np.pi)
+                mask_alm = curvedsky.map2alm(mask.data, lmax=2*lmax_pseudocov, method='cyl')
+                mcm = so_mcm.coupling_block('00', mask_alm.astype(np.complex128, copy=False), lmax_pseudocov, input_alm=True)
+                mcm *= (2*np.arange(lmax_pseudocov + 1) + 1) / (4*np.pi)
                 np.save(fn, mcm)
 
             fn = f'{filters_dir}/{sv1}_win_{pol1}_00_mcm_inv.npy'
@@ -108,11 +110,11 @@ if apply_kspace_filter:
             else:
                 # note we are going to calculate window alm to 2lmax, but that's ok because
                 # the lmax_limit is half the Nyquist limit
-                assert lmax <= mask.get_lmax_limit(), \
+                assert lmax_pseudocov <= mask.get_lmax_limit(), \
                     "the requested lmax is too high with respect to the map pixellisation"
 
-                mask_alm = curvedsky.map2alm(mask.data**2, lmax=2*lmax, method='cyl')
-                coupling = so_mcm.coupling_block('00', mask_alm.astype(np.complex128, copy=False), lmax, input_alm=True)
+                mask_alm = curvedsky.map2alm(mask.data**2, lmax=2*lmax_pseudocov, method='cyl')
+                coupling = so_mcm.coupling_block('00', mask_alm.astype(np.complex128, copy=False), lmax_pseudocov, input_alm=True)
                 coupling /= 4*np.pi
                 np.save(fn, coupling)
 
@@ -179,7 +181,7 @@ if apply_kspace_filter:
                 # linear operator that takes pseudo spectra to power spectra
                 eff_tf2 = fl2**res_dict['pseudo_spec_alpha']
                 eff_tf2_inv = np.divide(1, eff_tf2, where=eff_tf2!=0, out=np.full(eff_tf2.shape, 1_000_000, dtype=np.float64)) # 1/0 = ?
-                cl2dl = np.arange(lmax + 1) * (np.arange(lmax + 1) + 1) / 2 / np.pi
+                cl2dl = np.arange(lmax_pseudocov + 1) * (np.arange(lmax_pseudocov + 1) + 1) / 2 / np.pi
                 pre_mcm_inv = np.einsum('r, rc -> rc', cl2dl*eff_tf2_inv, mcm_inv) # cl2dl @ tf_inv @ mcm_inv
 
                 power_specs = np.einsum('...Ll, ...il -> ...iL', pre_mcm_inv, pseudo_specs)

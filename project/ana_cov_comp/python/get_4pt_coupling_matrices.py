@@ -206,7 +206,9 @@ if mode == 'recipe':
     np.save(f'{couplings_dir}/canonized_couplings_4pt_combos.npy', canonized_combos)
 
 else:
-    lmax = d['lmax']
+    lmax_pseudocov = d['lmax_pseudocov']
+    assert lmax_pseudocov >= d['lmax'], \
+        f"{lmax_pseudocov=} must be >= {d['lmax']=}"
 
     if d['use_toeplitz_cov'] == True:
         log.info('we will use the toeplitz approximation')
@@ -237,7 +239,7 @@ else:
             w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy')
             w2 = np.load(f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy')
             coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                            lmax=lmax, input_alm=True,
+                                            lmax=lmax_pseudocov, input_alm=True,
                                             l_exact=l_exact, l_toep=l_toep,
                                             l_band=l_band)
             np.save(coupling_fn, coupling) 

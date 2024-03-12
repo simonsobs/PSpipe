@@ -23,7 +23,7 @@ pspy_utils.create_directory(covariances_dir)
 
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
-lmax = 8500 # FIXME
+lmax = d['lmax']
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 # format:

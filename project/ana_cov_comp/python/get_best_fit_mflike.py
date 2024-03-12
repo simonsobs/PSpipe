@@ -18,7 +18,9 @@ d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
 # first let's get a list of all frequency we plan to study
-lmax = d["lmax"]  # models only go up to ell of 10000
+lmax_pseudocov = d['lmax_pseudocov'] # models only go up to ell of 10000
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}"  
 type = d["type"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -31,7 +33,7 @@ pspy_utils.create_directory(plot_dir)
 
 cosmo_params = d["cosmo_params"]
 log.info(f"Computing CMB spectra with cosmological parameters: {cosmo_params}")
-l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, lmax + 1, **d["accuracy_params"])
+l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, lmax_pseudocov + 1, **d["accuracy_params"])
 
 f_name = f"{bestfit_dir}/cmb.dat"
 so_spectra.write_ps(f_name, l_th, ps_dict, type, spectra=spectra)

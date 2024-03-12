@@ -24,8 +24,6 @@ log = log.get_logger(**d)
 
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
-lmax = d['lmax']
-
 noise_model_dir = d['noise_model_dir']
 couplings_dir = d['couplings_dir']
 filters_dir = d['filters_dir']

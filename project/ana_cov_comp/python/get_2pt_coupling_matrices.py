@@ -28,7 +28,9 @@ if d['use_toeplitz_mcm'] == True:
 else:
     l_exact, l_band, l_toep = None, None, None
 
-lmax = d['lmax']
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}"
 
 # format:
 # - unroll all 'fields' i.e. (survey x array x chan x split x pol) is a 'field'
@@ -113,7 +115,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
                 w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
                 coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                                lmax=lmax, input_alm=True,
+                                                lmax=lmax_pseudocov, input_alm=True,
                                                 l_exact=l_exact, l_toep=l_toep,
                                                 l_band=l_band)
                 np.save(coupling_fn, coupling)  
@@ -155,7 +157,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                     w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
                     w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
                     coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                                    lmax=lmax, input_alm=True,
+                                                    lmax=lmax_pseudocov, input_alm=True,
                                                     l_exact=l_exact, l_toep=l_toep,
                                                     l_band=l_band)
                     np.save(coupling_fn, coupling)  

@@ -24,7 +24,9 @@ pspy_utils.create_directory(couplings_dir)
 
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
-lmax = d['lmax']
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
 niter = d['niter']
 
 # format:
@@ -96,7 +98,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
 
             mcm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_00_coupling.npy')
             
-            mcm *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
+            mcm *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
             np.save(mcm_fn, mcm)
 
             mcm_inv = np.linalg.inv(mcm)
@@ -122,7 +124,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             mcm[0, 0] = w2
             mcm[1, 1] = w2
 
-            mcm *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
+            mcm *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
             np.save(mcm_fn, mcm)
 
             mcm_inv = np.linalg.inv(mcm)
@@ -147,8 +149,8 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             mcm_mm[0, 0] = 0
             mcm_mm[1, 1] = 0
 
-            mcm_pp *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
-            mcm_mm *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
+            mcm_pp *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
+            mcm_mm *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
             mcm = np.block([[mcm_pp, mcm_mm], [mcm_mm, mcm_pp]])
             np.save(mcm_fn, mcm)
 
@@ -173,8 +175,8 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
             mcm_mm[0, 0] = 0
             mcm_mm[1, 1] = 0
 
-            mcm_pp *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
-            mcm_mm *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
+            mcm_pp *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
+            mcm_mm *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
             mcm = np.block([[mcm_pp, -mcm_mm], [-mcm_mm, mcm_pp]])
             np.save(mcm_fn, mcm)
 
@@ -220,7 +222,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
 
                 mcm = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_00_coupling.npy')
                 
-                mcm *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
+                mcm *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
                 np.save(mcm_fn, mcm)
 
                 mcm_inv = np.linalg.inv(mcm)
@@ -241,7 +243,7 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 mcm[0, 0] = w2
                 mcm[1, 1] = w2
 
-                mcm *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
+                mcm *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
                 np.save(mcm_fn, mcm)
 
                 mcm_inv = np.linalg.inv(mcm)
@@ -266,8 +268,8 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 mcm_mm[0, 0] = 0
                 mcm_mm[1, 1] = 0
 
-                mcm_pp *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
-                mcm_mm *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
+                mcm_pp *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
+                mcm_mm *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
                 mcm = np.block([[mcm_pp, mcm_mm], [mcm_mm, mcm_pp]])
                 np.save(mcm_fn, mcm)
 
@@ -292,8 +294,8 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 mcm_mm[0, 0] = 0
                 mcm_mm[1, 1] = 0
 
-                mcm_pp *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
-                mcm_mm *= (2*np.arange(lmax+1) + 1) / (4*np.pi)
+                mcm_pp *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
+                mcm_mm *= (2*np.arange(lmax_pseudocov+1) + 1) / (4*np.pi)
                 mcm = np.block([[mcm_pp, -mcm_mm], [-mcm_mm, mcm_pp]])
                 np.save(mcm_fn, mcm)
 

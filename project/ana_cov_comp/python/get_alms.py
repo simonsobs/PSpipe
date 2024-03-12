@@ -111,4 +111,13 @@ for task in subtasks:
         master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax)
         np.save(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy", master_alms)
 
+        # we might be calculating the pseudocovariance to higher ell. for that
+        # we need the noise model, based on the alms, to higher ell as well
+        if 'lmax_pseudocov' in d:
+            lmax_pseudocov = d['lmax_pseudocov']
+            assert lmax_pseudocov >= lmax, f'{lmax_pseudocov=} must be >= {lmax=}'
+            
+            master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax_pseudocov)
+            np.save(f"{alms_dir}/alms_pseudocov_{sv}_{ar}_{k}.npy", master_alms)
+
     log.info(f"[{task}] execution time {time.time() - t0} seconds")

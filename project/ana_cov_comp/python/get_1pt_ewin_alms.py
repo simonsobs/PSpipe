@@ -22,8 +22,9 @@ ewin_alms_dir = d['ewin_alms_dir']
 pspy_utils.create_directory(ewin_alms_dir)
 
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
-
-lmax = d['lmax']
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}"
 niter = d['niter']
 
 # format:
@@ -77,10 +78,10 @@ for field_info1 in field_infos:
 
             # note we are going to calculate window alm to 2lmax, but that's ok because
             # the lmax_limit is half the Nyquist limit
-            assert lmax <= ewin1.get_lmax_limit(), \
+            assert lmax_pseudocov <= ewin1.get_lmax_limit(), \
                 "the requested lmax is too high with respect to the map pixellisation"
 
-            alm = sph_tools.map2alm(ewin1, niter=niter, lmax=2*lmax)
+            alm = sph_tools.map2alm(ewin1, niter=niter, lmax=2*lmax_pseudocov)
             np.save(alm_fn, alm)
     else:
         canonized_combos[ewin_name1].append(field_info1)
@@ -114,10 +115,10 @@ for field_info1 in field_infos:
 
             # note we are going to calculate window alm to 2lmax, but that's ok because
             # the lmax_limit is half the Nyquist limit
-            assert lmax <= ewin1.get_lmax_limit(), \
+            assert lmax_pseudocov <= ewin1.get_lmax_limit(), \
                 "the requested lmax is too high with respect to the map pixellisation"
 
-            alm = sph_tools.map2alm(ewin1, niter=niter, lmax=2*lmax)
+            alm = sph_tools.map2alm(ewin1, niter=niter, lmax=2*lmax_pseudocov)
             np.save(alm_fn, alm)
     else:
         canonized_combos[ewin_name1].append(field_info1)

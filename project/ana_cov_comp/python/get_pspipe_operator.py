@@ -1,4 +1,4 @@
-'''
+"""
 So far we have produced the covariance matrix of the measured pseudospectra, 
 but we want the covariance matrix of the power spectra. The power spectra are
 (mostly) equivalent to a linear operator acting on the measured pseudospectra.
@@ -6,7 +6,7 @@ Thus, if this operator is F, and the pseudocovariance block is P, then the
 power spectrum covariance block is F @ P @ F.T. This script produces F
 from other PSpipe products. It includes: mode-decoupling, binning (with possible)
 Dl factors, and kspace deconvolving.
-'''
+"""
 import sys
 import os
 import numpy as np
@@ -25,7 +25,7 @@ plot_dir = os.path.join(d['plot_dir'], 'pspipe_operators')
 pspy_utils.create_directory(pspipe_operators_dir)
 pspy_utils.create_directory(plot_dir)
 
-lmax = 8500 # FIXME
+lmax = d['lmax']
 binned_mcm = d['binned_mcm']
 binning_file = d['binning_file']
 kspace_tf_path = d['kspace_tf_path']

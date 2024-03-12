@@ -25,6 +25,10 @@ d.read_from_file(sys.argv[1])
 
 log = log.get_logger(**d)
 
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
+
 alms_dir = d['alms_dir']
 savgol_w = d['savgol_w']
 savgol_k = d['savgol_k']
@@ -66,7 +70,7 @@ for sv1 in sv2arrs2chans:
                     f'sv={sv1}, ar={ar1}, chan={chan1}, nsplit={_nsplit}, expected {nsplit}'
             
             for split1 in range(nsplit):
-                alms.append(np.load(f'{alms_dir}/alms_{sv1}_{ar1}_{chan1}_{split1}.npy'))
+                alms.append(np.load(f'{alms_dir}/alms_pseudocov_{sv1}_{ar1}_{chan1}_{split1}.npy'))
                 assert alms[-1].ndim == 2, \
                     f'sv={sv1}, ar={ar1}, chan={chan1}, split={split1} alm.ndim={alms[-1].ndim}, expected 2'
                 assert alms[-1].shape[0] == 3, \
@@ -79,6 +83,8 @@ for sv1 in sv2arrs2chans:
         # we are assuming:
         # - noise is uncorrelated between splits within arrays
         nell = curvedsky.nalm2lmax(alms.shape[-1]) + 1
+        assert nell == lmax_pseudocov, \
+            f'Expected nell={lmax_pseudocov}, got {nell=}'
 
         signal_model = 0
         count = 0

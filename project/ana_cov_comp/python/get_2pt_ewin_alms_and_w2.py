@@ -22,7 +22,9 @@ pspy_utils.create_directory(ewin_alms_dir)
 
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
-lmax = d['lmax']
+lmax_pseudocov = d['lmax_pseudocov']
+assert lmax_pseudocov >= d['lmax'], \
+    f"{lmax_pseudocov=} must be >= {d['lmax']=}"
 niter = d['niter']
 
 # format:
@@ -97,10 +99,10 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
 
                 # note we are going to calculate window alm to 2lmax, but that's ok because
                 # the lmax_limit is half the Nyquist limit
-                assert lmax <= ewin12.get_lmax_limit(), \
+                assert lmax_pseudocov <= ewin12.get_lmax_limit(), \
                     "the requested lmax is too high with respect to the map pixellisation"
 
-                alm = sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
+                alm = sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax_pseudocov)
                 np.save(alm_fn, alm)
 
             if os.path.isfile(w2_fn):
@@ -154,10 +156,10 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
 
                     # note we are going to calculate window alm to 2lmax, but that's ok because
                     # the lmax_limit is half the Nyquist limit
-                    assert lmax <= ewin12.get_lmax_limit(), \
+                    assert lmax_pseudocov <= ewin12.get_lmax_limit(), \
                         "the requested lmax is too high with respect to the map pixellisation"
 
-                    alm = sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax)
+                    alm = sph_tools.map2alm(ewin12, niter=niter, lmax=2*lmax_pseudocov)
                     np.save(alm_fn, alm)
 
                 if os.path.isfile(w2_fn):

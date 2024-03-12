@@ -73,6 +73,7 @@ sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 lmax_pseudocov = d['lmax_pseudocov']
 assert lmax_pseudocov >= d['lmax'], \
     f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
+dtype_pseudocov = d['dtype_pseudocov']
 
 # format:
 # - unroll all 'fields' i.e. (survey x array x chan x pol) is a 'field'
@@ -278,7 +279,7 @@ for i in blocks_iterable:
             split_pq_iterator = list(product(range(nsplitp), range(nsplitq)))
         
         if mode == 'compute':
-            pseudo_cov = np.zeros((lmax_pseudocov + 1, lmax_pseudocov + 1), dtype=np.float64)
+            pseudo_cov = np.zeros((lmax_pseudocov + 1, lmax_pseudocov + 1), dtype=dtype_pseudocov)
         
         for si, sj in split_ij_iterator:
             for sp, sq in split_pq_iterator:
@@ -466,7 +467,7 @@ for i in blocks_iterable:
             # .25 is leftover from symmetrization, 4pi is due to convention definition
             # of coupling
             pseudo_cov *= 0.25 / (4*np.pi) / len(split_ij_iterator) / len(split_pq_iterator)
-            np.save(pseudo_cov_fn, pseudo_cov)
+            np.save(pseudo_cov_fn, pseudo_cov.astype(dtype_pseudocov, copy=False))
 
 # postloop teardown
 

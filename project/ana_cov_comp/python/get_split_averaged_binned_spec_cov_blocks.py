@@ -90,6 +90,7 @@ for i in range(start, stop):
     else:
         log.info(f'Generating {spec_cov_fn}')
 
+        # binned pseudo_cov is always saved as double because it is inverted
         pseudo_cov = np.zeros((len(spectra) * (lmax - 2), len(spectra) * (lmax - 2)), dtype=np.float64)
 
         for ridx, (poli, polj) in enumerate(spectra):

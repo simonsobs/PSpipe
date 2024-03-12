@@ -209,6 +209,7 @@ else:
     lmax_pseudocov = d['lmax_pseudocov']
     assert lmax_pseudocov >= d['lmax'], \
         f"{lmax_pseudocov=} must be >= {d['lmax']=}"
+    dtype_pseudocov = d['dtype_pseudocov']
 
     if d['use_toeplitz_cov'] == True:
         log.info('we will use the toeplitz approximation')
@@ -242,4 +243,4 @@ else:
                                             lmax=lmax_pseudocov, input_alm=True,
                                             l_exact=l_exact, l_toep=l_toep,
                                             l_band=l_band)
-            np.save(coupling_fn, coupling) 
+            np.save(coupling_fn, coupling.astype(dtype_pseudocov, copy=False)) 

@@ -45,7 +45,9 @@ covariances_dir = d['covariances_dir']
 lmax_pseudocov = d['lmax_pseudocov']
 assert lmax_pseudocov >= d['lmax'], \
     f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
-coupling_template = np.zeros((lmax_pseudocov + 1, lmax_pseudocov + 1), dtype=np.float64) # FIXME: dynamic dtype
+dtype_pseudocov = d['dtype_pseudocov']
+
+coupling_template = np.zeros((lmax_pseudocov + 1, lmax_pseudocov + 1), dtype=dtype_pseudocov)
 mem_per_coupling_gb = coupling_template.size * coupling_template.itemsize / 1e9
 
 # our job is to:

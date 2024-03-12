@@ -116,6 +116,10 @@ Running the dr6xPlanck pipeline
 ------------------
 To run the dr6xPlanck analysis follow the instruction in `dr6xplanck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6xplanck.rst/>`_
 
+Estimation of the dust
+------------------
+To estimate the dust in the dr6 patch, we use Planck 353 GHz maps  <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dust.rst/>`_
+
 Running our reproduction of the Planck pipeline
 ------------------
 To run a reproduction of the Planck official result follow the instruction in `planck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/planck.rst/>`_

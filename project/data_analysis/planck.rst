@@ -24,6 +24,6 @@ to get the covariance we will use simulation only  :
     salloc -N 4 -C cpu -q interactive -t 02:00:00
     OMP_NUM_THREADS=4 srun -n 256 -c 4 --cpu_bind=cores python get_planck_sim_nlms.py global_legacy.dict
     # real    21m47.004s
-    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_legacy.dict
+    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms_per_split.py global_legacy.dict
 
 

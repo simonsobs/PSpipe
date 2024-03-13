@@ -136,6 +136,7 @@ Comparison of ACT and Planck
 *******************
 
 In order to compare ACT and Planck power spectrum, once you have computed both ACTxNpipe and ACTxlegacy, grab the script in the planck folder and run
+
 .. code:: shell
 
     salloc -N 1 -C cpu -q interactive -t 03:00:00

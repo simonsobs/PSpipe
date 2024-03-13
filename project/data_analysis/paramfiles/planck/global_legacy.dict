@@ -1,5 +1,6 @@
 surveys = ["Planck"]
 arrays_Planck = ["f100", "f143", "f217"]
+version = "legacy"
 
 data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
 legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"
@@ -33,6 +34,15 @@ n_splits_Planck = 2
 maps_Planck_f100 = [legacy_map_dir + 'HFI_SkyMap_100_2048_R3.01_halfmission-%d.fits' % i for i in [1, 2]]
 maps_Planck_f143 = [legacy_map_dir + 'HFI_SkyMap_143_2048_R3.01_halfmission-%d.fits' % i for i in [1, 2]]
 maps_Planck_f217 = [legacy_map_dir + 'HFI_SkyMap_217_2048_R3.01_halfmission-%d.fits' % i for i in [1, 2]]
+
+
+cal_Planck_f100 = 1 # only used in the simulation script where the uk->K conv is already done by default
+cal_Planck_f143 = 1 #
+cal_Planck_f217 = 1 #
+pol_eff_Planck_f100 = 1. #
+pol_eff_Planck_f143 = 1. #
+pol_eff_Planck_f217 = 1. #
+
 
 cal_Planck_f100_per_split = [10**6, 10**6]
 cal_Planck_f143_per_split = [10**6, 10**6]

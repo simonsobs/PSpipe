@@ -1,5 +1,6 @@
 surveys = ["Planck"]
 arrays_Planck = ["f100", "f143", "f217"]
+version = "npipe"
 
 data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
 npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
@@ -33,6 +34,14 @@ n_splits_Planck = 2
 maps_Planck_f100 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_100_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_100_map.fits']
 maps_Planck_f143 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_143_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_143_map.fits']
 maps_Planck_f217 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_217_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_217_map.fits']
+
+cal_Planck_f100 = 1 # only used in the simulation script where the uk->K conv is already done by default
+cal_Planck_f143 = 1 #
+cal_Planck_f217 = 1 #
+pol_eff_Planck_f100 = 1. #
+pol_eff_Planck_f143 = 1. #
+pol_eff_Planck_f217 = 1. #
+
 
 cal_Planck_f100_per_split = [10**6, 10**6]
 cal_Planck_f143_per_split = [10**6, 10**6]

@@ -139,7 +139,7 @@ In order to compare ACT and Planck power spectrum, once you have computed both A
 
 .. code:: shell
 
-    salloc -N 1 -C cpu -q interactive -t 03:00:00
+    salloc -N 1 -C cpu -q interactive -t 00:30:00
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python AxP_comparison.py global_dr6v4xlegacy.dict
 
 note that you have to specify in this script the location of the spectra and covariances of the npipe and legacy run.

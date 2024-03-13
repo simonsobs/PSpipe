@@ -197,3 +197,13 @@ We can check the analytic computation using PSpipe simulation code
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_analysis.py global_dr6_v4.dict
 
+
+Array null test
+------------------
+
+To perform the array null test, grab the code in null_tests and run
+
+.. code:: shell
+
+    salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python compute_null_tests.py global_dr6_v4.dict

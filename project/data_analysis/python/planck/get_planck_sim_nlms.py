@@ -20,7 +20,7 @@ niter = d["niter"]
 sv = "Planck"
 planck_arrays = d[f"arrays_{sv}"]
 
-version = "legacy"
+version = d["version"]
 
 npipe_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
 legacy_dir = "/pscratch/sd/t/tlouis/data_analysis_v4_dec/planck_co_analysis/planck_legacy_sim/"

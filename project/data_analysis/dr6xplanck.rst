@@ -37,7 +37,7 @@ and the source subtraction process can be checked by running the ``check_src_sub
 ACT/Planck cross correlation
 *******************
 
-Note that here I'm giving instructuion for the cross correlation with legacy, but the same apply for npipe, just swap global_dr6v4xlegacy.dict with global_dr6v4xnpipe.dict
+Note that here we are giving instructions for the cross correlation of ACT with legacy, but the same apply for npipe, just swap global_dr6v4xlegacy.dict with global_dr6v4xnpipe.dict
 
 .. code:: shell
 

@@ -37,6 +37,8 @@ and the source subtraction process can be checked by running the ``check_src_sub
 ACT/Planck cross correlation
 *******************
 
+Note that here I'm giving instructuion for the cross correlation with legacy, but the same apply for npipe, just swap global_dr6v4xlegacy.dict with global_dr6v4xnpipe.dict
+
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
@@ -102,7 +104,7 @@ In addition to the standard dr6 simulation tools (e.g:)
 .. code:: shell
 
     salloc --nodes 2 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=128 srun -n 4 -c 128 --cpu_bind=cores python mc_mnms_get_nlms.py global_dr6_v4.dict
+    OMP_NUM_THREADS=128 srun -n 4 -c 128 --cpu_bind=cores python mc_mnms_get_nlms.py global_dr6v4xlegacy.dict
     # real time ~ 3h (for 100 sims)
 
 we have code to get planks simulation nlms

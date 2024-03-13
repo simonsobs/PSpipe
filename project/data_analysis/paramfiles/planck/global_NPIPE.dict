@@ -1,6 +1,6 @@
 surveys = ["Planck"]
 arrays_Planck = ["f100", "f143", "f217"]
-version = "npipe"
+planck_version = "npipe"
 
 data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
 npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"

@@ -1,6 +1,6 @@
 surveys = ["Planck"]
 arrays_Planck = ["f100", "f143", "f217"]
-version = "legacy"
+planck_version = "legacy"
 
 data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
 legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"

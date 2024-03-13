@@ -141,6 +141,5 @@ In order to compare ACT and Planck power spectrum, once you have computed both A
 
     salloc -N 1 -C cpu -q interactive -t 03:00:00
     OMP_NUM_THREADS=4 srun -n 64 -c 4 --cpu_bind=cores python AxP_comparison.py global_dr6v4xlegacy.dict
-    #real 26m42.475s (300 sims at 100, 143, 217 GHz)
 
 note that you have to specify in this script the location of the spectra and covariances of the npipe and legacy run.

@@ -113,6 +113,26 @@ we have code to get planks simulation nlms
     OMP_NUM_THREADS=4 srun -n 64 -c 4 --cpu_bind=cores python get_planck_sim_nlms.py global_dr6v4xlegacy.dict
     #real 26m42.475s (300 sims at 100, 143, 217 GHz)
 
+you can then use the usual monte-carlo code to generate simulated spectra
+
+.. code:: shell
+
+    salloc --nodes 4 --qos interactive --time 4:00:00 --constraint cpu
+    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_dr6v4xlegacy.dict
+    
+You can analyse and plot the simulation results using
+
+.. code:: shell
+
+    salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_analysis.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_cov_analysis.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_spectra.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_covariances.py global_dr6_v4.dict
+
+
+
+
 *******************
 End-to-end sim correction
 *******************

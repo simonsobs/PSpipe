@@ -71,10 +71,9 @@ canonized_combos = {}
 # iterate over all pairs/orders of fields, and get the canonized window pairs
 for field_info1, field_info2 in product(field_infos, repeat=2):
     # S S 
-    (ewin_name1, ewin_paths1, ewin_ops1), \
-    (ewin_name2, ewin_paths2, ewin_ops2) = psc.canonize_connected_2pt(
-        psc.get_ewin_info_from_field_info(field_info1, d, mode='w', return_paths_ops=True),
-        psc.get_ewin_info_from_field_info(field_info2, d, mode='w', return_paths_ops=True),
+    ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
+        psc.get_ewin_info_from_field_info(field_info1, d, mode='w'),
+        psc.get_ewin_info_from_field_info(field_info2, d, mode='w'),
         ewin_infos
         ) 
     
@@ -195,10 +194,9 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
     if (sv1 != sv2) or (ar1 != ar2) or (split1 != split2):
         pass
     else:
-        (ewin_name1, ewin_paths1, ewin_ops1), \
-        (ewin_name2, ewin_paths2, ewin_ops2) = psc.canonize_connected_2pt(
-            psc.get_ewin_info_from_field_info(field_info1, d, mode='ws', extra='sqrt_pixar', return_paths_ops=True),
-            psc.get_ewin_info_from_field_info(field_info2, d, mode='ws', extra='sqrt_pixar', return_paths_ops=True),
+        ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
+            psc.get_ewin_info_from_field_info(field_info1, d, mode='ws', extra='sqrt_pixar'),
+            psc.get_ewin_info_from_field_info(field_info2, d, mode='ws', extra='sqrt_pixar'),
             ewin_infos
             ) 
         

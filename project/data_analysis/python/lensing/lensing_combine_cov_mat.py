@@ -75,4 +75,4 @@ x_ar_lensing_cov = covariance.read_cov_block_and_build_full_cov(spec_name_list,
                                                                  remove_doublon=True,
                                                                  check_pos_def=False)
 
-np.save(f"{cov_dir}/xar_non_gaussian_cov_lensing.npy", x_ar_lensing_cov)
+np.save(f"{cov_dir}/x_ar_non_gaussian_cov_lensing.npy", x_ar_lensing_cov)

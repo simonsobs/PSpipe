@@ -21,7 +21,7 @@ d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
 # choose which type of sacc you to create: data_sacc, ng_simu_sacc, simu_sacc, simu_and_syst_sacc
-sacc_fname = "ng_simu_sacc"
+sacc_fname = "data_sacc"
 
 # Set covariance file name
 mcm_dir = cvt.get_mcms_dir()

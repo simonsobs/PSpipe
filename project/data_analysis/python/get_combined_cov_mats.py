@@ -77,7 +77,7 @@ sub_x_ar_analytic_cov = x_ar_analytic_cov[np.ix_(all_indices, all_indices)]
 sub_x_ar_beam_cov = x_ar_beam_cov[np.ix_(all_indices, all_indices)]
 sub_x_ar_leakage_cov = x_ar_leakage_cov[np.ix_(all_indices, all_indices)]
 sub_x_ar_non_gaussian_cov_radio = x_ar_non_gaussian_cov_radio[np.ix_(all_indices, all_indices)]
-sud_x_ar_non_gaussian_cov_lensing = x_ar_non_gaussian_cov_lensing[np.ix_(all_indices, all_indices)]
+sub_x_ar_non_gaussian_cov_lensing = x_ar_non_gaussian_cov_lensing[np.ix_(all_indices, all_indices)]
 
 log.info(f"test S+N cov + beam cov + leakage cov")
 
@@ -130,7 +130,7 @@ plt.title(r"$\Sigma^{\rm comp}/\Sigma^{\rm tot}$", fontsize=22)
 plt.plot(sub_x_ar_leakage_cov.diagonal()/sub_full_x_ar_cov.diagonal(), label="leakage cov / total cov")
 plt.plot(sub_x_ar_beam_cov.diagonal()/sub_full_x_ar_cov.diagonal(), label="beam cov / total cov")
 plt.plot(sub_x_ar_non_gaussian_cov_radio.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian radio cov / total cov")
-plt.plot(sud_x_ar_non_gaussian_cov_lensing.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian lensing/ total cov")
+plt.plot(sub_x_ar_non_gaussian_cov_lensing.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian lensing/ total cov")
 
 plt.xticks(label_loc, name_list, rotation=90)
 plt.legend(fontsize=18)

@@ -16,7 +16,7 @@ import sys
 
 import numpy as np
 from pspy import so_dict
-from pspipe_utils import log, pspipe_list
+from pspipe_utils import log, pspipe_list, covariance as psc
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -26,9 +26,47 @@ sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 noise_model_dir = d['noise_model_dir']
 couplings_dir = d['couplings_dir']
+ewin_alms_dir = d['ewin_alms_dir']
 filters_dir = d['filters_dir']
 
 apply_kspace_filter = d["apply_kspace_filter"]
+
+# format:
+# - unroll all 'fields' i.e. (survey x array x chan x split x pol) is a 'field'
+# - any given combination is then ('field' x 'field')
+#
+# notes:
+# - we are 'hardcoding' that all splits for a given field have the same
+# analysis mask, and that all pols for a given field have the same 
+# sigma map.
+
+# we define the canon by the windows order. we first build the fields,
+# then use a mapping from fields to windows to build the canonical
+# windows
+field_infos = []
+ewin_infos = []
+for sv1 in sv2arrs2chans:
+    for ar1 in sv2arrs2chans[sv1]:
+        for chan1 in sv2arrs2chans[sv1][ar1]:
+            for split1 in range(len(d[f'maps_{sv1}_{ar1}_{chan1}'])):
+                for pol1 in ['T', 'P']:
+                    field_info = (sv1, ar1, chan1, split1, pol1)
+                    if field_info not in field_infos:
+                        field_infos.append(field_info)
+                    else:
+                        raise ValueError(f'{field_info=} is not unique')
+                    
+                    ewin_info_s = psc.get_ewin_info_from_field_info(field_info, d, mode='w', return_paths_ops=True)
+                    if ewin_info_s not in ewin_infos:
+                        ewin_infos.append(ewin_info_s)
+                    else:
+                        pass
+
+                    ewin_info_n = psc.get_ewin_info_from_field_info(field_info, d, mode='ws', extra='sqrt_pixar', return_paths_ops=True)
+                    if ewin_info_n not in ewin_infos:
+                        ewin_infos.append(ewin_info_n)
+                    else:
+                        pass
 
 single_coupling_pols = {'TT': '00', 'TE': '02', 'ET': '02', 'TB': '02', 'BT': '02'}
 
@@ -84,41 +122,56 @@ for sv1 in sv2arrs2chans:
             pseudo_tfed_noise_model = np.zeros_like(tfed_noise_model)
 
             for c1, chan1 in enumerate(sv2arrs2chans[sv1][ar1]):
-                for c2, chan2 in enumerate(sv2arrs2chans[sv1][ar1]):
-                    # canonical
-                    # FIXME: replace with actual ewin/canonization
-                    if c1 <= c2:
-                        arrs = f'w_{sv1}_{ar1}_{chan1}_s_{sv1}_{ar1}_{chan1}_set{split1}_sqrt_pixarxw_{sv1}_{ar1}_{chan2}_s_{sv1}_{ar1}_{chan2}_set{split1}_sqrt_pixar'
-                    else:
-                        arrs = f'w_{sv1}_{ar1}_{chan2}_s_{sv1}_{ar1}_{chan2}_set{split1}_sqrt_pixarxw_{sv1}_{ar1}_{chan1}_s_{sv1}_{ar1}_{chan1}_set{split1}_sqrt_pixar'
-                    
-                    log.info(f'Convolving {arrs} and dividing by w2')
-
-                    w2 = np.load(f'{couplings_dir}/{arrs}_w2.npy')
+                for c2, chan2 in enumerate(sv2arrs2chans[sv1][ar1]):                    
 
                     # handle single coupling polarization combos
                     for P1P2, spin in single_coupling_pols.items():
-                        M = np.load(f'{couplings_dir}/{arrs}_{spin}_mcm.npy')
+                        # get canonical inputs
                         pol1, pol2 = P1P2
-                        p1, p2 = 'TEB'.index(pol1), 'TEB'.index(pol2)
-                        pseudo_tfed_noise_model[c1, p1, c2, p2] = M @ tfed_noise_model[c1, p1, c2, p2]
+                        TP1, p1 = psc.pol2pol_info(pol1)
+                        TP2, p2 = psc.pol2pol_info(pol2)
+                        field_info1 = (sv1, ar1, chan1, split1, TP1)
+                        field_info2 = (sv1, ar1, chan2, split1, TP2) # sv, ar, spl are fixed, ch and p iterate
+                        ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
+                            psc.get_ewin_info_from_field_info(field_info1, d, mode='ws', extra='sqrt_pixar'),
+                            psc.get_ewin_info_from_field_info(field_info2, d, mode='ws', extra='sqrt_pixar'),
+                            ewin_infos
+                            ) 
+                        log.info(f'Convolving and dividing by w2: {ewin_name1}, {ewin_name2}')
 
+                        M = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_{spin}_mcm.npy')
+                        w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
+
+                        pseudo_tfed_noise_model[c1, p1, c2, p2] = M @ tfed_noise_model[c1, p1, c2, p2] / w2
+
+                    # handle quad-coupling polarization combos
+                    field_info1 = (sv1, ar1, chan1, split1, 'P')
+                    field_info2 = (sv1, ar1, chan2, split1, 'P')
+                    ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
+                        psc.get_ewin_info_from_field_info(field_info1, d, mode='ws', extra='sqrt_pixar'),
+                        psc.get_ewin_info_from_field_info(field_info2, d, mode='ws', extra='sqrt_pixar'),
+                        ewin_infos
+                        ) 
+                    log.info(f'Convolving and dividing by w2: {ewin_name1}, {ewin_name2}')
+                    
+                    w2 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_w2.npy')
+                        
                     # handle EE BB
-                    M = np.load(f'{couplings_dir}/{arrs}_diag_mcm.npy')
+                    M = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_diag_mcm.npy')
+                    
                     clee = tfed_noise_model[c1, 1, c2, 1]
                     clbb = tfed_noise_model[c1, 2, c2, 2]
-                    pcl = M @ np.hstack([clee, clbb])
+                    pcl = M @ np.hstack([clee, clbb]) / w2
                     pseudo_tfed_noise_model[c1, 1, c2, 1] = pcl[:len(clee)]
                     pseudo_tfed_noise_model[c1, 2, c2, 2] = pcl[len(clee):]
                     
                     # handle EB BE
-                    M = np.load(f'{couplings_dir}/{arrs}_off_mcm.npy')
+                    M = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_off_mcm.npy')
+
                     cleb = tfed_noise_model[c1, 1, c2, 2]
                     clbe = tfed_noise_model[c1, 2, c2, 1]
-                    pcl = M @ np.hstack([cleb, clbe])
+                    pcl = M @ np.hstack([cleb, clbe]) / w2
                     pseudo_tfed_noise_model[c1, 1, c2, 2] = pcl[:len(cleb)]
                     pseudo_tfed_noise_model[c1, 2, c2, 1] = pcl[len(cleb):]
-
-                    pseudo_tfed_noise_model[c1, :, c2, :] /= w2
             
             np.save(f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_pseudo_tfed_noise_model.npy', pseudo_tfed_noise_model)

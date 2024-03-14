@@ -8,7 +8,7 @@ the 4pt tf and mask in get_pseudonoise.py.
 """
 import sys
 
-from pspipe_utils import log, pspipe_list
+from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, pspy_utils
 
 from pixell import curvedsky
@@ -43,6 +43,43 @@ pspy_utils.create_directory(plot_dir)
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)
 
 apply_kspace_filter = d["apply_kspace_filter"]
+
+# format:
+# - unroll all 'fields' i.e. (survey x array x chan x split x pol) is a 'field'
+# - any given combination is then ('field' x 'field')
+#
+# notes:
+# - we are 'hardcoding' that all splits for a given field have the same
+# analysis mask, and that all pols for a given field have the same 
+# sigma map.
+
+# we define the canon by the windows order. we first build the fields,
+# then use a mapping from fields to windows to build the canonical
+# windows
+field_infos = []
+ewin_infos = []
+for sv1 in sv2arrs2chans:
+    for ar1 in sv2arrs2chans[sv1]:
+        for chan1 in sv2arrs2chans[sv1][ar1]:
+            for split1 in range(len(d[f'maps_{sv1}_{ar1}_{chan1}'])):
+                for pol1 in ['T', 'P']:
+                    field_info = (sv1, ar1, chan1, split1, pol1)
+                    if field_info not in field_infos:
+                        field_infos.append(field_info)
+                    else:
+                        raise ValueError(f'{field_info=} is not unique')
+                    
+                    ewin_info_s = psc.get_ewin_info_from_field_info(field_info, d, mode='w', return_paths_ops=True)
+                    if ewin_info_s not in ewin_infos:
+                        ewin_infos.append(ewin_info_s)
+                    else:
+                        pass
+
+                    ewin_info_n = psc.get_ewin_info_from_field_info(field_info, d, mode='ws', extra='sqrt_pixar', return_paths_ops=True)
+                    if ewin_info_n not in ewin_infos:
+                        ewin_infos.append(ewin_info_n)
+                    else:
+                        pass
 
 single_coupling_pols = {'TT': '00', 'TE': '02', 'ET': '02', 'TB': '02', 'BT': '02'}
 
@@ -230,22 +267,39 @@ for sv1 in sv2arrs2chans:
             # now we need to deconvolve the mask
             for c1, chan1 in enumerate(sv2arrs2chans[sv1][ar1]):
                 for c2, chan2 in enumerate(sv2arrs2chans[sv1][ar1]):
-                    # canonical
-                    if c1 <= c2:
-                        arrs = f'w_{sv1}_{ar1}_{chan1}_s_{sv1}_{ar1}_{chan1}_set{split1}_sqrt_pixarxw_{sv1}_{ar1}_{chan2}_s_{sv1}_{ar1}_{chan2}_set{split1}_sqrt_pixar'
-                    else:
-                        arrs = f'w_{sv1}_{ar1}_{chan2}_s_{sv1}_{ar1}_{chan2}_set{split1}_sqrt_pixarxw_{sv1}_{ar1}_{chan1}_s_{sv1}_{ar1}_{chan1}_set{split1}_sqrt_pixar'
-                    log.info(f'Deconvolving {arrs}')
 
                     # handle single coupling polarization combos
                     for P1P2, spin in single_coupling_pols.items():
-                        Minv = np.load(f'{couplings_dir}/{arrs}_{spin}_mcm_inv.npy')
+                        # get canonical inputs
                         pol1, pol2 = P1P2
-                        p1, p2 = 'TEB'.index(pol1), 'TEB'.index(pol2)
+                        TP1, p1 = psc.pol2pol_info(pol1)
+                        TP2, p2 = psc.pol2pol_info(pol2)
+                        field_info1 = (sv1, ar1, chan1, split1, TP1)
+                        field_info2 = (sv1, ar1, chan2, split1, TP2) # sv, ar, spl are fixed, ch and p iterate
+                        ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
+                            psc.get_ewin_info_from_field_info(field_info1, d, mode='ws', extra='sqrt_pixar'),
+                            psc.get_ewin_info_from_field_info(field_info2, d, mode='ws', extra='sqrt_pixar'),
+                            ewin_infos
+                            ) 
+                        log.info(f'Deconvolving: {ewin_name1}, {ewin_name2}')
+
+                        Minv = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_{spin}_mcm_inv.npy')
+
                         out_noise_model_spec[c1, p1, c2, p2] = Minv @ out_noise_model[c1, p1, c2, p2]
 
+                    # handle quad-coupling polarization combos
+                    field_info1 = (sv1, ar1, chan1, split1, 'P')
+                    field_info2 = (sv1, ar1, chan2, split1, 'P')
+                    ewin_name1, ewin_name2 = psc.canonize_connected_2pt(
+                        psc.get_ewin_info_from_field_info(field_info1, d, mode='ws', extra='sqrt_pixar'),
+                        psc.get_ewin_info_from_field_info(field_info2, d, mode='ws', extra='sqrt_pixar'),
+                        ewin_infos
+                        ) 
+                    log.info(f'Deconvolving: {ewin_name1}, {ewin_name2}')
+
                     # handle EE BB
-                    Minv = np.load(f'{couplings_dir}/{arrs}_diag_mcm_inv.npy')
+                    Minv = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_diag_mcm_inv.npy')
+                    
                     pclee = out_noise_model[c1, 1, c2, 1]
                     pclbb = out_noise_model[c1, 2, c2, 2]
                     cl = Minv @ np.hstack([pclee, pclbb])
@@ -253,7 +307,8 @@ for sv1 in sv2arrs2chans:
                     out_noise_model_spec[c1, 2, c2, 2] = cl[len(pclee):]
                     
                     # handle EB BE
-                    Minv = np.load(f'{couplings_dir}/{arrs}_off_mcm_inv.npy')
+                    Minv = np.load(f'{couplings_dir}/{ewin_name1}x{ewin_name2}_off_mcm_inv.npy')
+                    
                     pcleb = out_noise_model[c1, 1, c2, 2]
                     pclbe = out_noise_model[c1, 2, c2, 1]
                     cl = Minv @ np.hstack([pcleb, pclbe])

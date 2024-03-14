@@ -86,7 +86,7 @@ ells = np.arange(lmax_pseudocov+1)
 f_name_cmb = bestfit_dir + '/cmb.dat'
 ps_mat = psc.cmb_matrix_from_file(f_name_cmb, lmax_pseudocov, spectra)
 
-f_name_fg = bestfit_dir + '/fg_{}x{}.dat'
+f_name_fg = bestfit_dir + '/fg_{}_{}_{}x{}_{}_{}.dat'
 fg_mat = psc.foreground_matrix_from_files(f_name_fg, sv_ar_chans, lmax_pseudocov, spectra)
 
 # apply beam and transfer function

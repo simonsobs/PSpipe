@@ -11,6 +11,7 @@ import sys
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.linalg import block_diag
 from pspy import so_map, so_dict, pspy_utils, so_mcm
 from pspipe_utils import log, pspipe_list, kspace, covariance as psc
 
@@ -34,11 +35,13 @@ assert not binned_mcm, 'script only works if binned_mcm is False!' # FIXME
 
 spec_list = pspipe_list.get_spec_name_list(d, delimiter='_')  # unrolled fields
 spin_pairs = ('spin0xspin0', 'spin0xspin2', 'spin2xspin0', 'spin2xspin2')
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 
 # get the binning matrix
 Pbl = psc.get_binning_matrix(bin_lo, bin_hi, lmax)
+Pbl_pol = block_diag(Pbl, Pbl, Pbl, Pbl)
 
 for spec1 in spec_list:
     log.info(f'Calculating matrix for {spec1}')
@@ -46,8 +49,16 @@ for spec1 in spec_list:
     # get the Mbb_inv matrix for this array cross
     M_inv, _ = so_mcm.read_coupling(prefix=f'{mcms_dir}/{spec1}', spin_pairs=spin_pairs)
 
-    # apply the binning matrix to it to get Pbl_Minv
-    Pbl_Minv = psc.get_Pbl_Minv_matrix(Pbl, M_inv) 
+    # compute P_{bl} @ Minv_{ll'}, the binning operator applied to the inverse
+    # MCM. Better to do this block-wise than materialize the full unbinned MCM
+    # across all polarizations.
+    M00 = Pbl @ M_inv['spin0xspin0']
+    M02 = Pbl @ M_inv['spin0xspin2']
+    M20 = Pbl @ M_inv['spin2xspin0']
+    M22 = Pbl_pol @ M_inv['spin2xspin2']
+    
+    assert spectra == ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"] # FIXME
+    Pbl_Minv = block_diag(M00, M02, M02, M20, M20, M22)
 
     # get the inv_kspace matrix for this array cross
     if kspace_tf_path == 'analytical':

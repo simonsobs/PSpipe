@@ -17,10 +17,13 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-# first let's get a list of all frequency we plan to study
-lmax_pseudocov = d['lmax_pseudocov'] # models only go up to ell of 10000
-assert lmax_pseudocov >= d['lmax'], \
-    f"{lmax_pseudocov=} must be >= {d['lmax']=}"  
+# if 'lmax_pseudocov' in paramfile, use it instead of lmax
+lmax = d['lmax']
+if 'lmax_pseudocov' in d:
+    lmax_pseudocov = d['lmax_pseudocov']
+    assert lmax_pseudocov >= lmax, f'{lmax_pseudocov=} must be >= {lmax=}'
+    lmax = lmax_pseudocov
+
 type = d["type"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -33,11 +36,10 @@ pspy_utils.create_directory(plot_dir)
 
 cosmo_params = d["cosmo_params"]
 log.info(f"Computing CMB spectra with cosmological parameters: {cosmo_params}")
-l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, lmax_pseudocov + 1, **d["accuracy_params"])
+l_th, ps_dict = pspy_utils.ps_from_params(cosmo_params, type, lmax + 1, **d["accuracy_params"])
 
 f_name = f"{bestfit_dir}/cmb.dat"
 so_spectra.write_ps(f_name, l_th, ps_dict, type, spectra=spectra)
-
 
 fg_norm = d["fg_norm"]
 fg_params = d["fg_params"]
@@ -49,6 +51,7 @@ do_bandpass_integration = d["do_bandpass_integration"]
 if do_bandpass_integration:
     log.info("Doing bandpass integration")
 
+# get the passbands over which to create signal model
 narrays, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 
 for sv, ar in zip(sv_list, ar_list):

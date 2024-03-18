@@ -94,7 +94,8 @@ for sv1 in sv2arrs2chans:
             tfed_noise_model = np.zeros_like(noise_model)
 
             if apply_kspace_filter:
-                fl4 = np.load(f'{filters_dir}/{sv1}_fl_4pt_fullsky.npy')
+                # fl4 = np.load(f'{filters_dir}/{sv1}_fl_4pt_fullsky.npy')
+                fl2 = np.load(f'{filters_dir}/{sv1}_fl_2pt_fullsky.npy')
 
             for p1, pol1 in enumerate('TEB'):
                 for p2, pol2 in enumerate('TEB'):
@@ -102,11 +103,11 @@ for sv1 in sv2arrs2chans:
                     if apply_kspace_filter:
                         polstr1 = 'T' if pol1 == 'T' else 'pol'
                         rd1 = np.load(f'{filters_dir}/{sv1}_{polstr1}_res_dict.npy', allow_pickle=True).item()
-                        tf1 = fl4 ** (rd1['binned_power_cov_alpha']/2)
+                        tf1 = fl2 ** (rd1['binned_power_cov_alpha']/2)
                         
                         polstr2 = 'T' if pol2 == 'T' else 'pol'
                         rd2 = np.load(f'{filters_dir}/{sv1}_{polstr2}_res_dict.npy', allow_pickle=True).item()
-                        tf2 = fl4 ** (rd2['binned_power_cov_alpha']/2)
+                        tf2 = fl2 ** (rd2['binned_power_cov_alpha']/2)
 
                         tf = np.sqrt(tf1 * tf2) # tf defined at ps level
                     else:

@@ -104,8 +104,10 @@ for sac1, sv_ar_chan1 in enumerate(sv_ar_chans):
         assert np.all(l2[:(lmax_pseudocov+1)] == ells), 'ell of beam from array2 != ells'
 
         if apply_kspace_filter:
-            fl4_1 = np.load(f'{filters_dir}/{sv1}_fl_4pt_fullsky.npy')
-            fl4_2 = np.load(f'{filters_dir}/{sv2}_fl_4pt_fullsky.npy')
+            # fl4_1 = np.load(f'{filters_dir}/{sv1}_fl_4pt_fullsky.npy')
+            # fl4_2 = np.load(f'{filters_dir}/{sv2}_fl_4pt_fullsky.npy')
+            fl2_1 = np.load(f'{filters_dir}/{sv1}_fl_2pt_fullsky.npy')
+            fl2_2 = np.load(f'{filters_dir}/{sv2}_fl_2pt_fullsky.npy')
 
         for p1, pol1 in enumerate('TEB'):
             for p2, pol2 in enumerate('TEB'):
@@ -114,11 +116,11 @@ for sac1, sv_ar_chan1 in enumerate(sv_ar_chans):
                 if apply_kspace_filter:
                     polstr1 = 'T' if pol1 == 'T' else 'pol'
                     rd1 = np.load(f'{filters_dir}/{sv1}_{polstr1}_res_dict.npy', allow_pickle=True).item()
-                    tf1 = fl4_1 ** (rd1['binned_power_cov_alpha']/2)
+                    tf1 = fl2_1 ** (rd1['binned_power_cov_alpha']/2)
                     
                     polstr2 = 'T' if pol2 == 'T' else 'pol'
                     rd2 = np.load(f'{filters_dir}/{sv2}_{polstr2}_res_dict.npy', allow_pickle=True).item()
-                    tf2 = fl4_2 ** (rd2['binned_power_cov_alpha']/2)
+                    tf2 = fl2_2 ** (rd2['binned_power_cov_alpha']/2)
 
                     tf = np.sqrt(tf1 * tf2) # tf defined at ps level
                 else:

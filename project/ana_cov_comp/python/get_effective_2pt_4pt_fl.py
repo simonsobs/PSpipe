@@ -59,9 +59,9 @@ if apply_kspace_filter:
 
     for sv1 in sv2arrs2chans:
         fn_flm_2pt = f'{filters_dir}/{sv1}_flm_2pt_fullsky.npy'
-        fn_flm_4pt = f'{filters_dir}/{sv1}_flm_4pt_fullsky.npy'
+        # fn_flm_4pt = f'{filters_dir}/{sv1}_flm_4pt_fullsky.npy'
         
-        if not os.path.isfile(fn_flm_2pt) or not os.path.isfile(fn_flm_4pt):
+        if not os.path.isfile(fn_flm_2pt): # or not os.path.isfile(fn_flm_4pt):
             # check to make sure only one geometry
             i = 0
             for ar1 in sv2arrs2chans[sv1]:
@@ -106,7 +106,7 @@ if apply_kspace_filter:
                 fk = fk[..., :fk.shape[1]//2 + 1] # prepare for rfft
 
                 fk_fullsky = kspace.get_kspace_filter(template, d[f"k_filter_{sv1}"], dtype=np.float32,
-                                                          shape_y=full_shape, wcs_y=full_wcs)
+                                                      shape_y=full_shape, wcs_y=full_wcs)
                 fk_fullsky = fk_fullsky[..., :fk_fullsky.shape[1]//2 + 1] # prepare for rfft
 
                 np.save(fn_fk, fk)
@@ -121,18 +121,18 @@ if apply_kspace_filter:
                 fk_fullsky = np.load(fn_fk_fullsky)
 
             # now we can accumulate the fullsky white noise sims
-            fk_4pt_fullsky = fk_fullsky**2               
+            # fk_4pt_fullsky = fk_fullsky**2               
 
             flm_2pt = np.zeros(ainfo.nelem, dtype=np.float64) # double prec result
-            flm_4pt = np.zeros(ainfo.nelem, dtype=np.float64)
+            # flm_4pt = np.zeros(ainfo.nelem, dtype=np.float64)
             for i in range(num_flm_sims):
                 eta = utils.concurrent_normal(size=ainfo.nelem, scale=1/np.sqrt(2), seed=[0, i], dtype=np.float32, complex=True) # single prec sims
                 eta[..., :ainfo.lmax + 1] *= np.sqrt(2) # respect reality condition of m=0 
                 eta = curvedsky.alm2map(eta, enmap.zeros(full_shape, full_wcs), ainfo=ainfo, method='cyl')
                 
                 eta = utils.rfft(eta, normalize='backward')
-                for j, _flm in enumerate([flm_2pt, flm_4pt]):
-                    _fk_fullsky = [fk_fullsky, fk_4pt_fullsky][j]
+                for j, _flm in enumerate([flm_2pt]): #, flm_4pt]):
+                    _fk_fullsky = [fk_fullsky][j] #, fk_4pt_fullsky][j]
                     _eta = utils.concurrent_op(np.multiply, _fk_fullsky, eta, flatten_axes=[-2, -1])
                     _eta = utils.irfft(_eta, normalize='backward')
                     _eta = enmap.ndmap(_eta, full_wcs)
@@ -141,35 +141,35 @@ if apply_kspace_filter:
                 if (i + 1) % int(num_flm_sims * 0.1) == 0:
                     log.info(f'Done {i+1} out of {num_flm_sims}')
             
-            for j, _flm in enumerate([flm_2pt, flm_4pt]):
+            for j, _flm in enumerate([flm_2pt]): #, flm_4pt]):
                 _flm /= num_flm_sims
                 _flm **= 1/(2*(j + 1)) # at the "field level" for both 2pt and 4pt
 
-                np.save([fn_flm_2pt, fn_flm_4pt][j], _flm)
+                np.save([fn_flm_2pt][j], _flm) # , fn_flm_4pt][j], _flm)
         else:
             flm_2pt = np.load(fn_flm_2pt)
-            flm_4pt = np.load(fn_flm_4pt)
+            # flm_4pt = np.load(fn_flm_4pt)
 
         fn_fl_2pt = f'{filters_dir}/{sv1}_fl_2pt_fullsky.npy'
-        fn_fl_4pt = f'{filters_dir}/{sv1}_fl_4pt_fullsky.npy'
+        # fn_fl_4pt = f'{filters_dir}/{sv1}_fl_4pt_fullsky.npy'
 
         # now do the the savitzky golay filter to smooth the transfer
         # function template as a function of ell
-        if not os.path.isfile(fn_fl_2pt) or not os.path.isfile(fn_fl_4pt):
+        if not os.path.isfile(fn_fl_2pt): # or not os.path.isfile(fn_fl_4pt):
             fl_2pt = np.zeros(lmax_pseudocov + 1)
-            fl_4pt = np.zeros(lmax_pseudocov + 1)
-            for j, _flm in enumerate([flm_2pt, flm_4pt]):
+            # fl_4pt = np.zeros(lmax_pseudocov + 1)
+            for j, _flm in enumerate([flm_2pt]): #, flm_4pt]):
                 _fl_data = curvedsky.alm2cl(_flm**(j+1)*(1+0j)) # at the "ps level" for 2pt, "covmat level" for 4pt
-                _fl = [fl_2pt, fl_4pt][j]
+                _fl = [fl_2pt][j] # , fl_4pt][j]
                 _fl[_fl_data >= 1e-3] = savgol_filter(_fl_data[_fl_data >= 1e-3], savgol_w, savgol_k)
                 _fl[_fl < 1e-3] = 0 # in case savgol goes negative
 
-                np.save([fn_fl_2pt, fn_fl_4pt][j], _fl)
+                np.save([fn_fl_2pt][j], _fl) # , fn_fl_4pt][j], _fl)
         else:
             fl_2pt = np.load(fn_fl_2pt)
-            fl_4pt = np.load(fn_fl_4pt)
+            # fl_4pt = np.load(fn_fl_4pt)
 
-        for j, _flm in enumerate([flm_2pt, flm_4pt]):
+        for j, _flm in enumerate([flm_2pt]): #, flm_4pt]):
             _flm_rect = curvedsky.transfer_alm(ainfo, _flm, ainfo_rect).reshape(lmax_pseudocov+1, -1)
 
             plt.figure(figsize=(8, 8))
@@ -188,10 +188,10 @@ if apply_kspace_filter:
             plt.title('flm')        
             plt.savefig(f'{plot_dir}/{sv1}_flm_{2*(j+1)}pt_fullsky_zoom.png')
 
-        for j, _fl in enumerate([fl_2pt, fl_4pt]):
+        for j, _fl in enumerate([fl_2pt]): #, fl_4pt]):
             edges = [np.argmin(abs(_fl - i)) for i in (.2, .4, .6, .8)]
             min_edge = max(min(80, edges[0] - 10), 0)
-            _flm = [flm_2pt, flm_4pt][j]
+            _flm = [flm_2pt][j] #, flm_4pt][j]
             for sel in [np.s_[min_edge:lmax_pseudocov+1], np.s_[min_edge:edges[0]]] + [np.s_[edges[i]:edges[i+1]] for i in range(0, len(edges)-1)] + [np.s_[edges[-1]:lmax_pseudocov+1]]:
                 plt.figure(figsize=(16, 8))
                 plt.semilogx(np.arange(sel.start, sel.stop), curvedsky.alm2cl(_flm**(j+1)*(1+0j))[sel], alpha=.3, label='sims')

@@ -61,12 +61,12 @@ if apply_kspace_filter:
         # get the filter tf templates lmins for the fitting
         log.info(f'Getting filter tf templates for {sv1=}')
         fl2 = np.load(f'{filters_dir}/{sv1}_fl_2pt_fullsky.npy')
-        fl4 = np.load(f'{filters_dir}/{sv1}_fl_4pt_fullsky.npy')
+        # fl4 = np.load(f'{filters_dir}/{sv1}_fl_4pt_fullsky.npy')
 
         lmin2_fit = np.max(np.where(fl2 <= 0.5)[0]) + 1 # 1 more than the last element of fl2 that is <= 0.5
         bmin2_fit = np.min(np.where(bin_low >= lmin2_fit)[0]) # the first bin such that bin_low >= lmin2_fit
-        lmin4_fit = np.max(np.where(fl4 <= 0.5)[0]) + 1
-        bmin4_fit = np.min(np.where(bin_low >= lmin4_fit)[0])
+        # lmin4_fit = np.max(np.where(fl4 <= 0.5)[0]) + 1
+        # bmin4_fit = np.min(np.where(bin_low >= lmin4_fit)[0])
 
         # Get our mock power spectra
         log.info(f'Getting mock power spectra for {sv1=}')
@@ -130,8 +130,8 @@ if apply_kspace_filter:
                 res_dict = {}
                 res_dict['lmin2_fit'] = lmin2_fit
                 res_dict['bmin2_fit'] = bmin2_fit
-                res_dict['lmin4_fit'] = lmin4_fit
-                res_dict['bmin4_fit'] = bmin4_fit
+                # res_dict['lmin4_fit'] = lmin4_fit
+                # res_dict['bmin4_fit'] = bmin4_fit
 
                 # get simulated pseudo spectra and pseudo covariances
                 pseudo_specs = []
@@ -161,18 +161,18 @@ if apply_kspace_filter:
                 psc.get_alpha_fit(res_dict, func, target, tag, xmin=xmin)
 
                 # pseudo cov
-                func = psc.get_expected_cov_diag_func(mcm, w2, fl4, ps, coupling)
+                func = psc.get_expected_cov_diag_func(mcm, w2, fl2, ps, coupling) # fl4
                 target = pseudo_covs
                 tag = 'pseudo_cov'
-                xmin = lmin2_fit                
+                xmin = lmin2_fit # lmin4_fit                      
                 
                 psc.get_alpha_fit(res_dict, func, target, tag, xmin=xmin)
 
                 # binned pseudo cov
-                func = psc.get_expected_cov_diag_func(mcm, w2, fl4, ps, coupling, bin_low=bin_low, bin_high=bin_high)
+                func = psc.get_expected_cov_diag_func(mcm, w2, fl2, ps, coupling, bin_low=bin_low, bin_high=bin_high) # fl4
                 target = binned_pseudo_covs
                 tag = 'binned_pseudo_cov'
-                xmin = bmin2_fit                
+                xmin = bmin2_fit # bmin4_fit                  
                 
                 psc.get_alpha_fit(res_dict, func, target, tag, xmin=xmin)
                 
@@ -191,19 +191,19 @@ if apply_kspace_filter:
                 binned_power_covs = num_tf_sims/(num_tf_sims-1) * (binned_power_specs - binned_power_specs.mean(axis=0))**2
                 
                 # power cov
-                func = psc.get_expected_cov_diag_func(mcm, w2, fl4, ps, coupling, pre_mcm_inv=pre_mcm_inv)
+                func = psc.get_expected_cov_diag_func(mcm, w2, fl2, ps, coupling, pre_mcm_inv=pre_mcm_inv) # fl4
                 target = power_covs
                 tag = 'power_cov'
-                xmin = lmin2_fit                
+                xmin = lmin2_fit # lmin4_fit               
                 
                 psc.get_alpha_fit(res_dict, func, target, tag, xmin=xmin)
 
                 # binned power cov
                 # NOTE: this is the fit that will be used downstream in constructing the actual covariance
-                func = psc.get_expected_cov_diag_func(mcm, w2, fl4, ps, coupling, pre_mcm_inv=pre_mcm_inv, bin_low=bin_low, bin_high=bin_high)
+                func = psc.get_expected_cov_diag_func(mcm, w2, fl2, ps, coupling, pre_mcm_inv=pre_mcm_inv, bin_low=bin_low, bin_high=bin_high) # fl4
                 target = binned_power_covs
                 tag = 'binned_power_cov'
-                xmin = bmin2_fit                
+                xmin = bmin2_fit # bmin4_fit               
                 
                 psc.get_alpha_fit(res_dict, func, target, tag, xmin=xmin)
 

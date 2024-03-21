@@ -1,4 +1,4 @@
-"""
+description = """
 The anisotropy of the kspace filter and/or the noise breaks the standard
 master toolkit, both at the 2pt (mode-coupling) and 4pt (covariance) level.
 This is the third of 3 scripts that develop an ansatz correction for this.
@@ -17,6 +17,9 @@ noise power spectra (the noise model). The four point fit is then used to
 turn the signal and noise power spectra into signal and noise pseudospectra
 for the covariance.
 
+It is short enough that it should always run in a one-shot job, so it 
+accepts no arguments other than paramfile.
+
 This script assumes:
 1. No cross-survey spectra.
 2. All power spectra and masks are similar enough for all fields in a survey.
@@ -30,12 +33,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import os
-import sys
+import argparse
 
 # FIXME: allow job array over channels/pols
 
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
+
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 

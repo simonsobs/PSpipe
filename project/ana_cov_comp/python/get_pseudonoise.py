@@ -1,4 +1,4 @@
-'''
+description = """
 This script computes the effective noise pseudospectra, which is needed for
 the covariance matrix under the INKA approximation. Because the covariance has a
 different effective kspace tf applied to the power spectra, we need to apply
@@ -8,18 +8,28 @@ The effect of get_noise_model together with get_pseudo_noise is to basically
 "replace" the 2pt kspace tf in the measured noise pseudospectra with the 
 4pt tf. Finally, also in accordance with INKA, we divide by the relevant w2
 factors. 
-'''
+
+It is short enough that it should always run in a one-shot job, so it 
+accepts no arguments other than paramfile.
+"""
 import matplotlib
 
 matplotlib.use('Agg')
-import sys
 
 import numpy as np
 from pspy import so_dict
 from pspipe_utils import log, pspipe_list, covariance as psc
+import argparse
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
+
 log = log.get_logger(**d)
 
 sv2arrs2chans = pspipe_list.get_survey_array_channel_map(d)

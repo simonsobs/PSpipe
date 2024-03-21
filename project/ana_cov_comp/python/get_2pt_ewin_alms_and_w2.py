@@ -1,19 +1,28 @@
-"""
+description = """
 Like get_1pt_ewin_alms, except for windows that are formed as products of 
 two 1pt windows. Alms of such products of two windows are then used in
 get_4pt_coupling_matrices.py to calculate the covariance couplings that form
 the basis of the covariance. By including noise-weighted windows here, we
 naturally account for the contribution of noise inhomogeneity to the covariance.
+
+It is short enough that it should always run in a one-shot job, so it 
+accepts no arguments other than paramfile.
 """
-import sys
 import numpy as np
 from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, so_map, sph_tools, pspy_utils
 from itertools import product
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 

@@ -1,4 +1,4 @@
-"""
+description = """
 This script computes the "1 point" window alms for covariance couplings. 
 That is, for all the windows we have (whether signal-weighted i.e. 
 analaysis masks or noise-weighted i.e. analysis masks * sigma maps), it
@@ -6,15 +6,24 @@ computes the alm of that window. Later on, in get_2pt_coupling_matrices,
 we will use a pair of 1pt window alms to make "2pt" couplings a.k.a. 
 mode-coupling matrices. These mode coupling matrices are necessary
 for obtaining pseudospectra as part of the INKA perscription.
+
+It is short enough that it should always run in a one-shot job, so it 
+accepts no arguments other than paramfile.
 """
-import sys
 import numpy as np
 from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, so_map, sph_tools, pspy_utils
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 

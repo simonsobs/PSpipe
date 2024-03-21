@@ -1,4 +1,4 @@
-"""
+description = """
 The anisotropy of the kspace filter and/or the noise breaks the standard
 master toolkit, both at the 2pt (mode-coupling) and 4pt (covariance) level.
 This is the first of 3 scripts that develop an ansatz correction for this.
@@ -14,6 +14,9 @@ It's important that the template corresponds to the fullsky filter: the filter
 couples to the mask, so we don't want to mix effects here. Thus, we get the
 closest filter acting on the fullsky to the actual filter that acts on the 
 data footprint (which is also masked).
+
+It is short enough that it should always run in a one-shot job, so it 
+accepts no arguments other than paramfile.
 """
 from pspipe_utils import log, kspace, pspipe_list
 from pspy import so_dict, so_map, pspy_utils
@@ -26,12 +29,18 @@ import numpy as np
 from scipy.signal import savgol_filter
 
 import os
-import sys
+import argparse
 
 # FIXME: allow array over channels/pols
 
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
+
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 

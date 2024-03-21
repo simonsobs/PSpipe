@@ -1,4 +1,4 @@
-"""
+description = """
 The anisotropy of the kspace filter and/or the noise breaks the standard
 master toolkit, both at the 2pt (mode-coupling) and 4pt (covariance) level.
 This is the second  of 3 scripts that develop an ansatz correction for this.
@@ -12,12 +12,24 @@ most sensitive to the filter. Thus, we don't need to run accurate or complete
 simulations of the survey; instead we can run a small number of simulations
 with a mask and power spectrum that are roughly representative.
 
+Users may submit this script using any multinode, multitask
+call to sbatch, but they must do so in one call to sbatch, not multiple as in 
+a bash loop. If it makes sense to submit multiple distinct jobs, users must 
+submit a job array. Each job within the array can have an arbitrary multinode,
+multitask layout; the script will determine automatically what task it is 
+running in the super-array of tasks.
+
+It is the user's responsibility to ensure that the number of total tasks in the
+job array times the delta-per-task covers all the spectra that need to be
+computed. If there are extra tasks, they will not compute anything and waste
+cluster resources. In either case, an appropriate warning is issued. 
+
 This script assumes:
 1. No cross-survey spectra.
 2. All power spectra and masks are similar enough for all fields in a survey.
 """
-from pspipe_utils import log, kspace, pspipe_list, covariance as psc
-from pspy import so_dict, so_map, pspy_utils
+from pspipe_utils import log, pspipe_list, covariance as psc
+from pspy import so_dict, pspy_utils
 
 from mnms import utils
 from pixell import enmap, curvedsky
@@ -25,13 +37,23 @@ from pixell import enmap, curvedsky
 import numpy as np
 
 import os
-import sys
+import argparse
+import warnings
 import time
 
 # FIXME: explicitly loop over channels/pols
 
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+parser.add_argument('--delta-per-task', type=int, default=-1,
+                    help='The number of spectra to compute in a given task. '
+                    'If not a positive integer, then all the requested spectra')
+args = parser.parse_args()
+
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 
@@ -46,12 +68,37 @@ assert lmax_pseudocov >= d['lmax'], \
     f"{lmax_pseudocov=} must be >= {d['lmax']=}" 
 ainfo = curvedsky.alm_info(lmax=lmax_pseudocov)
 
+# get the indices of the spectra that will be computed in this job
 num_tf_sims = d['num_tf_sims']
-start, stop = 0, num_tf_sims
-if len(sys.argv) == 4:
-    log.info(f'computing only the spectra matrices: ' + 
-             f'{int(sys.argv[2])}:{int(sys.argv[3])} of {num_tf_sims}')
-    start, stop = int(sys.argv[2]), int(sys.argv[3])
+delta_per_task = args.delta_per_task
+if delta_per_task < 1:
+    start = 0
+    stop = num_tf_sims
+else:
+    job_array_idx = os.environ.get('SLURM_ARRAY_TASK_ID', 0)
+    njob_array_idxs = os.environ.get('SLURM_ARRAY_TASK_COUNT', 1)
+    job_task_idx = os.environ.get('SLURM_PROCID', 0)
+    njob_task_idxs = os.environ.get('SLURM_NPROCS', 1)
+
+    total_tasks = njob_array_idxs * njob_task_idxs * delta_per_task
+    if total_tasks < num_tf_sims:
+        warnings.warn(f'The total number of spectra computed across all tasks is {total_tasks} '
+                      f'but the total number of spectra that need to be computed is '
+                      f'{num_tf_sims}. {num_tf_sims - total_tasks} '
+                      f'spectra will not be computed')
+    elif total_tasks > num_tf_sims:
+        warnings.warn(f'The total number of spectra computed across all tasks is {total_tasks} '
+                      f'but the total number of spectra that need to be computed is '
+                      f'{num_tf_sims}. {total_tasks - num_tf_sims} '
+                      f'tasks will not perform any computation and will waste resources')
+    
+    start = (njob_task_idxs * job_array_idx + job_task_idx) * delta_per_task
+    stop = (njob_task_idxs * job_array_idx + job_task_idx + 1) * delta_per_task
+
+    start = min(start, num_tf_sims)
+    stop = min(stop, num_tf_sims)
+    
+    log.info(f'Computing only the spectra matrices: {start}:{stop} of {num_tf_sims}')
 
 if apply_kspace_filter:
 

@@ -1,20 +1,26 @@
-"""
+description = """
 This script compute best fit from theory and fg power spectra.
 It uses camb and the foreground model of mflike based on fgspectra
 """
 import matplotlib
 
 matplotlib.use("Agg")
-import sys
 
 import numpy as np
 import pylab as plt
 from pspipe_utils import best_fits, log, pspipe_list
 from pspy import pspy_utils, so_dict, so_spectra
 from itertools import combinations_with_replacement as cwr
+import argparse
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 log = log.get_logger(**d)
 
 # if 'lmax_pseudocov' in paramfile, use it instead of lmax

@@ -1,18 +1,27 @@
-"""
+description = """
 This script uses pairs of 1pt window alms from get_1pt_ewin_alms.py to make
 the "2pt couplings" a.k.a. mode-coupling matrices. These matrices are used 
 in get_pseudonoise.py and get_pseudosignal.py to turn power spectra into
 pseudospectra in accordance with the INKA perscription.
+
+It is short enough that it should always run in a one-shot job, so it 
+accepts no arguments other than paramfile.
 """
-import sys
 import numpy as np
 from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, so_mcm, pspy_utils
 from itertools import product
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 
@@ -115,9 +124,9 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                 w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
                 w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
                 coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                                lmax=lmax_pseudocov, input_alm=True,
-                                                l_exact=l_exact, l_toep=l_toep,
-                                                l_band=l_band)
+                                                 lmax=lmax_pseudocov, input_alm=True,
+                                                 l_exact=l_exact, l_toep=l_toep,
+                                                 l_band=l_band)
                 np.save(coupling_fn, coupling)  
 
         # if we have already gotten to this canonized window pair, add the
@@ -157,9 +166,9 @@ for field_info1, field_info2 in product(field_infos, repeat=2):
                     w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}_alm.npy')
                     w2 = np.load(f'{ewin_alms_dir}/{ewin_name2}_alm.npy')
                     coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                                    lmax=lmax_pseudocov, input_alm=True,
-                                                    l_exact=l_exact, l_toep=l_toep,
-                                                    l_band=l_band)
+                                                     lmax=lmax_pseudocov, input_alm=True,
+                                                     l_exact=l_exact, l_toep=l_toep,
+                                                     l_band=l_band)
                     np.save(coupling_fn, coupling)  
 
             # if we have already gotten to this canonized window pair, add the

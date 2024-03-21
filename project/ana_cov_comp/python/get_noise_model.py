@@ -1,13 +1,14 @@
-"""
+description = """
 This script computes the noise model for the covariance from the measured alms,
 using auto - crosses. We smooth the noisy measurement of the noise pseudospectra
 from the data using a Savitzky Golay filter. Because the covariance has a
 different effective kspace tf applied to the power spectra, we need to
 deconvolve the mask and the 2pt tf from the pseudospectra. Later, we'll reapply
 the 4pt tf and mask in get_pseudonoise.py.
-"""
-import sys
 
+It is short enough that it should always run in a one-shot job, so it 
+accepts no arguments other than paramfile.
+"""
 from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, pspy_utils
 
@@ -19,9 +20,16 @@ import matplotlib.pyplot as plt
 
 from itertools import combinations, combinations_with_replacement as cwr, product
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 

@@ -1,20 +1,29 @@
-"""
+description = """
 This script computes the mcms and mcm_invs from 2pt covariance couplings. These
 matrices are needed in get_noise_model.py, get_pseudonoise.py, and 
 get_pseudosignal.py, where e.g. we need to take an unbinned power spectrum and 
 turn it into an unbinned pseudospectrum in accordance with the INKA
 prescription. The default PSpipe products include the effects of the beam and
 the binning, whereas for these operations we need the "pure" mode coupling.
+
+It is short enough that it should always run in a one-shot job, so it 
+accepts no arguments other than paramfile.
 """
-import sys
 import numpy as np
 from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, pspy_utils
 from itertools import product, combinations_with_replacement as cwr
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 

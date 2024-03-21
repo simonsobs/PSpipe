@@ -1,4 +1,4 @@
-"""
+description = """
 This script takes our ingredients (spectra and couplings) to construct
 covariance blocks. To reduce space, it averages over split crosses, so each
 "block" it produces is a canonical combo of 4 (survey, array, channel, pol)
@@ -6,57 +6,62 @@ fields. The averaging over split crosses is over all split1!=split2 crosses.
 E.g., for 4 splits, there are 12 such crosses, so the covariance needs to
 average over 144 per-split blocks.
 
-This script operates in two modes. The first mode is "recipe" mode, in which
-after the paramfile the user lists a target number of groups and the mode word
-"recipe". In this mode, the script loops over all couplings that *would* be 
+This script operates in two modes. The first mode is "recipe" mode.
+In this mode, the script loops over all couplings that *would* be 
 read from disk to create each covariance block. It then groups blocks into
-roughly the target number of groups, where each group of blocks tries to 
-share as many couplings as possible. That way, when a group of blocks is 
-computed, it can load only a small number of couplings and thereby limit
-I/O drastically. 
+roughly the target number of groups (given by "target-ngroups"), where each
+group of blocks tries to share as many couplings as possible. That way, when a
+group of blocks is computed, it can load only a small number of couplings and
+thereby limit I/O drastically. 
 
 The second mode entails actual computation. In this mode, the user lists
 the index of the group of blocks to be computed after the paramfile. This
 mode is best handled by running the script
 "get_split_averaged_unbinned_pseudo_cov_blocks_submit.py", rather than 
-directly. The script will submit an array of jobs for all groups, with the 
+directly. The script will submit an series of jobs for all groups, with the 
 correct amount of memory for each job depending on the number of couplings
-that job will need to load from disk.
+that job will need to load from disk. It will also handle packing of jobs
+onto single nodes.
 """
-import sys
 import numpy as np
-import numba
+import matplotlib.pyplot as plt
 from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, pspy_utils
 from itertools import product, permutations
 import os
-import matplotlib.pyplot as plt
+import argparse
+import warnings
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+parser.add_argument('--mode', type=str, default='compute',
+                    help='Whether to run script in recipe mode or compute mode, '
+                    'see script description string for more info')
+parser.add_argument('--group-idxs', type=int, nargs='*', required=True,
+                    help='The indices into the recipe of the groups that will be '
+                    'run in this job. Note, each instance of this script will '
+                    'only run one of these groups; the item out of the group-idxs '
+                    'corresponds to the task index of this script index, inferred '
+                    'from the slurm environment. If running outside the context '
+                    'of slurm, can only submit one group-idx')
+parser.add_argument('--target-ngroups', type=int, default=1,
+                    help='The number of groups of covariance blocks, where each '
+                    'group of blocks will be computed in one job. I.e., this '
+                    'many job tasks will need to be launched; each job task will '
+                    'compute only the covariance blocks in its corresponding '
+                    'group. The default is that all covariance blocks will be '
+                    'computed in one job, which will likely exceed node memory.')
+
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 
-# we have two modes: a recipe mode and a compute mode
-
-# NOTE: by using the 3rd command-line arg, we are saying we can never
-# run as an array with an array spacing (the last possible block of 
-# the slurm script).
-try:
-    mode = sys.argv[3]
-    assert mode == 'recipe' or mode == 'compute', \
-        f'If mode supplied must be recipe or compute, got {mode}'
-except IndexError:
-    mode = 'compute'
-
-# NOTE: if recipe mode, the 2nd command-line arg is the number of groups
-# of covariance blocks we will cook a recipe for. otherwise, it's the
-# index of the particular group of covariance blocks we will actually
-# compute in this script
-if mode == 'recipe':
-    target_ngroups = int(sys.argv[2]) # the argument is supplied by the user
-else:
-    group_idx = int(sys.argv[2]) # the argument is supplied by slurm script as the job array task id
+mode = args.mode
 
 log.info(f'Running in {mode} mode')
 
@@ -180,6 +185,17 @@ if mode == 'recipe':
 # required for the particular group of covariance blocks we will actually
 # compute in this script. finally, the iterable is over the blocks in that group 
 else:
+    # get the group index for the group of pseudocovariances that will be
+    # computed in this job
+    recipe = np.load(f'{covariances_dir}/canonized_split_averaged_unbinned_pseudo_cov_blocks_recipe.npz')
+    ngroups = len(recipe.files) - 2 # 2 files are not group indices
+    
+    group_idx = args.group_idxs[os.environ.get('SLURM_PROCID', 0)]
+
+    group_idx = min(group_idx, ngroups)
+
+    log.info(f'Computing only the covariance block group: {group_idx} of {ngroups}')
+
     # hold the pseudospectra on-disk
     signal_mat = np.load(f'{bestfit_dir}/pseudo_tfed_beamed_signal_model.npy')
     noise_mats = {}
@@ -192,29 +208,23 @@ else:
                         noise_mats[key] = np.load(f'{noise_model_dir}/{sv1}_{ar1}_set{split1}_pseudo_tfed_noise_model.npy')
 
     # hold only the couplings we need on disk
-    recipe = np.load(f'{covariances_dir}/canonized_split_averaged_unbinned_pseudo_cov_blocks_recipe.npz')
-    ngroups = len(recipe.files) - 2 # 2 files are not group indices
-    log.info(f'computing only the covariance block group: {group_idx} of {ngroups}')
-
     canonized_couplings = list(np.load(f'{couplings_dir}/canonized_couplings_4pt_combos.npy', allow_pickle=True).item().keys())
     canonized_blocks = list(np.load(f'{covariances_dir}/canonized_split_averaged_unbinned_pseudo_cov_combos.npy', allow_pickle=True).item().keys())
     coup2block = np.load(f'{covariances_dir}/canonized_couplings2blocks.npy')
     
-    group = recipe[f'arr_{group_idx}']
-    canonized_couplings_idxs_to_load = np.where(coup2block[group].sum(axis=0) > 0)[0] # for the blocks in this group, which couplings are loaded at least once
-    canonized_couplings_to_load = [canonized_couplings[idx] for idx in canonized_couplings_idxs_to_load]
+    try:
+        group = recipe[f'arr_{group_idx}']
+        canonized_couplings_idxs_to_load = np.where(coup2block[group].sum(axis=0) > 0)[0] # for the blocks in this group, which couplings are loaded at least once
+        canonized_couplings_to_load = [canonized_couplings[idx] for idx in canonized_couplings_idxs_to_load]
 
-    couplings = {}
-    for (ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype) in canonized_couplings_to_load:
-        coupling_fn = f'{couplings_dir}/{ewin_name1}x{ewin_name2}x{ewin_name3}x{ewin_name4}_{psc.spintypes2fntags[spintype]}_coupling.npy'
-        couplings[(ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype)] = np.load(coupling_fn)
+        couplings = {}
+        for (ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype) in canonized_couplings_to_load:
+            coupling_fn = f'{couplings_dir}/{ewin_name1}x{ewin_name2}x{ewin_name3}x{ewin_name4}_{psc.spintypes2fntags[spintype]}_coupling.npy'
+            couplings[(ewin_name1, ewin_name2, ewin_name3, ewin_name4, spintype)] = np.load(coupling_fn)
+    except KeyError:
+        group = [] # if the group_idx is too high for ngroups because of too many slurm tasks
 
     blocks_iterable = group
-
-# numba can help speed up the basic array operations ~2x
-@numba.njit
-def add_term_to_pseudo_cov(pseudo_cov, C12, C34, coupling):
-    pseudo_cov += (C12 + C12[:, None]) * (C34 + C34[:, None]) * coupling
 
 # # main loop, we will add all S, N terms together here
 # # iterate over all pairs/orders of coadded fields
@@ -279,7 +289,7 @@ for i in blocks_iterable:
             split_pq_iterator = list(product(range(nsplitp), range(nsplitq)))
         
         if mode == 'compute':
-            pseudo_cov = np.zeros((lmax_pseudocov + 1, lmax_pseudocov + 1), dtype=dtype_pseudocov)
+            pseudo_cov = np.zeros((lmax_pseudocov + 1, lmax_pseudocov + 1), dtype=np.float64) # accumulate at double prec
         
         for si, sj in split_ij_iterator:
             for sp, sq in split_pq_iterator:
@@ -313,7 +323,7 @@ for i in blocks_iterable:
                     Sip = signal_mat[saci, pi, sacp, pp] 
                     Sjq = signal_mat[sacj, pj, sacq, pq]
 
-                    add_term_to_pseudo_cov(pseudo_cov, Sip, Sjq, coupling)
+                    psc.add_term_to_pseudo_cov(pseudo_cov, Sip, Sjq, coupling)
 
                 # Sip Njq
                 if (svj != svq) or (arj != arq) or (sj != sq):
@@ -335,7 +345,7 @@ for i in blocks_iterable:
 
                         Njq = noise_mats[(svj, arj, sj)][cj, pj, cq, pq]
                     
-                        add_term_to_pseudo_cov(pseudo_cov, Sip, Njq, coupling)
+                        psc.add_term_to_pseudo_cov(pseudo_cov, Sip, Njq, coupling)
 
                 # Nip Sjq
                 if (svi != svp) or (ari != arp) or (si != sp):
@@ -357,7 +367,7 @@ for i in blocks_iterable:
 
                         Nip = noise_mats[(svi, ari, si)][ci, pi, cp, pp]
                         
-                        add_term_to_pseudo_cov(pseudo_cov, Nip, Sjq, coupling)
+                        psc.add_term_to_pseudo_cov(pseudo_cov, Nip, Sjq, coupling)
 
                 # Nip Njq
                 if (svi != svp) or (ari != arp) or (si != sp) or (svj != svq) or (arj != arq) or (sj != sq):
@@ -377,7 +387,7 @@ for i in blocks_iterable:
                     else:
                         coupling = couplings[coupling_info]
 
-                        add_term_to_pseudo_cov(pseudo_cov, Nip, Njq, coupling)
+                        psc.add_term_to_pseudo_cov(pseudo_cov, Nip, Njq, coupling)
 
                 # Siq Sjp
                 ewin_name1, ewin_name2, ewin_name3, ewin_name4 = psc.canonize_disconnected_4pt(
@@ -397,7 +407,7 @@ for i in blocks_iterable:
                     Siq = signal_mat[saci, pi, sacq, pq]
                     Sjp = signal_mat[sacj, pj, sacp, pp]
 
-                    add_term_to_pseudo_cov(pseudo_cov, Siq, Sjp, coupling)
+                    psc.add_term_to_pseudo_cov(pseudo_cov, Siq, Sjp, coupling)
 
                 # Siq Njp
                 if (svj != svp) or (arj != arp) or (sj != sp):
@@ -419,7 +429,7 @@ for i in blocks_iterable:
 
                         Njp = noise_mats[(svj, arj, sj)][cj, pj, cp, pp] 
                         
-                        add_term_to_pseudo_cov(pseudo_cov, Siq, Njp, coupling)
+                        psc.add_term_to_pseudo_cov(pseudo_cov, Siq, Njp, coupling)
 
                 # Niq Sjp
                 if (svi != svq) or (ari != arq) or (si != sq):
@@ -441,7 +451,7 @@ for i in blocks_iterable:
 
                         Niq = noise_mats[(svi, ari, si)][ci, pi, cq, pq]
                         
-                        add_term_to_pseudo_cov(pseudo_cov, Niq, Sjp, coupling)
+                        psc.add_term_to_pseudo_cov(pseudo_cov, Niq, Sjp, coupling)
 
                 # Niq Njp
                 if (svi != svq) or (ari != arq) or (si != sq) or (svj != svp) or (arj != arp) or (sj != sp):
@@ -461,13 +471,13 @@ for i in blocks_iterable:
                     else:
                         coupling = couplings[coupling_info]
                         
-                        add_term_to_pseudo_cov(pseudo_cov, Niq, Njp, coupling)
+                        psc.add_term_to_pseudo_cov(pseudo_cov, Niq, Njp, coupling)
         
         if mode == 'compute':
             # .25 is leftover from symmetrization, 4pi is due to convention definition
             # of coupling
             pseudo_cov *= 0.25 / (4*np.pi) / len(split_ij_iterator) / len(split_pq_iterator)
-            np.save(pseudo_cov_fn, pseudo_cov.astype(dtype_pseudocov, copy=False))
+            np.save(pseudo_cov_fn, pseudo_cov.astype(dtype_pseudocov, copy=False)) # save at single prec
 
 # postloop teardown
 
@@ -484,7 +494,7 @@ if mode == 'recipe':
     # now that we know which blocks load which couplings and how many times
     # per coupling, we try to group blocks to minimize the number of total
     # times a given group of blocks needs to read couplings from disk
-    target_num_ops = coup2block.sum() // target_ngroups
+    target_num_ops = coup2block.sum() // args.target_ngroups
 
     groups = []
     group_total_reads = []

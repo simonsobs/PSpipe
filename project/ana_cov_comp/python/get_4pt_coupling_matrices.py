@@ -1,13 +1,12 @@
-"""
+description = """
 Like get_2pt_coupling_matrices, except using pairs of windows that are
 themselves formed from a product of a pair of windows, i.e., pairs of the "2pt"
 windows alms calculated in get_2pt_ewin_alms_and_w2.py. Couplings formed from
 a combination of 4 such windows become the "4pt couplings". These matrices are used 
 as the basis of the covariance matrix itself.
 
-This script operates in two modes. The first mode is "recipe" mode, in which
-after the paramfile argument the user just supplies the mode word
-"recipe". In this mode, the script loops over all combinations of 4 "fields,"
+This script operates in two modes. The first mode is "recipe" mode. 
+In this mode, the script loops over all combinations of 4 "fields,"
 where one "field" is a (survey, array, channel, split, pol) label, and
 tabulates how many unique couplings actually need to be computed. The number
 of 4-field combinations is in the several millions, but the unique couplings is 
@@ -15,34 +14,59 @@ in the few thousands, because of canonization of filenames. This loop only needs
 to run once before any computation, but it takes a long time for python to 
 actually do it, so it's best to have one job do it than every job in an array do it.
 
-The second mode entails actual computation. In this mode, the user lists
-an integers after the paramfile, referring to the number of couplings per
-job in the job array (it must be submitted as a job array).
+The second mode entails actual computation. In this "compute" mode (the default), 
+the user may submit an array of jobs (or one job), and each job may have several
+MPI tasks (or one task). The user supplies the number of coupling matrices to 
+compute for each task in "delta-per-task", and the actual matrices computed in
+a given task will iterate by "delta-per-task" over each task first, and then 
+across jobs in the array. If "delta-per-task" is not supplied, it is assumed the
+user is calculating all possible coupling matrices in this job.
+
+Users may submit the "compute" mode of this script using any multinode, multitask
+call to sbatch, but they must do so in one call to sbatch, not multiple as in 
+a bash loop. If it makes sense to submit multiple distinct jobs, users must 
+submit a job array. Each job within the array can have an arbitrary multinode,
+multitask layout; the script will determine automatically what task it is 
+running in the super-array of tasks.
+
+It is the user's responsibility to ensure that the number of total tasks in the
+job array times the delta-per-task covers all the matrices that need to be
+computed. If there are extra tasks, they will not compute anything and waste
+cluster resources. In either case, an appropriate warning is issued. 
 """
-import sys
 import numpy as np
 from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, so_mcm, pspy_utils
-from itertools import product, combinations_with_replacement as cwr
+
+from itertools import product
 import os
+import argparse
+import warnings
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+parser.add_argument('--mode', type=str, default='compute',
+                    help='Whether to run script in recipe mode or compute mode, '
+                    'see script description string for more info')
+parser.add_argument('--delta-per-task', type=int, default=-1,
+                    help='The number of couplings to compute in a given task. '
+                    'If not a positive integer, then all the possible couplings')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
-
-# we have two modes: a recipe mode and a compute mode
-if sys.argv[2] == 'recipe':
-    mode = 'recipe'
-    assert len(sys.argv) == 3, \
-        f'If mode is recipe, cannot get more parameters than script name, ' + \
-        f'paramfile, and mode; but got {sys.argv}'
-else:
-    mode = 'compute'
 
 ewin_alms_dir = d['ewin_alms_dir']
 couplings_dir = d['couplings_dir']
 pspy_utils.create_directory(couplings_dir)
+
+mode = args.mode 
+
+log.info(f'Running in {mode} mode')
 
 if mode == 'recipe':
 
@@ -219,11 +243,36 @@ else:
 
     canonized_combos = np.load(f'{couplings_dir}/canonized_couplings_4pt_combos.npy', allow_pickle=True).item()
 
-    start, stop = 0, len(canonized_combos)
-    if len(sys.argv) == 4:
-        log.info(f'computing only the coupling matrices: ' + 
-                f'{int(sys.argv[2])}:{int(sys.argv[3])} of {len(canonized_combos)}')
-        start, stop = int(sys.argv[2]), int(sys.argv[3])
+    # get the indices of the couplings that will be computed in this job
+    delta_per_task = args.delta_per_task
+    if delta_per_task < 1:
+        start = 0
+        stop = len(canonized_combos)
+    else:
+        job_array_idx = os.environ.get('SLURM_ARRAY_TASK_ID', 0)
+        njob_array_idxs = os.environ.get('SLURM_ARRAY_TASK_COUNT', 1)
+        job_task_idx = os.environ.get('SLURM_PROCID', 0)
+        njob_task_idxs = os.environ.get('SLURM_NPROCS', 1)
+
+        total_tasks = njob_array_idxs * njob_task_idxs * delta_per_task
+        if total_tasks < len(canonized_combos):
+            warnings.warn(f'The total number of couplings computed across all tasks is {total_tasks} '
+                          f'but the total number of couplings that need to be computed is '
+                          f'{len(canonized_combos)}. {len(canonized_combos) - total_tasks} '
+                          f'couplings will not be computed')
+        elif total_tasks > len(canonized_combos):
+            warnings.warn(f'The total number of couplings computed across all tasks is {total_tasks} '
+                          f'but the total number of couplings that need to be computed is '
+                          f'{len(canonized_combos)}. {total_tasks - len(canonized_combos)} '
+                          f'tasks will not perform any computation and will waste resources')
+        
+        start = (njob_task_idxs * job_array_idx + job_task_idx) * delta_per_task
+        stop = (njob_task_idxs * job_array_idx + job_task_idx + 1) * delta_per_task
+
+        start = min(start, len(canonized_combos))
+        stop = min(stop, len(canonized_combos))
+        
+        log.info(f'Computing only the coupling matrices: {start}:{stop} of {len(canonized_combos)}')
 
     # # main loop, we will compute the actual matrices here
     # # iterate over all pairs/orders of low-level fields
@@ -240,7 +289,7 @@ else:
             w1 = np.load(f'{ewin_alms_dir}/{ewin_name1}x{ewin_name2}_alm.npy')
             w2 = np.load(f'{ewin_alms_dir}/{ewin_name3}x{ewin_name4}_alm.npy')
             coupling = so_mcm.coupling_block(spintype, win1=w1, win2=w2,
-                                            lmax=lmax_pseudocov, input_alm=True,
-                                            l_exact=l_exact, l_toep=l_toep,
-                                            l_band=l_band)
-            np.save(coupling_fn, coupling.astype(dtype_pseudocov, copy=False)) 
+                                             lmax=lmax_pseudocov, input_alm=True,
+                                             l_exact=l_exact, l_toep=l_toep,
+                                             l_band=l_band)
+            np.save(coupling_fn, coupling.astype(dtype_pseudocov, copy=False))  

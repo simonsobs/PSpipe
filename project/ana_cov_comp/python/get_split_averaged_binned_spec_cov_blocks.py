@@ -1,19 +1,41 @@
-"""
+description = """
 This script stitches together the previously produced lowest-level split-
 averaged covariance blocks (at the pseudospectrum level) into array-level
 powerspectrum blocks. To do so it sandwiches two pseudo-to-spec operators
 that capture the PSpipe, including mode-decoupling, binning (with possible)
 Dl factors, and kspace deconvolving.
+
+Users may submit this script using any multinode, multitask
+call to sbatch, but they must do so in one call to sbatch, not multiple as in 
+a bash loop. If it makes sense to submit multiple distinct jobs, users must 
+submit a job array. Each job within the array can have an arbitrary multinode,
+multitask layout; the script will determine automatically what task it is 
+running in the super-array of tasks.
+
+It is the user's responsibility to ensure that the number of total tasks in the
+job array times the delta-per-task covers all the blocks that need to be
+computed. If there are extra tasks, they will not compute anything and waste
+cluster resources. In either case, an appropriate warning is issued. 
 """
-import sys
 import numpy as np
 from pspipe_utils import log, pspipe_list, covariance as psc
 from pspy import so_dict, pspy_utils
 from itertools import product
 import os
+import argparse
+import warnings
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+parser.add_argument('--delta-per-task', type=int, default=-1,
+                    help='The number of blocks to compute in a given task. '
+                    'If not a positive integer, then all the possible blocks')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 
@@ -71,11 +93,36 @@ for sv_ar_chan1, sv_ar_chan2, sv_ar_chan3, sv_ar_chan4 in product(sv_ar_chans, r
 
 np.save(f'{covariances_dir}/canonized_split_averaged_binned_spec_cov_combos.npy', canonized_combos)
 
-start, stop = 0, len(canonized_combos)
-if len(sys.argv) == 4:
-    log.info(f'computing only the covariance blocks: ' + 
-             f'{int(sys.argv[2])}:{int(sys.argv[3])} of {len(canonized_combos)}')
-    start, stop = int(sys.argv[2]), int(sys.argv[3])
+# get the indices of the blocks that will be computed in this job
+delta_per_task = args.delta_per_task
+if delta_per_task < 1:
+    start = 0
+    stop = len(canonized_combos)
+else:
+    job_array_idx = os.environ.get('SLURM_ARRAY_TASK_ID', 0)
+    njob_array_idxs = os.environ.get('SLURM_ARRAY_TASK_COUNT', 1)
+    job_task_idx = os.environ.get('SLURM_PROCID', 0)
+    njob_task_idxs = os.environ.get('SLURM_NPROCS', 1)
+
+    total_tasks = njob_array_idxs * njob_task_idxs * delta_per_task
+    if total_tasks < len(canonized_combos):
+        warnings.warn(f'The total number of blocks computed across all tasks is {total_tasks} '
+                        f'but the total number of blocks that need to be computed is '
+                        f'{len(canonized_combos)}. {len(canonized_combos) - total_tasks} '
+                        f'blocks will not be computed')
+    elif total_tasks > len(canonized_combos):
+        warnings.warn(f'The total number of blocks computed across all tasks is {total_tasks} '
+                        f'but the total number of blocks that need to be computed is '
+                        f'{len(canonized_combos)}. {total_tasks - len(canonized_combos)} '
+                        f'tasks will not perform any computation and will waste resources')
+    
+    start = (njob_task_idxs * job_array_idx + job_task_idx) * delta_per_task
+    stop = (njob_task_idxs * job_array_idx + job_task_idx + 1) * delta_per_task
+
+    start = min(start, len(canonized_combos))
+    stop = min(stop, len(canonized_combos))
+    
+    log.info(f'Computing only the blocks: {start}:{stop} of {len(canonized_combos)}')
 
 # # main loop, we will stitch all pols together here
 # # iterate over all pairs/orders of channels

@@ -1,4 +1,4 @@
-"""
+description = """
 So far we have produced the covariance matrix of the measured pseudospectra, 
 but we want the covariance matrix of the power spectra. The power spectra are
 (mostly) equivalent to a linear operator acting on the measured pseudospectra.
@@ -6,17 +6,26 @@ Thus, if this operator is F, and the pseudocovariance block is P, then the
 power spectrum covariance block is F @ P @ F.T. This script produces F
 from other PSpipe products. It includes: mode-decoupling, binning (with possible)
 Dl factors, and kspace deconvolving.
+
+It is short enough that it should always run in a one-shot job, so it 
+accepts no arguments other than paramfile.
 """
-import sys
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import block_diag
 from pspy import so_map, so_dict, pspy_utils, so_mcm
 from pspipe_utils import log, pspipe_list, kspace, covariance as psc
+import os
+import argparse
+
+parser = argparse.ArgumentParser(description=description,
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('paramfile', type=str,
+                    help='Filename (full or relative path) of paramfile to use')
+args = parser.parse_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 
@@ -57,7 +66,7 @@ for spec1 in spec_list:
     M20 = Pbl @ M_inv['spin2xspin0']
     M22 = Pbl_pol @ M_inv['spin2xspin2']
     
-    assert spectra == ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"] # FIXME
+    assert spectra == ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"] # FIXME: block order assume spectra order
     Pbl_Minv = block_diag(M00, M02, M02, M20, M20, M22)
 
     # get the inv_kspace matrix for this array cross

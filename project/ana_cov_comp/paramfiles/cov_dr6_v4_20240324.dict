@@ -66,26 +66,26 @@ use_toeplitz_cov = True
 cov_T_E_only = False
 
 # window parameters
-ps_mask_dr6_pa4_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa4_f220 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa5_f090 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa5_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa6_f090 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
-ps_mask_dr6_pa6_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust_proj.fits'
+ps_mask_dr6_pa4_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa4_f220 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa5_f090 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa5_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa6_f090 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
+ps_mask_dr6_pa6_f150 = data_dir + 'masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_5.0_monster_dust.fits'
 
-gal_mask_dr6_pa4_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa4_f220 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa5_f090 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa5_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa6_f090 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
-gal_mask_dr6_pa6_f150 = data_dir + "masks/mask_galactic_equatorial_car_halfarcmin_pixelmatch_proj.fits"
+gal_mask_dr6_pa4_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa4_f220 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa5_f090 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa5_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa6_f090 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+gal_mask_dr6_pa6_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
 
-coord_mask_dr6_pa4_f150 = None
-coord_mask_dr6_pa4_f220 = None
-coord_mask_dr6_pa5_f090 = None
-coord_mask_dr6_pa5_f150 = None
-coord_mask_dr6_pa6_f090 = None
-coord_mask_dr6_pa6_f150 = None
+extra_mask_dr6_pa4_f150 = data_dir + "masks/act_xtra_mask_dr6_pa4_f150.fits"
+extra_mask_dr6_pa4_f220 = data_dir + "masks/act_xtra_mask_dr6_pa4_f220.fits"
+extra_mask_dr6_pa5_f090 = data_dir + "masks/act_xtra_mask_dr6_pa5_f090.fits"
+extra_mask_dr6_pa5_f150 = data_dir + "masks/act_xtra_mask_dr6_pa5_f150.fits"
+extra_mask_dr6_pa6_f090 = data_dir + "masks/act_xtra_mask_dr6_pa6_f090.fits"
+extra_mask_dr6_pa6_f150 = data_dir + "masks/act_xtra_mask_dr6_pa6_f150.fits"
 
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2

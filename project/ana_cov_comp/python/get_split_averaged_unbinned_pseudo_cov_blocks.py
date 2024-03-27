@@ -39,7 +39,7 @@ parser.add_argument('paramfile', type=str,
 parser.add_argument('--mode', type=str, default='compute',
                     help='Whether to run script in recipe mode or compute mode, '
                     'see script description string for more info')
-parser.add_argument('--group-idxs', type=int, nargs='*', required=True,
+parser.add_argument('--group-idxs', type=int, nargs='*', default=None,
                     help='The indices into the recipe of the groups that will be '
                     'run in this job. Note, each instance of this script will '
                     'only run one of these groups; the item out of the group-idxs '
@@ -190,7 +190,9 @@ else:
     recipe = np.load(f'{covariances_dir}/canonized_split_averaged_unbinned_pseudo_cov_blocks_recipe.npz')
     ngroups = len(recipe.files) - 2 # 2 files are not group indices
     
-    group_idx = args.group_idxs[os.environ.get('SLURM_PROCID', 0)]
+    assert args.group_idxs is not None, \
+        'Must supply group_idxs argument, not None'
+    group_idx = args.group_idxs[int(os.environ.get('SLURM_PROCID', 0))]
 
     group_idx = min(group_idx, ngroups)
 

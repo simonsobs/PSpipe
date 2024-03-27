@@ -68,7 +68,7 @@ parser.add_argument('--slurm-args', type=str, default=None,
                     'this script, not here! Also, arguments related to --ntasks, --job-name, and '
                     '--mem will be provided automatically by the script, so do not supply '
                     'them here! Examples of arguments that should go here are, e.g., '
-                    '--time, --dependency, --constraint, --account, --partition etc.')
+                    '--time, --dependency, --constraint, --account, --queue etc.')
 args = parser.parse_args()
 
 d = so_dict.so_dict()

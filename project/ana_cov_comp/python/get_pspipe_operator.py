@@ -96,5 +96,5 @@ for spec1 in spec_list:
     plt.imshow(np.log(np.abs(Finv_Pbl_Minv[:, ::4])), aspect=25)
     plt.colorbar()
     plt.title(f'Finv_Pbl_Minv {spec1}')
-    plt.savefig(f'Finv_Pbl_Minv_{spec1}', bbox_inches='tight')
+    plt.savefig(f'{plot_dir}/Finv_Pbl_Minv_{spec1}', bbox_inches='tight')
     plt.close()

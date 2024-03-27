@@ -75,10 +75,10 @@ if delta_per_task < 1:
     start = 0
     stop = num_tf_sims
 else:
-    job_array_idx = os.environ.get('SLURM_ARRAY_TASK_ID', 0)
-    njob_array_idxs = os.environ.get('SLURM_ARRAY_TASK_COUNT', 1)
-    job_task_idx = os.environ.get('SLURM_PROCID', 0)
-    njob_task_idxs = os.environ.get('SLURM_NPROCS', 1)
+    job_array_idx = int(os.environ.get('SLURM_ARRAY_TASK_ID', 0))
+    njob_array_idxs = int(os.environ.get('SLURM_ARRAY_TASK_COUNT', 1))
+    job_task_idx = int(os.environ.get('SLURM_PROCID', 0))
+    njob_task_idxs = int(os.environ.get('SLURM_NPROCS', 1))
 
     total_tasks = njob_array_idxs * njob_task_idxs * delta_per_task
     if total_tasks < num_tf_sims:

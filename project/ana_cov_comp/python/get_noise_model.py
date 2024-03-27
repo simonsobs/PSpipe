@@ -77,13 +77,13 @@ for sv1 in sv2arrs2chans:
                     else:
                         raise ValueError(f'{field_info=} is not unique')
                     
-                    ewin_info_s = psc.get_ewin_info_from_field_info(field_info, d, mode='w', return_paths_ops=True)
+                    ewin_info_s = psc.get_ewin_info_from_field_info(field_info, d, mode='w')
                     if ewin_info_s not in ewin_infos:
                         ewin_infos.append(ewin_info_s)
                     else:
                         pass
 
-                    ewin_info_n = psc.get_ewin_info_from_field_info(field_info, d, mode='ws', extra='sqrt_pixar', return_paths_ops=True)
+                    ewin_info_n = psc.get_ewin_info_from_field_info(field_info, d, mode='ws', extra='sqrt_pixar')
                     if ewin_info_n not in ewin_infos:
                         ewin_infos.append(ewin_info_n)
                     else:
@@ -128,8 +128,8 @@ for sv1 in sv2arrs2chans:
         # we are assuming:
         # - noise is uncorrelated between splits within arrays
         nell = curvedsky.nalm2lmax(alms.shape[-1]) + 1
-        assert nell == lmax_pseudocov, \
-            f'Expected nell={lmax_pseudocov}, got {nell=}'
+        assert nell == lmax_pseudocov + 1, \
+            f'Expected nell={lmax_pseudocov + 1}, got {nell=}'
 
         signal_model = 0
         count = 0

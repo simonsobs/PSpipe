@@ -51,15 +51,11 @@ for sv in surveys:
         for i in range(nsplit[sv]):
             gamma[name, i], var[name, i] = {}, {}
             
-            leakage_file_TE = d[f"leakage_beam_{name}_TE"][i]
-            leakage_file_TB = d[f"leakage_beam_{name}_TB"][i]
-
-            log.info(f"Read leakage file for {sv} {ar} TE {i} : {leakage_file_TE}")
-            log.info(f"Read leakage file for {sv} {ar} TB {i} : {leakage_file_TB}")
+            leakage_file = d[f"leakage_beam_{name}"][i]
+            log.info(f"Read leakage file for {sv} {ar} {i} : {leakage_file}")
 
             l, gamma[name, i]["TE"], err_m_TE, gamma[name, i]["TB"], err_m_TB = leakage.read_leakage_model(leakage_file_dir,
-                                                                                                           leakage_file_TE,
-                                                                                                           leakage_file_TB,
+                                                                                                           leakage_file,
                                                                                                            lmax,
                                                                                                            lmin=2)
             log.info(gamma[name, i]["TB"])
@@ -70,13 +66,13 @@ for sv in surveys:
 
             id = np.where(l < lmax_for_plot)
             plt.subplot(2,1,1)
-            plt.errorbar(l[id], gamma[name, i]["TE"][id], np.sqrt(var[name, i]["TETE"][id]), label=f"{name}_{i}")
+            plt.errorbar(l[id], gamma[name, i]["TE"][id], label=f"{name}_{i}")
             plt.ylabel(r"$\gamma^{TE}_{\ell}$", fontsize=17)
             plt.legend()
             plt.subplot(2,1,2)
             plt.ylabel(r"$\gamma^{TB}_{\ell}$", fontsize=17)
             plt.xlabel(r"$\ell$", fontsize=17)
-            plt.errorbar(l[id], gamma[name, i]["TB"][id], np.sqrt(var[name, i]["TBTB"][id]), label=f"{name}_{i}")
+            plt.errorbar(l[id], gamma[name, i]["TB"][id], label=f"{name}_{i}")
         plt.legend()
         plt.savefig(f"{plot_dir}/beam_leakage_{sv}_{ar}_per_split.png", bbox_inches="tight")
         plt.clf()

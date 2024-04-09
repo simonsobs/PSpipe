@@ -45,6 +45,7 @@ for sv in surveys:
     arrays = d[f"arrays_{sv}"]
     for ar in arrays:
         name = f"{sv}_{ar}"
+        pol_eff = d[f"pol_eff_{name}"]
         
         plt.figure(figsize=(12, 8))
 
@@ -61,7 +62,8 @@ for sv in surveys:
                                                                                                            leakage_file_TE,
                                                                                                            leakage_file_TB,
                                                                                                            lmax,
-                                                                                                           lmin=2)
+                                                                                                           lmin=2,
+                                                                                                           pol_eff=pol_eff)
             log.info(gamma[name, i]["TB"])
             
             var[name, i]["TETE"] = leakage.error_modes_to_cov(err_m_TE).diagonal()

@@ -36,12 +36,14 @@ x_ar_mc_cov = np.load(f"{cov_dir}/x_ar_mc_cov.npy")
 x_ar_beam_cov = np.load(f"{cov_dir}/x_ar_beam_cov.npy")
 x_ar_leakage_cov = np.load(f"{cov_dir}/x_ar_leakage_cov.npy")
 x_ar_non_gaussian_cov_radio = np.load(f"{cov_dir}/x_ar_non_gaussian_cov_radio.npy")
+x_ar_non_gaussian_cov_lensing =  np.load(f"{cov_dir}/x_ar_non_gaussian_cov_lensing.npy")
+
 
 x_ar_cov =  covariance.correct_analytical_cov_skew(x_ar_analytic_cov, x_ar_mc_cov, nkeep=nkeep)
 
 np.save(f"{cov_dir}/x_ar_final_cov_sim.npy", x_ar_cov)
 
-full_x_ar_cov = x_ar_cov + x_ar_beam_cov + x_ar_leakage_cov + x_ar_non_gaussian_cov_radio
+full_x_ar_cov = x_ar_cov + x_ar_beam_cov + x_ar_leakage_cov + x_ar_non_gaussian_cov_radio + x_ar_non_gaussian_cov_lensing
 
 np.save(f"{cov_dir}/x_ar_final_cov_data.npy", full_x_ar_cov)
 
@@ -75,7 +77,7 @@ sub_x_ar_analytic_cov = x_ar_analytic_cov[np.ix_(all_indices, all_indices)]
 sub_x_ar_beam_cov = x_ar_beam_cov[np.ix_(all_indices, all_indices)]
 sub_x_ar_leakage_cov = x_ar_leakage_cov[np.ix_(all_indices, all_indices)]
 sub_x_ar_non_gaussian_cov_radio = x_ar_non_gaussian_cov_radio[np.ix_(all_indices, all_indices)]
-
+sub_x_ar_non_gaussian_cov_lensing = x_ar_non_gaussian_cov_lensing[np.ix_(all_indices, all_indices)]
 
 log.info(f"test S+N cov + beam cov + leakage cov")
 
@@ -128,6 +130,8 @@ plt.title(r"$\Sigma^{\rm comp}/\Sigma^{\rm tot}$", fontsize=22)
 plt.plot(sub_x_ar_leakage_cov.diagonal()/sub_full_x_ar_cov.diagonal(), label="leakage cov / total cov")
 plt.plot(sub_x_ar_beam_cov.diagonal()/sub_full_x_ar_cov.diagonal(), label="beam cov / total cov")
 plt.plot(sub_x_ar_non_gaussian_cov_radio.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian radio cov / total cov")
+plt.plot(sub_x_ar_non_gaussian_cov_lensing.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian lensing/ total cov")
+
 plt.xticks(label_loc, name_list, rotation=90)
 plt.legend(fontsize=18)
 plt.tight_layout()

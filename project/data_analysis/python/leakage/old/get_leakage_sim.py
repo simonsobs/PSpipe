@@ -44,17 +44,14 @@ for sv in surveys:
     for ar in arrays:
     
         name = f"{sv}_{ar}"
-        pol_eff = d[f"pol_eff_{name}"]
-
+        
         log.info(f"reading leakage info {name}")
 
         gamma[name], err_m[name], var[name] = {}, {}, {}
         l, gamma[name]["TE"], err_m[name]["TE"], gamma[name]["TB"], err_m[name]["TB"] = leakage.read_leakage_model(leakage_file_dir,
-                                                                                                                   d[f"leakage_beam_{name}_TE"][0],
-                                                                                                                   d[f"leakage_beam_{name}_TB"][0],
+                                                                                                                   d[f"leakage_beam_{name}"][0],
                                                                                                                    lmax,
-                                                                                                                   lmin=2,
-                                                                                                                   pol_eff=pol_eff)
+                                                                                                                   lmin=2)
 
         cov = {}
         cov["TETE"] = leakage.error_modes_to_cov(err_m[name]["TE"])

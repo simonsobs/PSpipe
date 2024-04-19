@@ -110,16 +110,16 @@ Requirements
 
 Running the dr6 main analysis
 ------------------
-To run the main dr6 analysis follow the instruction in `dr6 <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6.rst/>`_
+To run the main dr6 analysis follow the instructions in `dr6 <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6.rst/>`_
 
 Running the dr6xPlanck pipeline
 ------------------
-To run the dr6xPlanck analysis follow the instruction in `dr6xplanck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6xplanck.rst/>`_
+To run the dr6xPlanck analysis follow the instructions in `dr6xplanck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6xplanck.rst/>`_
+
+Estimation of the dust
+------------------
+To estimate the dust in the dr6 patch we use Planck 353 GHz maps, follow the instructions in `dust  <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dust.rst/>`_
 
 Running our reproduction of the Planck pipeline
 ------------------
-To run a reproduction of the Planck official result follow the instruction in `planck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/planck.rst/>`_
-
-kspace filter TF and aberration correction
-------------------
-Some extra instruction to compute the kspace filter tranfer function and the aberration correction follow the instruction in `planck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/xtra.rst/>`_
+To run a reproduction of the Planck official result follow the instructions in `planck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/planck.rst/>`_

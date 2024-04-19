@@ -1,5 +1,6 @@
 surveys = ["Planck"]
 arrays_Planck = ["f100", "f143", "f217"]
+planck_version = "npipe"
 
 data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
 npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
@@ -33,6 +34,14 @@ n_splits_Planck = 2
 maps_Planck_f100 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_100_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_100_map.fits']
 maps_Planck_f143 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_143_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_143_map.fits']
 maps_Planck_f217 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_217_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_217_map.fits']
+
+cal_Planck_f100 = 1 # only used in the simulation script where the uk->K conv is already done by default
+cal_Planck_f143 = 1 #
+cal_Planck_f217 = 1 #
+pol_eff_Planck_f100 = 1. #
+pol_eff_Planck_f143 = 1. #
+pol_eff_Planck_f217 = 1. #
+
 
 cal_Planck_f100_per_split = [10**6, 10**6]
 cal_Planck_f143_per_split = [10**6, 10**6]
@@ -77,6 +86,9 @@ window_pol_Planck_f217_per_split =[win_dir + "COM_Mask_Likelihood-polarization-2
 
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
+
+
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
 fg_params = {"a_tSZ": 3.30, "a_kSZ": 1.60, "a_p": 6.90, "beta_p": 2.08, "a_c": 4.90, "beta_c": 2.20, "a_s": 3.10, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}

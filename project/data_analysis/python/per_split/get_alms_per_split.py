@@ -100,6 +100,8 @@ for task in subtasks:
 
         if d["remove_mean"] == True:
             split = split.subtract_mean(window_tuple)
+        if d["remove_mono_dipole"] == True:
+            split.subtract_mono_dipole(window_tuple)
 
         master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax)
         np.save(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy", master_alms)

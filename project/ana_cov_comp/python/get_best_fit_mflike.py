@@ -51,7 +51,7 @@ fg_norm = d["fg_norm"]
 fg_params = d["fg_params"]
 fg_components = d["fg_components"]
 
-passbands = {}
+passbands, band_shift_dict = {}, {}
 do_bandpass_integration = d["do_bandpass_integration"]
 
 if do_bandpass_integration:
@@ -69,10 +69,13 @@ for sv, ar in zip(sv_list, ar_list):
         nu_ghz, pb = np.array([freq_info["freq_tag"]]), np.array([1.])
 
     passbands[f"{sv}_{ar}"] = [nu_ghz, pb]
+    band_shift_dict[f"bandint_shift_{sv}_{ar}"] = d[f"bandpass_shift_{sv}_{ar}"]
+    log.info(f"bandpass shift: {sv} {ar} {band_shift_dict[f'bandint_shift_{sv}_{ar}']}")
 
 log.info("Getting foregrounds contribution")
+
 l_th = l_th[l_th < 10_000] # models only go up to 9_999
-fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components, fg_params, fg_norm)
+fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components, fg_params, fg_norm, band_shift_dict=band_shift_dict)
 
 for sv1, ar1 in zip(sv_list, ar_list):
     for sv2, ar2 in zip(sv_list, ar_list):

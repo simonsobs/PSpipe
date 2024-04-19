@@ -213,6 +213,13 @@ fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
 fg_params = {"a_tSZ": 2.97135917, "a_kSZ": 1.60, "a_p": 7.6142249, "beta_p": 2.2, "a_c": 2.75493343, "beta_c": 2.20, "a_s": 3.69978282, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
 
+bandpass_shift_dr6_pa4_f220 = 0
+bandpass_shift_dr6_pa4_f220 = 0 # 11.095222
+bandpass_shift_dr6_pa5_f090 = 0 # -0.21607938
+bandpass_shift_dr6_pa5_f150 = 0 # -0.4350145
+bandpass_shift_dr6_pa6_f090 = 0 # 0.23238833
+bandpass_shift_dr6_pa6_f150 = 0 # 0.38983707
+
 # sim
 sim_spectra_dir = data_dir + 'sim_spectra'
 

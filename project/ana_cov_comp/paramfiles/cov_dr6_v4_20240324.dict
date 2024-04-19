@@ -214,12 +214,16 @@ fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['
 fg_params = {"a_tSZ": 2.97135917, "a_kSZ": 1.60, "a_p": 7.6142249, "beta_p": 2.2, "a_c": 2.75493343, "beta_c": 2.20, "a_s": 3.69978282, "a_gtt": 8.83,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.43, "a_gtb": 0.012, "a_gee": 0.165,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0}
 
 # sim
+sim_spectra_dir = data_dir + 'sim_spectra'
+
+seed_sims = True
 iStart = 0
-iStop = 39
+iStop = 1599
 sim_alm_dtype = "complex64"
-read_noise_alms_from_disk = False
-noise_sim_type = "fdw"
-noise_model_parameters = {"downgrade": 4, "mask_est_name": "dr6v3_20220316_baseline_union_mask", "mask_obs_name": "dr6v3_xlink_union_mask_0.001", "union_sources": "regular_20220316", "notes": "20220619"}
+noise_sim_type_pa4 = 'tile_cmbmask'
+noise_sim_type_pa5 = 'tile_cmbmask'
+noise_sim_type_pa6 = 'tile_cmbmask_ivfwhm2'
+lmax_noise_sim = 10800
 
 # plot
 plot_dir = data_dir + 'plots'

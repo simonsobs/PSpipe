@@ -156,7 +156,7 @@ for i in range(start, stop):
 
                 log.info(f'Loading {pseudo_cov_fn}')
                 pseudo_cov[ridx*(lmax - 2):(ridx+1)*(lmax - 2), cidx*(lmax - 2):(cidx+1)*(lmax - 2)] = \
-                    np.load(pseudo_cov_fn)[2:lmax, 2:lmax] # NOTE: assumes 2:lmax ordering in spectra!
+                    np.load(pseudo_cov_fn)[2:lmax, 2:lmax] # NOTE: assumes 2:lmax ordering in PSpipe powerspectra!
 
         Fij_fn = f"{pspipe_ops_dir}/Finv_Pbl_Minv_{'_'.join(sv_ar_chani)}x{'_'.join(sv_ar_chanj)}.npy"
         log.info(f'Loading {Fij_fn}')

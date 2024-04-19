@@ -212,9 +212,7 @@ if mode == 'recipe':
                 ewin_infos
                 ) 
 
-            for spintype in pols2spintypes[(pol1, pol2, pol3, pol4)]:
-                coupling_fn = f'{couplings_dir}/{ewin_name1}x{ewin_name2}x{ewin_name3}x{ewin_name4}_{psc.spintypes2fntags[spintype]}_coupling.npy'
-                
+            for spintype in pols2spintypes[(pol1, pol2, pol3, pol4)]:                
                 # if we haven't yet gotten to this canonized window pair, keep track of
                 # the fields, ensure we haven't calculated the coupling and calculate
                 # the coupling

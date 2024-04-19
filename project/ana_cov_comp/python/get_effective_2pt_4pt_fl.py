@@ -135,8 +135,7 @@ if apply_kspace_filter:
             flm_2pt = np.zeros(ainfo.nelem, dtype=np.float64) # double prec result
             # flm_4pt = np.zeros(ainfo.nelem, dtype=np.float64)
             for i in range(num_flm_sims):
-                eta = utils.concurrent_normal(size=ainfo.nelem, scale=1/np.sqrt(2), seed=[0, i], dtype=np.float32, complex=True) # single prec sims
-                eta[..., :ainfo.lmax + 1] *= np.sqrt(2) # respect reality condition of m=0 
+                eta = utils.rand_alm_white(ainfo, seed=[0, i], dtype=np.float32, m_major=False) # single prec sims
                 eta = curvedsky.alm2map(eta, enmap.zeros(full_shape, full_wcs), ainfo=ainfo, method='cyl')
                 
                 eta = utils.rfft(eta, normalize='backward')

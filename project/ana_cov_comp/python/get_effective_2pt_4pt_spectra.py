@@ -181,8 +181,7 @@ if apply_kspace_filter:
             for i in range(start, stop):
                 fn = f'{filters_dir}/{sv1}_{pol}_filt_masked_spec{i}.npy'
                 if not os.path.isfile(fn):
-                    eta = utils.concurrent_normal(size=ainfo.nelem, scale=1/np.sqrt(2), seed=[p+1, i], dtype=np.float32, complex=True) # different than flm seed. single prec sims
-                    eta[..., :ainfo.lmax + 1] *= np.sqrt(2) # respect reality condition of m=0 
+                    eta = utils.rand_alm_white(ainfo, seed=[p+1, i], dtype=np.float32, m_major=False) # different than flm seed. single prec sims
                     eta = curvedsky.almxfl(eta, ps**0.5, ainfo)
                     eta = curvedsky.alm2map(eta, enmap.zeros(mask.shape, mask.wcs), ainfo=ainfo, method='cyl')
                     eta = utils.concurrent_op(np.multiply, w_k, eta, flatten_axes=[-2, -1])

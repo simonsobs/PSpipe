@@ -60,7 +60,7 @@ The first few of these products either have no dependencies, or depend only on t
     - command: `sbatch --mem 4G --cpus-per-task 1 --time 5:00 --job-name get_4pt_coupling_matrices_recipe slurm/1dellanode.slurm python ana_cov_comp/python/get_4pt_coupling_matrices.py ana_cov_comp/paramfiles/myparamfile.dict --mode recipe`
 10. Calculate the actual "four point" couplings:
     - depends on: 8, 9
-    - command: `sbatch --mem 16G --cpus-per-task 20 --time 62:00 --job-name get_2pt_coupling_matrices --array 0-23 slurm/1dellanode.slurm python ana_cov_comp/python/get_4pt_coupling_matrices.py ana_cov_comp/paramfiles/myparamfile.dict --delta-per-task 120`
+    - command: `sbatch --mem 16G --cpus-per-task 20 --time 62:00 --job-name get_4pt_coupling_matrices --array 0-23 slurm/1dellanode.slurm python ana_cov_comp/python/get_4pt_coupling_matrices.py ana_cov_comp/paramfiles/myparamfile.dict --delta-per-task 120`
 11. From the "two point" couplings, we do some final steps to compute mode coupling matrices and their inverses, e.g., grouping polarization coupling matrices into irreducible EB, BE blocks:
     - depends on: 7, 8
     - command: `sbatch --mem 24G --cpus-per-task 20 --time 62:00 --job-name get_mcms_and_mcm_invs slurm/1dellanode.slurm python ana_cov_comp/python/get_mcms_and_mcm_invs.py ana_cov_comp/paramfiles/myparamfile.dict`

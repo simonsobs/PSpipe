@@ -7,9 +7,9 @@ These instructions are specific to generating semi-analytic covariance matrices,
 # Setup
 1. Install `PSpipe` dependencies in an environment
 2. Install `PSpipe` in a directory on your system
-3. Add or modify a slurm script in the `ana_cov_comp/slurm` directory:
+3. Add or modify a slurm script in the `PSpipe/project/ana_cov_comp/slurm` directory:
     - Add code that will activate your `PSpipe` environment from step 1 in the indicated block
-    - Add code that will change into your `PSpipe/project/ana_cov_comp` directory from step 2 in the indicated block
+    - Add code that will change into your `PSpipe/project` directory from step 2 in the indicated block
     - Add any other desired slurm magic, e.g. email or redirecting slurm out files
 4. Make a directory on your system for a given paramfile input and output (i.e., a given pipeline run), called the `data_dir` 
     - In a clean workspace, this should be specific to a given paramfile
@@ -34,7 +34,7 @@ are only generating a covariance matrix, you will need to run them now. They may
 1. We need map-space window functions to calculate coupling matrices: 
     - command: `python data_analysis/python/get_window_dr6.py data_analysis/paramfiles/myparamfile.dict`
 2. The measurements of the data alms are our only way to form the frequency-space noise model, i.e., noise power spectra:
-    - *command: `sbatch --mem 48G --cpus-per-task 10 --time 62:00 --job-name get_alms ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_alms.py ana_cov_comp/paramfiles/myparamfile.dict`
+    - *command: `sbatch --mem 48G --cpus-per-task 10 --time 62:00 --job-name get_alms /full/path/to/ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_alms.py ana_cov_comp/paramfiles/myparamfile.dict`
     - *Note until ana_cov_comp is merged into data_analysis project, we need to run the ana_cov_comp version of `get_alms.py`. In particular, this must be run inside the `data_dir` so that it creates the `alms` directory inside the `data_dir` (for compatibility with data_analysis, the `alms` directory is defined relative to the script, rather than absolutely via the paramfile.) One might need to modify their slurm template for this job only to achieve this.
 3. The next three scripts construct most of the linear operator that maps measured pseudospectra into debiased power spectra. This linear operator naturally enters the covariance calculation. First we get the mode-coupling + de-beaming + binning matrix:
     - command: `sbatch --mem 64G --cpus-per-task 20 --time 120:00 --job-name get_mcm_and_bbl ana_cov_comp/slurm/1dellanode.slurm python data_analysis/python/get_mcm_and_bbl.py ana_cov_comp/paramfiles/myparamfile.dict`
@@ -80,14 +80,14 @@ The first few of these products either have no dependencies, or depend only on t
     - command: `sbatch --mem 16G --cpus-per-task 1 --time 30:00 --job-name get_pseudosignal ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_pseudosignal.py ana_cov_comp/paramfiles/myparamfile.dict`
 17. We need noise power spectra. These must be measured from the data:
     - depends on: 2, 11, 14
-    - command: `sbatch --mem 64G --cpus-per-task 5 --time 30:00 --job-name get_noise_model ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_noise_model.py ana_cov_comp/paramfiles/myparamfile.dict`
+    - command: `sbatch --mem 80G --cpus-per-task 5 --time 30:00 --job-name get_noise_model ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_noise_model.py ana_cov_comp/paramfiles/myparamfile.dict`
 18. We need to transform the noise power spectra into normalized pseudospectra, including the anisotropic correction:
     - depends on: 17
     - command: `sbatch --mem 16G --cpus-per-task 1 --time 30:00 --job-name get_pseudonoise ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_pseudonoise.py ana_cov_comp/paramfiles/myparamfile.dict`
 19. Combine the signal pseudospectra, the noise pseudospectra, and the "four point" couplings into unbinned pseudocovariance matrices. These matrices are averaged over split combinations in accordance with the pseudospectra-to-spectra pipeline. After averaging, they exist at the following low level: a combination of four fields, where each field is a survey, an array, a channel, and a polarization. To help manage computation, first we run the script in "recipe" mode, then we run an array of jobs in "compute" mode to actually calculate the pseudocovariance blocks. When calculating the recipe, we must indicate how many "groups" we want the recipe to target collecting covariance blocks into. Each "group" of blocks can run in parallel, so this is a problem of cluster resource optimization, e.g., the maximum number of cores allowed to run at once per user:
     - depends on: 9
     - command: `sbatch --mem 4G --cpus-per-task 1 --time 5:00 --job-name get_split_averaged_unbinned_pseudo_cov_blocks_recipe ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_split_averaged_unbinned_pseudo_cov_blocks.py ana_cov_comp/paramfiles/myparamfile.dict --mode recipe --target-ngroups 400`
-20. Once the recipe is complete, we can compute the actual pseudocovariance blocks. Because there are `<ngroups>` jobs, which might be large, and each job has differing resource requirements, we use a "meta" script to submit all the jobs. It is important to read the documentation of this script before submitting, especially in consideration of the cluster charges/priority, since that will affect the optimal submission arguments. It is highly recommended to run this script in `--dry-run` mode first:
+20. Once the recipe is complete, we can compute the actual pseudocovariance blocks. Because there are `<ngroups>` jobs, which might be large, and each job has differing resource requirements, we use a "meta" script to submit all the jobs. It is important to read the documentation of this script before submitting, especially in consideration of the cluster charges/priority, since that will affect the optimal submission arguments. It is highly recommended to run this script in `--dry-run` mode first. Note, this command directly runs the script; it is not an `sbatch` call. Therefore, the user's command-line must itself be in the `PSpipe` environment before running:
     - depends on: 10, 16, 18, 19
     - command: `python ana_cov_comp/python/get_split_averaged_unbinned_pseudo_cov_blocks_submit.py ana_cov_comp/paramfiles/myparamfile.dict --dry-run --slurm-template ana_cov_comp/slurm/1dellanode.slurm --max-mem-gb-per-single-node-job 370 --max-cpus-per-single-node-job 1 --cpus-per-task 1 --slurm-args '--time 2:00:00'`
     - command: `python ana_cov_comp/python/get_split_averaged_unbinned_pseudo_cov_blocks_submit.py ana_cov_comp/paramfiles/myparamfile.dict --slurm-template ana_cov_comp/slurm/1dellanode.slurm --max-mem-gb-per-single-node-job 370 --max-cpus-per-single-node-job 1 --cpus-per-task 1 --slurm-args '--time 2:00:00'`
@@ -99,5 +99,5 @@ The first few of these products either have no dependencies, or depend only on t
     - command: `sbatch --mem 64G --cpus-per-task 5 --time 62:00 --job-name get_split_averaged_binned_spec_cov_blocks --array 0-5 ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_split_averaged_binned_spec_cov_blocks.py ana_cov_comp/paramfiles/myparamfile.dict --delta-per-task 20`
 23. Now we complete the covariance matrix by stitching together all blocks in the preferred ordering:
     - depends on: 22
-    - *command: `sbatch --mem 8G --cpus-per-task 10 --time 5:00 --job-name get_xarrays_covmat ana_cov_comp/slurm/1dellanode.slurm python data_analysis/python/get_xarrays_covmat.py ana_cov_comp/paramfiles/myparamfile.dict`
+    - *command: `sbatch --mem 8G --cpus-per-task 10 --time 5:00 --job-name get_xarrays_covmat /full/path/to/ana_cov_comp/slurm/1dellanode.slurm python data_analysis/python/get_xarrays_covmat.py ana_cov_comp/paramfiles/myparamfile.dict`
     - *Note: This must be run inside the `data_dir` so that it finds the `covariances` directory inside the `data_dir` (for compatibility with data_analysis, the `covariances` directory is defined relative to the script, rather than absolutely via the paramfile.) One might need to modify their slurm template for this job only to achieve this.

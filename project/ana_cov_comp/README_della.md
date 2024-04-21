@@ -34,10 +34,10 @@ are only generating a covariance matrix, you will need to run them now. They may
 1. We need map-space window functions to calculate coupling matrices: 
     - command: `python data_analysis/python/get_window_dr6.py data_analysis/paramfiles/myparamfile.dict`
 2. The measurements of the data alms are our only way to form the frequency-space noise model, i.e., noise power spectra:
-    - *command: `sbatch --mem 48G --cpus-per-task 10 --time 62:00 --job-name get_alms /full/path/to/ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_alms.py ana_cov_comp/paramfiles/myparamfile.dict`
+    - *command: `sbatch --mem 48G --cpus-per-task 10 --time 62:00 --job-name get_alms /full/path/to/ana_cov_comp/slurm/1dellanode.slurm python /full/path/to/ana_cov_comp/python/get_alms.py /full/path/to/ana_cov_comp/paramfiles/myparamfile.dict`
     - *Note until ana_cov_comp is merged into data_analysis project, we need to run the ana_cov_comp version of `get_alms.py`. In particular, this must be run inside the `data_dir` so that it creates the `alms` directory inside the `data_dir` (for compatibility with data_analysis, the `alms` directory is defined relative to the script, rather than absolutely via the paramfile.) One might need to modify their slurm template for this job only to achieve this.
 3. The next three scripts construct most of the linear operator that maps measured pseudospectra into debiased power spectra. This linear operator naturally enters the covariance calculation. First we get the mode-coupling + de-beaming + binning matrix:
-    - command: `sbatch --mem 64G --cpus-per-task 20 --time 120:00 --job-name get_mcm_and_bbl ana_cov_comp/slurm/1dellanode.slurm python data_analysis/python/get_mcm_and_bbl.py ana_cov_comp/paramfiles/myparamfile.dict`
+    - command: `sbatch --mem 64G --cpus-per-task 20 --time 120:00 --job-name get_mcm_and_bbl /full/path/to/ana_cov_comp/slurm/1dellanode.slurm python /full/path/to/data_analysis/python/get_mcm_and_bbl.py /full/path/to/ana_cov_comp/paramfiles/myparamfile.dict`
     - *Same note as above regarding needing to modify the slurm template applies -- this needs to be run inside the data_dir.
 4. Then we need the sims for the correction to the kspace filter:
     - command: `python data_analysis/python/kspace/mc_get_kspace_tf_spectra.py ana_cov_comp/paramfiles/myparamfile.dict`
@@ -99,5 +99,5 @@ The first few of these products either have no dependencies, or depend only on t
     - command: `sbatch --mem 64G --cpus-per-task 5 --time 62:00 --job-name get_split_averaged_binned_spec_cov_blocks --array 0-5 ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/get_split_averaged_binned_spec_cov_blocks.py ana_cov_comp/paramfiles/myparamfile.dict --delta-per-task 20`
 23. Now we complete the covariance matrix by stitching together all blocks in the preferred ordering:
     - depends on: 22
-    - *command: `sbatch --mem 8G --cpus-per-task 10 --time 5:00 --job-name get_xarrays_covmat /full/path/to/ana_cov_comp/slurm/1dellanode.slurm python data_analysis/python/get_xarrays_covmat.py ana_cov_comp/paramfiles/myparamfile.dict`
+    - *command: `sbatch --mem 8G --cpus-per-task 10 --time 5:00 --job-name get_xarrays_covmat /full/path/to/ana_cov_comp/slurm/1dellanode.slurm python /full/path/to/data_analysis/python/get_xarrays_covmat.py /full/path/to/ana_cov_comp/paramfiles/myparamfile.dict`
     - *Note: This must be run inside the `data_dir` so that it finds the `covariances` directory inside the `data_dir` (for compatibility with data_analysis, the `covariances` directory is defined relative to the script, rather than absolutely via the paramfile.) One might need to modify their slurm template for this job only to achieve this.

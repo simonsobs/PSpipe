@@ -232,6 +232,9 @@ noise_sim_type_pa5 = 'tile_cmbmask'
 noise_sim_type_pa6 = 'tile_cmbmask_ivfwhm2'
 lmax_noise_sim = 10800
 
+spectra_cuts = {"dr6_pa4_f220": {'T': [975, lmax], 'P': [lmax, lmax]}, "dr6_pa5_f090": {'T': [975, lmax], 'P': [475, lmax]}, "dr6_pa5_f150": {'T': [775, lmax], 'P': [475, lmax]}, "dr6_pa6_f090": {'T': [975, lmax], 'P': [475, lmax]}, "dr6_pa6_f150": {'T': [575, lmax], 'P': [475, lmax]}}
+only_TT_map_set = ["dr6_pa4_f220"]
+
 # plot
 plot_dir = data_dir + 'plots'
 

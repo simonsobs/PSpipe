@@ -101,3 +101,14 @@ The first few of these products either have no dependencies, or depend only on t
     - depends on: 22
     - *command: `sbatch --mem 8G --cpus-per-task 10 --time 5:00 --job-name get_xarrays_covmat /full/path/to/ana_cov_comp/slurm/1dellanode.slurm python /full/path/to/data_analysis/python/get_xarrays_covmat.py /full/path/to/ana_cov_comp/paramfiles/myparamfile.dict`
     - *Note: This must be run inside the `data_dir` so that it finds the `covariances` directory inside the `data_dir` (for compatibility with data_analysis, the `covariances` directory is defined relative to the script, rather than absolutely via the paramfile.) One might need to modify their slurm template for this job only to achieve this.
+
+## Simulation-based Correction
+The above job steps produce a semi-analytic covariance matrix, i.e., using only a small number of simulations for the kspace filter correction. The final disconnected (Gaussian) covariance requires a suite of simulations to correct the semi-analytic matrix for the various approximations it makes. This occurs over three scripts which produce the simulations, compute Monte-Carlo (MC) covariance matrices from the simulations, and then use the MC covariance matrices to correct the semi-analytic matrix.
+
+24.
+25. We use the simulated spectra to compute MC covariance matrices. 
+    - depends on: 23, 24
+    - command: `sbatch --mem 8G --cpus-per-task 10 --time 15:00 --job-name mc_cov_analysis ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/montecarlo/mc_cov_analysis.py ana_cov_comp/paramfiles/myparamfile.dict`
+26. Finally, we use the MC covariance matrices to correct the semi-analytic covariance matrix. To do so, we rotate the MC covariance into the eigenbasis of the semi-analytic covariance matrix. We then assume that this new matrix is diagonal. This is tantamount to assuming that the MC covariance matrix shares its eigenbasis with the semi-analytic matrix and that the ratio of the eigenvalues are roughly constant. Then, we fit the diagonal in each spectrum block with a Gaussian process to smooth it. We then rotate the smoothed diagonal matrix back into the original basis.
+    - depends on: 25
+    - command: `sbatch --mem 8G --cpus-per-task 10 --time 5:00 --job-name get_mc_corrected_xarrays_covmat ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/montecarlo/get_mc_corrected_xarrays_covmat.py ana_cov_comp/paramfiles/myparamfile.dict`

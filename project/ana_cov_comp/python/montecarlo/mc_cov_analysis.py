@@ -17,11 +17,18 @@ from pixell import utils
 
 import os
 import argparse
+from itertools import permutations, product
 
 parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
+parser.add_argument('--anaflat', action='store_true',
+                    help='If analytical covariance exists, also make flattened '
+                    'version of monte-carlo covariance')
+parser.add_argument('--mode', type=str, default='signal_noise',
+                    help="Whether to compute the covariance of the 'signal_noise' "
+                    "spectra, the 'signal' spectra, or the 'noise' spectra")
 args = parser.parse_args()
 
 d = so_dict.so_dict()
@@ -39,8 +46,11 @@ covariances_dir = d['covariances_dir']
 pspy_utils.create_directory(covariances_dir)
 
 try:
-    ana_cov = np.load(os.path.join(covariances_dir, 'x_ar_analytic_cov.npy'))
-    inv_sqrt_ana_cov  = utils.eigpow(ana_cov, -0.5)
+    if args.anaflat:
+        ana_cov = np.load(os.path.join(covariances_dir, 'x_ar_analytic_cov.npy'))
+        inv_sqrt_ana_cov  = utils.eigpow(ana_cov, -0.5)
+    else:
+        ana_cov = None
 except FileNotFoundError:
     ana_cov = None
     log.info('No analytic cov, proceeding without it. Note, this means cannot '
@@ -73,20 +83,53 @@ log.info(f"we start by constructing block mc covariances")
 
 # do one pass to store all the simulated data vectors
 full_vec_list = []
-if ana_cov is not None:
+if ana_cov is not None and args.anaflat:
     full_vec_anaflat_list = []
 
 for iii in range(iStart, iStop + 1):
     if iii % 100 == 0:
         log.info(iii)
     spec_dict = {}
+
+    # load the sim
+    spec_name_cross_iii = f"{type}_all_sn_cross_%05d" % iii
+    ps_iii = np.load(os.path.join(sim_spec_dir, f'{spec_name_cross_iii}.npy'), allow_pickle=True).item()
+
     for sid1, name1 in enumerate(spec_list):
-        # load the sim and populate the spec_dict
-        na, nb = name1.split("x")
-        spec_name_cross_iii = f"{type}_{na}x{nb}_cross_%05d" % iii
-        lb, ps_iii = so_spectra.read_ps(os.path.join(sim_spec_dir, f'{spec_name_cross_iii}.dat'), spectra=spectra)
+        # before adding crosses, initialize with 0's
         for spec in modes_for_cov:
-            spec_dict[name1, spec] = ps_iii[spec]
+            spec_dict[name1, spec] = 0 
+
+        ni, nj = name1.split("x")
+        svi, arrayi = ni.split('_', maxsplit=1)
+        svj, arrayj = nj.split('_', maxsplit=1)
+
+        # if svi == svj, loop over split combos excl. autos, else include autos
+        nspliti = d[f'n_splits_{svi}']
+        nsplitj = d[f'n_splits_{svj}']
+
+        if svi == svj:
+            assert nspliti == nsplitj, \
+                f'{svi=} and {svj=} are equal but {nspliti=} and {nsplitj=} are not'
+            split_ij_iterator = list(permutations(range(nspliti), r=2))
+        else:
+            split_ij_iterator = list(product(range(nspliti), range(nsplitj)))
+
+        # load the sim and populate the spec_dict
+        for spec in modes_for_cov:
+            for si, sj in split_ij_iterator:
+                # this is C(s+n, s+n) = C(s, s) + C(s, n) + C(n, s) + C(n, n)
+                if args.mode in ('signal', 'signal_noise'):
+                    spec_dict[name1, spec] += ps_iii[(svi, arrayi, f'signal'), (svj, arrayj, f'signal')][spec]
+                
+                if args.mode == 'signal_noise':
+                    spec_dict[name1, spec] += ps_iii[(svi, arrayi, f'signal'), (svj, arrayj, f'noise_{sj}')][spec]
+                    spec_dict[name1, spec] += ps_iii[(svi, arrayi, f'noise_{si}'), (svj, arrayj, f'signal')][spec]
+                
+                if args.mode in ('signal_noise', 'noise'):
+                    spec_dict[name1, spec] += ps_iii[(svi, arrayi, f'noise_{si}'), (svj, arrayj, f'noise_{sj}')][spec]
+            
+            spec_dict[name1, spec] /= len(split_ij_iterator)
     
     # get full data vector for this sim, append to list
     full_vec_iii = covariance.spec_dict_to_full_vec(spec_dict, 
@@ -94,11 +137,11 @@ for iii in range(iStart, iStop + 1):
                                                     spectra_order=modes_for_cov,
                                                     remove_doublon=True)
     full_vec_list.append(full_vec_iii)
-    if ana_cov is not None:
+    if ana_cov is not None and args.anaflat:
         full_vec_anaflat_list.append(inv_sqrt_ana_cov @ full_vec_iii)
 
 mean_full_vec = np.mean(full_vec_list, axis=0)
-if ana_cov is not None:
+if ana_cov is not None and args.anaflat:
     mean_full_vec_anaflat = np.mean(full_vec_anaflat_list, axis=0)
 
 # in principle, we could get the mc_cov in the same pass as the data vectors,
@@ -106,7 +149,7 @@ if ana_cov is not None:
 # cleaner to get the mc_cov in this second pass
 mean_mc_cov = np.zeros((mean_full_vec.size, mean_full_vec.size))
 var_mc_cov = np.zeros((mean_full_vec.size, mean_full_vec.size))
-if ana_cov is not None:
+if ana_cov is not None and args.anaflat:
     mean_mc_cov_anaflat = np.zeros((mean_full_vec_anaflat.size, mean_full_vec_anaflat.size))
     var_mc_cov_anaflat = np.zeros((mean_full_vec_anaflat.size, mean_full_vec_anaflat.size)) 
 
@@ -122,7 +165,7 @@ for iii in range(iStart, iStop + 1):
 
     delta_vec_iii = full_vec_list[iii] - mean_full_vec
     add_term_to_mc_cov(mean_mc_cov, var_mc_cov, delta_vec_iii)
-    if ana_cov is not None:
+    if ana_cov is not None and args.anaflat:
         delta_vec_anaflat_iii = full_vec_anaflat_list[iii] - mean_full_vec_anaflat
         add_term_to_mc_cov(mean_mc_cov_anaflat, var_mc_cov_anaflat, delta_vec_anaflat_iii)
 
@@ -134,8 +177,14 @@ var_mc_cov = 1 / (iStop - iStart) * (var_mc_cov / (iStop + 1 - iStart) - mean_mc
 pspy_utils.is_symmetric(mean_mc_cov)
 pspy_utils.is_symmetric(var_mc_cov)
 
-np.save(os.path.join(covariances_dir, 'x_ar_mc_cov.npy'), mean_mc_cov)
-np.save(os.path.join(covariances_dir, 'var_x_ar_mc_cov.npy'), var_mc_cov)
+if args.mode == 'signal_noise':
+    fn = 'x_ar_mc_cov.npy'
+    var_fn = 'var_x_ar_mc_cov.npy'
+else:
+    fn = f'x_ar_mc_cov_{args.mode}.npy'
+    var_fn = f'var_x_ar_mc_cov_{args.mode}.npy'
+np.save(os.path.join(covariances_dir, fn), mean_mc_cov)
+np.save(os.path.join(covariances_dir, var_fn), var_mc_cov)
 
 # also save each block
 mean_mc_cov_dict = covariance.full_cov_to_cov_dict(mean_mc_cov,
@@ -147,7 +196,7 @@ var_mc_cov_dict = covariance.full_cov_to_cov_dict(var_mc_cov,
                                                   spectra_order=modes_for_cov,
                                                   remove_doublon=True)
 
-n_bins = len(ps_iii[spec]) # NOTE: assumes same for all individual measured ps
+n_bins = len(spec_dict[name1, spec]) # NOTE: assumes same for all individual measured ps
 for sid1, name1 in enumerate(spec_list):
     for sid2, name2 in enumerate(spec_list):
         if sid1 > sid2: continue
@@ -157,10 +206,16 @@ for sid1, name1 in enumerate(spec_list):
             for s2, spec2 in enumerate(modes_for_cov):
                 mean_mc_cov_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = mean_mc_cov_dict[name1, name2, spec1, spec2]
                 var_mc_cov_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = var_mc_cov_dict[name1, name2, spec1, spec2]
-        np.save(os.path.join(covariances_dir, f'mc_cov_{name1}_{name2}.npy'), mean_mc_cov_block)
-        np.save(os.path.join(covariances_dir, f'var_mc_cov_{name1}_{name2}.npy'), var_mc_cov_block)
+        if args.mode == 'signal_noise':
+            fn = f'mc_cov_{name1}_{name2}.npy'
+            var_fn = f'var_mc_cov_{name1}_{name2}.npy'
+        else:
+            fn = f'mc_cov_{name1}_{name2}_{args.mode}.npy'
+            var_fn = f'var_mc_cov_{name1}_{name2}_{args.mode}.npy'
+        np.save(os.path.join(covariances_dir, fn), mean_mc_cov_block)
+        np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_block)
 
-if ana_cov is not None:
+if ana_cov is not None and args.anaflat:
     # mean_mc_cov: includes Bessel's correction
     # var_mc_cov: includes Bessel's correction, and then the variance of the mean over sims
     mean_mc_cov_anaflat = mean_mc_cov_anaflat / (iStop - iStart) 
@@ -169,8 +224,14 @@ if ana_cov is not None:
     pspy_utils.is_symmetric(mean_mc_cov_anaflat)
     pspy_utils.is_symmetric(var_mc_cov_anaflat)
 
-    np.save(os.path.join(covariances_dir, 'x_ar_mc_cov_anaflat.npy'), mean_mc_cov_anaflat)
-    np.save(os.path.join(covariances_dir, 'var_x_ar_mc_cov_anaflat.npy'), var_mc_cov_anaflat)
+    if args.mode == 'signal_noise':
+        fn = 'x_ar_mc_cov_anaflat.npy'
+        var_fn = 'var_x_ar_mc_cov_anaflat.npy'
+    else:
+        fn = f'x_ar_mc_cov_anaflat_{args.mode}.npy'
+        var_fn = f'var_x_ar_mc_cov_anaflat_{args.mode}.npy'
+    np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat)
+    np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat)
 
     # also save each block
     mean_mc_cov_anaflat_dict = covariance.full_cov_to_cov_dict(mean_mc_cov_anaflat,
@@ -182,7 +243,7 @@ if ana_cov is not None:
                                                               spectra_order=modes_for_cov,
                                                               remove_doublon=True)
 
-    n_bins = len(ps_iii[spec]) # NOTE: assumes same for all individual measured ps
+    n_bins = len(spec_dict[name1, spec]) # NOTE: assumes same for all individual measured ps
     for sid1, name1 in enumerate(spec_list):
         for sid2, name2 in enumerate(spec_list):
             if sid1 > sid2: continue
@@ -192,5 +253,11 @@ if ana_cov is not None:
                 for s2, spec2 in enumerate(modes_for_cov):
                     mean_mc_cov_anaflat_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = mean_mc_cov_anaflat_dict[name1, name2, spec1, spec2]
                     var_mc_cov_anaflat_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = var_mc_cov_anaflat_dict[name1, name2, spec1, spec2]
-            np.save(os.path.join(covariances_dir, f'mc_cov_anaflat_{name1}_{name2}.npy'), mean_mc_cov_anaflat_block)
-            np.save(os.path.join(covariances_dir, f'var_mc_cov_anaflat_{name1}_{name2}.npy'), var_mc_cov_anaflat_block)
+            if args.mode == 'signal_noise':
+                fn = f'mc_cov_anaflat_{name1}_{name2}.npy'
+                var_fn = f'var_mc_cov_anaflat_{name1}_{name2}.npy'
+            else:
+                fn = f'mc_cov_anaflat_{name1}_{name2}_{args.mode}.npy'
+                var_fn = f'var_mc_cov_anaflat_{name1}_{name2}_{args.mode}.npy'
+            np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat_block)
+            np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat_block)

@@ -35,6 +35,7 @@ type = d["type"]
 binning_file = d["binning_file"]
 sim_alm_dtype = d["sim_alm_dtype"]
 lmax_noise_sim = d['lmax_noise_sim']
+downgrade_sim = d['downgrade_sim']
 binned_mcm = d["binned_mcm"]
 apply_kspace_filter = d["apply_kspace_filter"]
 if sim_alm_dtype in ["complex64", "complex128"]: sim_alm_dtype = getattr(np, sim_alm_dtype)
@@ -77,11 +78,15 @@ for sv in surveys:
     n_splits[sv] = len(d[f"maps_{sv}_{arrays[sv][0]}"])
     log.info(f"Running with {n_splits[sv]} splits for survey {sv}")
     template_name = d[f"maps_{sv}_{arrays[sv][0]}"][0]
-    templates[sv] = so_map.read_map(template_name)
-
+    if downgrade_sim > 1:
+        templates[sv] = so_map.read_map(template_name).downgrade(downgrade_sim)
+    else:
+        templates[sv] = so_map.read_map(template_name)
+        
     if d[f"pixwin_{sv}"]["pix"] == "CAR":
         wy, wx = enmap.calc_window(templates[sv].data.shape,
-                                   order=d[f"pixwin_{sv}"]["order"])
+                                   order=d[f"pixwin_{sv}"]["order"],
+                                   scale=downgrade_sim) # noise has pixwin of dg=1 pix
         pixwin[sv] = (wy[:, None] * wx[None, :])
         inv_pixwin[sv] = pixwin[sv] ** (-1)
     elif d[f"pixwin_{sv}"]["pix"] == "HEALPIX":
@@ -158,15 +163,25 @@ for iii in range(start, stop):
             # Get the windows and inv_pixwin
             t1 = time.time()
 
-            win_T = so_map.read_map(d[f"window_T_{sv}_{ar}"])
+            if downgrade_sim > 1:
+                win_T = so_map.read_map(d[f"window_T_{sv}_{ar}"]).downgrade(downgrade_sim)
+            else:
+                win_T = so_map.read_map(d[f"window_T_{sv}_{ar}"])
+            
             if d[f"window_pol_{sv}_{ar}"] != d[f"window_T_{sv}_{ar}"]:
-                win_pol = so_map.read_map(d[f"window_pol_{sv}_{ar}"])
+                if downgrade_sim > 1:
+                    win_pol = so_map.read_map(d[f"window_pol_{sv}_{ar}"]).downgrade(downgrade_sim)
+                else:
+                    win_pol = so_map.read_map(d[f"window_pol_{sv}_{ar}"])
             else:
                 win_pol = win_T  # reduce one I/O
             window_tuple = (win_T, win_pol)
 
             if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
-                win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
+                if downgrade_sim > 1:
+                    win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"]).downgrade(downgrade_sim)
+                else:
+                    win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
                 inv_pwin = inv_pixwin[sv] if d[f"pixwin_{sv}"]["pix"] == "CAR" else None
 
             cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]

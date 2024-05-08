@@ -108,7 +108,7 @@ The above job steps produce a semi-analytic covariance matrix, i.e., using only 
 24.
 25. We use the simulated spectra to compute MC covariance matrices. 
     - depends on: 23, 24
-    - command: `sbatch --mem 8G --cpus-per-task 10 --time 15:00 --job-name mc_cov_analysis ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/montecarlo/mc_cov_analysis.py ana_cov_comp/paramfiles/myparamfile.dict`
+    - command: `sbatch --mem 8G --cpus-per-task 10 --time 15:00 --job-name mc_cov_analysis ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/montecarlo/mc_cov_analysis_from_data_analysis.py ana_cov_comp/paramfiles/myparamfile.dict --anaflat`
 26. Finally, we use the MC covariance matrices to correct the semi-analytic covariance matrix. To do so, we rotate the MC covariance into the eigenbasis of the semi-analytic covariance matrix. We then assume that this new matrix is diagonal. This is tantamount to assuming that the MC covariance matrix shares its eigenbasis with the semi-analytic matrix and that the ratio of the eigenvalues are roughly constant. Then, we fit the diagonal in each spectrum block with a Gaussian process to smooth it. We then rotate the smoothed diagonal matrix back into the original basis.
     - depends on: 25
     - command: `sbatch --mem 8G --cpus-per-task 10 --time 5:00 --job-name get_mc_corrected_xarrays_covmat ana_cov_comp/slurm/1dellanode.slurm python ana_cov_comp/python/montecarlo/get_mc_corrected_xarrays_covmat.py ana_cov_comp/paramfiles/myparamfile.dict`

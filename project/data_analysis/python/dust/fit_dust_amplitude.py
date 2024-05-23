@@ -4,7 +4,9 @@ if --use-220 is used , we will also fit the high ell 220 GHz ACT channel, the id
 example use:
 python fit_dust_amplitude.py global_dust.dict --mode BB
 python fit_dust_amplitude.py global_dust.dict --mode TT --use-220  --dr6-result-path ./dr6
+Note that historically we use beta_c=beta_p=2.2 when fitting the CIB jointly with the dust in temperature, using another index might move the amplitude out of the MCMC flat priors.
 """
+
 
 import argparse
 import os
@@ -158,7 +160,8 @@ Rminus1_stop = 0.05
 Rminus1_cl_stop = 0.1
 mc_cov = True
 
-chain_name = f"chains/dust_from_planck353_{mode}/dust"
+result_dir = f"chains/dust_from_planck353_{mode}"
+chain_name = f"{result_dir}/dust"
 plot_dir = f"plots/dust_from_planck353_{mode}"
 
 if use_220:
@@ -261,15 +264,22 @@ y_lim["TE"] = [-100, 400]
 y_lim["BB"] = [-300, 300]
 y_lim["TB"] = [-300, 300]
 
+
+err_res_planck =  np.sqrt(cov_res_planck.diagonal())
+np.savetxt(f"{result_dir}/residual.dat", np.transpose([lb[idx_planck], res_planck[idx_planck], err_res_planck[idx_planck], res_planck_model[idx_planck]]))
+np.save(f"{result_dir}/icov_residual.npy", icov_res_planck)
+
+
 fig = plt.figure(figsize=(8, 6))
 grid = plt.GridSpec(4, 1, hspace=0, wspace=0)
 upper = fig.add_subplot(grid[:3], xticklabels=[], ylabel=r"$D_\ell^{%s, 353-143}$" % mode)
 upper.plot(lb[idx_planck], res_planck_model[idx_planck], color="k")
 upper.errorbar(lb[idx_planck],
                res_planck[idx_planck],
-               np.sqrt(cov_res_planck[np.ix_(idx_planck, idx_planck)].diagonal()),
+               err_res_planck[idx_planck],
                fmt=".",
                label=r"$\chi^2 = %.2f/%d$ - PTE = %.3f" % (chi2, ndof, pte))
+               
                
 upper.set_ylim(y_lim[mode])
 upper.legend()

@@ -81,7 +81,7 @@ so this produces all of the main products, spectra and covariances, now we need 
 
 
 Leakage correction and leakage covariance
---------------------
+-------------------------------------------------------
 
 The spectra are contaminated by leakage, in order to correct for leakage you should grab the code in the leakage folder and run
 
@@ -97,7 +97,7 @@ The spectra are contaminated by leakage, in order to correct for leakage you sho
     
 
 Monte-Carlo kspace filter transfer function
---------------------
+-------------------------------------------------------
 
 To compute the monte-carlo transfer function that encodes the kspace filter effect you will grab the code in the kspace folder
 
@@ -113,8 +113,8 @@ To compute the monte-carlo transfer function that encodes the kspace filter effe
     
     
 Monte Carlo correction to the covariance matrix
---------------------
-    
+-------------------------------------------------------
+
 To generate a set of simulated spectra using the `mnms` noise simulation code you first have to generate the noise `alms` for each split and wafer and store them to disk. Then you have to run a standard simulation routine that reads the precomputed noise `alms`. Remember to delete the noise `alms` when you are done with your simulations. For a set of 80 simulations, grab the code in the montecarlo folder.
 
 .. code:: shell
@@ -138,7 +138,7 @@ You can analyse and plot the sim results using
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_covariances.py global_dr6_v4.dict
 
 Aberration correction
---------------------
+-------------------------------------------------------
 
 The spectra are aberrated and we need to correct for it, to do so we generate sims with aberration and compare them with sims without aberration, we then correct the effect on the data power spectra,
 grab the code in the aberration folder and run
@@ -156,8 +156,8 @@ grab the code in the aberration folder and run
     # real    1m53.833s
 
 
-Radio trispectrum
-------------------
+Radio and tSZ trispectrum
+-------------------------------------------------------
 
 To include the non gaussian contribution to the covariance matrix coming from the connected four point function of the Radio sources and tSZ (assumed to be Poisson distributed), grab the code in the non_gaussian_fg folder and run
 
@@ -170,7 +170,7 @@ To include the non gaussian contribution to the covariance matrix coming from th
     # real 3m4.125s
     
 Non gaussian lensing terms
-------------------
+-------------------------------------------------------
 
 To include the non gaussian contribution to the covariance matrix coming from the connected four point function due to lensing we rely on external codes (from Amanda MacInnis)
 see the dedicated `README <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/lensing.rst/>`_ for how these terms are computed
@@ -201,7 +201,7 @@ We can check the analytic computation using PSpipe simulation code
 
 
 Array null test
-------------------
+-------------------------------------------------------
 
 To perform the array null test, grab the code in null_tests and run
 

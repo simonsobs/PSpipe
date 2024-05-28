@@ -79,7 +79,7 @@ w2_dict = get_w2_dict(w_dict, pixsize_map) # precompute the w2 factor instead of
 n_el = len(x_ar_cov_list)
 x_ar_non_gaussian_cov_tsz = np.zeros((n_el * n_bins, n_el * n_bins))
 
-trispectrum_yy = np.load("reference_trispectrum_planck_level_2_10000_150324.npy")
+trispectrum_yy = np.load("/global/cfs/cdirs/act/data/tlouis/dr6v4/tSZ_trispectrum/reference_trispectrum_planck_level_2_10000_150324.npy")
 print(trispectrum_yy.shape)
 lmax_mat = trispectrum_yy.shape[0]
 l = np.arange(2, lmax_mat + 2)

@@ -220,4 +220,4 @@ To finally combine all covariance matrices together and write the final data int
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_cov_mats.py global_dr6_v4.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_cov_mats.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python port2sacc.py global_dr6_v4.dict

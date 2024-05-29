@@ -20,9 +20,6 @@ type = d["type"]
 nkeep = 70
 
 cov_dir = "covariances"
-bestfit_dir = "best_fits"
-sim_spec_dir = "sim_spectra"
-mcm_dir = "mcms"
 plot_dir = "plots/full_covariance"
 
 pspy_utils.create_directory(plot_dir)
@@ -36,6 +33,7 @@ x_ar_mc_cov = np.load(f"{cov_dir}/x_ar_mc_cov.npy")
 x_ar_beam_cov = np.load(f"{cov_dir}/x_ar_beam_cov.npy")
 x_ar_leakage_cov = np.load(f"{cov_dir}/x_ar_leakage_cov.npy")
 x_ar_non_gaussian_cov_radio = np.load(f"{cov_dir}/x_ar_non_gaussian_cov_radio.npy")
+x_ar_non_gaussian_cov_tSZ = np.load(f"{cov_dir}/x_ar_non_gaussian_cov_tSZ.npy")
 x_ar_non_gaussian_cov_lensing =  np.load(f"{cov_dir}/x_ar_non_gaussian_cov_lensing.npy")
 
 
@@ -43,7 +41,7 @@ x_ar_cov =  covariance.correct_analytical_cov_skew(x_ar_analytic_cov, x_ar_mc_co
 
 np.save(f"{cov_dir}/x_ar_final_cov_sim.npy", x_ar_cov)
 
-full_x_ar_cov = x_ar_cov + x_ar_beam_cov + x_ar_leakage_cov + x_ar_non_gaussian_cov_radio + x_ar_non_gaussian_cov_lensing
+full_x_ar_cov = x_ar_cov + x_ar_beam_cov + x_ar_leakage_cov + x_ar_non_gaussian_cov_radio + x_ar_non_gaussian_cov_lensing + x_ar_non_gaussian_cov_tSZ
 
 np.save(f"{cov_dir}/x_ar_final_cov_data.npy", full_x_ar_cov)
 
@@ -78,6 +76,7 @@ sub_x_ar_beam_cov = x_ar_beam_cov[np.ix_(all_indices, all_indices)]
 sub_x_ar_leakage_cov = x_ar_leakage_cov[np.ix_(all_indices, all_indices)]
 sub_x_ar_non_gaussian_cov_radio = x_ar_non_gaussian_cov_radio[np.ix_(all_indices, all_indices)]
 sub_x_ar_non_gaussian_cov_lensing = x_ar_non_gaussian_cov_lensing[np.ix_(all_indices, all_indices)]
+sub_x_ar_non_gaussian_cov_tSZ = x_ar_non_gaussian_cov_tSZ[np.ix_(all_indices, all_indices)]
 
 log.info(f"test S+N cov + beam cov + leakage cov")
 
@@ -107,6 +106,41 @@ plt.savefig(f"{plot_dir}/MC_vs_analytic_cov.png")
 plt.clf()
 plt.close()
 
+if selected_spectra == ["TE", "ET"]:
+    corr = so_cov.cov2corr(sub_x_ar_leakage_cov, remove_diag=False)
+    plt.figure(figsize=(18,12))
+    plt.imshow(corr)
+    plt.colorbar()
+    plt.xticks(label_loc, name_list, rotation=90)
+    plt.yticks(label_loc, name_list)
+    plt.tight_layout()
+    plt.savefig(f"{plot_dir}/corr_leakage.png")
+    plt.clf()
+    plt.close()
+
+if selected_spectra == "TT":
+    corr = so_cov.cov2corr(sub_x_ar_non_gaussian_cov_radio, remove_diag=False)
+    plt.figure(figsize=(18,12))
+    plt.imshow(corr)
+    plt.colorbar()
+    plt.xticks(label_loc, name_list, rotation=90)
+    plt.yticks(label_loc, name_list)
+    plt.tight_layout()
+    plt.savefig(f"{plot_dir}/radio_leakage.png")
+    plt.clf()
+    plt.close()
+
+    corr = so_cov.cov2corr(sub_x_ar_non_gaussian_cov_tSZ, remove_diag=False)
+    plt.figure(figsize=(18,12))
+    plt.imshow(corr)
+    plt.colorbar()
+    plt.xticks(label_loc, name_list, rotation=90)
+    plt.yticks(label_loc, name_list)
+    plt.tight_layout()
+    plt.savefig(f"{plot_dir}/radio_tSZ.png")
+    plt.clf()
+    plt.close()
+
 
 corr = so_cov.cov2corr(sub_full_x_ar_cov, remove_diag=False)
 plt.figure(figsize=(18,12))
@@ -120,6 +154,8 @@ plt.clf()
 plt.close()
 
 
+
+
 plt.figure(figsize=(28,8))
 
 for my_spec in bin_out_dict.keys():
@@ -131,6 +167,7 @@ plt.plot(sub_x_ar_leakage_cov.diagonal()/sub_full_x_ar_cov.diagonal(), label="le
 plt.plot(sub_x_ar_beam_cov.diagonal()/sub_full_x_ar_cov.diagonal(), label="beam cov / total cov")
 plt.plot(sub_x_ar_non_gaussian_cov_radio.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian radio cov / total cov")
 plt.plot(sub_x_ar_non_gaussian_cov_lensing.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian lensing/ total cov")
+plt.plot(sub_x_ar_non_gaussian_cov_tSZ.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian tSZ/ total cov")
 
 plt.xticks(label_loc, name_list, rotation=90)
 plt.legend(fontsize=18)
@@ -138,3 +175,22 @@ plt.tight_layout()
 plt.savefig(f"{plot_dir}/cov_different_component.png")
 plt.clf()
 plt.close()
+
+
+
+
+for my_spec in bin_out_dict.keys():
+    s_name, spectrum = my_spec
+    id_spec, lb_spec = bin_out_dict[my_spec]
+    plt.figure(figsize=(12, 8))
+    plt.title(f"{s_name.replace('_', ' ')} {spectrum}", fontsize=22)
+    plt.plot(lb_spec, sub_x_ar_leakage_cov.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="leakage cov / total cov")
+    plt.plot(lb_spec, sub_x_ar_beam_cov.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="beam cov / total cov")
+    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_radio.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="non gaussian radio cov / total cov")
+    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_lensing.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="non gaussian lensing/ total cov")
+    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_tSZ.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="non gaussian tSZ/ total cov")
+    plt.legend(fontsize=18)
+    plt.tight_layout()
+    plt.savefig(f"{plot_dir}/cov_different_component_{s_name}_{spectrum}.png")
+    plt.clf()
+    plt.close()

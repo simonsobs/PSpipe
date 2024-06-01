@@ -10,7 +10,7 @@ Here we give instructions to install and to run the full thing on interactive no
 course also submit it to NERSC standard nodes
 
 Running the main pipeline
---------------------
+-------------------------------------------------------
 
 First we need to create all the window functions. In the following we will assume that the window functions  used in temperature and in polarisation are the same, we will create the windows based on a the edges of the survey, a galactic mask, a pt source mask and a threshold on the amount of crosslinking in the patch of observation.
 

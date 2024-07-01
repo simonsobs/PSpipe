@@ -1,6 +1,6 @@
 from pspipe_utils import transfer_function as tf_tools
-from pspipe_utils import consistency
-from pspy import so_spectra, so_cov
+from pspipe_utils import consistency, log
+from pspy import so_spectra, pspy_utils
 from pspy import so_dict
 import numpy as np
 import sys
@@ -8,9 +8,11 @@ import os
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 spec_dir = "spectra"
 cov_dir = "covariances"
+bestfir_dir = "best_fits"
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 modes = ["TT", "TE", "ET", "EE"] if d["cov_T_E_only"] else spectra
@@ -21,7 +23,12 @@ arrays = [f"{sv}_{ar}" for ar in d[f"arrays_{sv}"]]
 combin = "AxA:AxP"
 #combin = "AxP:PxP"
 
+subtract_bf_fg = True
+
 output_dir = f"tf_estimator_{combin}"
+if subtract_bf_fg:
+    output_dir += "_fg_sub"
+
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -30,9 +37,9 @@ lmax = d["lmax"]
 
 ref_ars = {"dr6_pa4_f150": "Planck_f143",
            "dr6_pa4_f220": "Planck_f217",
-           "dr6_pa5_f090": "Planck_f100",
+           "dr6_pa5_f090": "Planck_f143",
            "dr6_pa5_f150": "Planck_f143",
-           "dr6_pa6_f090": "Planck_f100",
+           "dr6_pa6_f090": "Planck_f143",
            "dr6_pa6_f150": "Planck_f143"}
 
 
@@ -56,6 +63,15 @@ for i, ar in enumerate(arrays):
     ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
     cov_template = f"{cov_dir}/analytic_cov" + "_{}x{}_{}x{}.npy"
     ps_dict, cov_dict = consistency.get_ps_and_cov_dict(ar_list, ps_template, cov_template)
+ 
+    if subtract_bf_fg:
+        for ms1, ms2, spec in ps_dict.keys():
+            if spec != "TT":
+                continue
+            log.info(f"remove fg {spec}  {ms1} x {ms2}")
+            l_fg, bf_fg = so_spectra.read_ps(f"{bestfir_dir}/fg_{ms1}x{ms2}.dat", spectra=spectra)
+            _, bf_fg_TT_binned = pspy_utils.naive_binning(l_fg, bf_fg["TT"], d["binning_file"], d["lmax"])
+            ps_dict[ms1, ms2, spec] -= bf_fg_TT_binned
 
     lb, tf, tf_cov, _, _ = consistency.compare_spectra(ar_list, op, ps_dict, cov_dict, mode = "TT")
 

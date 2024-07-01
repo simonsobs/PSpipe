@@ -10,7 +10,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-spec_dir = "spectra"
+spec_dir = "spectra_leak_corr_planck_bias_corr"
 cov_dir = "covariances"
 bestfir_dir = "best_fits"
 
@@ -20,8 +20,8 @@ modes = ["TT", "TE", "ET", "EE"] if d["cov_T_E_only"] else spectra
 sv = "dr6"
 arrays = [f"{sv}_{ar}" for ar in d[f"arrays_{sv}"]]
 
-combin = "AxA:AxP"
-#combin = "AxP:PxP"
+combin = "AxA_AxP"
+#combin = "AxP_PxP"
 
 subtract_bf_fg = True
 
@@ -51,14 +51,15 @@ for i, ar in enumerate(arrays):
 
     ref_ar = ref_ars[ar]
 
-    if combin == "AxA:AxP":
+    if combin == "AxA_AxP":
         ar1A, ar2A = ar, ar
         ar1B, ar2B = ar, ref_ar
         op = "aa/ab"
-    elif combin == "AxP:PxP":
+    elif combin == "AxP_PxP":
         ar1A, ar2A = ar, ref_ar
         ar1B, ar2B = ref_ar, ref_ar
         op = "ab/bb"
+
     ar_list = [ar, ref_ar]
     ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
     cov_template = f"{cov_dir}/analytic_cov" + "_{}x{}_{}x{}.npy"
@@ -78,7 +79,6 @@ for i, ar in enumerate(arrays):
     tf_list.append(tf)
     tf_err_list.append(np.sqrt(tf_cov.diagonal()))
     lb_list.append(lb)
-
 
 
     np.savetxt(f"{output_dir}/tf_estimator_{ar}.dat", np.array([lb, tf, np.sqrt(tf_cov.diagonal())]).T)

@@ -8,6 +8,11 @@ from pspy import so_cov, so_dict, pspy_utils
 from pixell import utils
 import sys
 import scipy.stats as stats
+import matplotlib
+
+matplotlib.rcParams["font.family"] = "serif"
+matplotlib.rcParams["font.size"] = "20"
+
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -184,12 +189,15 @@ for my_spec in bin_out_dict.keys():
     id_spec, lb_spec = bin_out_dict[my_spec]
     plt.figure(figsize=(12, 8))
     plt.title(f"{s_name.replace('_', ' ')} {spectrum}", fontsize=22)
-    plt.plot(lb_spec, sub_x_ar_leakage_cov.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="leakage cov / total cov")
-    plt.plot(lb_spec, sub_x_ar_beam_cov.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="beam cov / total cov")
-    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_radio.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="non gaussian radio cov / total cov")
-    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_lensing.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="non gaussian lensing/ total cov")
-    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_tSZ.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="non gaussian tSZ/ total cov")
+    plt.plot(lb_spec, sub_x_ar_cov.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="signal + noise")
+    plt.plot(lb_spec, sub_x_ar_leakage_cov.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="T-> P leakage")
+    plt.plot(lb_spec, sub_x_ar_beam_cov.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="beam")
+    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_radio.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="connected trispectrum radio")
+    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_lensing.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="connected trispectrum lensing")
+    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_tSZ.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="connected trispectrum tSZ")
     plt.legend(fontsize=18)
+    plt.xlabel(r"$\ell$", fontsize=20)
+    plt.ylabel(r"$\Sigma^{\rm comp}_{\ell \ell}/\Sigma^{\rm tot}_{\ell \ell}$", fontsize=20)
     plt.tight_layout()
     plt.savefig(f"{plot_dir}/cov_different_component_{s_name}_{spectrum}.png")
     plt.clf()

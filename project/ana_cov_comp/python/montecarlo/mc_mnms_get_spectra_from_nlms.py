@@ -36,6 +36,7 @@ binning_file = d["binning_file"]
 sim_alm_dtype = d["sim_alm_dtype"]
 lmax_noise_sim = d['lmax_noise_sim']
 downgrade_sim = d['downgrade_sim']
+do_pseudo = d['do_pseudo']
 binned_mcm = d["binned_mcm"]
 apply_kspace_filter = d["apply_kspace_filter"]
 if sim_alm_dtype in ["complex64", "complex128"]: sim_alm_dtype = getattr(np, sim_alm_dtype)
@@ -44,6 +45,11 @@ dtype = np.float32 if sim_alm_dtype == "complex64" else np.float64
 
 if d["remove_mean"] == True:
     raise ValueError('Removing the mean is an unphysical assumption')
+
+# FIXME: in this case, would need to forward apply pixwin to signal maps
+# and not do any pixwin for noise maps
+assert d["deconvolve_pixwin"], \
+    'This script requires minor mods if the pixwin is not being deconvolved'
 
 # Aliases for arrays
 arrays_alias = {
@@ -90,6 +96,11 @@ for sv in surveys:
         pixwin[sv] = (wy[:, None] * wx[None, :])
         inv_pixwin[sv] = pixwin[sv] ** (-1)
     elif d[f"pixwin_{sv}"]["pix"] == "HEALPIX":
+        # FIXME: this is because, if deconvolving pixwin, we need to do it at
+        # spectrum level from noise, not map level (and check that this makes
+        # sense anyway)
+        assert False, \
+            'This script requires minor mods for HEALPIX maps'
         pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"])
         pixwin[sv] = pw_l
         inv_pixwin[sv] = pw_l ** (-1)
@@ -182,7 +193,9 @@ for iii in range(start, stop):
                     win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"]).downgrade(downgrade_sim)
                 else:
                     win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
-                inv_pwin = inv_pixwin[sv] if d[f"pixwin_{sv}"]["pix"] == "CAR" else None
+            
+            # inv_pwin always needed even if not kspace filtering
+            inv_pwin = inv_pixwin[sv] if d[f"pixwin_{sv}"]["pix"] == "CAR" else None
 
             cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]
 
@@ -203,7 +216,7 @@ for iii in range(start, stop):
 
             t3 = time.time()
             if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
-                log.info(f'[Sim n° {iii}] Filtering signal map for array {ar}')
+                log.info(f'[Sim n° {iii}] Apply kspace filter to signal map for array {ar}')
                 signal_map = kspace.filter_map(signal_map,
                                                filters[sv],
                                                win_kspace,
@@ -241,16 +254,24 @@ for iii in range(start, stop):
 
                 log.info(f"[Sim n° {iii}] Noise map for array {ar} and split {k} done in {time.time()-t5:.2f} s")
 
-                # deconvolve pixwin from noise
+                # deconvolve pixwin from noise whether or not kspace filtering
                 t6 = time.time()
-                if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
+                if window_tuple[0].pixel == "CAR":
                     log.info(f"[Sim n° {iii}] Filtering noise map for array {ar} and split {k}")
-                    noise_map = kspace.filter_map(noise_map,
-                                                  filters[sv],
-                                                  win_kspace,
-                                                  inv_pixwin=inv_pwin,
-                                                  weighted_filter=filter_dicts[sv]["weighted"],
-                                                  use_ducc_rfft=True)
+                    if apply_kspace_filter:
+                        log.info(f"[Sim n° {iii}] Apply kspace filter and inv_pixwin to noise map for array {ar} and split {k}")
+                        noise_map = kspace.filter_map(noise_map,
+                                                      filters[sv],
+                                                      win_kspace,
+                                                      inv_pixwin=inv_pwin,
+                                                      weighted_filter=filter_dicts[sv]["weighted"],
+                                                      use_ducc_rfft=True)
+                    else:
+                        log.info(f"[Sim n° {iii}] Apply inv_pixwin to noise map for array {ar} and split {k}")
+                        noise_map = so_map.fourier_convolution(noise_map,
+                                                               inv_pwin,
+                                                               window=win_kspace,
+                                                               use_ducc_rfft=True)
 
                 log.info(f"[Sim n° {iii}] Filter noise map for array {ar} and split {k} done in {time.time()-t6:.2f} s")
 
@@ -271,6 +292,8 @@ for iii in range(start, stop):
             signal_map = None
 
     ps_dict = {}
+    if do_pseudo:
+        pseudo_ps_dict = {}
 
     t8 = time.time()
 
@@ -285,11 +308,13 @@ for iii in range(start, stop):
 
         # under this canonization, we need to get SS, SN, NS, and NN spectra
 
-        def get_ps(snk1, snk2):
+        def get_ps(snk1, snk2, pseudo=False):
             l, ps = so_spectra.get_spectra_pixell(master_alms[sv1, ar1, snk1],
                                                   master_alms[sv2, ar2, snk2],
                                                   spectra=spectra)
-            
+            if pseudo:
+                return ps
+
             lb, ps = so_spectra.bin_spectra(l,
                                             ps,
                                             binning_file,
@@ -300,18 +325,20 @@ for iii in range(start, stop):
                                             binned_mcm=binned_mcm)
 
             # xtra corr debiases signal-only spectra, but cross signal-noise spectra have mean 0
-            if kspace_tf_path == "analytical":
-                xtra_corr = None
-            elif 'signal' in snk1 and 'signal' in snk2:
-                xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
-            else:
-                xtra_corr = None
+            # and cross noise-noise spectra are always from different splits (also mean 0)
+            if apply_kspace_filter:
+                if kspace_tf_path == "analytical":
+                    xtra_corr = None
+                elif 'signal' in snk1 and 'signal' in snk2:
+                    xtra_corr = TE_corr[f"{sv1}_{ar1}x{sv2}_{ar2}"]
+                else:
+                    xtra_corr = None
 
-            lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
-                                                            ps,
-                                                            kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
-                                                            spectra,
-                                                            xtra_corr=xtra_corr)
+                lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
+                                                                ps,
+                                                                kspace_transfer_matrix[f"{sv1}_{ar1}x{sv2}_{ar2}"],
+                                                                spectra,
+                                                                xtra_corr=xtra_corr)
 
             # deconvolve pixwin from noise
             if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX" and snk1 != 'signal':
@@ -333,20 +360,28 @@ for iii in range(start, stop):
         
         # get signal x signal spectra
         ps_dict[(sv1, ar1, 'signal'), (sv2, ar2, 'signal')] = get_ps('signal', 'signal')
+        if do_pseudo:
+            pseudo_ps_dict[(sv1, ar1, 'signal'), (sv2, ar2, 'signal')] = get_ps('signal', 'signal', pseudo=True)
         
         # get signal x noise spectra
         for s2 in range(n_splits[sv2]):
             ps_dict[(sv1, ar1, 'signal'), (sv2, ar2, f'noise_{s2}')] = get_ps('signal', f'noise_{s2}')
-
+            if do_pseudo:
+                pseudo_ps_dict[(sv1, ar1, 'signal'), (sv2, ar2, f'noise_{s2}')] = get_ps('signal', f'noise_{s2}', pseudo=True)
+       
         # get noise x signal spectra
         for s1 in range(n_splits[sv1]):
             ps_dict[(sv1, ar1, f'noise_{s1}'), (sv2, ar2, 'signal')] = get_ps(f'noise_{s1}', 'signal')
+            if do_pseudo:
+                pseudo_ps_dict[(sv1, ar1, f'noise_{s1}'), (sv2, ar2, 'signal')] = get_ps(f'noise_{s1}', 'signal', pseudo=True)
 
         # get noise x noise spectra and signal_noise x signal_noise spectra
         for s1 in range(n_splits[sv1]):
             for s2 in range(n_splits[sv2]):
                 ps_dict[(sv1, ar1, f'noise_{s1}'), (sv2, ar2, f'noise_{s2}')] = get_ps(f'noise_{s1}', f'noise_{s2}')
                 # ps_dict[(sv1, ar1, f'signal_{s1}'), (sv2, ar2, f'signal_{s2}')] = get_ps(f'signal_{s1}', f'signal_{s2}') # FIXME: make optional?
+                if do_pseudo:
+                    pseudo_ps_dict[(sv1, ar1, f'noise_{s1}'), (sv2, ar2, f'noise_{s2}')] = get_ps(f'noise_{s1}', f'noise_{s2}', pseudo=True)
 
         mbb_inv = None
         Bbl = None
@@ -355,6 +390,10 @@ for iii in range(start, stop):
     
     spec_name_cross = f"{type}_all_sn_cross_{iii:05d}"
     np.save(f"{spec_dir}/{spec_name_cross}.npy", ps_dict)
+
+    if do_pseudo:
+        pseudo_name_cross = f"pseudo_Cl_all_sn_cross_{iii:05d}"
+        np.save(f"{spec_dir}/{pseudo_name_cross}.npy", pseudo_ps_dict)    
 
     log.info(f"[Sim n° {iii}] Spectra computation done in {time.time()-t8:.2f} s")
     log.info(f"[Sim n° {iii}] Done in {time.time()-t0:.2f} s")

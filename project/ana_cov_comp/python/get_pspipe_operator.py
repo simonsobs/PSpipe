@@ -38,7 +38,9 @@ pspy_utils.create_directory(plot_dir)
 lmax = d['lmax']
 binned_mcm = d['binned_mcm']
 binning_file = d['binning_file']
-kspace_tf_path = d['kspace_tf_path']
+apply_kspace_filter = d["apply_kspace_filter"]
+if apply_kspace_filter:
+    kspace_tf_path = d['kspace_tf_path']
 
 assert not binned_mcm, 'script only works if binned_mcm is False!' # FIXME
 
@@ -69,26 +71,30 @@ for spec1 in spec_list:
     assert spectra == ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"] # FIXME: block order assume spectra order
     Pbl_Minv = block_diag(M00, M02, M02, M20, M20, M22)
 
-    # get the inv_kspace matrix for this array cross
-    if kspace_tf_path == 'analytical':
-        surveys = d['surveys']
+    # get the inv_kspace matrix for this array cross, if necessary
+    if apply_kspace_filter:
+        if kspace_tf_path == 'analytical':
+            surveys = d['surveys']
 
-        arrays, templates, filter_dicts =  {}, {}, {}
-        for sv in surveys:
-            arrays[sv] = d[f'arrays_{sv}']
-            templates[sv] = so_map.read_map(d[f'window_T_{sv}_{arrays[sv][0]}']) # FIXME: assumes all templates are the same within a survey
-            filter_dicts[sv] = d[f'k_filter_{sv}']
+            arrays, templates, filter_dicts =  {}, {}, {}
+            for sv in surveys:
+                arrays[sv] = d[f'arrays_{sv}']
+                templates[sv] = so_map.read_map(d[f'window_T_{sv}_{arrays[sv][0]}']) # FIXME: assumes all templates are the same within a survey
+                filter_dicts[sv] = d[f'k_filter_{sv}']
 
-        kspace_transfer_matrix = kspace.build_analytic_kspace_filter_matrices(
-            surveys, arrays, templates, filter_dicts, binning_file, lmax
-            )[spec1]
+            kspace_transfer_matrix = kspace.build_analytic_kspace_filter_matrices(
+                surveys, arrays, templates, filter_dicts, binning_file, lmax
+                )[spec1]
+        else:
+            kspace_transfer_matrix = np.load(f'{kspace_tf_path}/kspace_matrix_{spec1}.npy')
+
+        inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix) 
+
+        # apply the inv_kspace matrix to Pbl_Minv to get Finv_Pbl_Minv
+        Finv_Pbl_Minv = inv_kspace_mat @ Pbl_Minv
     else:
-        kspace_transfer_matrix = np.load(f'{kspace_tf_path}/kspace_matrix_{spec1}.npy')
-
-    inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix) 
-
-    # apply the inv_kspace matrix to Pbl_Minv to get Finv_Pbl_Minv
-    Finv_Pbl_Minv = inv_kspace_mat @ Pbl_Minv 
+        # Finv is 1
+        Finv_Pbl_Minv = Pbl_Minv
 
     np.save(f'{pspipe_operators_dir}/Finv_Pbl_Minv_{spec1}.npy', Finv_Pbl_Minv) # fin
 

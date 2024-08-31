@@ -188,7 +188,8 @@ for iii in range(start, stop):
                 win_pol = win_T  # reduce one I/O
             window_tuple = (win_T, win_pol)
 
-            if (window_tuple[0].pixel == "CAR") & (apply_kspace_filter):
+            # we need win_kspace whether kspace filtering or not
+            if (window_tuple[0].pixel == "CAR"):
                 if downgrade_sim > 1:
                     win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"]).downgrade(downgrade_sim)
                 else:

@@ -208,8 +208,10 @@ for sv1 in sv2arrs2chans:
                 np.clip(y, 0, None, out=y)
                 fit_y = savgol_filter(y, savgol_w, savgol_k)
                 y[mask] = fit_y[mask]
-                assert not np.any(y <= 0), \
-                    log.info(f'{preidx1=} still has {np.sum(y <= 0)} values <= 0 after correcting')
+                if np.any(y <= 0):
+                    log.info(f'{preidx1=} still has {np.sum(y <= 0)} values <= 0 after correcting, setting to min of good values')
+                    y[y <= 0] = np.min(y[y > 0])
+                    mask = np.logical_or(mask, y <= 0)
                 mask_model[(*preidx1, *preidx1)][start:] = mask
 
                 # now fit in log space
@@ -252,8 +254,11 @@ for sv1 in sv2arrs2chans:
                 np.clip(y, -1, 1, out=y)
                 fit_y = savgol_filter(y, savgol_w, savgol_k)
                 y[mask] = fit_y[mask]
-                assert not np.any(np.logical_or(y <= -1, 1 <= y)), \
-                    log.info(f'{preidx1=}, {preidx2=} still has {np.logical_or(y <= -1, 1 <= y)} values >= |1| after correcting')
+                if np.any(np.logical_or(y <= -1, 1 <= y)):
+                    log.info(f'{preidx1=}, {preidx2=} still has {np.logical_or(y <= -1, 1 <= y)} values >= |1| after correcting, setting to extremal good value')
+                    y[y <= -1] = np.min(y[y > -1])
+                    y[1 <= y] = np.max(y[1 < y])
+                    mask = np.logical_or(mask, np.logical_or(y <= -1, 1 <= y))
                 mask_model[(*preidx1, *preidx2)][start:] = mask
                 mask_model[(*preidx2, *preidx1)][start:] = mask
 

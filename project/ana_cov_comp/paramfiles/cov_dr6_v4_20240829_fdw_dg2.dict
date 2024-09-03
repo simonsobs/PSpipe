@@ -1,4 +1,4 @@
-data_dir = '/scratch/gpfs/zatkins/data/simonsobs/PSpipe/project/ana_cov_comp/cov_dr6_v4_20240829_tile_dg2/'
+data_dir = '/scratch/gpfs/zatkins/data/simonsobs/PSpipe/project/ana_cov_comp/cov_dr6_v4_20240829_fdw_dg2/'
 
 surveys = ["dr6"]
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
@@ -225,7 +225,7 @@ sim_spectra_dir = data_dir + 'sim_spectra'
 
 seed_sims = True
 iStart = 0
-iStop = 299
+iStop = 599
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'fdw_cmbmask'
 noise_sim_type_pa5 = 'fdw_cmbmask'

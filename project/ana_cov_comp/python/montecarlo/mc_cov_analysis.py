@@ -29,6 +29,9 @@ parser.add_argument('--anaflat', action='store_true',
 parser.add_argument('--mode', type=str, default='signal_noise',
                     help="Whether to compute the covariance of the 'signal_noise' "
                     "spectra, the 'signal' spectra, or the 'noise' spectra")
+parser.add_argument('--do-pseudo', action='store_true',
+                    help="Whether to compute the pseudo covariance for the given "
+                    "mode rather than the power spectrum covariance")
 args = parser.parse_args()
 
 d = so_dict.so_dict()
@@ -92,7 +95,10 @@ for iii in range(iStart, iStop + 1):
     spec_dict = {}
 
     # load the sim
-    spec_name_cross_iii = f"{type}_all_sn_cross_%05d" % iii
+    if args.do_pseudo:
+        spec_name_cross_iii = f"pseudo_Cl_all_sn_cross_%05d" % iii
+    else:
+        spec_name_cross_iii = f"{type}_all_sn_cross_%05d" % iii
     ps_iii = np.load(os.path.join(sim_spec_dir, f'{spec_name_cross_iii}.npy'), allow_pickle=True).item()
 
     for sid1, name1 in enumerate(spec_list):
@@ -201,11 +207,19 @@ if ana_cov is not None and args.anaflat:
 
 # save matrices
 if args.mode == 'signal_noise':
-    fn = 'x_ar_mc_cov.npy'
-    var_fn = 'var_x_ar_mc_cov.npy'
+    if args.do_pseudo:
+        fn = 'x_ar_mc_pseudo_cov.npy'
+        var_fn = 'var_x_ar_mc_pseudo_cov.npy'
+    else:
+        fn = 'x_ar_mc_cov.npy'
+        var_fn = 'var_x_ar_mc_cov.npy'
 else:
-    fn = f'x_ar_mc_cov_{args.mode}.npy'
-    var_fn = f'var_x_ar_mc_cov_{args.mode}.npy'
+    if args.do_pseudo:
+        fn = f'x_ar_mc_pseudo_cov_{args.mode}.npy'
+        var_fn = f'var_x_ar_mc_pseudo_cov_{args.mode}.npy'
+    else:
+        fn = f'x_ar_mc_cov_{args.mode}.npy'
+        var_fn = f'var_x_ar_mc_cov_{args.mode}.npy'
 np.save(os.path.join(covariances_dir, fn), mean_mc_cov)
 np.save(os.path.join(covariances_dir, var_fn), var_mc_cov)
 
@@ -230,21 +244,37 @@ for sid1, name1 in enumerate(spec_list):
                 mean_mc_cov_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = mean_mc_cov_dict[name1, name2, spec1, spec2]
                 var_mc_cov_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = var_mc_cov_dict[name1, name2, spec1, spec2]
         if args.mode == 'signal_noise':
-            fn = f'mc_cov_{name1}_{name2}.npy'
-            var_fn = f'var_mc_cov_{name1}_{name2}.npy'
+            if args.do_pseudo:
+                fn = f'mc_pseudo_cov_{name1}_{name2}.npy'
+                var_fn = f'var_mc_pseudo_cov_{name1}_{name2}.npy'
+            else:
+                fn = f'mc_cov_{name1}_{name2}.npy'
+                var_fn = f'var_mc_cov_{name1}_{name2}.npy'
         else:
-            fn = f'mc_cov_{name1}_{name2}_{args.mode}.npy'
-            var_fn = f'var_mc_cov_{name1}_{name2}_{args.mode}.npy'
+            if args.do_pseudo:
+                fn = f'mc_pseudo_cov_{name1}_{name2}_{args.mode}.npy'
+                var_fn = f'var_mc_pseudo_cov_{name1}_{name2}_{args.mode}.npy'
+            else:
+                fn = f'mc_cov_{name1}_{name2}_{args.mode}.npy'
+                var_fn = f'var_mc_cov_{name1}_{name2}_{args.mode}.npy'
         np.save(os.path.join(covariances_dir, fn), mean_mc_cov_block)
         np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_block)
 
 if ana_cov is not None and args.anaflat:
     if args.mode == 'signal_noise':
-        fn = 'x_ar_mc_cov_anaflat.npy'
-        var_fn = 'var_x_ar_mc_cov_anaflat.npy'
+        if args.do_pseudo:
+            fn = 'x_ar_mc_pseudo_cov_anaflat.npy'
+            var_fn = 'var_x_ar_mc_pseudo_cov_anaflat.npy'
+        else:
+            fn = 'x_ar_mc_cov_anaflat.npy'
+            var_fn = 'var_x_ar_mc_cov_anaflat.npy'
     else:
-        fn = f'x_ar_mc_cov_anaflat_{args.mode}.npy'
-        var_fn = f'var_x_ar_mc_cov_anaflat_{args.mode}.npy'
+        if args.do_pseudo:
+            fn = f'x_ar_mc_pseudo_cov_anaflat_{args.mode}.npy'
+            var_fn = f'var_x_ar_mc_pseudo_cov_anaflat_{args.mode}.npy'
+        else:
+            fn = f'x_ar_mc_cov_anaflat_{args.mode}.npy'
+            var_fn = f'var_x_ar_mc_cov_anaflat_{args.mode}.npy'
     np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat)
     np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat)
 
@@ -269,10 +299,18 @@ if ana_cov is not None and args.anaflat:
                     mean_mc_cov_anaflat_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = mean_mc_cov_anaflat_dict[name1, name2, spec1, spec2]
                     var_mc_cov_anaflat_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = var_mc_cov_anaflat_dict[name1, name2, spec1, spec2]
             if args.mode == 'signal_noise':
-                fn = f'mc_cov_anaflat_{name1}_{name2}.npy'
-                var_fn = f'var_mc_cov_anaflat_{name1}_{name2}.npy'
+                if args.do_pseudo:
+                    fn = f'mc_pseudo_cov_anaflat_{name1}_{name2}.npy'
+                    var_fn = f'var_mc_pseudo_cov_anaflat_{name1}_{name2}.npy'
+                else:
+                    fn = f'mc_cov_anaflat_{name1}_{name2}.npy'
+                    var_fn = f'var_mc_cov_anaflat_{name1}_{name2}.npy'
             else:
-                fn = f'mc_cov_anaflat_{name1}_{name2}_{args.mode}.npy'
-                var_fn = f'var_mc_cov_anaflat_{name1}_{name2}_{args.mode}.npy'
+                if args.do_pseudo:
+                    fn = f'mc_pseudo_cov_anaflat_{name1}_{name2}_{args.mode}.npy'
+                    var_fn = f'var_mc_pseudo_cov_anaflat_{name1}_{name2}_{args.mode}.npy'
+                else:
+                    fn = f'mc_cov_anaflat_{name1}_{name2}_{args.mode}.npy'
+                    var_fn = f'var_mc_cov_anaflat_{name1}_{name2}_{args.mode}.npy'
             np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat_block)
             np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat_block)

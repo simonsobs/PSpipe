@@ -225,7 +225,7 @@ To finally combine all covariance matrices together and write the final data int
 Post-likelihood analysis
 -------------------------------------------------------
 
-Once the likelihood has been run we obtained final calibration and polarisation efficiency with respect to our best-fit LCDM model
+Once the likelihood has been run, we have obtained final calibrations and polarisation efficiencies with respect to our best-fit LCDM model
 In order to do plots for the paper it is useful to apply them to the spectra (and also to combine the different spectra together post-calibration)
 
 .. code:: shell

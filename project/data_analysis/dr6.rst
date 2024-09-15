@@ -221,3 +221,15 @@ To finally combine all covariance matrices together and write the final data int
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_cov_mats.py global_dr6_v4.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python port2sacc.py global_dr6_v4.dict
+
+Post-likelihood analysis
+-------------------------------------------------------
+
+Once the likelihood has been run we obtained final calibration and polarisation efficiency with respect to our best-fit LCDM model
+In order to do plots for the paper it is useful to apply them to the spectra (and also to combine the different spectra together post-calibration)
+
+.. code:: shell
+
+    salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python apply_likelihood_calibration.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_spectra.py global_dr6_v4.dict

@@ -108,7 +108,7 @@ d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
 
-spec_dir = "spectra_leak_corr_ab_corr"
+spec_dir = "spectra_leak_corr_ab_corr_cal"
 bestfit_dir = "best_fits"
 mcm_dir = "mcms"
 combined_spec_dir = "combined_spectra"

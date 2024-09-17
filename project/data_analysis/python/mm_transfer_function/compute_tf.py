@@ -20,8 +20,8 @@ modes = ["TT", "TE", "ET", "EE"] if d["cov_T_E_only"] else spectra
 sv = "dr6"
 arrays = [f"{sv}_{ar}" for ar in d[f"arrays_{sv}"]]
 
-combin = "AxA_AxP"
-#combin = "AxP_PxP"
+#combin = "AxA_AxP"
+combin = "AxP_PxP"
 
 subtract_bf_fg = True
 

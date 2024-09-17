@@ -154,6 +154,20 @@ the ACT spectra, the way we get the correction is the following
 The first code is similar to the standard simulation spectra code, but it's residual only (no signal), the mc_analysis serve to produce the average of these spectra.
 
 *******************
+Computation of the Transfer Function
+*******************
+
+We can compute a temperature transfer function using the cross correlation of ACT and Planck, grab the code in the "mm_transfer_function" folder and run
+
+.. code:: shell
+
+    salloc -N 1 -C cpu -q interactive -t 00:30:00
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python compute_tf.py global_dr6v4xlegacy.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python plot_all_tf.py global_dr6v4xlegacy.dict
+
+
+
+*******************
 Comparison of ACT and Planck
 *******************
 

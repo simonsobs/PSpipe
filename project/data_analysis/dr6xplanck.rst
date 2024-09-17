@@ -1,6 +1,6 @@
-*******************
+*****************************************
 Planck maps pre-processing
-*******************
+*****************************************
 
 Here are some specific instructions to pre-process Planck maps, namely to project them and to subtract the planck bright sources
 
@@ -33,9 +33,9 @@ The source subtraction can then be performed at ``NERSC`` using the following in
 
 and the source subtraction process can be checked by running the ``check_src_subtraction.py`` script which displays the residual maps around point sources.
 
-*******************
+*****************************************
 ACT/Planck cross correlation
-*******************
+*****************************************
 
 Note that here we are giving instructions for the cross correlation of ACT with legacy, but the same apply for npipe, just swap global_dr6v4xlegacy.dict with global_dr6v4xnpipe.dict
 
@@ -85,12 +85,35 @@ to correct for the leakage, grab the code in the leakage folder
     # real 18m12.066s
 
 
-the planck spectra can have leftover systematic in them, we have estimated this using planck end-to-end simulations (see bottom of this page), grab the code in the planck folder
+
+*****************************************
+End-to-end sim correction
+*****************************************
+
+The planck spectra can have leftover systematic in them, we have estimated this using planck end-to-end simulations
+the way we get the correction is the following
+
+.. code:: shell
+
+    salloc -N 4 -C cpu -q interactive -t 03:00:00
+    OMP_NUM_THREADS=32 srun -n 32 -c 32 --cpu_bind=cores python get_planck_spectra_correction_from_nlms.py global_dr6v4xlegacy.dict
+
+    salloc -N 1 -C cpu -q interactive -t 01:00:00
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_analysis.py global_dr6v4xlegacy.dict
+
+The first code is similar to the standard simulation spectra code, but it's residual only (no signal), the mc_analysis serve to produce the average of these spectra.
+Then you can run
 
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_corrected_planck_spectra.py global_dr6v4xlegacy.dict
+
+
+*****************************************
+Calibration and polarisation efficiency
+*****************************************
+
 
 Now to calibrate and get the expected polarisation efficiencies, grab the code in the calibration folder
 
@@ -98,6 +121,11 @@ Now to calibrate and get the expected polarisation efficiencies, grab the code i
 
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_calibs.py global_dr6v4xlegacy.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_polar_eff_LCDM.py global_dr6v4xlegacy.dict
+
+*****************************************
+Simulations
+*****************************************
+
 
 In addition to the standard dr6 simulation tools (e.g:)
 
@@ -135,27 +163,9 @@ You can analyse and plot the simulation results using
 
 
 
-*******************
-End-to-end sim correction
-*******************
-
-
-Note that the Planck Npipe spectra are biased, and we do need to correct the bias before comparing them to
-the ACT spectra, the way we get the correction is the following
-
-.. code:: shell
-
-    salloc -N 4 -C cpu -q interactive -t 03:00:00
-    OMP_NUM_THREADS=32 srun -n 32 -c 32 --cpu_bind=cores python get_planck_spectra_correction_from_nlms.py global_dr6v4xlegacy.dict
-
-    salloc -N 1 -C cpu -q interactive -t 01:00:00
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_analysis.py global_dr6v4xlegacy.dict
-
-The first code is similar to the standard simulation spectra code, but it's residual only (no signal), the mc_analysis serve to produce the average of these spectra.
-
-*******************
+*****************************************
 Computation of the Transfer Function
-*******************
+*****************************************
 
 We can compute a temperature transfer function using the cross correlation of ACT and Planck, grab the code in the "mm_transfer_function" folder and run
 
@@ -166,10 +176,9 @@ We can compute a temperature transfer function using the cross correlation of AC
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python plot_all_tf.py global_dr6v4xlegacy.dict
 
 
-
-*******************
+*****************************************
 Comparison of ACT and Planck
-*******************
+*****************************************
 
 In order to compare ACT and Planck power spectrum, once you have computed all products for legacy and NPIPE, create two folders "dr6xlegacy" and "dr6xnpipe" containing the folders "spectra_leak_corr_planck_bias_corr", "covariances" and "best_fits" and run
 

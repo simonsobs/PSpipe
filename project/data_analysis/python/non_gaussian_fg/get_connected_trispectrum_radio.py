@@ -3,7 +3,7 @@ Compute the connected trispectrum corresponding to the un-masked radio source le
 """
 
 from pspy import so_dict, pspy_utils, so_cov, so_map
-from pspipe_utils import pspipe_list, log, radio_sources
+from pspipe_utils import pspipe_list, log, poisson_sources
 import numpy as np
 import sys, os
 import pylab as plt
@@ -51,10 +51,10 @@ pspy_utils.create_directory(plot_dir)
 spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, delimiter="_", return_nu_tag=True)
 x_ar_cov_list = pspipe_list.x_ar_cov_order(spec_name_list, nu_tag_list, spectra_order=modes_for_xar_cov)
 
-S_148, dNdSdOmega_148 = radio_sources.read_tucci_source_distrib(plot_fname=f"{plot_dir}/source_distrib.png")
-poisson_power_148 = radio_sources.get_poisson_power(S_148, dNdSdOmega_148, plot_fname=f"{plot_dir}/as.png")
-trispectrum_148 = radio_sources.get_trispectrum(S_148, dNdSdOmega_148)
-poisson_power_148_15mJy, trispectrum_148_15mJy = radio_sources.get_power_and_trispectrum_at_Smax(S_148,
+S_148, dNdSdOmega_148 = poisson_sources.read_tucci_source_distrib(plot_fname=f"{plot_dir}/source_distrib.png")
+poisson_power_148 = poisson_sources.get_poisson_power(S_148, dNdSdOmega_148, plot_fname=f"{plot_dir}/as.png")
+trispectrum_148 = poisson_sources.get_trispectrum(S_148, dNdSdOmega_148)
+poisson_power_148_15mJy, trispectrum_148_15mJy = poisson_sources.get_power_and_trispectrum_at_Smax(S_148,
                                                                                                  poisson_power_148,
                                                                                                  trispectrum_148,
                                                                                                  Smax=flux_cut_Jy)
@@ -122,8 +122,8 @@ for id_el1, x_ar_el1 in enumerate(x_ar_cov_list):
         inv_Omega = np.sum(w_dict[name_a1].data * w_dict[name_b1].data * w_dict[name_a2].data  * w_dict[name_b2].data * pixsize_map)
         inv_Omega /= (w2_dict[name_a1, name_b1] * w2_dict[name_a2, name_b2])
         
-        rs_nu_a1, rs_nu_b1 = radio_sources.radio_scaling(nu_a1), radio_sources.radio_scaling(nu_b1)
-        rs_nu_a2, rs_nu_b2 = radio_sources.radio_scaling(nu_a2), radio_sources.radio_scaling(nu_b2)
+        rs_nu_a1, rs_nu_b1 = poisson_sources.radio_scaling(nu_a1), poisson_sources.radio_scaling(nu_b1)
+        rs_nu_a2, rs_nu_b2 = poisson_sources.radio_scaling(nu_a2), poisson_sources.radio_scaling(nu_b2)
         
         nu_scaling = rs_nu_a1 * rs_nu_b1 * rs_nu_a2 * rs_nu_b2
         

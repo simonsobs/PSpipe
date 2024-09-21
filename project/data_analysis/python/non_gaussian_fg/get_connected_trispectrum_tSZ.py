@@ -3,7 +3,7 @@ Compute the connected trispectrum corresponding to the tSZ in the map
 """
 
 from pspy import so_dict, pspy_utils, so_cov, so_map
-from pspipe_utils import pspipe_list, log, radio_sources
+from pspipe_utils import pspipe_list, log
 import numpy as np
 import sys, os
 import pylab as plt

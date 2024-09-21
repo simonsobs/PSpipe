@@ -21,18 +21,18 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 pspy_utils.create_directory(cal_spec_dir)
 cal = {}
-cal["dr6_pa4_f220"] = 0.9879
-cal["dr6_pa5_f090"] = 1.0011
-cal["dr6_pa5_f150"] = 0.9977
-cal["dr6_pa6_f090"] = 1.0005
-cal["dr6_pa6_f150"] = 1.0006
+cal["dr6_pa4_f220"] = 0.9792
+cal["dr6_pa5_f090"] = 1.0002
+cal["dr6_pa5_f150"] = 0.9992
+cal["dr6_pa6_f090"] = 0.9999
+cal["dr6_pa6_f150"] = 1.0015
 
 p_eff = {}
 p_eff["dr6_pa4_f220"] = 1.
-p_eff["dr6_pa5_f090"] = 0.9818
-p_eff["dr6_pa5_f150"] = 0.9954
-p_eff["dr6_pa6_f090"] = 0.9924
-p_eff["dr6_pa6_f150"] = 0.9926
+p_eff["dr6_pa5_f090"] = 0.9885
+p_eff["dr6_pa5_f150"] = 0.9986
+p_eff["dr6_pa6_f090"] = 0.9986
+p_eff["dr6_pa6_f150"] = 0.9976
 
 
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")

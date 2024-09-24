@@ -56,7 +56,7 @@ log.debug(f"Passband information: {passbands} \n")
 bbl = np.load(os.path.join(mcm_dir, f"{spec_name_list[0]}_Bbl_spin0xspin0.npy"))
 bbls = {cross: bbl for cross in spec_name_list}
 
-
+beams = None
 if d["include_beam_chromaticity_effect"]:
     log.info(f"include beam array accounting for beam chromaticity \n")
 
@@ -72,7 +72,6 @@ if d["include_beam_chromaticity_effect"]:
                                                                   nu_ref_dict[map_set],
                                                                   alpha_dict[map_set])
         beams[map_set] = [l, dict(T=bl_nu, E=bl_nu)]
-
 
 # Define metadata such as dict content or libraries version
 metadata = dict(

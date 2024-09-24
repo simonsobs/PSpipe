@@ -11,7 +11,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from pspipe import conventions as cvt
-from pspipe_utils import covariance, io, log, misc, pspipe_list
+from pspipe_utils import beam_chromaticity, covariance, io, log, misc, pspipe_list
 from pspy import pspy_utils, so_dict
 
 matplotlib.use("Agg")
@@ -56,6 +56,24 @@ log.debug(f"Passband information: {passbands} \n")
 bbl = np.load(os.path.join(mcm_dir, f"{spec_name_list[0]}_Bbl_spin0xspin0.npy"))
 bbls = {cross: bbl for cross in spec_name_list}
 
+
+if d["include_beam_chromaticity_effect"]:
+    log.info(f"include beam array accounting for beam chromaticity \n")
+
+    # Get beam chromaticity
+    beams = {}
+    alpha_dict, nu_ref_dict = beam_chromaticity.act_dr6_beam_scaling()
+    for map_set in map_set_list:
+        bl_mono_file_name = d[f"beam_mono_{map_set}"]
+        l, bl = pspy_utils.read_beam_file(bl_mono_file_name, lmax=10000)
+        l, nu_array, bl_nu = beam_chromaticity.get_multifreq_beam(l,
+                                                                  bl,
+                                                                  passbands[map_set],
+                                                                  nu_ref_dict[map_set],
+                                                                  alpha_dict[map_set])
+        beams[map_set] = [l, dict(T=bl_nu, E=bl_nu)]
+
+
 # Define metadata such as dict content or libraries version
 metadata = dict(
     author=d.get("author", "SO Collaboration PS Task Force"),
@@ -84,6 +102,7 @@ common_kwargs = dict(
     lmax=d["lmax"],
     cov_order=cov_order,
     passbands=passbands,
+    beams=beams,
     metadata=metadata,
     log=log,
 )

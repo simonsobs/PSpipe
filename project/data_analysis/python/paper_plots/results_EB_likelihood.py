@@ -16,8 +16,8 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 cov_dir = "covariances"
-spec_dir = "spectra_leak_corr"
-result_dir = "pol_angle"
+spec_dir = "spectra_leak_corr_ab_corr_cal"
+result_dir = "plots/pol_angle"
 bestfit_dir = "best_fits"
 
 pspy_utils.create_directory(result_dir)
@@ -138,7 +138,9 @@ info["params"] = { "alpha_pa5_f090": {  "prior": {  "min": -0.5,  "max": 0.5},  
                    "alpha_pa5_f150": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa5 f150}"},
                    "alpha_pa6_f090": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa6 f090}"},
                    "alpha_pa6_f150": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa6 f150}"}}
-info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.02, "Rminus1_cl_stop": 0.04}}
+#info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.02, "Rminus1_cl_stop": 0.04}}
+info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.2, "Rminus1_cl_stop": 0.4}}
+
 info["output"] = f"{result_dir}/chains/{roots[0]}"
 info["force"] = True
 info["debug"] = False
@@ -154,7 +156,6 @@ kwargs = dict(colors=["k"], lws=[1])
 g.triangle_plot(roots, params, **kwargs, diag1d_kwargs=kwargs)
 
 # Add table on figure
-
 with mpl.rc_context(rc={"text.usetex": True}):
     table = g.sample_analyser.mcsamples[roots[0]].getTable(limit=1, paramList=params)
     kwargs = dict(size=15, ha="right")
@@ -171,18 +172,17 @@ ndof = len(vec_EB) - 4
 pte = 1 - ss.chi2(ndof).cdf(min_chi2)
 print(f"min chi2 = {min_chi2}, pte = {pte}")
 
-
-
-
-alpha_pa5_f090 = 0.097
-alpha_pa5_f150 = 0.356
-alpha_pa6_f090 = 0.179
-alpha_pa6_f150 = 0.220
+mean = {}
+for par_name in params:
+    mean[par_name] = samples.mean(par_name)
 
 nbin_tot = len(vec_EB)
 bin = np.arange(nbin_tot)
 error_EB = np.sqrt(np.diagonal(cov_EB))
-vec_EB_corr = vec_EB - get_vec_th_EB(alpha_pa5_f090, alpha_pa5_f150, alpha_pa6_f090, alpha_pa6_f150)
+vec_EB_corr = vec_EB - get_vec_th_EB(mean["alpha_pa5_f090"],
+                                     mean["alpha_pa5_f150"],
+                                     mean["alpha_pa6_f090"],
+                                     mean["alpha_pa6_f150"])
 
 
 chi2_precorr =  vec_EB @ i_cov @ vec_EB

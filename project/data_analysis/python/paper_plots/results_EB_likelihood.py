@@ -12,6 +12,31 @@ from cobaya.run import run
 from getdist import plots
 import matplotlib as mpl
 
+def get_vec_th_EB(alpha_pa5_f090, alpha_pa5_f150, alpha_pa6_f090, alpha_pa6_f150):
+
+    alpha = {}
+    alpha["dr6_pa5_f090"] = alpha_pa5_f090
+    alpha["dr6_pa5_f150"] = alpha_pa5_f150
+    alpha["dr6_pa6_f090"] = alpha_pa6_f090
+    alpha["dr6_pa6_f150"] = alpha_pa6_f150
+
+    vec_th_EB = []
+    for spec in my_spectra:
+        spec_name, mode = spec
+
+        n1, n2 = spec_name.split("x")
+        _, psth_rot = pol_angle.rot_theory_spectrum(lb, psth_b, alpha[n1], alpha[n2])
+        vec_th_EB = np.append(vec_th_EB, psth_rot[mode][id])
+        
+    return vec_th_EB
+
+def loglike(alpha_pa5_f090, alpha_pa5_f150, alpha_pa6_f090, alpha_pa6_f150):
+    vec_th_EB = get_vec_th_EB(alpha_pa5_f090, alpha_pa5_f150, alpha_pa6_f090, alpha_pa6_f150)
+    res = vec_EB - vec_th_EB
+    chi2 =  res @ i_cov @ res
+    return -0.5 * chi2
+    
+    
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
@@ -45,7 +70,6 @@ cov_xar = np.load(f"{cov_dir}/x_ar_final_cov_data.npy")
 
 
 ################################################################################################
-
 # Start at l=500, remove pa4_f220 pol and only include EB/BE
 spectra_cuts = {
     "dr6_pa4_f220": dict(T=[lmax, lmax], P=[lmax, lmax]),
@@ -66,8 +90,11 @@ bin_out_dict, indices = covariance.get_indices(bin_lo,
 my_spectra = bin_out_dict.keys()
 
 ################################################################################################
+# Select and plot the corresponding correlation matrix
+
 cov_EB = cov_xar[np.ix_(indices, indices)]
 vec_EB = vec_xar[indices]
+i_cov = np.linalg.inv(cov_EB)
 
 
 n_spec = len(my_spectra)
@@ -78,7 +105,7 @@ for my_spec in my_spectra:
     name = name.replace("dr6_", "")
     name_list += [f"{spectrum} {name}"]
 
-# plot the TB/BT correlation matrix
+# plot the EB/BE correlation matrix
 plt.figure(figsize=(16, 16))
 plt.imshow(so_cov.cov2corr(cov_EB))
 plt.xticks(ticks=np.arange(n_spec) * n_bins + n_bins/2, labels = name_list, rotation=90, fontsize=20)
@@ -86,14 +113,12 @@ plt.yticks(ticks=np.arange(n_spec) * n_bins + n_bins/2, labels = name_list, font
 plt.colorbar()
 plt.tight_layout()
 plt.savefig(f"{result_dir}/correlation_EB.png")
-#plt.show()
 plt.clf()
 plt.close()
 
 
-
-
-i_cov = np.linalg.inv(cov_EB)
+################################################################################################
+# Run a MCMC chain and plot the posterior distribution
 
 lth, psth = so_spectra.read_ps(bestfit_dir + f"/cmb.dat", spectra=spectra)
 lb_, psth_b = so_spectra.bin_spectra(lth,
@@ -103,50 +128,22 @@ lb_, psth_b = so_spectra.bin_spectra(lth,
                                      type="Cl",
                                      spectra=spectra)
 
-def get_vec_th_EB(alpha_pa5_f090, alpha_pa5_f150, alpha_pa6_f090, alpha_pa6_f150):
-
-    alpha = {}
-    alpha["dr6_pa5_f090"] = alpha_pa5_f090
-    alpha["dr6_pa5_f150"] = alpha_pa5_f150
-    alpha["dr6_pa6_f090"] = alpha_pa6_f090
-    alpha["dr6_pa6_f150"] = alpha_pa6_f150
-
-    vec_th_EB = []
-    for spec in my_spectra:
-        spec_name, mode = spec
-
-        n1, n2 = spec_name.split("x")
-        _, psth_rot = pol_angle.rot_theory_spectrum(lb, psth_b, alpha[n1], alpha[n2])
-        vec_th_EB = np.append(vec_th_EB, psth_rot[mode][id])
-        
-    return vec_th_EB
-
-
-def loglike(alpha_pa5_f090, alpha_pa5_f150, alpha_pa6_f090, alpha_pa6_f150):
-    
-    vec_th_EB = get_vec_th_EB(alpha_pa5_f090, alpha_pa5_f150, alpha_pa6_f090, alpha_pa6_f150)
-    res = vec_EB - vec_th_EB
-    chi2 =  res @ i_cov @ res
-
-    return -0.5 * chi2
-    
-    
 roots = ["mcmc"]
+params = ["alpha_pa5_f090", "alpha_pa5_f150", "alpha_pa6_f090", "alpha_pa6_f150"]
+
 info = {}
 info["likelihood"] = { "my_like": loglike}
 info["params"] = { "alpha_pa5_f090": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa5 f090}"},
                    "alpha_pa5_f150": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa5 f150}"},
                    "alpha_pa6_f090": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa6 f090}"},
                    "alpha_pa6_f150": {  "prior": {  "min": -0.5,  "max": 0.5},  "ref": 0,  "proposal": 0.005, "latex": r"\alpha_{pa6 f150}"}}
-#info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.02, "Rminus1_cl_stop": 0.04}}
-info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.2, "Rminus1_cl_stop": 0.4}}
+info["sampler"] = {  "mcmc": {  "max_tries": 1e6,  "Rminus1_stop": 0.01, "Rminus1_cl_stop": 0.01}}
 
 info["output"] = f"{result_dir}/chains/{roots[0]}"
 info["force"] = True
 info["debug"] = False
 updated_info, sampler = run(info)
 
-params = ["alpha_pa5_f090", "alpha_pa5_f150", "alpha_pa6_f090", "alpha_pa6_f150"]
 
 g = plots.get_subplot_plotter(
     chain_dir=os.path.join(os.getcwd(), f"{result_dir}/chains"),
@@ -172,6 +169,11 @@ ndof = len(vec_EB) - 4
 pte = 1 - ss.chi2(ndof).cdf(min_chi2)
 print(f"min chi2 = {min_chi2}, pte = {pte}")
 
+
+
+################################################################################################
+# now plot all EB power spectrum pre and post correction using the mean posterior angles
+
 mean = {}
 for par_name in params:
     mean[par_name] = samples.mean(par_name)
@@ -184,13 +186,11 @@ vec_EB_corr = vec_EB - get_vec_th_EB(mean["alpha_pa5_f090"],
                                      mean["alpha_pa6_f090"],
                                      mean["alpha_pa6_f150"])
 
-
 chi2_precorr =  vec_EB @ i_cov @ vec_EB
 chi2_postcorr =  vec_EB_corr @ i_cov @ vec_EB_corr
 
 PTE_precorr  = 1 - ss.chi2(nbin_tot).cdf(chi2_precorr)
 PTE_postcorr  = 1 - ss.chi2(nbin_tot - 4).cdf(chi2_postcorr)
-
 
 plt.figure(figsize=(16,8))
 plt.ylabel(r"$D_{\ell}^{EB}/\sigma_{\ell}^{EB}$", fontsize=22)
@@ -201,6 +201,5 @@ plt.xticks(ticks=np.arange(n_spec) * n_bins + n_bins/2, labels = name_list, rota
 plt.legend(fontsize=18)
 plt.tight_layout()
 plt.savefig(f"{result_dir}/vec_EB.png")
-#plt.show()
 plt.clf()
 plt.close()

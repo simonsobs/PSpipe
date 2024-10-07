@@ -95,6 +95,11 @@ for s, spec in enumerate(spectra):
             idxs_into_cut_vec = bin_out_dict[key][0]
             idxs_into_full_vec = all_indices[idxs_into_cut_vec] # all_indices are after the cuts
             idxs_into_block = idxs_into_full_vec - id_start
+
+            # sanity check
+            alt_idxs_into_block = np.intersect1d(bin_mean, bin_out_dict[key][1], return_indices=True)[1]
+            assert np.all(idxs_into_block == alt_idxs_into_block), \
+                f'Brute force got {idxs_into_block}, expected {alt_idxs_into_block} for {key}'
         else:
             idxs_into_block = []
 

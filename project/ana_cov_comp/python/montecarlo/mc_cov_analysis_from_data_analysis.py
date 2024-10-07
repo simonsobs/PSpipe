@@ -23,9 +23,9 @@ parser = argparse.ArgumentParser(description=description,
 parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
 parser.add_argument('--iStart', type=int, default=None,
-                    help='Only use these simulations')
+                    help='Only use these simulations to build the cov')
 parser.add_argument('--iStop', type=int, default=None,
-                    help='Only use these simulations')
+                    help='Only use these simulations to build the cov')
 args = parser.parse_args()
 
 d = so_dict.so_dict()
@@ -42,8 +42,8 @@ if args.iStart is not None:
 sim_idxs = range(iStart, iStop + 1) # iStart + (iStop + 1 - iStart)
 N = len(sim_idxs)
 
-sim_spec_dir =  d['data_dir'] + "sim_spectra"
-covariances_dir = d['covariances_dir']
+sim_spec_dir = "sim_spectra"
+covariances_dir = "covariances"
 
 pspy_utils.create_directory(covariances_dir)
 

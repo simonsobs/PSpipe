@@ -20,9 +20,9 @@ parser = argparse.ArgumentParser(description=description,
 parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
 parser.add_argument('--iStart', type=int, default=None,
-                    help='Only use these simulations')
+                    help='Correct using the cov that used only use these simulations')
 parser.add_argument('--iStop', type=int, default=None,
-                    help='Only use these simulations')
+                    help='Correct using the cov that used only use these simulations')
 args = parser.parse_args()
 
 d = so_dict.so_dict()
@@ -30,14 +30,23 @@ d.read_from_file(args.paramfile)
 
 log = log.get_logger(**d)
 
-covariances_dir = d['covariances_dir']
-plot_dir = d["plot_dir"] + "/covariances"
+covariances_dir = "covariances"
+plot_dir = "plots/x_ar_cov"
+
 pspy_utils.create_directory(plot_dir)
 
 binning_file = d["binning_file"]
 lmax = d["lmax"]
-spectra_cuts = d['spectra_cuts']
-only_TT_map_set = d['only_TT_map_set']
+
+# the GP is only fit over the bins that survive the below cuts
+spectra_cuts = {
+    "dr6_pa4_f220": {'T': [975, lmax], 'P': [lmax, lmax]},
+    "dr6_pa5_f090": {'T': [975, lmax], 'P': [475, lmax]},
+    "dr6_pa5_f150": {'T': [775, lmax], 'P': [475, lmax]},
+    "dr6_pa6_f090": {'T': [975, lmax], 'P': [475, lmax]},
+    "dr6_pa6_f150": {'T': [575, lmax], 'P': [475, lmax]},
+    }
+only_TT_map_set = ["dr6_pa4_f220"]
 
 if args.iStart is not None:
     iStart = args.iStart

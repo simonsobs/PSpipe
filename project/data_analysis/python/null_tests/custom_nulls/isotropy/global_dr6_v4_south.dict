@@ -1,15 +1,16 @@
 surveys = ["dr6"]
+patch = "/global/cfs/cdirs/act/data/tlouis/dr6v4/patch_mask/patch_1.fits"
 
 arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
+data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": 'CAR', "order": 0}
 binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
 niter = 0
 remove_mean = False
-binned_mcm = False
+binned_mcm = True
 lmax = 8500
 type = 'Dl'
 write_splits_spectra = True
@@ -52,11 +53,8 @@ n_med_ivar = 3
 
 # kspace filter parameters
 apply_kspace_filter  = True
-kspace_tf_path  = data_dir + "kspace_tf/"
+kspace_tf_path  = "/global/cfs/cdirs/act/data/tlouis/dr6v4/kspace_tf_south/"
 k_filter_dr6 = {"type":"binary_cross","vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
-
-
-aberration_correction = data_dir + "aberration_correction"
 
 deconvolve_map_maker_tf_dr6 = False
 
@@ -71,28 +69,28 @@ mm_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
 n_splits_dr6 = 4
 src_free_maps_dr6 = True
 
-maps_dr6_pa4_f150 = [data_dir + 'maps/dr6/cmb_night_pa4_f150_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa4_f220 = [data_dir + 'maps/dr6/cmb_night_pa4_f220_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa5_f090 = [data_dir + 'maps/dr6/cmb_night_pa5_f090_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa5_f150 = [data_dir + 'maps/dr6/cmb_night_pa5_f150_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa6_f090 = [data_dir + 'maps/dr6/cmb_night_pa6_f090_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa6_f150 = [data_dir + 'maps/dr6/cmb_night_pa6_f150_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa4_f150 = [data_dir + 'maps/cmb_night_pa4_f150_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa4_f220 = [data_dir + 'maps/cmb_night_pa4_f220_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa5_f090 = [data_dir + 'maps/cmb_night_pa5_f090_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa5_f150 = [data_dir + 'maps/cmb_night_pa5_f150_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa6_f090 = [data_dir + 'maps/cmb_night_pa6_f090_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa6_f150 = [data_dir + 'maps/cmb_night_pa6_f150_3pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
 
 
 cal_dr6_pa4_f150 = 1.0
-cal_dr6_pa4_f220 = 1.04345
-cal_dr6_pa5_f090 = 1.01106
-cal_dr6_pa5_f150 = 0.9861405786
-cal_dr6_pa6_f090 = 1.00860113
-cal_dr6_pa6_f150 = 0.970199145
+cal_dr6_pa4_f220 = 1.03311 * 1.012
+cal_dr6_pa5_f090 = 1.00915 * 0.99714
+cal_dr6_pa5_f150 = 0.98694 * 0.99263
+cal_dr6_pa6_f090 = 1.00700 * 0.99620
+cal_dr6_pa6_f150 = 0.97050 * 0.99699
 
 
 pol_eff_dr6_pa4_f150 = 1.
-pol_eff_dr6_pa4_f220 = 0.9074190180646329
-pol_eff_dr6_pa5_f090 = 0.9534473784784188
-pol_eff_dr6_pa5_f150 = 0.9545030169952722
-pol_eff_dr6_pa6_f090 = 0.971497122108424
-pol_eff_dr6_pa6_f150 = 0.967920460286931
+pol_eff_dr6_pa4_f220 = 0.9102043215105964
+pol_eff_dr6_pa5_f090 = 0.9474889080448128
+pol_eff_dr6_pa5_f150 = 0.9522047622130759
+pol_eff_dr6_pa6_f090 = 0.9663618697786318
+pol_eff_dr6_pa6_f150 = 0.9636718928481605
 
 
 passband_dir = data_dir + "passbands/"
@@ -104,8 +102,8 @@ freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_
 freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa6_f090.dat"}
 freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
 
-
 beam_file_dir = data_dir + 'beams/20240404_beams/'
+
 
 beam_T_dr6_pa4_f150 = beam_file_dir + 'coadd_pa4_f150_night_beam_tform_jitter_cmb.txt'
 beam_T_dr6_pa4_f220 = beam_file_dir + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
@@ -121,16 +119,9 @@ beam_pol_dr6_pa5_f150 = beam_file_dir + 'coadd_pa5_f150_night_beam_tform_jitter_
 beam_pol_dr6_pa6_f090 = beam_file_dir + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
 beam_pol_dr6_pa6_f150 = beam_file_dir + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
 
-include_beam_chromaticity_effect = True
-beam_mono_dr6_pa4_f150 = beam_file_dir + 'coadd_pa4_f150_night_beam_tform_jitter_mono.txt'
-beam_mono_dr6_pa4_f220 = beam_file_dir + 'coadd_pa4_f220_night_beam_tform_jitter_mono.txt'
-beam_mono_dr6_pa5_f090 = beam_file_dir + 'coadd_pa5_f090_night_beam_tform_jitter_mono.txt'
-beam_mono_dr6_pa5_f150 = beam_file_dir + 'coadd_pa5_f150_night_beam_tform_jitter_mono.txt'
-beam_mono_dr6_pa6_f090 = beam_file_dir + 'coadd_pa6_f090_night_beam_tform_jitter_mono.txt'
-beam_mono_dr6_pa6_f150 = beam_file_dir + 'coadd_pa6_f150_night_beam_tform_jitter_mono.txt'
 
 
-leakage_file_dir = data_dir + 'beams/20240916_gamma/'
+leakage_file_dir = data_dir + 'beams/20240404_gamma/'
 
 leakage_beam_dr6_pa4_f150_TE = ['pa4_f150_gamma_t2e.txt' for i in range(4)]
 leakage_beam_dr6_pa4_f220_TE = ['pa4_f220_gamma_t2e.txt' for i in range(4)]
@@ -145,6 +136,7 @@ leakage_beam_dr6_pa5_f090_TB = ['pa5_f090_gamma_t2b.txt' for i in range(4)]
 leakage_beam_dr6_pa5_f150_TB = ['pa5_f150_gamma_t2b.txt' for i in range(4)]
 leakage_beam_dr6_pa6_f090_TB = ['pa6_f090_gamma_t2b.txt' for i in range(4)]
 leakage_beam_dr6_pa6_f150_TB = ['pa6_f150_gamma_t2b.txt' for i in range(4)]
+
 
 
 
@@ -174,24 +166,24 @@ window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)
-cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
+cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
+fg_params = {"a_tSZ": 4.3050068, "a_kSZ": 0.15060036, "a_p": 8.4076773, "beta_p": 1.6925471, "a_c": 3.1015348, "beta_c": 1.6925471, "a_s": 2.2802898, "a_gtt": 3.66,  "xi": 0.044496673, "T_d": 9.60, "a_gte": 0.264, "a_gtb": 0.012, "a_gee": 0.1154,  "a_gbb": 0.074, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.8809197, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
 
-fg_params = {"a_tSZ": 3.69, "alpha_tSZ":-0.44, "a_kSZ": 1, "a_p": 8.08, "beta_p": 1.823, "a_c": 3.35, "beta_c": 1.823, "a_s": 2.66, "a_gtt": 8.02,  "xi": 0.075, "T_d": 9.60, "a_gte": 0.419, "a_gtb": 0.012, "a_gee": 0.167,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.795, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+bandpass_shift_dr6_pa4_f220  =  11.095222
+bandpass_shift_dr6_pa5_f090  = -0.21607938
+bandpass_shift_dr6_pa5_f150  = -0.4350145
+bandpass_shift_dr6_pa6_f090  =  0.23238833
+bandpass_shift_dr6_pa6_f150  =  0.38983707
 
-bandpass_shift_dr6_pa4_f220  =  7.5
-bandpass_shift_dr6_pa5_f090  = -0.06
-bandpass_shift_dr6_pa5_f150  = -0.92
-bandpass_shift_dr6_pa6_f090  =  0.5
-bandpass_shift_dr6_pa6_f150  = -0.19
 
 
 #sim
 iStart = 0
-iStop = 1639
+iStop = 319
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

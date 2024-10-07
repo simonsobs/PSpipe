@@ -1,30 +1,34 @@
 """
-Compare ACT DR6 spectra with Planck NPIPE and legacy spectra
+Plot a suit of residuals for EE and TE between ACT and Planck
 """
-from pspy import so_dict, pspy_utils, so_cov
+from pspy import so_dict, pspy_utils, so_cov, so_spectra
 from pspipe_utils import consistency, best_fits, covariance, pspipe_list
+import pickle
 import scipy.stats as ss
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import AxP_utils
+import matplotlib
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 remove_first_bin = True
-part = "part_b"
+part = "EE"
+matplotlib.rcParams["font.family"] = "serif"
+matplotlib.rcParams["font.size"] = "20"
 
 
 legacy_dir = "dr6xlegacy/"
 npipe_dir = "dr6xnpipe/"
+
+cov_dir_run_a = f"{legacy_dir}/covariances"
+cov_dir_run_b = f"{npipe_dir}/covariances"
 bestfit_dir = "best_fits"
 spec_dir = "spectra_leak_corr_planck_bias_corr"
 cov_dir = "covariances"
-
-cov_dir_run_a = f"{legacy_dir}/{cov_dir}"
-cov_dir_run_b = f"{npipe_dir}/{cov_dir}"
 
 spec_dir_run_a = f"{legacy_dir}/{spec_dir}"
 spec_dir_run_b = f"{npipe_dir}/{spec_dir}"
@@ -33,45 +37,63 @@ bf_dir_run_a = f"{legacy_dir}/{bestfit_dir}"
 bf_dir_run_b = f"{npipe_dir}/{bestfit_dir}"
 
 run_a_name = "legacy"
-run_b_name = "npipe"
+run_b_name = "NPIPE"
 
 plot_dir = "AxP_plots"
-pspy_utils.create_directory(f"{plot_dir}/{part}")
 
+pspy_utils.create_directory(plot_dir)
 
 
 null_list = {}
-null_list["part_a"] = []
-null_list["part_a"] += [["EE", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f143", "Planck_f143"]]
-null_list["part_a"] += [["EE", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f100", "Planck_f100"]]
-null_list["part_a"] += [["ET", "dr6_pa6_f150", "Planck_f143", "Planck_f143", "Planck_f143"]]
-null_list["part_a"] += [["ET", "dr6_pa5_f090", "Planck_f100", "Planck_f100", "Planck_f100"]]
+null_list["EE"] = []
+null_list["EE"] += [["EE", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f100", "Planck_f100"]]
+null_list["EE"] += [["EE", "dr6_pa5_f150", "dr6_pa5_f150", "Planck_f100", "Planck_f100"]]
+null_list["EE"] += [["EE", "dr6_pa6_f090", "dr6_pa6_f090", "Planck_f100", "Planck_f100"]]
+null_list["EE"] += [["EE", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f100", "Planck_f100"]]
 
-null_list["part_b"] = []
-null_list["part_b"] += [["EE", "dr6_pa6_f090", "dr6_pa6_f090", "Planck_f100", "Planck_f100"]]
-null_list["part_b"] += [["EE", "dr6_pa6_f090", "Planck_f100", "Planck_f100", "Planck_f100"]]
-null_list["part_b"] += [["EE", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f100", "Planck_f100"]]
-null_list["part_b"] += [["EE", "dr6_pa5_f090", "Planck_f100", "Planck_f100", "Planck_f100"]]
-null_list["part_b"] += [["EE", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["EE", "dr6_pa5_f150", "dr6_pa5_f150", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["EE", "dr6_pa6_f150", "Planck_f143", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["EE", "dr6_pa5_f150", "Planck_f143", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["EE", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f217", "Planck_f217"]]
-null_list["part_b"] += [["EE", "dr6_pa5_f150", "dr6_pa5_f150", "Planck_f217", "Planck_f217"]]
+null_list["EE"] += [["EE", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f143", "Planck_f143"]]
+null_list["EE"] += [["EE", "dr6_pa5_f150", "dr6_pa5_f150", "Planck_f143", "Planck_f143"]]
+null_list["EE"] += [["EE", "dr6_pa6_f090", "dr6_pa6_f090", "Planck_f143", "Planck_f143"]]
+null_list["EE"] += [["EE", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f143", "Planck_f143"]]
 
-null_list["part_b"] += [["ET", "dr6_pa6_f090", "Planck_f100", "Planck_f100", "Planck_f100"]]
-null_list["part_b"] += [["ET", "dr6_pa5_f090", "Planck_f100", "Planck_f100", "Planck_f100"]]
+null_list["EE"] += [["EE", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f217", "Planck_f217"]]
+null_list["EE"] += [["EE", "dr6_pa5_f150", "dr6_pa5_f150", "Planck_f217", "Planck_f217"]]
+null_list["EE"] += [["EE", "dr6_pa6_f090", "dr6_pa6_f090", "Planck_f217", "Planck_f217"]]
+null_list["EE"] += [["EE", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f217", "Planck_f217"]]
 
-null_list["part_b"] += [["ET", "dr6_pa5_f090", "Planck_f143", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["ET", "dr6_pa6_f090", "Planck_f143", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["ET", "dr6_pa6_f150", "Planck_f143", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["ET", "dr6_pa5_f150", "Planck_f143", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["TE", "dr6_pa5_f150", "dr6_pa5_f150", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["TE", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["TE", "dr6_pa6_f090", "dr6_pa6_f090", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["TE", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f143", "Planck_f143"]]
-null_list["part_b"] += [["TE", "dr6_pa6_f090", "dr6_pa6_f090", "Planck_f217", "Planck_f217"]]
-null_list["part_b"] += [["TE", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f217", "Planck_f217"]]
+
+null_list["ET"] = []
+
+null_list["ET"] += [["ET", "dr6_pa5_f090", "Planck_f100", "Planck_f100", "Planck_f100"]]
+null_list["ET"] += [["ET", "dr6_pa5_f150", "Planck_f100", "Planck_f100", "Planck_f100"]]
+null_list["ET"] += [["ET", "dr6_pa6_f090", "Planck_f100", "Planck_f100", "Planck_f100"]]
+null_list["ET"] += [["ET", "dr6_pa6_f150", "Planck_f100", "Planck_f100", "Planck_f100"]]
+
+null_list["ET"] += [["ET", "dr6_pa5_f090", "Planck_f143", "Planck_f143", "Planck_f143"]]
+null_list["ET"] += [["ET", "dr6_pa5_f150", "Planck_f143", "Planck_f143", "Planck_f143"]]
+null_list["ET"] += [["ET", "dr6_pa6_f090", "Planck_f143", "Planck_f143", "Planck_f143"]]
+null_list["ET"] += [["ET", "dr6_pa6_f150", "Planck_f143", "Planck_f143", "Planck_f143"]]
+
+null_list["ET"] += [["ET", "dr6_pa5_f090", "Planck_f217", "Planck_f217", "Planck_f217"]]
+null_list["ET"] += [["ET", "dr6_pa5_f150", "Planck_f217", "Planck_f217", "Planck_f217"]]
+null_list["ET"] += [["ET", "dr6_pa6_f090", "Planck_f217", "Planck_f217", "Planck_f217"]]
+null_list["ET"] += [["ET", "dr6_pa6_f150", "Planck_f217", "Planck_f217", "Planck_f217"]]
+
+#null_list["ET"] += [["ET", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f100", "Planck_f100"]]
+#null_list["ET"] += [["ET", "dr6_pa6_f090", "dr6_pa6_f090", "Planck_f100", "Planck_f100"]]
+#null_list["ET"] += [["ET", "dr6_pa5_f150", "dr6_pa5_f150", "Planck_f100", "Planck_f100"]]
+#null_list["ET"] += [["ET", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f100", "Planck_f100"]]
+
+#null_list["ET"] += [["ET", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f143", "Planck_f143"]]
+#null_list["ET"] += [["ET", "dr6_pa6_f090", "dr6_pa6_f090", "Planck_f143", "Planck_f143"]]
+#null_list["ET"] += [["ET", "dr6_pa5_f150", "dr6_pa5_f150", "Planck_f143", "Planck_f143"]]
+#null_list["ET"] += [["ET", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f143", "Planck_f143"]]
+
+#null_list["ET"] += [["ET", "dr6_pa5_f090", "dr6_pa5_f090", "Planck_f217", "Planck_f217"]]
+#null_list["ET"] += [["ET", "dr6_pa6_f090", "dr6_pa6_f090", "Planck_f217", "Planck_f217"]]
+#null_list["ET"] += [["ET", "dr6_pa5_f150", "dr6_pa5_f150", "Planck_f217", "Planck_f217"]]
+#null_list["ET"] += [["ET", "dr6_pa6_f150", "dr6_pa6_f150", "Planck_f217", "Planck_f217"]]
+
 
 
 
@@ -98,9 +120,11 @@ y_lims_spec["EE"] = [-10, 70]
 
 print(f"we will do {len(null_list)} null tests")
 
-for null in null_list[part]:
 
-    print(null)
+plt.figure(figsize=(20, 25))
+
+count = 0
+for null in null_list[part]:
 
     mode, ms1, ms2, ms3, ms4 = null
     res_cov_dict_run_a, res_cov_dict_run_b = {}, {}
@@ -167,10 +191,7 @@ for null in null_list[part]:
 
         name += "+leakage"
 
-
     corr_run_a = so_cov.cov2corr(r_cov_run_a)
-    
-
     
     lmin, lmax = AxP_utils.get_lmin_lmax(null, multipole_range)
 
@@ -201,53 +222,52 @@ for null in null_list[part]:
     else:
         l_pow_plain = 0
 
-    plt.figure(figsize=(16, 10))
+    plt.subplot(6, 2, count+1)
     plot_title = f"{ms3}x{ms4} - {ms1}x{ms2}"
     plot_title = plot_title.replace("dr6_", "")
-    plt.suptitle(plot_title.replace("-"," vs "))
-    plt.subplot(2,1,1)
-    plt.errorbar(lb - 2, Db1_run_a * lb ** l_pow_plain, sigma1_run_a * lb ** l_pow_plain, label=f"{ms1}x{ms2} [{run_a_name} run]", color="grey", fmt=".", markersize=0)
-    plt.errorbar(lb + 2, Db1_run_b * lb ** l_pow_plain, sigma1_run_b * lb ** l_pow_plain, label=f"{ms1}x{ms2} [{run_b_name} run]", color="black", fmt=".", markersize=0)
+    plot_title = plot_title.replace("-"," vs ")
+    plot_title = plot_title.replace("_", "-")
 
-    plt.errorbar(lb - 8, (Db2_run_a + res_fg_b) * lb ** l_pow_plain, sigma2_run_a * lb ** l_pow_plain, label=f"{ms3}x{ms4} + expected fg diff [{run_a_name} run]", fmt=".", color="royalblue", markersize=0)
-    
-    plt.errorbar(lb + 8, (Db2_run_b + res_fg_b) * lb ** l_pow_plain, sigma2_run_b * lb ** l_pow_plain, label=f"{ms3}x{ms4} + expected fg diff [{run_b_name} run]", fmt=".", color="darkorange", markersize=0)
-    plt.legend()
-    plt.xlabel(r"$\ell$", fontsize=18)
-    plt.ylabel(r"$\ell^{%d} D_\ell^\mathrm{%s}$" % (l_pow_plain, mode), fontsize=18)
-
-    plt.ylim(y_lims_spec[mode][0], y_lims_spec[mode][1])
-    plt.xlim(300, 2200)
-
-    plt.axvspan(xmin=0, xmax=xleft,  color="gray", alpha=0.7)
-    if xright != lb[-1]:
-        plt.axvspan(xmin=xright, xmax=lb[-1], color="gray", alpha=0.7)
-
-    plt.subplot(2,1,2)
+    plt.title(plot_title, fontsize=20)
+ 
     plt.errorbar(lb - 8, -(res_ps_run_a - res_fg_b) * lb ** l_pow,
                      yerr=np.sqrt(r_cov_run_a.diagonal()) * lb ** l_pow,
                      ls="None", marker = ".",
-                     label=f"[{run_a_name}  run] {name} [$\chi^2 = {{{chi2_run_a:.1f}}}/{{{ndof}}}$ (${{{pte_run_a:.4f}}}$)]", color="royalblue", alpha=0.7)
+                     label=f"{run_a_name}   p= {pte_run_a:.3f}", color="lightseagreen")
                      
     plt.errorbar(lb + 8, -(res_ps_run_b - res_fg_b) * lb ** l_pow,
                 yerr=np.sqrt(r_cov_run_b.diagonal()) * lb ** l_pow,
                 ls="None", marker = ".",
-                label=f"[{run_b_name} run]  {name} [$\chi^2 = {{{chi2_run_b:.1f}}}/{{{ndof}}}$ (${{{pte_run_b:.4f}}}$)]", color="darkorange", alpha=0.7)
+                label=f"{run_b_name}   p= {pte_run_b:.3f}", color="blue", alpha=0.7)
 
-    plt.plot(lb_fg, lb_fg*0, color="black")
-    plt.legend()
+    plt.plot(lb_fg, lb_fg*0, linestyle="--", color="black")
+    plt.legend(fontsize=15, loc="lower right")
     plt.axvspan(xmin=0, xmax=xleft,  color="gray", alpha=0.7)
     if xright != lb[-1]:
         plt.axvspan(xmin=xright, xmax=lb[-1], color="gray", alpha=0.7)
         
-    plt.title(plot_title.replace("dr6_", ""))
-    plt.xlim(300, 2200)
+   # plt.title(plot_title.replace("dr6_", ""))
+    plt.xlim(300, 2000)
     if ylims is not None:
         plt.ylim(*ylims)
-    plt.xlabel(r"$\ell$", fontsize=18)
-    plt.ylabel(r"$\ell^{%d} \Delta D_\ell^\mathrm{%s}$" % (l_pow, mode), fontsize=18)
-    plt.tight_layout()
-    plt.savefig(f"{plot_dir}/{part}/{fname}.png", bbox_inches='tight')
-    plt.clf()
-    plt.close()
+    plt.xlabel(r"$\ell$", fontsize=25)
+    
+    if l_pow != 0:
+        plt.ylabel(r"$\ell^{%d} \Delta D_\ell^\mathrm{%s}$" % (l_pow, mode), fontsize=25)
+    else:
+        plt.ylabel(r"$\Delta D_\ell^\mathrm{%s}$" % (mode), fontsize=25)
+
+    print(f"{ms3}x{ms4} - {ms1}x{ms2}, {run_a_name}   p= {pte_run_a:.3f}")
+    print(f"{ms3}x{ms4} - {ms1}x{ms2}, {run_b_name}   p= {pte_run_b:.3f}")
+
+    count += 1
+    
+plt.tight_layout()
+plt.savefig(f"{plot_dir}/{part}.png", bbox_inches='tight')
+plt.clf()
+plt.close()
+
+
+
+
 

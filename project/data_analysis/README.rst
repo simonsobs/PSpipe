@@ -6,7 +6,7 @@ Here we give instructions to install and to run the full thing on interactive no
 course also submit it to NERSC standard nodes
 
 Installation steps
-------------------
+---------------------------------------------------------
 
 First, we strongly recommand to install everything in a virtual ``python`` environment in order to
 avoid clash with other ``python`` modules installed, for instance, within the ``.local``
@@ -109,17 +109,18 @@ Requirements
 
 
 Running the dr6 main analysis
-------------------
+---------------------------------------------------------
+
 To run the main dr6 analysis follow the instructions in `dr6 <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6.rst/>`_
 
 Running the dr6xPlanck pipeline
-------------------
+---------------------------------------------------------
 To run the dr6xPlanck analysis follow the instructions in `dr6xplanck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6xplanck.rst/>`_
 
 Estimation of the dust
-------------------
+---------------------------------------------------------
 To estimate the dust in the dr6 patch we use Planck 353 GHz maps, follow the instructions in `dust  <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dust.rst/>`_
 
 Running our reproduction of the Planck pipeline
-------------------
+---------------------------------------------------------
 To run a reproduction of the Planck official result follow the instructions in `planck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/planck.rst/>`_

@@ -18,7 +18,7 @@ type = d["type"]
 surveys = d["surveys"]
 lmax = d["lmax"]
 
-ab_dir = "aberration_correction"
+ab_dir = d["aberration_correction"]
 
 plot_dir = "plots/aberration_data"
 spec_dir = "spectra_leak_corr"

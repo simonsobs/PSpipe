@@ -10,7 +10,7 @@ Here we give instructions to install and to run the full thing on interactive no
 course also submit it to NERSC standard nodes
 
 Running the main pipeline
---------------------
+-------------------------------------------------------
 
 First we need to create all the window functions. In the following we will assume that the window functions  used in temperature and in polarisation are the same, we will create the windows based on a the edges of the survey, a galactic mask, a pt source mask and a threshold on the amount of crosslinking in the patch of observation.
 
@@ -81,7 +81,7 @@ so this produces all of the main products, spectra and covariances, now we need 
 
 
 Leakage correction and leakage covariance
---------------------
+-------------------------------------------------------
 
 The spectra are contaminated by leakage, in order to correct for leakage you should grab the code in the leakage folder and run
 
@@ -97,7 +97,7 @@ The spectra are contaminated by leakage, in order to correct for leakage you sho
     
 
 Monte-Carlo kspace filter transfer function
---------------------
+-------------------------------------------------------
 
 To compute the monte-carlo transfer function that encodes the kspace filter effect you will grab the code in the kspace folder
 
@@ -113,8 +113,8 @@ To compute the monte-carlo transfer function that encodes the kspace filter effe
     
     
 Monte Carlo correction to the covariance matrix
---------------------
-    
+-------------------------------------------------------
+
 To generate a set of simulated spectra using the `mnms` noise simulation code you first have to generate the noise `alms` for each split and wafer and store them to disk. Then you have to run a standard simulation routine that reads the precomputed noise `alms`. Remember to delete the noise `alms` when you are done with your simulations. For a set of 80 simulations, grab the code in the montecarlo folder.
 
 .. code:: shell
@@ -138,7 +138,7 @@ You can analyse and plot the sim results using
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_covariances.py global_dr6_v4.dict
 
 Aberration correction
---------------------
+-------------------------------------------------------
 
 The spectra are aberrated and we need to correct for it, to do so we generate sims with aberration and compare them with sims without aberration, we then correct the effect on the data power spectra,
 grab the code in the aberration folder and run
@@ -156,19 +156,21 @@ grab the code in the aberration folder and run
     # real    1m53.833s
 
 
-Radio trispectrum
-------------------
+Radio and tSZ trispectrum
+-------------------------------------------------------
 
-To include the non gaussian contribution to the covariance matrix coming from the connected four point function of the Radio sources (assumed to be Poisson distributed), grab the code in the radio folder and run
+To include the non gaussian contribution to the covariance matrix coming from the connected four point function of the Radio sources and tSZ (assumed to be Poisson distributed), grab the code in the non_gaussian_fg folder and run
 
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_radio.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_tSZ.py global_dr6_v4.dict
+
     # real 3m4.125s
     
 Non gaussian lensing terms
-------------------
+-------------------------------------------------------
 
 To include the non gaussian contribution to the covariance matrix coming from the connected four point function due to lensing we rely on external codes (from Amanda MacInnis)
 see the dedicated `README <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/lensing.rst/>`_ for how these terms are computed
@@ -199,7 +201,7 @@ We can check the analytic computation using PSpipe simulation code
 
 
 Array null test
-------------------
+-------------------------------------------------------
 
 To perform the array null test, grab the code in null_tests and run
 
@@ -207,3 +209,27 @@ To perform the array null test, grab the code in null_tests and run
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python compute_null_tests.py global_dr6_v4.dict
+
+
+Combine cov mat and write data in a SACC file
+-------------------------------------------------------
+
+To finally combine all covariance matrices together and write the final data into a SACC file run
+
+.. code:: shell
+
+    salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_cov_mats.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python port2sacc.py global_dr6_v4.dict
+
+Post-likelihood analysis
+-------------------------------------------------------
+
+Once the likelihood has been run, we have obtained final calibrations and polarisation efficiencies with respect to our best-fit LCDM model
+In order to do plots for the paper it is useful to apply them to the spectra (and also to combine the different spectra together post-calibration)
+
+.. code:: shell
+
+    salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python apply_likelihood_calibration.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_spectra.py global_dr6_v4.dict

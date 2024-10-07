@@ -30,11 +30,6 @@ n_mcms, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
 log.info(f"number of mcm matrices to compute : {n_mcms}")
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_mcms - 1)
-
-if len(sys.argv) == 4:
-    log.info(f"computing only the mcm matrices : {int(sys.argv[2])}:{int(sys.argv[3])}")
-    subtasks = subtasks[int(sys.argv[2]):int(sys.argv[3])]
-
 for task in subtasks:
     task = int(task)
     sv1, ar1, sv2, ar2 = sv1_list[task], ar1_list[task], sv2_list[task], ar2_list[task]

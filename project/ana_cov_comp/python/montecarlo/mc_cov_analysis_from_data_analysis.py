@@ -24,7 +24,13 @@ parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
 parser.add_argument('--anaflat', action='store_true',
                     help='If analytical covariance exists, also make flattened '
-                    'version of monte-carlo covariance')
+                    'version of monte-carlo covariance. This is necessary for '
+                    'the Gaussian Process smoothing to use errors measured '
+                    'directly from the Monte Carlo simulations.')
+parser.add_argument('--iStart', type=int, default=None,
+                    help='Only use these simulations')
+parser.add_argument('--iStop', type=int, default=None,
+                    help='Only use these simulations')
 args = parser.parse_args()
 
 d = so_dict.so_dict()
@@ -35,7 +41,11 @@ log = log.get_logger(**d)
 type = d["type"]
 iStart = d["iStart"]
 iStop = d["iStop"]
-N = iStop - iStart + 1
+if args.iStart is not None:
+    iStart = args.iStart
+    iStop = args.iStop
+sim_idxs = range(iStart, iStop + 1) # iStart + (iStop + 1 - iStart)
+N = len(sim_idxs)
 
 sim_spec_dir =  d['data_dir'] + "sim_spectra"
 covariances_dir = d['covariances_dir']
@@ -82,7 +92,7 @@ full_vec_list = []
 if ana_cov is not None and args.anaflat:
     full_vec_anaflat_list = []
 
-for iii in range(iStart, iStop + 1):
+for iii in sim_idxs:
     if iii % 100 == 0:
         log.info(iii)
     spec_dict = {}
@@ -119,7 +129,7 @@ def add_term_to_mc_cov(mc_cov, samp_vec, mean_vec, N):
     term = (N/(N-1)) * np.outer(delta_vec, delta_vec)
     mc_cov += term
 
-for iii in range(iStart, iStop + 1):
+for iii in sim_idxs:
     if iii % 100 == 0:
         log.info(iii)
 
@@ -146,7 +156,7 @@ def add_term_to_var_mc_cov(var_mc_cov, samp_vec, mean_vec, mean_mc_cov, N):
     term = (N/(N-1)) * np.outer(delta_vec, delta_vec)
     var_mc_cov += (term - mean_mc_cov)**2
 
-for iii in range(iStart, iStop + 1):
+for iii in sim_idxs:
     if iii % 100 == 0:
         log.info(iii)
 
@@ -163,8 +173,12 @@ if ana_cov is not None and args.anaflat:
     pspy_utils.is_symmetric(var_mc_cov_anaflat)
 
 # save matrices
-fn = 'x_ar_mc_cov.npy'
-var_fn = 'var_x_ar_mc_cov.npy'
+if args.iStart is not None:
+    fn = f'x_ar_mc_cov_{iStart}_{iStop}.npy'
+    var_fn = f'var_x_ar_mc_cov_{iStart}_{iStop}.npy'
+else:
+    fn = 'x_ar_mc_cov.npy'
+    var_fn = 'var_x_ar_mc_cov.npy'
 np.save(os.path.join(covariances_dir, fn), mean_mc_cov)
 np.save(os.path.join(covariances_dir, var_fn), var_mc_cov)
 
@@ -188,14 +202,22 @@ for sid1, name1 in enumerate(spec_list):
             for s2, spec2 in enumerate(modes_for_cov):
                 mean_mc_cov_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = mean_mc_cov_dict[name1, name2, spec1, spec2]
                 var_mc_cov_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = var_mc_cov_dict[name1, name2, spec1, spec2]
-        fn = f'mc_cov_{name1}_{name2}.npy'
-        var_fn = f'var_mc_cov_{name1}_{name2}.npy'
+        if args.iStart is not None:
+            fn = f'mc_cov_{name1}_{name2}_{iStart}_{iStop}.npy'
+            var_fn = f'var_mc_cov_{name1}_{name2}_{iStart}_{iStop}.npy'
+        else:
+            fn = f'mc_cov_{name1}_{name2}.npy'
+            var_fn = f'var_mc_cov_{name1}_{name2}.npy'
         np.save(os.path.join(covariances_dir, fn), mean_mc_cov_block)
         np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_block)
 
 if ana_cov is not None and args.anaflat:
-    fn = 'x_ar_mc_cov_anaflat.npy'
-    var_fn = 'var_x_ar_mc_cov_anaflat.npy'
+    if args.iStart is not None:
+        fn = f'x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'
+        var_fn = f'var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'
+    else:
+        fn = 'x_ar_mc_cov_anaflat.npy'
+        var_fn = 'var_x_ar_mc_cov_anaflat.npy'
     np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat)
     np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat)
 
@@ -219,7 +241,11 @@ if ana_cov is not None and args.anaflat:
                 for s2, spec2 in enumerate(modes_for_cov):
                     mean_mc_cov_anaflat_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = mean_mc_cov_anaflat_dict[name1, name2, spec1, spec2]
                     var_mc_cov_anaflat_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = var_mc_cov_anaflat_dict[name1, name2, spec1, spec2]
-            fn = f'mc_cov_anaflat_{name1}_{name2}.npy'
-            var_fn = f'var_mc_cov_anaflat_{name1}_{name2}.npy'
+            if args.iStart is not None:
+                fn = f'mc_cov_anaflat_{name1}_{name2}_{iStart}_{iStop}.npy'
+                var_fn = f'var_mc_cov_anaflat_{name1}_{name2}_{iStart}_{iStop}.npy'
+            else:
+                fn = f'mc_cov_anaflat_{name1}_{name2}.npy'
+                var_fn = f'var_mc_cov_anaflat_{name1}_{name2}.npy'
             np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat_block)
             np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat_block)

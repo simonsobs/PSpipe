@@ -55,16 +55,11 @@ bin_low, bin_high, bin_mean, bin_size = pspy_utils.read_binning_file(binning_fil
 n_bins = len(bin_mean)
 
 # need the errors on the flattened analytic matrix diagonal
-try:
-    if args.iStart is not None:
-        var_ana_cov_flat = np.load(os.path.join(covariances_dir, f'var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'))
-    else:
-        var_ana_cov_flat = np.load(os.path.join(covariances_dir, 'var_x_ar_mc_cov_anaflat.npy'))
-    var_eigenspectrum_ratios_by_block = np.split(np.diag(var_ana_cov_flat), var_ana_cov_flat.shape[0] // n_bins)
-except FileNotFoundError:
-    var_eigenspectrum_ratios_by_block = None
-    log.info('No precomputed errors on flattened analytic covariance matrix. '
-             'Errors will be inferred from the MC scatter directly.')
+if args.iStart is not None:
+    var_ana_cov_flat = np.load(os.path.join(covariances_dir, f'var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'))
+else:
+    var_ana_cov_flat = np.load(os.path.join(covariances_dir, 'var_x_ar_mc_cov_anaflat.npy'))
+var_eigenspectrum_ratios_by_block = np.split(np.diag(var_ana_cov_flat), var_ana_cov_flat.shape[0] // n_bins)
 
 # we want the indices of each block that survive data cuts.
 # we will use these to smooth each block.

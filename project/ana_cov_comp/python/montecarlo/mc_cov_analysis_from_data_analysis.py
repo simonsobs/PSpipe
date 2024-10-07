@@ -22,11 +22,6 @@ parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
-parser.add_argument('--anaflat', action='store_true',
-                    help='If analytical covariance exists, also make flattened '
-                    'version of monte-carlo covariance. This is necessary for '
-                    'the Gaussian Process smoothing to use errors measured '
-                    'directly from the Monte Carlo simulations.')
 parser.add_argument('--iStart', type=int, default=None,
                     help='Only use these simulations')
 parser.add_argument('--iStop', type=int, default=None,
@@ -52,17 +47,8 @@ covariances_dir = d['covariances_dir']
 
 pspy_utils.create_directory(covariances_dir)
 
-try:
-    if args.anaflat:
-        ana_cov = np.load(os.path.join(covariances_dir, 'x_ar_analytic_cov.npy'))
-        inv_sqrt_ana_cov  = utils.eigpow(ana_cov, -0.5)
-    else:
-        ana_cov = None
-except FileNotFoundError:
-    ana_cov = None
-    log.info('No analytic cov, proceeding without it. Note, this means cannot '
-             'compute explicit errors on mc covmat for sim-based correction. '
-             'Instead, they will be inferred from the MC scatter.')
+ana_cov = np.load(os.path.join(covariances_dir, 'x_ar_analytic_cov.npy'))
+inv_sqrt_ana_cov  = utils.eigpow(ana_cov, -0.5)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -89,8 +75,7 @@ log.info(f"we start by constructing block mc covariances")
 
 # do one pass to store all the simulated data vectors
 full_vec_list = []
-if ana_cov is not None and args.anaflat:
-    full_vec_anaflat_list = []
+full_vec_anaflat_list = []
 
 for iii in sim_idxs:
     if iii % 100 == 0:
@@ -110,18 +95,15 @@ for iii in sim_idxs:
                                                     spectra_order=modes_for_cov,
                                                     remove_doublon=True)
     full_vec_list.append(full_vec_iii)
-    if ana_cov is not None and args.anaflat:
-        full_vec_anaflat_list.append(inv_sqrt_ana_cov @ full_vec_iii)
+    full_vec_anaflat_list.append(inv_sqrt_ana_cov @ full_vec_iii)
 
 mean_full_vec = np.mean(full_vec_list, axis=0)
-if ana_cov is not None and args.anaflat:
-    mean_full_vec_anaflat = np.mean(full_vec_anaflat_list, axis=0)
+mean_full_vec_anaflat = np.mean(full_vec_anaflat_list, axis=0)
 
 # do another pass to get the mean mc_covs. we don't store them all for memory reasons.
 # mean mc_cov includes Bessel's correction
 mean_mc_cov = np.zeros((mean_full_vec.size, mean_full_vec.size))
-if ana_cov is not None and args.anaflat:
-    mean_mc_cov_anaflat = np.zeros((mean_full_vec_anaflat.size, mean_full_vec_anaflat.size))
+mean_mc_cov_anaflat = np.zeros((mean_full_vec_anaflat.size, mean_full_vec_anaflat.size))
 
 @numba.njit(parallel=True)
 def add_term_to_mc_cov(mc_cov, samp_vec, mean_vec, N):
@@ -134,21 +116,19 @@ for iii in sim_idxs:
         log.info(iii)
 
     add_term_to_mc_cov(mean_mc_cov, full_vec_list[iii], mean_full_vec, N)
-    if ana_cov is not None and args.anaflat:
-        add_term_to_mc_cov(mean_mc_cov_anaflat, full_vec_anaflat_list[iii],
-                           mean_full_vec_anaflat, N)
+    add_term_to_mc_cov(mean_mc_cov_anaflat, full_vec_anaflat_list[iii],
+                       mean_full_vec_anaflat, N)
 
 mean_mc_cov /= N
 pspy_utils.is_symmetric(mean_mc_cov)
-if ana_cov is not None and args.anaflat:
-    mean_mc_cov_anaflat /= N
-    pspy_utils.is_symmetric(mean_mc_cov_anaflat)
+
+mean_mc_cov_anaflat /= N
+pspy_utils.is_symmetric(mean_mc_cov_anaflat)
 
 # do a third pass to get errors in these quantities/
 # variance includes Bessel's correction, and then the variance of the mean over sims
 var_mc_cov = np.zeros((mean_full_vec.size, mean_full_vec.size))
-if ana_cov is not None and args.anaflat:
-    var_mc_cov_anaflat = np.zeros((mean_full_vec_anaflat.size, mean_full_vec_anaflat.size)) 
+var_mc_cov_anaflat = np.zeros((mean_full_vec_anaflat.size, mean_full_vec_anaflat.size)) 
 
 @numba.njit(parallel=True)
 def add_term_to_var_mc_cov(var_mc_cov, samp_vec, mean_vec, mean_mc_cov, N):
@@ -162,15 +142,14 @@ for iii in sim_idxs:
 
     add_term_to_var_mc_cov(var_mc_cov, full_vec_list[iii], mean_full_vec,
                            mean_mc_cov, N)
-    if ana_cov is not None and args.anaflat:
-        add_term_to_var_mc_cov(var_mc_cov_anaflat, full_vec_anaflat_list[iii],
-                               mean_full_vec_anaflat, mean_mc_cov_anaflat, N)
+    add_term_to_var_mc_cov(var_mc_cov_anaflat, full_vec_anaflat_list[iii],
+                           mean_full_vec_anaflat, mean_mc_cov_anaflat, N)
 
 var_mc_cov /= N * (N-1)
 pspy_utils.is_symmetric(var_mc_cov)
-if ana_cov is not None and args.anaflat:
-    var_mc_cov_anaflat /= N * (N-1)
-    pspy_utils.is_symmetric(var_mc_cov_anaflat)
+
+var_mc_cov_anaflat /= N * (N-1)
+pspy_utils.is_symmetric(var_mc_cov_anaflat)
 
 # save matrices
 if args.iStart is not None:
@@ -182,70 +161,11 @@ else:
 np.save(os.path.join(covariances_dir, fn), mean_mc_cov)
 np.save(os.path.join(covariances_dir, var_fn), var_mc_cov)
 
-# also save each block
-mean_mc_cov_dict = covariance.full_cov_to_cov_dict(mean_mc_cov,
-                                                   spec_list,
-                                                   spectra_order=modes_for_cov,
-                                                   remove_doublon=True)
-var_mc_cov_dict = covariance.full_cov_to_cov_dict(var_mc_cov,
-                                                  spec_list,
-                                                  spectra_order=modes_for_cov,
-                                                  remove_doublon=True)
-
-n_bins = len(spec_dict[name1, spec]) # NOTE: assumes same for all individual measured ps
-for sid1, name1 in enumerate(spec_list):
-    for sid2, name2 in enumerate(spec_list):
-        if sid1 > sid2: continue
-        mean_mc_cov_block = np.zeros((len(modes_for_cov) * n_bins, len(modes_for_cov) * n_bins))
-        var_mc_cov_block = np.zeros((len(modes_for_cov) * n_bins, len(modes_for_cov) * n_bins))
-        for s1, spec1 in enumerate(modes_for_cov):
-            for s2, spec2 in enumerate(modes_for_cov):
-                mean_mc_cov_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = mean_mc_cov_dict[name1, name2, spec1, spec2]
-                var_mc_cov_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = var_mc_cov_dict[name1, name2, spec1, spec2]
-        if args.iStart is not None:
-            fn = f'mc_cov_{name1}_{name2}_{iStart}_{iStop}.npy'
-            var_fn = f'var_mc_cov_{name1}_{name2}_{iStart}_{iStop}.npy'
-        else:
-            fn = f'mc_cov_{name1}_{name2}.npy'
-            var_fn = f'var_mc_cov_{name1}_{name2}.npy'
-        np.save(os.path.join(covariances_dir, fn), mean_mc_cov_block)
-        np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_block)
-
-if ana_cov is not None and args.anaflat:
-    if args.iStart is not None:
-        fn = f'x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'
-        var_fn = f'var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'
-    else:
-        fn = 'x_ar_mc_cov_anaflat.npy'
-        var_fn = 'var_x_ar_mc_cov_anaflat.npy'
-    np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat)
-    np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat)
-
-    # also save each block
-    mean_mc_cov_anaflat_dict = covariance.full_cov_to_cov_dict(mean_mc_cov_anaflat,
-                                                               spec_list,
-                                                               spectra_order=modes_for_cov,
-                                                               remove_doublon=True)
-    var_mc_cov_anaflat_dict = covariance.full_cov_to_cov_dict(var_mc_cov_anaflat,
-                                                              spec_list,
-                                                              spectra_order=modes_for_cov,
-                                                              remove_doublon=True)
-
-    n_bins = len(spec_dict[name1, spec]) # NOTE: assumes same for all individual measured ps
-    for sid1, name1 in enumerate(spec_list):
-        for sid2, name2 in enumerate(spec_list):
-            if sid1 > sid2: continue
-            mean_mc_cov_anaflat_block = np.zeros((len(modes_for_cov) * n_bins, len(modes_for_cov) * n_bins))
-            var_mc_cov_anaflat_block = np.zeros((len(modes_for_cov) * n_bins, len(modes_for_cov) * n_bins))
-            for s1, spec1 in enumerate(modes_for_cov):
-                for s2, spec2 in enumerate(modes_for_cov):
-                    mean_mc_cov_anaflat_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = mean_mc_cov_anaflat_dict[name1, name2, spec1, spec2]
-                    var_mc_cov_anaflat_block[s1 * n_bins:(s1+1) * n_bins, s2 * n_bins:(s2+1) * n_bins] = var_mc_cov_anaflat_dict[name1, name2, spec1, spec2]
-            if args.iStart is not None:
-                fn = f'mc_cov_anaflat_{name1}_{name2}_{iStart}_{iStop}.npy'
-                var_fn = f'var_mc_cov_anaflat_{name1}_{name2}_{iStart}_{iStop}.npy'
-            else:
-                fn = f'mc_cov_anaflat_{name1}_{name2}.npy'
-                var_fn = f'var_mc_cov_anaflat_{name1}_{name2}.npy'
-            np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat_block)
-            np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat_block)
+if args.iStart is not None:
+    fn = f'x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'
+    var_fn = f'var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'
+else:
+    fn = 'x_ar_mc_cov_anaflat.npy'
+    var_fn = 'var_x_ar_mc_cov_anaflat.npy'
+np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat)
+np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat)

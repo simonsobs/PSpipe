@@ -1,4 +1,4 @@
-description = """
+"""
 This script converts monte-carlo power spectra into monte-carlo 
 covariance matrices. It infers filenames directly from the paramfile.
 In preparation for the sim-based correction, it also computes the 
@@ -153,19 +153,19 @@ pspy_utils.is_symmetric(var_mc_cov_anaflat)
 
 # save matrices
 if args.iStart is not None:
-    fn = f'x_ar_mc_cov_{iStart}_{iStop}.npy'
-    var_fn = f'var_x_ar_mc_cov_{iStart}_{iStop}.npy'
+    fn = f"x_ar_mc_cov_{iStart}_{iStop}.npy"
+    var_fn = f"var_x_ar_mc_cov_{iStart}_{iStop}.npy"
 else:
-    fn = 'x_ar_mc_cov.npy'
-    var_fn = 'var_x_ar_mc_cov.npy'
+    fn = "x_ar_mc_cov.npy"
+    var_fn = "var_x_ar_mc_cov.npy"
 np.save(os.path.join(covariances_dir, fn), mean_mc_cov)
 np.save(os.path.join(covariances_dir, var_fn), var_mc_cov)
 
 if args.iStart is not None:
-    fn = f'x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'
-    var_fn = f'var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'
+    fn = f"x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy"
+    var_fn = f"var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy"
 else:
-    fn = 'x_ar_mc_cov_anaflat.npy'
-    var_fn = 'var_x_ar_mc_cov_anaflat.npy'
+    fn = "x_ar_mc_cov_anaflat.npy"
+    var_fn = "var_x_ar_mc_cov_anaflat.npy"
 np.save(os.path.join(covariances_dir, fn), mean_mc_cov_anaflat)
 np.save(os.path.join(covariances_dir, var_fn), var_mc_cov_anaflat)

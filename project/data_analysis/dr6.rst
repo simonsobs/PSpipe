@@ -137,6 +137,17 @@ You can analyse and plot the sim results using
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_spectra.py global_dr6_v4.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_covariances.py global_dr6_v4.dict
 
+In addition if you wish to create a covariance matrix corrected from simulations using gaussian processes run
+
+.. code:: shell
+
+    salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_cov_analysis_for_gp.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_mc_corrected_xarrays_covmat_gp.py global_dr6_v4.dict
+
+
+
+
 Aberration correction
 -------------------------------------------------------
 

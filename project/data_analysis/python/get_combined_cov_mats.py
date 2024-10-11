@@ -22,6 +22,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 binning_file = d["binning_file"]
 lmax = d["lmax"]
 type = d["type"]
+use_gaussian_smoothing = d["use_gaussian_smoothing"]
 nkeep = 70
 
 cov_dir = "covariances"
@@ -40,13 +41,15 @@ x_ar_leakage_cov = np.load(f"{cov_dir}/x_ar_leakage_cov.npy")
 x_ar_non_gaussian_cov_radio = np.load(f"{cov_dir}/x_ar_non_gaussian_cov_radio.npy")
 x_ar_non_gaussian_cov_tSZ = np.load(f"{cov_dir}/x_ar_non_gaussian_cov_tSZ.npy")
 x_ar_non_gaussian_cov_lensing =  np.load(f"{cov_dir}/x_ar_non_gaussian_cov_lensing.npy")
+x_ar_non_gaussian_cov_CIB =  np.load(f"{cov_dir}/x_ar_non_gaussian_cov_CIB.npy")
 
+if use_gaussian_smoothing:
+    x_ar_cov = np.load(f"{cov_dir}/x_ar_final_cov_sim_gp.npy")
+else:
+    x_ar_cov =  covariance.correct_analytical_cov_skew(x_ar_analytic_cov, x_ar_mc_cov, nkeep=nkeep)
+    np.save(f"{cov_dir}/x_ar_final_cov_sim_skew.npy", x_ar_cov)
 
-x_ar_cov =  covariance.correct_analytical_cov_skew(x_ar_analytic_cov, x_ar_mc_cov, nkeep=nkeep)
-
-np.save(f"{cov_dir}/x_ar_final_cov_sim.npy", x_ar_cov)
-
-full_x_ar_cov = x_ar_cov + x_ar_beam_cov + x_ar_leakage_cov + x_ar_non_gaussian_cov_radio + x_ar_non_gaussian_cov_lensing + x_ar_non_gaussian_cov_tSZ
+full_x_ar_cov = x_ar_cov + x_ar_beam_cov + x_ar_leakage_cov + x_ar_non_gaussian_cov_radio + x_ar_non_gaussian_cov_lensing + x_ar_non_gaussian_cov_tSZ + x_ar_non_gaussian_cov_CIB
 
 np.save(f"{cov_dir}/x_ar_final_cov_data.npy", full_x_ar_cov)
 
@@ -82,6 +85,7 @@ sub_x_ar_leakage_cov = x_ar_leakage_cov[np.ix_(all_indices, all_indices)]
 sub_x_ar_non_gaussian_cov_radio = x_ar_non_gaussian_cov_radio[np.ix_(all_indices, all_indices)]
 sub_x_ar_non_gaussian_cov_lensing = x_ar_non_gaussian_cov_lensing[np.ix_(all_indices, all_indices)]
 sub_x_ar_non_gaussian_cov_tSZ = x_ar_non_gaussian_cov_tSZ[np.ix_(all_indices, all_indices)]
+sub_x_ar_non_gaussian_cov_CIB = x_ar_non_gaussian_cov_CIB[np.ix_(all_indices, all_indices)]
 
 log.info(f"test S+N cov + beam cov + leakage cov")
 
@@ -173,6 +177,7 @@ plt.plot(sub_x_ar_beam_cov.diagonal()/sub_full_x_ar_cov.diagonal(), label="beam 
 plt.plot(sub_x_ar_non_gaussian_cov_radio.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian radio cov / total cov")
 plt.plot(sub_x_ar_non_gaussian_cov_lensing.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian lensing/ total cov")
 plt.plot(sub_x_ar_non_gaussian_cov_tSZ.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian tSZ/ total cov")
+plt.plot(sub_x_ar_non_gaussian_cov_CIB.diagonal()/sub_full_x_ar_cov.diagonal(), label="non gaussian CIB/ total cov")
 
 plt.xticks(label_loc, name_list, rotation=90)
 plt.legend(fontsize=18)
@@ -195,6 +200,7 @@ for my_spec in bin_out_dict.keys():
     plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_radio.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="connected trispectrum radio")
     plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_lensing.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="connected trispectrum lensing")
     plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_tSZ.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="connected trispectrum tSZ")
+    plt.plot(lb_spec, sub_x_ar_non_gaussian_cov_CIB.diagonal()[id_spec]/sub_full_x_ar_cov.diagonal()[id_spec], label="connected trispectrum CIB")
     plt.legend(fontsize=18)
     plt.xlabel(r"$\ell$", fontsize=20)
     plt.ylabel(r"$\Sigma^{\rm comp}_{\ell \ell}/\Sigma^{\rm tot}_{\ell \ell}$", fontsize=20)

@@ -19,6 +19,7 @@ use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
 use_beam_covariance = True
 seed_sims = False
+use_gaussian_smoothing = True
 
 #window parameters
 

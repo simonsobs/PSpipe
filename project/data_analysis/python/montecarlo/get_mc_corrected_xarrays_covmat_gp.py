@@ -17,12 +17,12 @@ import os
 
 parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('paramfile', type=str,
-                    help='Filename (full or relative path) of paramfile to use')
-parser.add_argument('--iStart', type=int, default=None,
-                    help='Correct using the cov that used only use these simulations')
-parser.add_argument('--iStop', type=int, default=None,
-                    help='Correct using the cov that used only use these simulations')
+parser.add_argument("paramfile", type=str,
+                    help="Filename (full or relative path) of paramfile to use")
+parser.add_argument("--iStart", type=int, default=None,
+                    help="Correct using the cov that used only use these simulations")
+parser.add_argument("--iStop", type=int, default=None,
+                    help="Correct using the cov that used only use these simulations")
 args = parser.parse_args()
 
 d = so_dict.so_dict()
@@ -40,11 +40,11 @@ lmax = d["lmax"]
 
 # the GP is only fit over the bins that survive the below cuts
 spectra_cuts = {
-    "dr6_pa4_f220": {'T': [975, lmax], 'P': [lmax, lmax]},
-    "dr6_pa5_f090": {'T': [975, lmax], 'P': [475, lmax]},
-    "dr6_pa5_f150": {'T': [775, lmax], 'P': [475, lmax]},
-    "dr6_pa6_f090": {'T': [975, lmax], 'P': [475, lmax]},
-    "dr6_pa6_f150": {'T': [575, lmax], 'P': [475, lmax]},
+    "dr6_pa4_f220": {"T": [975, lmax], "P": [lmax, lmax]},
+    "dr6_pa5_f090": {"T": [975, lmax], "P": [475, lmax]},
+    "dr6_pa5_f150": {"T": [775, lmax], "P": [475, lmax]},
+    "dr6_pa6_f090": {"T": [975, lmax], "P": [475, lmax]},
+    "dr6_pa6_f150": {"T": [575, lmax], "P": [475, lmax]},
     }
 only_TT_map_set = ["dr6_pa4_f220"]
 
@@ -52,11 +52,11 @@ if args.iStart is not None:
     iStart = args.iStart
     iStop = args.iStop
 
-ana_cov = np.load(os.path.join(covariances_dir, 'x_ar_analytic_cov.npy'))
+ana_cov = np.load(os.path.join(covariances_dir, "x_ar_analytic_cov.npy"))
 if args.iStart is not None:
-    mc_cov = np.load(os.path.join(covariances_dir, f'x_ar_mc_cov_{iStart}_{iStop}.npy'))
+    mc_cov = np.load(os.path.join(covariances_dir, f"x_ar_mc_cov_{iStart}_{iStop}.npy"))
 else:
-    mc_cov = np.load(os.path.join(covariances_dir, 'x_ar_mc_cov.npy'))
+    mc_cov = np.load(os.path.join(covariances_dir, "x_ar_mc_cov.npy"))
 
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -65,9 +65,9 @@ n_bins = len(bin_mean)
 
 # need the errors on the flattened analytic matrix diagonal
 if args.iStart is not None:
-    var_ana_cov_flat = np.load(os.path.join(covariances_dir, f'var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy'))
+    var_ana_cov_flat = np.load(os.path.join(covariances_dir, f"var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy"))
 else:
-    var_ana_cov_flat = np.load(os.path.join(covariances_dir, 'var_x_ar_mc_cov_anaflat.npy'))
+    var_ana_cov_flat = np.load(os.path.join(covariances_dir, "var_x_ar_mc_cov_anaflat.npy"))
 var_eigenspectrum_ratios_by_block = np.split(np.diag(var_ana_cov_flat), var_ana_cov_flat.shape[0] // n_bins)
 
 # we want the indices of each block that survive data cuts.
@@ -103,7 +103,7 @@ for s, spec in enumerate(spectra):
             # sanity check
             alt_idxs_into_block = np.intersect1d(bin_mean, bin_out_dict[key][1], return_indices=True)[1]
             assert np.all(idxs_into_block == alt_idxs_into_block), \
-                f'Brute force got {idxs_into_block}, expected {alt_idxs_into_block} for {key}'
+                f"Brute force got {idxs_into_block}, expected {alt_idxs_into_block} for {key}"
         else:
             idxs_into_block = []
 
@@ -123,9 +123,9 @@ pspy_utils.is_pos_def(corr_cov)
 pspy_utils.is_symmetric(corr_cov)
 
 if args.iStart is not None:
-    np.save(os.path.join(covariances_dir, f'x_ar_final_cov_sim_{iStart}_{iStop}.npy'), corr_cov)
+    np.save(os.path.join(covariances_dir, f"x_ar_final_cov_sim_gp_{iStart}_{iStop}.npy"), corr_cov)
 else:
-    np.save(os.path.join(covariances_dir, 'x_ar_final_cov_sim.npy'), corr_cov)
+    np.save(os.path.join(covariances_dir, "x_ar_final_cov_sim_gp.npy"), corr_cov)
 
 # make plots
 for i, (name, spec) in enumerate(keys):
@@ -143,12 +143,12 @@ for i, (name, spec) in enumerate(keys):
         plt.axvline(bin_mean[idx_arrs_by_block[i][-1]], linestyle='--', color='k')
     plt.ylim(.5, 1.5)
     plt.grid()
-    plt.xlabel('l')
-    plt.ylabel('ratio')
+    plt.xlabel("l")
+    plt.ylabel("ratio")
     plt.legend()
-    plt.title(f'Cov({name}_{spec}, {name}_{spec})\n{kern}')
+    plt.title(f"Cov({name}_{spec}, {name}_{spec})\n{kern}")
     if args.iStart is not None:
-        plt.savefig(os.path.join(plot_dir, f'GP_MC_covmat_smooth_{name}_{spec}_{iStart}_{iStop}.png'))
+        plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name}_{spec}_{iStart}_{iStop}.png"))
     else:
-        plt.savefig(os.path.join(plot_dir, f'GP_MC_covmat_smooth_{name}_{spec}.png'))
+        plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name}_{spec}.png"))
     plt.close()

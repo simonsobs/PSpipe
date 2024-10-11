@@ -1,4 +1,4 @@
-"""
+description = """
 This script converts monte-carlo power spectra into monte-carlo 
 covariance matrices. It infers filenames directly from the paramfile.
 In preparation for the sim-based correction, it also computes the 

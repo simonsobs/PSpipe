@@ -44,8 +44,10 @@ x_ar_non_gaussian_cov_lensing =  np.load(f"{cov_dir}/x_ar_non_gaussian_cov_lensi
 x_ar_non_gaussian_cov_CIB =  np.load(f"{cov_dir}/x_ar_non_gaussian_cov_CIB.npy")
 
 if use_gaussian_smoothing:
+    log.info(f"we will use the analytical cov corrected from simulations using gaussian processes")
     x_ar_cov = np.load(f"{cov_dir}/x_ar_final_cov_sim_gp.npy")
 else:
+    log.info(f"we will use the skew method to corrected the analytical cov mat with simulation")
     x_ar_cov =  covariance.correct_analytical_cov_skew(x_ar_analytic_cov, x_ar_mc_cov, nkeep=nkeep)
     np.save(f"{cov_dir}/x_ar_final_cov_sim_skew.npy", x_ar_cov)
 
@@ -87,7 +89,7 @@ sub_x_ar_non_gaussian_cov_lensing = x_ar_non_gaussian_cov_lensing[np.ix_(all_ind
 sub_x_ar_non_gaussian_cov_tSZ = x_ar_non_gaussian_cov_tSZ[np.ix_(all_indices, all_indices)]
 sub_x_ar_non_gaussian_cov_CIB = x_ar_non_gaussian_cov_CIB[np.ix_(all_indices, all_indices)]
 
-log.info(f"test S+N cov + beam cov + leakage cov")
+log.info(f"test S+N cov + beam cov + leakage cov + non gaussian cov")
 
 pspy_utils.is_symmetric(sub_full_x_ar_cov, tol=1e-7)
 pspy_utils.is_pos_def(sub_full_x_ar_cov)

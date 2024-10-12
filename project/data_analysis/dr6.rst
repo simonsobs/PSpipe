@@ -242,6 +242,7 @@ In order to do plots for the paper it is useful to apply them to the spectra (an
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_best_fit_mflike.py post_likelihood.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python apply_likelihood_calibration.py post_likelihood.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_spectra.py post_likelihood.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python results_plot_TT.py post_likelihood.dict

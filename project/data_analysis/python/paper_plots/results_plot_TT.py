@@ -21,9 +21,10 @@ log = log.get_logger(**d)
 
 show_220 = False
 
-bestfit_dir = "best_fits"
+tag = d["best_fit_tag"]
+bestfit_dir = f"best_fits{tag}"
 combined_spec_dir = "combined_spectra"
-plot_dir = "plots/combined_spectra/"
+plot_dir = f"plots/combined_spectra{tag}/"
 pspy_utils.create_directory(plot_dir)
 
 type = d["type"]

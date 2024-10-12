@@ -16,23 +16,16 @@ log = log.get_logger(**d)
 spec_dir = "spectra_leak_corr_ab_corr"
 cal_spec_dir = "spectra_leak_corr_ab_corr_cal"
 type = d["type"]
+survey = "dr6"
+arrays = d["arrays_dr6"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 
 pspy_utils.create_directory(cal_spec_dir)
-cal = {}
-cal["dr6_pa4_f220"] = 0.9792
-cal["dr6_pa5_f090"] = 1.0002
-cal["dr6_pa5_f150"] = 0.9992
-cal["dr6_pa6_f090"] = 0.9999
-cal["dr6_pa6_f150"] = 1.0015
-
-p_eff = {}
-p_eff["dr6_pa4_f220"] = 1.
-p_eff["dr6_pa5_f090"] = 0.9885
-p_eff["dr6_pa5_f150"] = 0.9986
-p_eff["dr6_pa6_f090"] = 0.9986
-p_eff["dr6_pa6_f150"] = 0.9976
+cal, p_eff = {}, {}
+for array in arrays:
+    cal[f"{survey}_{array}"] = d[f"cal_like_{survey}_{array}"]
+    p_eff[f"{survey}_{array}"] = d[f"pol_eff_like_{survey}_{array}"]
 
 
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")

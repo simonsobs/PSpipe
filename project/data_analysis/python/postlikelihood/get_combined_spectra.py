@@ -107,9 +107,11 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+best_fit_tag = d["best_fit_tag"]
+
 
 spec_dir = "spectra_leak_corr_ab_corr_cal"
-bestfit_dir = "best_fits"
+bestfit_dir = f"best_fits{best_fit_tag}"
 mcm_dir = "mcms"
 combined_spec_dir = "combined_spectra"
 plot_dir = "plots/combined_spectra/"
@@ -120,7 +122,6 @@ pspy_utils.create_directory(plot_dir)
 binning_file = d["binning_file"]
 lmax = d["lmax"]
 type = d["type"]
-
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")

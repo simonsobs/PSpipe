@@ -23,8 +23,13 @@ type = d["type"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 # let's create the directories to write best fit to disk and for plotting purpose
-bestfit_dir = "best_fits"
-plot_dir = "plots/best_fits/"
+
+tag = d.get("best_fit_tag", "")
+
+bestfit_dir = f"best_fits{tag}"
+plot_dir = f"plots/best_fits{tag}/"
+log.info(f"save best fits in  {bestfit_dir} folder")
+
 
 pspy_utils.create_directory(bestfit_dir)
 pspy_utils.create_directory(plot_dir)
@@ -78,8 +83,8 @@ if d["include_beam_chromaticity_effect_in_best_fit"]:
                                                                   nu_ref_dict[map_set],
                                                                   alpha_dict[map_set])
                                                                   
-        beams[map_set + "_s0"] = {"nu": nu_array, "beams": bl_nu}
-        beams[map_set + "_s2"] = {"nu": nu_array, "beams": bl_nu}
+        beams[map_set + "_s0"] = {"nu": nu_array, "beams": bl_nu.T}
+        beams[map_set + "_s2"] = {"nu": nu_array, "beams": bl_nu.T}
 
 
 log.info("Getting foregrounds contribution")

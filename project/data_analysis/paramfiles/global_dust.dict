@@ -57,6 +57,9 @@ beam_T_Planck_f353 = beam_dir_Planck + 'bl_T_npipe_353Ax353B.dat'
 beam_pol_Planck_f143 = beam_dir_Planck + 'bl_pol_npipe_143Ax143B.dat'
 beam_pol_Planck_f353 = beam_dir_Planck + 'bl_pol_npipe_353Ax353B.dat'
 
+include_beam_chromaticity_effect_in_best_fit = False
+
+
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
 edge_skip_rescale = 1

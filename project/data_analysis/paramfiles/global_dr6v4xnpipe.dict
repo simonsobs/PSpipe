@@ -124,6 +124,9 @@ beam_pol_Planck_f100 = beam_dir_Planck + 'bl_pol_npipe_DR6_100Ax100B.dat'
 beam_pol_Planck_f143 = beam_dir_Planck + 'bl_pol_npipe_DR6_143Ax143B.dat'
 beam_pol_Planck_f217 = beam_dir_Planck + 'bl_pol_npipe_DR6_217Ax217B.dat'
 
+include_beam_chromaticity_effect_in_best_fit = False
+
+
 leakage_file_dir = data_dir + 'beams/20240916_gamma/'
 
 leakage_beam_dr6_pa4_f150_TE = ['pa4_f150_gamma_t2e.txt' for i in range(4)]

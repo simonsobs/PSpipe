@@ -124,6 +124,7 @@ beam_pol_Planck_f100 = beam_dir_Planck + 'bl_pol_legacy_100hm1x100hm2.dat'
 beam_pol_Planck_f143 = beam_dir_Planck + 'bl_pol_legacy_143hm1x143hm2.dat'
 beam_pol_Planck_f217 = beam_dir_Planck + 'bl_pol_legacy_217hm1x217hm2.dat'
 
+include_beam_chromaticity_effect_in_best_fit = False
 
 leakage_file_dir = data_dir + 'beams/20240916_gamma/'
 

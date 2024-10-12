@@ -9,7 +9,7 @@ import sys
 
 import numpy as np
 import pylab as plt
-from pspipe_utils import best_fits, log, pspipe_list
+from pspipe_utils import best_fits, log, pspipe_list, beam_chromaticity
 from pspy import pspy_utils, so_dict, so_spectra
 
 d = so_dict.so_dict()
@@ -49,33 +49,55 @@ do_bandpass_integration = d["do_bandpass_integration"]
 if do_bandpass_integration:
     log.info("Doing bandpass integration")
 
-narrays, sv_list, ar_list = pspipe_list.get_arrays_list(d)
-for sv, ar in zip(sv_list, ar_list):
+narrays, _, _ = pspipe_list.get_arrays_list(d)
+map_set_list = pspipe_list.get_map_set_list(d)
 
-    freq_info = d[f"freq_info_{sv}_{ar}"]
+for map_set in map_set_list:
+    freq_info = d[f"freq_info_{map_set}"]
     if do_bandpass_integration:
         nu_ghz, pb = np.loadtxt(freq_info["passband"]).T
     else:
         nu_ghz, pb = np.array([freq_info["freq_tag"]]), np.array([1.])
 
-    passbands[f"{sv}_{ar}"] = [nu_ghz, pb]
-    band_shift_dict[f"bandint_shift_{sv}_{ar}"] = d[f"bandpass_shift_{sv}_{ar}"]
-    log.info(f"bandpass shift: {sv} {ar} {band_shift_dict[f'bandint_shift_{sv}_{ar}']}")
+    passbands[f"{map_set}"] = [nu_ghz, pb]
+    band_shift_dict[f"bandint_shift_{map_set}"] = d[f"bandpass_shift_{map_set}"]
+    log.info(f"bandpass shift: {map_set} {band_shift_dict[f'bandint_shift_{map_set}']}")
+
+beams = None
+if d["include_beam_chromaticity_effect"]:
+    log.info(f"include beam array accounting for beam chromaticity \n")
+    # Get beam chromaticity
+    alpha_dict, nu_ref_dict = beam_chromaticity.act_dr6_beam_scaling()
+    beams = {}
+    for map_set in map_set_list:
+        bl_mono_file_name = d[f"beam_mono_{map_set}"]
+        l, bl = pspy_utils.read_beam_file(bl_mono_file_name, lmax=10000)
+        l, nu_array, bl_nu = beam_chromaticity.get_multifreq_beam(l,
+                                                                  bl,
+                                                                  passbands[map_set],
+                                                                  nu_ref_dict[map_set],
+                                                                  alpha_dict[map_set])
+                                                                  
+        beams[map_set + "_s0"] = {"nu": nu_array, "beams": bl_nu}
+        beams[map_set + "_s2"] = {"nu": nu_array, "beams": bl_nu}
 
 
 log.info("Getting foregrounds contribution")
 
+fg_dict = best_fits.get_foreground_dict(l_th,
+                                        passbands,
+                                        fg_components,
+                                        fg_params,
+                                        fg_norm,
+                                        band_shift_dict=band_shift_dict,
+                                        beams=beams)
 
-fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components, fg_params, fg_norm, band_shift_dict=band_shift_dict)
-
-for sv1, ar1 in zip(sv_list, ar_list):
-    for sv2, ar2 in zip(sv_list, ar_list):
-        name1 = f"{sv1}_{ar1}"
-        name2 = f"{sv2}_{ar2}"
+for map_set1 in map_set_list:
+    for map_set2 in map_set_list:
         fg = {}
         for spec in spectra:
-            fg[spec] = fg_dict[spec.lower(), "all", name1, name2]
-        so_spectra.write_ps(f"{bestfit_dir}/fg_{name1}x{name2}.dat", l_th, fg, type, spectra=spectra)
+            fg[spec] = fg_dict[spec.lower(), "all", map_set1, map_set2]
+        so_spectra.write_ps(f"{bestfit_dir}/fg_{map_set1}x{map_set2}.dat", l_th, fg, type, spectra=spectra)
 
 log.info("Writing best fit spectra")
 spectra_list = pspipe_list.get_spec_name_list(d, delimiter = "_")

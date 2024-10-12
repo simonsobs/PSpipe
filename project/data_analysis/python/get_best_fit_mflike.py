@@ -64,7 +64,7 @@ for map_set in map_set_list:
     log.info(f"bandpass shift: {map_set} {band_shift_dict[f'bandint_shift_{map_set}']}")
 
 beams = None
-if d["include_beam_chromaticity_effect"]:
+if d["include_beam_chromaticity_effect_in_best_fit"]:
     log.info(f"include beam array accounting for beam chromaticity \n")
     # Get beam chromaticity
     alpha_dict, nu_ref_dict = beam_chromaticity.act_dr6_beam_scaling()

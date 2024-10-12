@@ -57,7 +57,7 @@ bbl = np.load(os.path.join(mcm_dir, f"{spec_name_list[0]}_Bbl_spin0xspin0.npy"))
 bbls = {cross: bbl for cross in spec_name_list}
 
 beams = None
-if d["include_beam_chromaticity_effect"]:
+if d["include_beam_chromaticity_effect_in_sacc"]:
     log.info(f"include beam array accounting for beam chromaticity \n")
 
     # Get beam chromaticity

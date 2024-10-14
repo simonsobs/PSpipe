@@ -72,6 +72,8 @@ for color, case in zip(color_list, case_list):
 
     ax2.errorbar(lb_ml-10+count*4, (vec_ml - vec_th_ml) * lb_ml , sigma_ml * lb_ml, fmt=".", color=color)
     ax2.set_xlim(0, 8000)
+    ax2.set_ylim(-100000, 100000)
+
     ax2.set_xlabel(r"$\ell$", fontsize=19)
     ax2.set_ylabel(r"$\ell (D_{\ell} - D^{\rm th}_{\ell}) [\mu K^{2}] $", fontsize=19)
     ax2.plot(lth, lth*0, color="black", alpha=0.6, linestyle="--")

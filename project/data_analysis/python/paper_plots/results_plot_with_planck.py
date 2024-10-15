@@ -10,11 +10,12 @@ import sys, os
 from matplotlib import rcParams
 import pspipe_utils
 
-
-rcParams["xtick.labelsize"] = 16
-rcParams["ytick.labelsize"] = 16
-rcParams["axes.labelsize"] = 20
-rcParams["axes.titlesize"] = 20
+rcParams["font.family"] = "serif"
+rcParams["font.size"] = "40"
+rcParams["xtick.labelsize"] = 40
+rcParams["ytick.labelsize"] = 40
+rcParams["axes.labelsize"] = 40
+rcParams["axes.titlesize"] = 40
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -32,7 +33,7 @@ type = d["type"]
 planck_data_path = os.path.join(os.path.dirname(os.path.abspath(pspipe_utils.__file__)), "data/spectra/planck")
 
 ########################################################################################
-selected_spectra_list = [["TE", "ET"], ["EE"]]
+selected_spectra_list = [["EE"], ["TE", "ET"]]
 ########################################################################################
 
 ylim = {}
@@ -49,6 +50,9 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 
+
+plt.figure(figsize=(40, 40))
+count = 1
 for spec_select in selected_spectra_list:
     s_name = spec_select[0]
     
@@ -56,25 +60,29 @@ for spec_select in selected_spectra_list:
     lb_ml, vec_th_ml = np.loadtxt(f"{combined_spec_dir}/bestfit_all_{s_name}.dat", unpack=True)
     cov_ml = np.load(f"{combined_spec_dir}/cov_all_{s_name}.npy")
 
-    plt.figure(figsize=(15, 10))
     lp, Dlp, sigmap, _, _ = np.loadtxt(f"{planck_data_path}/COM_PowerSpect_CMB-{s_name}-binned_R3.02.txt", unpack=True)
     if s_name == "TT": plt.semilogy()
     
+    plt.subplot(2,1,count)
     plt.xlim(0,4000)
     plt.ylim(ylim[s_name])
-    plt.errorbar(lp, Dlp * lp ** fac[s_name], sigmap * lp ** fac[s_name], fmt=".", color="royalblue", markersize=2, alpha=0.6, label="Planck PR3")
-    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt=".", color="red", markersize=2, label="ACT DR6")
+    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt="o", color="royalblue", label="ACT")
+    plt.errorbar(lp, Dlp * lp ** fac[s_name], sigmap * lp ** fac[s_name], fmt="o", color="darkorange", alpha=1, label="Planck")
     plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", alpha=0.4)
-    plt.xlabel(r"$\ell$", fontsize=30)
+    plt.xlabel(r"$\ell$", fontsize=70)
+    
+    
     
     if fac[s_name] == 0:
-        plt.ylabel(r"$D_{\ell}$", fontsize=30)
+        plt.ylabel(r"$D^{%s}_{\ell}$" % s_name, fontsize=70)
     if fac[s_name] == 1:
-        plt.ylabel(r"$\ell D_{\ell}$", fontsize=30)
+        plt.ylabel(r"$\ell D^{%s}_{\ell}$" % s_name, fontsize=70)
     if fac[s_name] > 1:
-        plt.ylabel(r"$\ell^{%s}D_{\ell}$" % fac[s_name], fontsize=30)
+        plt.ylabel(r"$\ell^{%s}D^{%s}_{\ell}$" % (fac[s_name], s_name), fontsize=50)
 
-    plt.legend(fontsize=25)
-    plt.savefig(f"{plot_dir}/all_spectra_{s_name}_with_planck.png", bbox_inches="tight")
-    plt.clf()
-    plt.close()
+    if count == 1:
+        plt.legend(fontsize=50)
+    count += 1
+plt.savefig(f"{plot_dir}/all_spectra_with_planck.png", bbox_inches="tight")
+plt.clf()
+plt.close()

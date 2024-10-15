@@ -79,7 +79,7 @@ for ax, mode in zip(ax_list, ["EE", "TE"]):
         yticks[0].label1.set_visible(False)
 
     ax.set_ylabel(r"$D^{%s}_\ell$" % mode, fontsize=50)
-    ax.axvline(600, -150,150, color="gray", linestyle=(0, (5,10)))
+    ax.axvline(500, -150,150, color="gray", linestyle=(0, (5,10)))
     
     if count == 1:
         ax.set_xlabel(r"$\ell$", fontsize=50)

@@ -62,14 +62,14 @@ for ax, mode in zip(ax_list, ["EE", "TE"]):
     l, Db_pa6_f090, sigma_pa6_f090 =  AxP_utils.read_ps_and_sigma(spec_dir_legacy, cov_dir_legacy, "dr6_pa6_f090", "dr6_pa6_f090", mode, cov_type_list)
     l, Db_pa5_f090, sigma_pa5_f090 =  AxP_utils.read_ps_and_sigma(spec_dir_npipe, cov_dir_npipe, "dr6_pa5_f090", "dr6_pa5_f090", mode, cov_type_list)
     #plt.subplot(2,1,1 +count)
-    ax.errorbar(l-15, Db_legacy, sigma_legacy, fmt=".", color="black", alpha=0.7, label="Planck* legacy 143 GHz")
-    ax.errorbar(l-10, Db_pa6_f150, sigma_pa6_f150, fmt=".", color="purple", label="dr6 pa6-f150")
-    ax.errorbar(l-5, Db_pa5_f150, sigma_pa5_f150, fmt=".", color="blue", label="dr6 pa5-f150")
-    ax.errorbar(l, Db_pa6_f090, sigma_pa6_f090, fmt=".", color="darkorange", label="dr6 pa6-f090")
-    ax.errorbar(l+5, Db_pa5_f090, sigma_pa5_f090, fmt=".", color="red", label="dr6 pa5-f090")
-    ax.errorbar(l+10, Db_npipe, sigma_npipe, fmt=".", color="dimgrey", alpha=0.7, label="Planck* NPIPE 143 GHz")
+    ax.errorbar(l-15, Db_legacy, sigma_legacy, fmt="o", color="black", alpha=0.7, label="Planck* legacy 143 GHz")
+    ax.errorbar(l-10, Db_pa6_f150, sigma_pa6_f150, fmt="o", color="purple", label="dr6 pa6-f150")
+    ax.errorbar(l-5, Db_pa5_f150, sigma_pa5_f150, fmt="o", color="blue", label="dr6 pa5-f150")
+    ax.errorbar(l, Db_pa6_f090, sigma_pa6_f090, fmt="o", color="darkorange", label="dr6 pa6-f090")
+    ax.errorbar(l+5, Db_pa5_f090, sigma_pa5_f090, fmt="o", color="red", label="dr6 pa5-f090")
+    ax.errorbar(l+10, Db_npipe, sigma_npipe, fmt="o", color="dimgrey", alpha=0.7, label="Planck* NPIPE 143 GHz")
 
-    ax.plot(lth, psth[mode], color="gray", linestyle="--")
+    ax.plot(lth, psth[mode], color="gray")
     ax.set_ylim(my_ylim[mode])
     ax.set_xlim(0, 2000)
     if count == 0:
@@ -79,6 +79,7 @@ for ax, mode in zip(ax_list, ["EE", "TE"]):
         yticks[0].label1.set_visible(False)
 
     ax.set_ylabel(r"$D^{%s}_\ell$" % mode, fontsize=50)
+    ax.axvline(600, -150,150, color="gray", linestyle=(0, (5,10)))
     
     if count == 1:
         ax.set_xlabel(r"$\ell$", fontsize=50)

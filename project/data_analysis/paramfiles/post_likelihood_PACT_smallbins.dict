@@ -6,7 +6,7 @@ arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
 binning_file = data_dir + "binning/binning_dr6_new.dat"
 
-best_fit_tag = "_paper_AP"
+best_fit_tag = "_paper_PACT"
 include_beam_chromaticity_effect_in_best_fit = True
 beam_file_dir = data_dir + 'beams/20240404_beams/'
 beam_mono_dr6_pa4_f150 = beam_file_dir + 'coadd_pa4_f150_night_beam_tform_jitter_mono.txt'

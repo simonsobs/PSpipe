@@ -1,0 +1,54 @@
+surveys = ["dr6"]
+type = "Dl"
+lmax = 8500
+
+arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
+
+best_fit_tag = "_paper_AP"
+include_beam_chromaticity_effect_in_best_fit = True
+beam_file_dir = data_dir + 'beams/20240404_beams/'
+beam_mono_dr6_pa4_f150 = beam_file_dir + 'coadd_pa4_f150_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa4_f220 = beam_file_dir + 'coadd_pa4_f220_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa5_f090 = beam_file_dir + 'coadd_pa5_f090_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa5_f150 = beam_file_dir + 'coadd_pa5_f150_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa6_f090 = beam_file_dir + 'coadd_pa6_f090_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa6_f150 = beam_file_dir + 'coadd_pa6_f150_night_beam_tform_jitter_mono.txt'
+
+passband_dir = data_dir + "passbands/"
+do_bandpass_integration = True
+freq_info_dr6_pa4_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa4_f150.dat"}
+freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir + "passband_dr6_pa4_f220.dat"}
+freq_info_dr6_pa5_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa5_f090.dat"}
+freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa5_f150.dat"}
+freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa6_f090.dat"}
+freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
+
+
+
+cosmo_params = {"cosmomc_theta":0.0104071, "logA": 3.056, "ombh2": 0.02249, "omch2": 0.1193, "ns": 0.9710, "Alens": 1.0, "tau": 0.0605}
+accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
+
+fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
+fg_params = {"a_tSZ": 3.32, "alpha_tSZ":-0.64, "a_kSZ": 2.09, "a_p": 7.66, "beta_p": 1.869, "a_c": 3.63, "beta_c":  1.869, "a_s": 2.8, "a_gtt": 7.98,  "xi": 0.096, "T_d": 9.60, "a_gte": 0.419, "a_gtb": 0.012, "a_gee": 0.168,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.807, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+
+bandpass_shift_dr6_pa4_f220  =  6.5
+bandpass_shift_dr6_pa5_f090  =  0.03
+bandpass_shift_dr6_pa5_f150  = -1.06
+bandpass_shift_dr6_pa6_f090  =  0.63
+bandpass_shift_dr6_pa6_f150  = -0.42
+
+cal_like_dr6_pa4_f220 = 0.9797
+cal_like_dr6_pa5_f090 = 1.00049
+cal_like_dr6_pa5_f150 = 0.9991
+cal_like_dr6_pa6_f090 = 1.0002
+cal_like_dr6_pa6_f150 = 1.0014
+
+
+pol_eff_like_dr6_pa4_f220 = 1.
+pol_eff_like_dr6_pa5_f090 = 0.9891
+pol_eff_like_dr6_pa5_f150 = 0.9995
+pol_eff_like_dr6_pa6_f090 = 0.9993
+pol_eff_like_dr6_pa6_f150 = 0.9993

@@ -107,14 +107,14 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-best_fit_tag = d["best_fit_tag"]
+tag = d["best_fit_tag"]
 
 
-spec_dir = "spectra_leak_corr_ab_corr_cal"
-bestfit_dir = f"best_fits{best_fit_tag}"
+spec_dir = f"spectra_leak_corr_ab_corr_cal{tag}"
+bestfit_dir = f"best_fits{tag}"
 mcm_dir = "mcms"
 combined_spec_dir = "combined_spectra"
-plot_dir = "plots/combined_spectra/"
+plot_dir = f"plots/combined_spectra{tag}/"
 
 pspy_utils.create_directory(combined_spec_dir)
 pspy_utils.create_directory(plot_dir)

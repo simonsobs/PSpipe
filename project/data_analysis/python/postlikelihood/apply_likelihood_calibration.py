@@ -12,9 +12,11 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+tag = d["best_fit_tag"]
+
 
 spec_dir = "spectra_leak_corr_ab_corr"
-cal_spec_dir = "spectra_leak_corr_ab_corr_cal"
+cal_spec_dir = f"spectra_leak_corr_ab_corr_cal{tag}"
 type = d["type"]
 survey = "dr6"
 arrays = d["arrays_dr6"]

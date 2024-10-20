@@ -65,10 +65,9 @@ n_bins = len(bin_mean)
 
 # need the errors on the flattened analytic matrix diagonal
 if args.iStart is not None:
-    var_ana_cov_flat = np.load(os.path.join(covariances_dir, f"var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy"))
+    var_mc_cov_anaflat = np.load(os.path.join(covariances_dir, f"var_x_ar_mc_cov_anaflat_{iStart}_{iStop}.npy"))
 else:
-    var_ana_cov_flat = np.load(os.path.join(covariances_dir, "var_x_ar_mc_cov_anaflat.npy"))
-var_eigenspectrum_ratios_by_block = np.split(np.diag(var_ana_cov_flat), var_ana_cov_flat.shape[0] // n_bins)
+    var_mc_cov_anaflat = np.load(os.path.join(covariances_dir, "var_x_ar_mc_cov_anaflat.npy"))
 
 # we want the indices of each block that survive data cuts.
 # we will use these to smooth each block.
@@ -112,43 +111,60 @@ for s, spec in enumerate(spectra):
         bin_idx += 1
 
 # do the correction
-corr_cov, res_diag, smoothed_res_diag, gprs = psc.correct_analytical_cov_eigenspectrum_ratio_gp(bin_mean,
-                                                                                                ana_cov,
-                                                                                                mc_cov,
-                                                                                                var_eigenspectrum_ratios_by_block=var_eigenspectrum_ratios_by_block,
-                                                                                                idx_arrs_by_block=idx_arrs_by_block,
-                                                                                                return_all=True)
+corrected_mc_cov, mc_cov_anaflat, smoothed_mc_cov_anaflat, gprs = psc.correct_analytical_cov_block_diag_gp(bin_mean,
+                                                                                                           ana_cov,
+                                                                                                           mc_cov,
+                                                                                                           var_mc_cov_anaflat=var_mc_cov_anaflat,
+                                                                                                           idx_arrs_by_block=idx_arrs_by_block,
+                                                                                                           return_all=True)
 
-pspy_utils.is_pos_def(corr_cov)
-pspy_utils.is_symmetric(corr_cov)
+pspy_utils.is_pos_def(corrected_mc_cov)
+pspy_utils.is_symmetric(corrected_mc_cov)
 
 if args.iStart is not None:
-    np.save(os.path.join(covariances_dir, f"x_ar_final_cov_sim_gp_{iStart}_{iStop}.npy"), corr_cov)
+    np.save(os.path.join(covariances_dir, f"x_ar_final_cov_sim_gp_{iStart}_{iStop}.npy"), corrected_mc_cov)
 else:
-    np.save(os.path.join(covariances_dir, "x_ar_final_cov_sim_gp.npy"), corr_cov)
+    np.save(os.path.join(covariances_dir, "x_ar_final_cov_sim_gp.npy"), corrected_mc_cov)
 
 # make plots
-for i, (name, spec) in enumerate(keys):
-    if gprs[i] is not None:
-        kern = gprs[i].kernel_
+for i in range(len(keys)):
+    name_i, spec_i = keys[i]
+    for j in range(i, len(keys)):
+        name_j, spec_j = keys[j]
+
+    if gprs[i, j] is not None:
+        kern = gprs[i, j].kernel_
     else:
         kern = ''
-    print(name, spec, kern)
+    print(name_i, spec_i, name_j, spec_j, kern)
 
-    sel = np.s_[i*n_bins:(i+1)*n_bins]
-    plt.errorbar(bin_mean, res_diag[sel], np.diag(var_ana_cov_flat)[sel]**.5, zorder=0, label='MC')
-    plt.plot(bin_mean, smoothed_res_diag[sel], zorder=1, label='GP(MC)')
-    if len(idx_arrs_by_block[i]) > 0:
-        plt.axvline(bin_mean[idx_arrs_by_block[i][0]], linestyle='--', color='k')
-        plt.axvline(bin_mean[idx_arrs_by_block[i][-1]], linestyle='--', color='k')
+    sel = np.s_[i*n_bins:(i+1)*n_bins, j*n_bins:(j+1)*n_bins]
+    plt.errorbar(bin_mean, np.diag(mc_cov_anaflat[sel]), np.diag(var_mc_cov_anaflat[sel])**.5, zorder=0, label='MC')
+    plt.plot(bin_mean, np.diag(smoothed_mc_cov_anaflat[sel]), zorder=1, label='GP(MC)')
+
+    # get idxs
+    idxs_i = idx_arrs_by_block[i]
+    idxs_j = idx_arrs_by_block[j]
+    if idxs_i is not None and idxs_j is not None:
+        idxs = np.intersect1d(idxs_i, idxs_j)
+    elif idxs_i is None:
+        idxs = idxs_j # idxs_i is "all idxs" so use idxs_j (which might also be "all idxs")
+    else:
+        idxs = idxs_i # idxs_j is "all idxs" so use idxs_i
+    if idxs is None:
+        idxs = np.arange(n_bins, dtype=int)
+
+    if len(idxs) > 0:
+        plt.axvline(bin_mean[idxs[0]], linestyle='--', color='k')
+        plt.axvline(bin_mean[idxs[-1]], linestyle='--', color='k')
     plt.ylim(.5, 1.5)
     plt.grid()
     plt.xlabel("l")
     plt.ylabel("ratio")
     plt.legend()
-    plt.title(f"Cov({name}_{spec}, {name}_{spec})\n{kern}")
+    plt.title(f"Cov({name_i}_{spec_i}, {name_j}_{spec_j})\n{kern}")
     if args.iStart is not None:
-        plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name}_{spec}_{iStart}_{iStop}.png"))
+        plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
     else:
-        plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name}_{spec}.png"))
+        plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
     plt.close()

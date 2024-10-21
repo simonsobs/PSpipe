@@ -34,6 +34,7 @@ covariances_dir = "covariances"
 plot_dir = "plots/x_ar_cov"
 
 pspy_utils.create_directory(plot_dir)
+pspy_utils.create_directory(plot_dir + '/off_diags')
 
 binning_file = d["binning_file"]
 lmax = d["lmax"]
@@ -167,7 +168,13 @@ for i in range(len(keys)):
         plt.legend()
         plt.title(f"Cov({name_i}_{spec_i}, {name_j}_{spec_j})\n{kern}")
         if args.iStart is not None:
-            plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
+            if i == j:
+                plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
+            else:
+                plt.savefig(os.path.join(plot_dir, 'off_diags', f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
         else:
-            plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
+            if i == j:
+                plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
+            else:
+                plt.savefig(os.path.join(plot_dir, 'off_diags', f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
         plt.close()

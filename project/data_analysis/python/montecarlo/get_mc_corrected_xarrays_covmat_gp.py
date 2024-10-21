@@ -132,39 +132,42 @@ for i in range(len(keys)):
     for j in range(i, len(keys)):
         name_j, spec_j = keys[j]
 
-    if gprs[i, j] is not None:
-        kern = gprs[i, j].kernel_
-    else:
-        kern = ''
-    print(name_i, spec_i, name_j, spec_j, kern)
+        if gprs[i, j] is not None:
+            kern = gprs[i, j].kernel_
+        else:
+            kern = ''
+        print(name_i, spec_i, name_j, spec_j, kern)
 
-    sel = np.s_[i*n_bins:(i+1)*n_bins, j*n_bins:(j+1)*n_bins]
-    plt.errorbar(bin_mean, np.diag(mc_cov_anaflat[sel]), np.diag(var_mc_cov_anaflat[sel])**.5, zorder=0, label='MC')
-    plt.plot(bin_mean, np.diag(smoothed_mc_cov_anaflat[sel]), zorder=1, label='GP(MC)')
+        sel = np.s_[i*n_bins:(i+1)*n_bins, j*n_bins:(j+1)*n_bins]
+        plt.errorbar(bin_mean, np.diag(mc_cov_anaflat[sel]), np.diag(var_mc_cov_anaflat[sel])**.5, zorder=0, label='MC')
+        plt.plot(bin_mean, np.diag(smoothed_mc_cov_anaflat[sel]), zorder=1, label='GP(MC)')
 
-    # get idxs
-    idxs_i = idx_arrs_by_block[i]
-    idxs_j = idx_arrs_by_block[j]
-    if idxs_i is not None and idxs_j is not None:
-        idxs = np.intersect1d(idxs_i, idxs_j)
-    elif idxs_i is None:
-        idxs = idxs_j # idxs_i is "all idxs" so use idxs_j (which might also be "all idxs")
-    else:
-        idxs = idxs_i # idxs_j is "all idxs" so use idxs_i
-    if idxs is None:
-        idxs = np.arange(n_bins, dtype=int)
+        # get idxs
+        idxs_i = idx_arrs_by_block[i]
+        idxs_j = idx_arrs_by_block[j]
+        if idxs_i is not None and idxs_j is not None:
+            idxs = np.intersect1d(idxs_i, idxs_j)
+        elif idxs_i is None:
+            idxs = idxs_j # idxs_i is "all idxs" so use idxs_j (which might also be "all idxs")
+        else:
+            idxs = idxs_i # idxs_j is "all idxs" so use idxs_i
+        if idxs is None:
+            idxs = np.arange(n_bins, dtype=int)
 
-    if len(idxs) > 0:
-        plt.axvline(bin_mean[idxs[0]], linestyle='--', color='k')
-        plt.axvline(bin_mean[idxs[-1]], linestyle='--', color='k')
-    plt.ylim(.5, 1.5)
-    plt.grid()
-    plt.xlabel("l")
-    plt.ylabel("ratio")
-    plt.legend()
-    plt.title(f"Cov({name_i}_{spec_i}, {name_j}_{spec_j})\n{kern}")
-    if args.iStart is not None:
-        plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
-    else:
-        plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
-    plt.close()
+        if len(idxs) > 0:
+            plt.axvline(bin_mean[idxs[0]], linestyle='--', color='k')
+            plt.axvline(bin_mean[idxs[-1]], linestyle='--', color='k')
+        if i == j:
+            plt.ylim(.5, 1.5)
+        else:
+            plt.ylim(-.1, .1)
+        plt.grid()
+        plt.xlabel("l")
+        plt.ylabel("ratio")
+        plt.legend()
+        plt.title(f"Cov({name_i}_{spec_i}, {name_j}_{spec_j})\n{kern}")
+        if args.iStart is not None:
+            plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
+        else:
+            plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
+        plt.close()

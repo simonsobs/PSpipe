@@ -21,9 +21,9 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-combined_spec_dir = f"combined_spectra{tag}"
-
 tag = d["best_fit_tag"]
+
+combined_spec_dir = f"combined_spectra{tag}"
 bestfit_dir = f"best_fits{tag}"
 plot_dir = f"plots/combined_spectra{tag}/"
 pspy_utils.create_directory(plot_dir)

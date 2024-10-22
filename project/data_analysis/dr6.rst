@@ -56,8 +56,8 @@ The computation of the covariance matrices is then divided into two steps, first
     salloc --nodes 1 --qos interactive --time 00:30:00 --constraint cpu
     OMP_NUM_THREADS=36 srun -n 7 -c 36 --cpu-bind=cores python get_sq_windows_alms.py global_dr6_v4.dict
     # real 0m31.524s
-    salloc --nodes 2 --qos interactive --time 03:00:00 --constraint cpu
-    OMP_NUM_THREADS=64 srun -n 8 -c 64 --cpu-bind=cores python get_covariance_blocks.py global_dr6_v4.dict
+    salloc --nodes 4 --qos interactive --time 03:00:00 --constraint cpu
+    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu-bind=cores python get_covariance_blocks.py global_dr6_v4.dict
     # real	89m7.793s
     
 The beams have associated uncertainties that need to be propagated in the pipeline, in order to do produce all associated beam covariance matrices run

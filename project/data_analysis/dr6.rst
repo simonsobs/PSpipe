@@ -170,14 +170,14 @@ grab the code in the aberration folder and run
 Radio and tSZ trispectrum
 -------------------------------------------------------
 
-To include the non gaussian contribution to the covariance matrix coming from the connected four point function of the Radio sources and tSZ (assumed to be Poisson distributed), grab the code in the non_gaussian_fg folder and run
+To include the non gaussian contribution to the covariance matrix coming from the connected four point function of the Radio sources, CIB, and tSZ (assumed to be Poisson distributed), grab the code in the non_gaussian_fg folder and run
 
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_radio.py global_dr6_v4.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_tSZ.py global_dr6_v4.dict
-
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_CIB.py global_dr6_v4.dict
     # real 3m4.125s
     
 Non gaussian lensing terms

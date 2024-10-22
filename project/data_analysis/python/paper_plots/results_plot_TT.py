@@ -23,7 +23,7 @@ show_220 = False
 
 tag = d["best_fit_tag"]
 bestfit_dir = f"best_fits{tag}"
-combined_spec_dir = "combined_spectra"
+combined_spec_dir = f"combined_spectra{tag}"
 plot_dir = f"plots/combined_spectra{tag}/"
 pspy_utils.create_directory(plot_dir)
 

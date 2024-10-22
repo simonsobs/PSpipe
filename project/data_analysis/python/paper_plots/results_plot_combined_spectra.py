@@ -10,7 +10,8 @@ import sys, os
 import scipy.stats as ss
 from matplotlib import rcParams
 
-
+rcParams["font.family"] = "serif"
+rcParams["font.size"] = "40"
 rcParams["xtick.labelsize"] = 16
 rcParams["ytick.labelsize"] = 16
 rcParams["axes.labelsize"] = 20
@@ -20,7 +21,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-combined_spec_dir = "combined_spectra"
+combined_spec_dir = f"combined_spectra{tag}"
 
 tag = d["best_fit_tag"]
 bestfit_dir = f"best_fits{tag}"

@@ -21,8 +21,8 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-combined_spec_dir = "combined_spectra"
 tag = d["best_fit_tag"]
+combined_spec_dir = f"combined_spectra{tag}"
 bestfit_dir = f"best_fits{tag}"
 
 plot_dir = f"plots/combined_spectra{tag}/"
@@ -56,8 +56,7 @@ count = 1
 for spec_select in selected_spectra_list:
     s_name = spec_select[0]
     
-    lb_ml, vec_ml, sigma_ml = np.loadtxt(f"{combined_spec_dir}/{type}_all_{s_name}.dat", unpack=True)
-    lb_ml, vec_th_ml = np.loadtxt(f"{combined_spec_dir}/bestfit_all_{s_name}.dat", unpack=True)
+    lb_ml, vec_ml, sigma_ml = np.loadtxt(f"{combined_spec_dir}/{type}_all_{s_name}_cmb_only.dat", unpack=True)
     cov_ml = np.load(f"{combined_spec_dir}/cov_all_{s_name}.npy")
 
     lp, Dlp, sigmap, _, _ = np.loadtxt(f"{planck_data_path}/COM_PowerSpect_CMB-{s_name}-binned_R3.02.txt", unpack=True)

@@ -11,9 +11,11 @@ import scipy.stats as ss
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+
+tag = d["best_fit_tag"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-combined_spectra_dir = "combined_spectra"
-plot_dir = "plots/combined_spectra/"
+combined_spectra_dir = f"combined_spectra{tag}"
+plot_dir = f"plots/combined_spectra{tag}/"
 pspy_utils.create_directory(plot_dir)
 
 

@@ -69,7 +69,7 @@ def get_P_mat(vec_size, lb_ml, bin_out_dict, spec_select, fig_name):
         
     return P_mat
     
-def combine_and_save_spectra(cov, vec_xar, vec_xar_th,  all_indices, bin_mean, bin_out_dict, spec_select, name, spectrum):
+def combine_and_save_spectra(cov, vec_xar, vec_xar_th, vec_xar_fg_th,  all_indices, bin_mean, bin_out_dict, spec_select, name, spectrum):
         
     sub_cov = cov[np.ix_(all_indices, all_indices)]
     i_sub_cov = np.linalg.inv(sub_cov)
@@ -83,7 +83,7 @@ def combine_and_save_spectra(cov, vec_xar, vec_xar_th,  all_indices, bin_mean, b
     cov_ml = covariance.get_max_likelihood_cov(P_mat,
                                                i_sub_cov,
                                                force_sim = True,
-                                               check_pos_def = False)
+                                               check_pos_def = True)
 
     vec_ml = covariance.max_likelihood_spectra(cov_ml,
                                                i_sub_cov,
@@ -101,6 +101,15 @@ def combine_and_save_spectra(cov, vec_xar, vec_xar_th,  all_indices, bin_mean, b
     np.savetxt(f"{combined_spec_dir}/bestfit_{name}_{spectrum}.dat", np.transpose([lb_ml, vec_th_ml]))
     np.save(f"{combined_spec_dir}/cov_{name}_{spectrum}.npy", cov_ml)
 
+    vec_xar_fg_sub = vec_xar - vec_xar_fg_th
+    sub_vec_fg_sub = vec_xar_fg_sub[all_indices]
+    vec_ml_fg_sub = covariance.max_likelihood_spectra(cov_ml,
+                                                      i_sub_cov,
+                                                      P_mat,
+                                                      sub_vec_fg_sub)
+    
+    np.savetxt(f"{combined_spec_dir}/{type}_{name}_{spectrum}_cmb_only.dat", np.transpose([lb_ml, vec_ml_fg_sub, sigma_ml]))
+
 
 
 d = so_dict.so_dict()
@@ -113,7 +122,7 @@ tag = d["best_fit_tag"]
 spec_dir = f"spectra_leak_corr_ab_corr_cal{tag}"
 bestfit_dir = f"best_fits{tag}"
 mcm_dir = "mcms"
-combined_spec_dir = "combined_spectra"
+combined_spec_dir = f"combined_spectra{tag}"
 plot_dir = f"plots/combined_spectra{tag}/"
 
 pspy_utils.create_directory(combined_spec_dir)
@@ -141,6 +150,14 @@ vec_xar_th = covariance.read_x_ar_theory_vec(bestfit_dir,
                                              lmax,
                                              spectra_order=spectra)
 
+vec_xar_fg_th = covariance.read_x_ar_theory_vec(bestfit_dir,
+                                                mcm_dir,
+                                                spec_name_list,
+                                                lmax,
+                                                spectra_order=spectra,
+                                                foreground_only=True)
+
+
 
 
 ########################################################################################
@@ -153,13 +170,6 @@ spectra_cuts = {
 }
 
 
-#spectra_cuts = {
-#    "dr6_pa4_f220": dict(T=[475, lmax], P=[lmax, lmax]),
-#    "dr6_pa5_f150": dict(T=[475, lmax], P=[475, lmax]),
-#    "dr6_pa6_f150": dict(T=[475, lmax], P=[475, lmax]),
-#    "dr6_pa5_f090": dict(T=[475, lmax], P=[475, lmax]),
-#    "dr6_pa6_f090": dict(T=[475, lmax], P=[475, lmax]),
-#}
 
 
 selected_spectra_list = [["TT"], ["TE", "ET"], ["TB", "BT"], ["EB", "BE"], ["EE"], ["BB"]]
@@ -191,7 +201,7 @@ for spec_select in selected_spectra_list:
 
     print("")
     print(f"{spec_select}, {list(bin_out_dict.keys())}")
-    combine_and_save_spectra(cov, vec_xar, vec_xar_th,  all_indices, bin_mean, bin_out_dict, spec_select, name, spectrum)
+    combine_and_save_spectra(cov, vec_xar, vec_xar_th, vec_xar_fg_th,  all_indices, bin_mean, bin_out_dict, spec_select, name, spectrum)
 
 #### Now do the auto-freq spectra combination
 
@@ -223,7 +233,7 @@ for spec_select in selected_spectra_list:
         print("")
         print(f"{spec_select}, {fp}, {list(bin_out_dict.keys())}")
 
-        combine_and_save_spectra(cov, vec_xar, vec_xar_th,  all_indices, bin_mean, bin_out_dict, spec_select, fp, spectrum)
+        combine_and_save_spectra(cov, vec_xar, vec_xar_th, vec_xar_fg_th,  all_indices, bin_mean, bin_out_dict, spec_select, fp, spectrum)
 
 #### Now do the cross-freq spectra combination
 
@@ -258,4 +268,4 @@ for spec_select in selected_spectra_list:
 
         print("")
         print(f"{spec_select}, {fp}, {list(bin_out_dict.keys())}")
-        combine_and_save_spectra(cov, vec_xar, vec_xar_th,  all_indices, bin_mean, bin_out_dict, spec_select, fp, spectrum)
+        combine_and_save_spectra(cov, vec_xar, vec_xar_th, vec_xar_fg_th,  all_indices, bin_mean, bin_out_dict, spec_select, fp, spectrum)

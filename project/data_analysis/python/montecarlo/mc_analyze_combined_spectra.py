@@ -2,7 +2,7 @@
 This script test the bias and covariance of combined spectra
 """
 
-from pspy import so_dict, pspy_utils, so_spectra
+from pspy import so_dict, pspy_utils, so_spectra, so_cov
 from pspipe_utils import log
 import numpy as np
 import pylab as plt
@@ -60,6 +60,9 @@ for spectrum in my_spectra:
 
     n_dof = len(Dl_fg_sub)
     
+    
+    plt.figure(figsize=(12,8))
+    plt.title(f"chi2 distribtution combined {spectrum}", fontsize=18)
     plt.hist(chi2_list, bins=40, density=True, histtype="step", label="sims chi2 distribution")
     x = np.arange(n_dof - 60, n_dof + 60)
     plt.plot(
@@ -70,14 +73,17 @@ for spectrum in my_spectra:
         color="orange",
         label="expected distribution",
     )
-    plt.show()
-    
+    plt.savefig(f"{plot_dir}/chi2_distrib_{spectrum}.png", bbox_inches="tight")
+    plt.clf()
+    plt.close()
+
     Dl_mean = np.mean(Dl_list, axis=0)
     Dl_fg_sub_mean = np.mean(Dl_list_fg_sub, axis=0)
 
-    print("ok")
     cov = np.cov(Dl_list_fg_sub, rowvar=False)
+    corr = so_cov.cov2corr(cov, remove_diag=True)
     
+
     sigma_mc = np.sqrt(cov.diagonal())
     sigma_analytic = np.sqrt(cov_ml.diagonal())
     
@@ -87,30 +93,48 @@ for spectrum in my_spectra:
     plt.plot(lb, Dbth)
     plt.errorbar(l, Dl_mean, sigma_mc, fmt=".", label="mean spectrum")
     plt.errorbar(l, Dl_fg_sub_mean, sigma_mc, fmt=".", label="mean spectrum fg subtracted")
-    plt.legend()
-    plt.show()
+    plt.legend(fontsize=18)
+    plt.savefig(f"{plot_dir}/mean_{spectrum}.png", bbox_inches="tight")
+    plt.clf()
+    plt.close()
 
     
     plt.figure(figsize=(12,8))
     plt.xlabel(r"$\ell$", fontsize=19)
     plt.ylabel(r"$D^{%s}_{\ell} - D^{%s, th}_{\ell}$" % (spectrum,spectrum), fontsize=19)
-    plt.errorbar(l, Dl_mean - Dbth[id], sigma_mc / np.sqrt(iStop + 1 - iStart), label="mean - theory")
-    plt.errorbar(l, Dl_fg_sub_mean - Dbth[id], sigma_mc / np.sqrt(iStop + 1 - iStart), label="mean fg subtracted - theory")
-    plt.legend()
-    plt.show()
-
+    plt.errorbar(l, Dl_mean - Dbth[id], sigma_mc / np.sqrt(iStop + 1 - iStart), label="mean - CMB")
+    plt.errorbar(l, Dl_fg_sub_mean - Dbth[id], sigma_mc / np.sqrt(iStop + 1 - iStart), label="mean fg subtracted - CMB")
+    plt.plot(l, l*0, color="black")
+    plt.legend(fontsize=18)
+    plt.savefig(f"{plot_dir}/residual_{spectrum}.png", bbox_inches="tight")
+    plt.clf()
+    plt.close()
     
     plt.figure(figsize=(12,8))
     plt.subplot(2,1,1)
     plt.semilogy()
     plt.xlabel(r"$\ell$", fontsize=19)
     plt.ylabel(r"$\sigma^{%s}_{\ell}$" % (spectrum), fontsize=19)
-    plt.errorbar(l, sigma_mc, label="covariance of the ML combination of the simulations")
-    plt.errorbar(l, sigma_analytic, label="expected ML combination covariance")
+    plt.errorbar(l, sigma_mc, label="max likelihood mc errors")
+    plt.errorbar(l, sigma_analytic, label="expected ML combination errors")
     plt.legend()
     plt.subplot(2,1,2)
     plt.xlabel(r"$\ell$", fontsize=19)
-    plt.ylabel(r"$\sigma^{%s, mc}_{\ell}/\sigma^{%s, max likelihood}_{\ell}$" % (spectrum, spectrum), fontsize=19)
-    plt.errorbar(l, sigma_mc/sigma_analytic, label="mc errors/max likelihood errors")
+    plt.ylabel(r"$\sigma^{%s, mc}_{\ell}/\sigma^{%s}_{\ell}$" % (spectrum, spectrum), fontsize=19)
+    plt.errorbar(l, sigma_mc/sigma_analytic, label="max likelihood mc errors/expected errors")
+    plt.plot(l, l*0 + 1, color="black")
     plt.legend()
-    plt.show()
+    plt.savefig(f"{plot_dir}/error_comb_{spectrum}.png", bbox_inches="tight")
+    plt.clf()
+    plt.close()
+
+    plt.figure(figsize=(12,8))
+    plt.subplot(2,1,1)
+    plt.imshow(so_cov.cov2corr(cov, remove_diag=True))
+    plt.colorbar()
+    plt.subplot(2,1,2)
+    plt.imshow(so_cov.cov2corr(cov_ml, remove_diag=True))
+    plt.colorbar()
+    plt.savefig(f"{plot_dir}/correlation_{spectrum}.png", bbox_inches="tight")
+    plt.clf()
+    plt.close()

@@ -9,6 +9,7 @@ import pylab as plt
 import sys, os
 from matplotlib import rcParams
 import pspipe_utils
+import scipy.stats as ss
 
 rcParams["font.family"] = "serif"
 rcParams["font.size"] = "40"
@@ -22,6 +23,10 @@ d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
 tag = d["best_fit_tag"]
+binning_file = d["binning_file"]
+lmax = d["lmax"]
+
+
 combined_spec_dir = f"combined_spectra{tag}"
 bestfit_dir = f"best_fits{tag}"
 
@@ -49,7 +54,6 @@ fac["TT"] = 0
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
-
 
 plt.figure(figsize=(40, 40))
 count = 1
@@ -85,3 +89,45 @@ for spec_select in selected_spectra_list:
 plt.savefig(f"{plot_dir}/all_spectra_with_planck.png", bbox_inches="tight")
 plt.clf()
 plt.close()
+
+
+Dlb_th = {}
+for spectrum in spectra:
+    lb_th, Dlb_th[spectrum] = pspy_utils.naive_binning(lth, Dlth[spectrum], binning_file, lmax)
+
+
+
+ylim_res = {}
+ylim_res["TE"] = [-10, 10]
+ylim_res["EE"] = [-5, 5]
+
+for spec_select in selected_spectra_list:
+    s_name = spec_select[0]
+    
+    lb_ml, vec_ml, sigma_ml = np.loadtxt(f"{combined_spec_dir}/{type}_all_{s_name}_cmb_only.dat", unpack=True)
+    cov_ml = np.load(f"{combined_spec_dir}/cov_all_{s_name}.npy")
+
+    inv_cov_ml = np.linalg.inv(cov_ml)
+    
+    id = np.where(lb_th >= lb_ml[0])
+    res = (vec_ml -  Dlb_th[s_name][id])
+    
+    chi2 = res @ inv_cov_ml @ res
+    ndof = len(lb_ml)
+    pte = 1 - ss.chi2(ndof).cdf(chi2)
+    
+    id = np.where(lb_th>=lb_ml[0])
+    
+    plt.figure(figsize=(12, 8))
+    plt.xlabel(r"$\ell$", fontsize=25)
+    plt.ylabel(r"$D^{%s}_{\ell} - D^{%s, th}_{\ell} $" % (s_name, s_name), fontsize=25)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.ylim(ylim_res[s_name])
+
+    plt.errorbar(lb_ml, res, sigma_ml, label=f"p = {pte:.3f}", fmt=".")
+    plt.plot(lb_th, lb_th * 0, color="gray")
+    plt.legend()
+    plt.savefig(f"{plot_dir}/residal_vs_best_fit_cmb_{s_name}.png", bbox_inches="tight")
+    plt.clf()
+    plt.close()

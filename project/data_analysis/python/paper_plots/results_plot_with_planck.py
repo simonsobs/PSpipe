@@ -101,6 +101,11 @@ ylim_res = {}
 ylim_res["TE"] = [-10, 10]
 ylim_res["EE"] = [-5, 5]
 
+
+
+
+count = 1
+plt.figure(figsize=(12, 8))
 for spec_select in selected_spectra_list:
     s_name = spec_select[0]
     
@@ -118,7 +123,7 @@ for spec_select in selected_spectra_list:
     
     id = np.where(lb_th>=lb_ml[0])
     
-    plt.figure(figsize=(12, 8))
+    plt.subplot(2,1,count)
     plt.xlabel(r"$\ell$", fontsize=25)
     plt.ylabel(r"$D^{%s}_{\ell} - D^{%s, th}_{\ell} $" % (s_name, s_name), fontsize=25)
     plt.xticks(fontsize=16)
@@ -127,7 +132,8 @@ for spec_select in selected_spectra_list:
 
     plt.errorbar(lb_ml, res, sigma_ml, label=f"p = {pte:.3f}", fmt=".")
     plt.plot(lb_th, lb_th * 0, color="gray")
-    plt.legend()
-    plt.savefig(f"{plot_dir}/residal_vs_best_fit_cmb_{s_name}.png", bbox_inches="tight")
-    plt.clf()
-    plt.close()
+    plt.legend(fontsize=18)
+    count += 1
+plt.savefig(f"{plot_dir}/residal_vs_best_fit_cmb.png", bbox_inches="tight")
+plt.clf()
+plt.close()

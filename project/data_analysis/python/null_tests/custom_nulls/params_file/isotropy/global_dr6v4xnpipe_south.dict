@@ -1,17 +1,14 @@
 surveys = ["dr6", "Planck"]
-patch = "/global/cfs/cdirs/act/data/tlouis/dr6v4/patch_mask/patch_0.fits"
-
-
-arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+arrays_dr6 = [ "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 arrays_Planck = ["f100", "f143", "f217"]
-planck_version = "legacy"
+planck_version = "npipe"
 
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
-map_dir_Planck = f'{data_dir}/planck/'
-
-planck_mc_correction = "/global/cfs/cdirs/act/data/tlouis/dr6v4/legacy_spectra_correction/15mJy_mask/"
+data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
+patch = data_dir + "patch_mask/patch_1.fits"
 
 
+
+planck_mc_correction = data_dir + "planck_mc_correction/npipe_spectra_correction/15mJy_mask/"
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": "CAR", "order": 0}
@@ -59,39 +56,40 @@ src_free_maps_Planck = True
 n_splits_dr6 = 4
 n_splits_Planck = 2
 
-maps_dr6_pa4_f220 = [data_dir + 'maps/cmb_night_pa4_f220_3pass_4way_set%d_map_srcfree.fits' % i for i in range(n_splits_dr6)]
-maps_dr6_pa5_f090 = [data_dir + 'maps/cmb_night_pa5_f090_3pass_4way_set%d_map_srcfree.fits' % i for i in range(n_splits_dr6)]
-maps_dr6_pa5_f150 = [data_dir + 'maps/cmb_night_pa5_f150_3pass_4way_set%d_map_srcfree.fits' % i for i in range(n_splits_dr6)]
-maps_dr6_pa6_f090 = [data_dir + 'maps/cmb_night_pa6_f090_3pass_4way_set%d_map_srcfree.fits' % i for i in range(n_splits_dr6)]
-maps_dr6_pa6_f150 = [data_dir + 'maps/cmb_night_pa6_f150_3pass_4way_set%d_map_srcfree.fits' % i for i in range(n_splits_dr6)]
+maps_dr6_pa4_f150 = [data_dir + 'maps/dr6/cmb_night_pa4_f150_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa4_f220 = [data_dir + 'maps/dr6/cmb_night_pa4_f220_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa5_f090 = [data_dir + 'maps/dr6/cmb_night_pa5_f090_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa5_f150 = [data_dir + 'maps/dr6/cmb_night_pa5_f150_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa6_f090 = [data_dir + 'maps/dr6/cmb_night_pa6_f090_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa6_f150 = [data_dir + 'maps/dr6/cmb_night_pa6_f150_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
 
-maps_Planck_f100 = [map_dir_Planck + 'HFI_SkyMap_2048_R3.01_halfmission-%d_f100_map_srcfree.fits' % i for i in [1,2]]
-maps_Planck_f143 = [map_dir_Planck + 'HFI_SkyMap_2048_R3.01_halfmission-%d_f143_map_srcfree.fits' % i for i in [1,2]]
-maps_Planck_f217 = [map_dir_Planck + 'HFI_SkyMap_2048_R3.01_halfmission-%d_f217_map_srcfree.fits' % i for i in [1,2]]
 
+maps_Planck_f100 = [data_dir + 'maps/planck/npipe6v20%s_f100_map_srcfree.fits' % split for split in ["A", "B"]]
+maps_Planck_f143 = [data_dir + 'maps/planck/npipe6v20%s_f143_map_srcfree.fits' % split for split in ["A", "B"]]
+maps_Planck_f217 = [data_dir + 'maps/planck/npipe6v20%s_f217_map_srcfree.fits' % split for split in ["A", "B"]]
 
 cal_dr6_pa4_f150 = 1.0
-cal_dr6_pa4_f220 = 1.03311
-cal_dr6_pa5_f090 = 1.00915
-cal_dr6_pa5_f150 = 0.98694
-cal_dr6_pa6_f090 = 1.00700
-cal_dr6_pa6_f150 = 0.97050
+cal_dr6_pa4_f220 = 1.032753904332352
+cal_dr6_pa5_f090 = 1.0060263263493694
+cal_dr6_pa5_f150 = 0.9783905798849046
+cal_dr6_pa6_f090 = 1.0027881754155934
+cal_dr6_pa6_f150 = 0.9660566674653621
 
 
 pol_eff_dr6_pa4_f150 = 1.
-pol_eff_dr6_pa4_f220 = 0.9102043215105964
-pol_eff_dr6_pa5_f090 = 0.9474889080448128
-pol_eff_dr6_pa5_f150 = 0.9522047622130759
-pol_eff_dr6_pa6_f090 = 0.9663618697786318
-pol_eff_dr6_pa6_f150 = 0.9636718928481605
+pol_eff_dr6_pa4_f220 = 0.8874922646292267
+pol_eff_dr6_pa5_f090 = 0.9486751593516607
+pol_eff_dr6_pa5_f150 = 0.9475034485164181
+pol_eff_dr6_pa6_f090 = 0.9658185221427811
+pol_eff_dr6_pa6_f150 = 0.9633575689011507
 
 cal_Planck_f100 = 1.
 cal_Planck_f143 = 1.
 cal_Planck_f217 = 1.
 
-pol_eff_Planck_f100 = 1.0020325615026036
-pol_eff_Planck_f143 = 1.01876949813394
-pol_eff_Planck_f217 = 0.9804641383114724
+pol_eff_Planck_f100 = 1.0
+pol_eff_Planck_f143 = 1.0
+pol_eff_Planck_f217 = 1.0
 
 do_bandpass_integration = True
 passband_dir = data_dir + "passbands/"
@@ -106,7 +104,7 @@ freq_info_Planck_f143 = {"freq_tag": 143, "passband": passband_dir + "passband_n
 freq_info_Planck_f217 = {"freq_tag": 217, "passband": passband_dir + "passband_npipe_f217.dat"}
 
 beam_dir_dr6 = f'{data_dir}/beams/20240404_beams/'
-beam_dir_Planck = f'{data_dir}/beams/legacy/'
+beam_dir_Planck = f'{data_dir}/beams/npipe_DR6/'
 
 beam_T_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
 beam_T_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
@@ -114,9 +112,9 @@ beam_T_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb
 beam_T_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
 beam_T_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
 
-beam_T_Planck_f100 = beam_dir_Planck + 'bl_T_legacy_100hm1x100hm2.dat'
-beam_T_Planck_f143 = beam_dir_Planck + 'bl_T_legacy_143hm1x143hm2.dat'
-beam_T_Planck_f217 = beam_dir_Planck + 'bl_T_legacy_217hm1x217hm2.dat'
+beam_T_Planck_f100 = beam_dir_Planck + 'bl_T_npipe_DR6_100Ax100B.dat'
+beam_T_Planck_f143 = beam_dir_Planck + 'bl_T_npipe_DR6_143Ax143B.dat'
+beam_T_Planck_f217 = beam_dir_Planck + 'bl_T_npipe_DR6_217Ax217B.dat'
 
 beam_pol_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
 beam_pol_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
@@ -124,12 +122,14 @@ beam_pol_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_c
 beam_pol_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
 beam_pol_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
 
-beam_pol_Planck_f100 = beam_dir_Planck + 'bl_pol_legacy_100hm1x100hm2.dat'
-beam_pol_Planck_f143 = beam_dir_Planck + 'bl_pol_legacy_143hm1x143hm2.dat'
-beam_pol_Planck_f217 = beam_dir_Planck + 'bl_pol_legacy_217hm1x217hm2.dat'
+beam_pol_Planck_f100 = beam_dir_Planck + 'bl_pol_npipe_DR6_100Ax100B.dat'
+beam_pol_Planck_f143 = beam_dir_Planck + 'bl_pol_npipe_DR6_143Ax143B.dat'
+beam_pol_Planck_f217 = beam_dir_Planck + 'bl_pol_npipe_DR6_217Ax217B.dat'
+
+include_beam_chromaticity_effect_in_best_fit = False
 
 
-leakage_file_dir = data_dir + 'beams/20240404_gamma/'
+leakage_file_dir = data_dir + 'beams/20240916_gamma/'
 
 leakage_beam_dr6_pa4_f150_TE = ['pa4_f150_gamma_t2e.txt' for i in range(4)]
 leakage_beam_dr6_pa4_f220_TE = ['pa4_f220_gamma_t2e.txt' for i in range(4)]
@@ -146,13 +146,13 @@ leakage_beam_dr6_pa6_f090_TB = ['pa6_f090_gamma_t2b.txt' for i in range(4)]
 leakage_beam_dr6_pa6_f150_TB = ['pa6_f150_gamma_t2b.txt' for i in range(4)]
 
 
-leakage_beam_Planck_f100_TE = ['gamma_legacy_100%s_t2e.dat' % split for split in ["hm1", "hm2"]]
-leakage_beam_Planck_f143_TE = ['gamma_legacy_143%s_t2e.dat' % split for split in ["hm1", "hm2"]]
-leakage_beam_Planck_f217_TE = ['gamma_legacy_217%s_t2e.dat' % split for split in ["hm1", "hm2"]]
+leakage_beam_Planck_f100_TE = ['gamma_npipe_DR6_AxB_100%s_t2e.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f143_TE = ['gamma_npipe_DR6_AxB_143%s_t2e.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f217_TE = ['gamma_npipe_DR6_AxB_217%s_t2e.dat' % split for split in ["A", "B"]]
 
-leakage_beam_Planck_f100_TB = ['gamma_legacy_100%s_t2b.dat' % split for split in ["hm1", "hm2"]]
-leakage_beam_Planck_f143_TB = ['gamma_legacy_143%s_t2b.dat' % split for split in ["hm1", "hm2"]]
-leakage_beam_Planck_f217_TB = ['gamma_legacy_217%s_t2b.dat' % split for split in ["hm1", "hm2"]]
+leakage_beam_Planck_f100_TB = ['gamma_npipe_DR6_AxB_100%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f143_TB = ['gamma_npipe_DR6_AxB_143%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f217_TB = ['gamma_npipe_DR6_AxB_217%s_t2b.dat' % split for split in ["A", "B"]]
 
 
 
@@ -231,18 +231,19 @@ window_pol_Planck_f217 = win_dir + "window_dr6_pa4_f220_baseline.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)
-cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
 accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 4.3050068, "a_kSZ": 0.15060036, "a_p": 8.4076773, "beta_p": 1.6925471, "a_c": 3.1015348, "beta_c": 1.6925471, "a_s": 2.2802898, "a_gtt": 7.8690649,  "xi": 0.044496673, "T_d": 9.60, "a_gte": 0.42652124, "a_gtb": 0.012, "a_gee": 0.16917828,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.8809197, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
 
-bandpass_shift_dr6_pa4_f220  =  11.095222
-bandpass_shift_dr6_pa5_f090  = -0.21607938
-bandpass_shift_dr6_pa5_f150  = -0.4350145
-bandpass_shift_dr6_pa6_f090  =  0.23238833
-bandpass_shift_dr6_pa6_f150  =  0.38983707
+fg_params = {"a_tSZ": 3.69, "alpha_tSZ":-0.44, "a_kSZ": 1, "a_p": 8.08, "beta_p": 1.823, "a_c": 3.35, "beta_c": 1.823, "a_s": 2.66, "a_gtt": 8.02,  "xi": 0.075, "T_d": 9.60, "a_gte": 0.419, "a_gtb": 0.012, "a_gee": 0.167,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.795, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+
+bandpass_shift_dr6_pa4_f220  =  7.5
+bandpass_shift_dr6_pa5_f090  = -0.06
+bandpass_shift_dr6_pa5_f150  = -0.92
+bandpass_shift_dr6_pa6_f090  =  0.5
+bandpass_shift_dr6_pa6_f150  = -0.19
 
 bandpass_shift_Planck_f100  = 0.
 bandpass_shift_Planck_f143  = 0.
@@ -250,10 +251,12 @@ bandpass_shift_Planck_f217  = 0.
 
 
 
+
+
 #sim
 seed_sims = False
 iStart = 0
-iStop = 299
+iStop = 499
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

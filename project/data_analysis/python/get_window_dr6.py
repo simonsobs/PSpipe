@@ -197,6 +197,12 @@ for task in subtasks:
         my_masks[mask_type].data *= ps_mask.data
 
         my_masks[mask_type].data = my_masks[mask_type].data.astype(np.float32)
+        
+        if mask_type == "baseline":
+            Omega = so_window.get_survey_solid_angle(my_masks[mask_type])
+            Omega_srad = Omega / (4 * np.pi) * 41253
+            log.info(f"[{task}] {sv} {ar} baseline mask solid angle: {Omega_srad}")
+
         my_masks[mask_type].write_map(f"{window_dir}/window_{sv}_{ar}_{mask_type}.fits")
 
         # we also make a version of the windows taking into account the ivar of the maps
@@ -215,5 +221,6 @@ for task in subtasks:
 
     for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
+
         mask = mask.downgrade(4)
         mask.plot(file_name=f"{window_dir}/{mask_type}_mask_{sv}_{ar}")

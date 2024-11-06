@@ -61,11 +61,9 @@ for sid1, spec1 in enumerate(spec_list):
             ps_list_ab += [vec_ab]
             ps_list_cd += [vec_cd]
 
-        cov_mc = 0
-        for iii in range(iStart, iStop + 1):
-            cov_mc += np.outer(ps_list_ab[iii], ps_list_cd[iii])
-
-        cov_mc = cov_mc / (iStop + 1 - iStart) - np.outer(np.mean(ps_list_ab, axis=0), np.mean(ps_list_cd, axis=0))
+        cov_mc = np.cov(ps_list_ab, ps_list_cd, rowvar=False)
+        n_el = int(cov_mc.shape[0] / 2)
+        cov_mc = cov_mc[:n_el, n_el:]
 
         np.save(f"{cov_dir}/mc_cov_{na}x{nb}_{nc}x{nd}.npy", cov_mc)
 

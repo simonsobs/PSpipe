@@ -71,12 +71,12 @@ ps_mask_Planck_f143 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_r
 ps_mask_Planck_f353 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust_paper.fits'
 
 window_kspace_Planck_f143 = win_dir + "kspace_mask_dr6_pa6_f150.fits"
-window_T_Planck_f143 = win_dir + "window_dr6_pa6_f150_baseline.fits"
-window_pol_Planck_f143 = win_dir + "window_dr6_pa6_f150_baseline.fits"
+window_T_Planck_f143 = win_dir + "window_w_dr6_pa6_f150_baseline.fits"
+window_pol_Planck_f143 = win_dir + "window_w_dr6_pa6_f150_baseline.fits"
 
 window_kspace_Planck_f353 = win_dir + "kspace_mask_dr6_pa6_f150.fits"
-window_T_Planck_f353 = win_dir + "window_dr6_pa6_f150_baseline.fits"
-window_pol_Planck_f353 = win_dir + "window_dr6_pa6_f150_baseline.fits"
+window_T_Planck_f353 = win_dir + "window_w_dr6_pa6_f150_baseline.fits"
+window_pol_Planck_f353 = win_dir + "window_w_dr6_pa6_f150_baseline.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)

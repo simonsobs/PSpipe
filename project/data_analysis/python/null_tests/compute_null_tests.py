@@ -34,13 +34,16 @@ def pte_histo(pte_list, file_name, n_bins):
     n_samples = len(pte_list)
     bins = np.linspace(0, 1, n_bins + 1)
     min, max = np.min(pte_list), np.max(pte_list)
+    
     plt.figure(figsize=(8,6))
-    plt.xlabel(r"Probability to exceed (PTE)")
-    plt.hist(pte_list, bins=bins, label=f"n tests: {n_samples}, min: {min:.4f}, max: {max:.4f}")
-    plt.axhline(n_samples/n_bins, color="k", ls="--")
+    plt.title("Array-bands test", fontsize=16)
+    plt.xlabel(r"Probability to exceed (PTE)", fontsize=16)
+    plt.hist(pte_list, bins=bins, label=f"n tests: {n_samples}, min: {min:.3f}, max: {max:.3f}", histtype="bar", facecolor="orange", edgecolor="black", linewidth=3)
+    plt.axhline(n_samples/n_bins, color="k", ls="--", alpha=0.5)
+    plt.xlim(0, 1)
     plt.tight_layout()
-    plt.legend()
-    plt.savefig(f"{file_name}", dpi=300)
+    plt.legend(fontsize=16)
+    plt.savefig(f"{file_name}", dpi=300, bbox_inches='tight')
     plt.clf()
     plt.close()
     
@@ -63,7 +66,7 @@ remove_first_bin = True
 
 skip_pa4_pol = True
 skip_diff_freq_TT = True
-skip_EB = True
+skip_EB = False
 fudge = False
 
 plot_dir = "plots/array_nulls"
@@ -188,7 +191,8 @@ for null in null_list:
         if "mc_cov" in cov_correction:
             res_cov_dict[label] = covariance.correct_analytical_cov(res_cov_dict[label],
                                                                     res_cov["mc_cov"],
-                                                                    only_diag_corrections=True)
+                                                                    only_diag_corrections=True,
+                                                                    use_max_error=False)
         if "beam_cov" in cov_correction:
             res_cov_dict[label] += res_cov["beam_cov"]
             
@@ -270,7 +274,7 @@ else:
 for label in label_list:
     pte_list = pte_dict[label, "all"]
     print(f"{label} Worse PTE: min {np.min(pte_list)}, max {np.max(pte_list)}")
-    n_bins = 10
+    n_bins = 14
     file_name = f"{plot_dir}/pte_hist_all_{label}{hist_label}.png"
     pte_histo(pte_list, file_name, n_bins)
     for mode in tested_spectra:

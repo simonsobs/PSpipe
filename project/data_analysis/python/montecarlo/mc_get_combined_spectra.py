@@ -72,7 +72,6 @@ def combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_
                                                       P_mat,
                                                       sub_vec_fg_sub)
     
-    np.savetxt(f"{combined_spec_dir}/{type}_{name}.dat", np.transpose([lb_ml, vec_ml, np.sqrt(cov_ml.diagonal())]))
     np.savetxt(f"{combined_spec_dir}/{type}_{name}_cmb_only.dat", np.transpose([lb_ml, vec_ml_fg_sub, np.sqrt(cov_ml.diagonal())]))
 
 def ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict):
@@ -103,10 +102,17 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-sim_spec_dir = f"sim_spectra"
+include_syst = True
+if include_syst:
+    print(f"Use sim spectra with beam and leakage uncertainties")
+    add_str = "_syst"
+else:
+    add_str = ""
+
+sim_spec_dir = f"sim_spectra{add_str}"
 bestfit_dir = f"best_fits"
 mcm_dir = "mcms"
-combined_spec_dir = f"combined_sim_spectra"
+combined_spec_dir = f"combined_sim_spectra{add_str}"
 plot_dir = f"plots/combined_sim_spectra/"
 
 pspy_utils.create_directory(combined_spec_dir)
@@ -124,6 +130,10 @@ bin_low, bin_high, bin_mean, bin_size = pspy_utils.read_binning_file(binning_fil
 
 cov = np.load("covariances/x_ar_final_cov_sim_gp.npy")
 
+if include_syst:
+    cov_beam = np.load("covariances/x_ar_beam_cov.npy")
+    cov_leakage = np.load("covariances/x_ar_leakage_cov.npy")
+    cov += cov_beam + cov_leakage
 
 vec_xar_th = covariance.read_x_ar_theory_vec(bestfit_dir,
                                              mcm_dir,
@@ -137,9 +147,6 @@ vec_xar_fg_th = covariance.read_x_ar_theory_vec(bestfit_dir,
                                                 lmax,
                                                 spectra_order=spectra,
                                                 foreground_only=True)
-
-
-
 
 ########################################################################################
 spectra_cuts = {
@@ -243,9 +250,8 @@ for spec_select in selected_spectra_list:
                                                        type=type)
 
             sub_vec = vec_xar[all_indices]
-            combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, name)
+            combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, sim_name)
 
-        
 #### Now do the cross-freq spectra combination
 
 cross_freq_pairs = ["90x220", "90x150", "150x220"]
@@ -284,15 +290,13 @@ for spec_select in selected_spectra_list:
         for iii in range(iStart, iStop + 1):
             sim_name = name + f"_{iii:05d}"
             print(sim_name)
-
             vec_xar = covariance.read_x_ar_spectra_vec(sim_spec_dir,
                                                        spec_name_list,
                                                        f"cross_{iii:05d}",
                                                        spectra_order=spectra,
                                                        type=type)
 
-
             sub_vec = vec_xar[all_indices]
-            combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, name)
+            combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, sim_name)
 
         

@@ -13,9 +13,16 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+include_syst = True
+if include_syst:
+    print(f"Use sim spectra with beam and leakage uncertainties")
+    add_str = "_syst"
+else:
+    add_str = ""
+
 bestfit_dir = f"best_fits"
-combined_spec_dir = "combined_sim_spectra"
-plot_dir = f"plots/combined_sim_spectra/"
+combined_spec_dir = f"combined_sim_spectra{add_str}"
+plot_dir = f"plots/combined_sim_spectra{add_str}/"
 
 pspy_utils.create_directory(plot_dir)
 
@@ -23,7 +30,8 @@ binning_file = d["binning_file"]
 lmax = d["lmax"]
 type = d["type"]
 iStart = d["iStart"]
-iStop = d["iStop"]
+iStop =  d["iStop"]
+
 name = "all"
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -74,7 +82,6 @@ for spectrum in my_spectra:
     plt.clf()
     plt.close()
     
-    
     Dl_mean = np.mean(Dl_list, axis=0)
     Dl_fg_sub_mean = np.mean(Dl_list_fg_sub, axis=0)
 
@@ -104,7 +111,6 @@ for spectrum in my_spectra:
     plt.savefig(f"{plot_dir}/{spectrum}_residual.png", bbox_inches="tight")
     plt.clf()
     plt.close()
-    
     
     plt.figure(figsize=(12,8))
     plt.subplot(2,1,1)

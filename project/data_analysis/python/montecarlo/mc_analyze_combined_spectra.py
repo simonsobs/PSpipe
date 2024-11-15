@@ -23,7 +23,7 @@ binning_file = d["binning_file"]
 lmax = d["lmax"]
 type = d["type"]
 iStart = d["iStart"]
-iStop = 399
+iStop = d["iStop"]
 name = "all"
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]

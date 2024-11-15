@@ -1,5 +1,5 @@
 """
-This script combine the montecarlo simulation spectra into single CMB only spectra
+This script combined the spectra together
 """
 
 from pspy import so_dict, pspy_utils
@@ -31,7 +31,7 @@ def get_ml_bins(bin_out_dict, bin_mean):
     
     return ml_lb
 
-def get_P_mat(vec_size, lb_ml, bin_out_dict, spec_select, fig_name):
+def get_P_mat(vec_size, lb_ml, bin_out_dict):
 
     """
     Very naive "pointing" matrix for maximum likelihood combination of the spectra
@@ -57,33 +57,57 @@ def get_P_mat(vec_size, lb_ml, bin_out_dict, spec_select, fig_name):
                     P_mat[index1, index2] = 1
             index1 += 1
 
-        plt.figure(figsize=(12,8))
-        plt.imshow(P_mat, aspect="auto")
-        plt.title(spec_select)
-        plt.yticks(y_ticks, y_name)
-        plt.xticks(np.arange(len(lb_ml))[::2], lb_ml[::2], rotation=90)
-        plt.tight_layout()
-        plt.savefig(fig_name)
-        plt.clf()
-        plt.close()
-        
     return P_mat
     
+def combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, name):
         
+    vec_ml = covariance.max_likelihood_spectra(cov_ml,
+                                               i_sub_cov,
+                                               P_mat,
+                                               sub_vec)
 
+    sub_vec_fg_sub = sub_vec - sub_vec_fg_th
+    vec_ml_fg_sub = covariance.max_likelihood_spectra(cov_ml,
+                                                      i_sub_cov,
+                                                      P_mat,
+                                                      sub_vec_fg_sub)
+    
+    np.savetxt(f"{combined_spec_dir}/{type}_{name}.dat", np.transpose([lb_ml, vec_ml, np.sqrt(cov_ml.diagonal())]))
+    np.savetxt(f"{combined_spec_dir}/{type}_{name}_cmb_only.dat", np.transpose([lb_ml, vec_ml_fg_sub, np.sqrt(cov_ml.diagonal())]))
+
+def ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict):
+
+    sub_cov = cov[np.ix_(all_indices, all_indices)]
+    i_sub_cov = np.linalg.inv(sub_cov)
+        
+    sub_vec_th = vec_xar_th[all_indices]
+    sub_vec_fg_th = vec_xar_fg_th[all_indices]
+    
+    lb_ml = get_ml_bins(bin_out_dict, bin_mean)
+    P_mat = get_P_mat(len(sub_vec_fg_th), lb_ml, bin_out_dict)
+        
+    cov_ml = covariance.get_max_likelihood_cov(P_mat,
+                                               i_sub_cov,
+                                               force_sim = True,
+                                               check_pos_def = False)
+
+    vec_th_ml = covariance.max_likelihood_spectra(cov_ml,
+                                                  i_sub_cov,
+                                                  P_mat,
+                                                  sub_vec_th)
+
+    return lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th
 
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-
-
-spec_dir = f"sim_spectra"
+sim_spec_dir = f"sim_spectra"
 bestfit_dir = f"best_fits"
 mcm_dir = "mcms"
-combined_spec_dir = "sim_combined_spectra"
-plot_dir = f"plots/sim_combined_spectra/"
+combined_spec_dir = f"combined_sim_spectra"
+plot_dir = f"plots/combined_sim_spectra/"
 
 pspy_utils.create_directory(combined_spec_dir)
 pspy_utils.create_directory(plot_dir)
@@ -91,13 +115,14 @@ pspy_utils.create_directory(plot_dir)
 binning_file = d["binning_file"]
 lmax = d["lmax"]
 type = d["type"]
+iStart = d["iStart"]
+iStop =  d["iStop"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 bin_low, bin_high, bin_mean, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 
 cov = np.load("covariances/x_ar_final_cov_sim_gp.npy")
-
 
 
 vec_xar_th = covariance.read_x_ar_theory_vec(bestfit_dir,
@@ -115,6 +140,7 @@ vec_xar_fg_th = covariance.read_x_ar_theory_vec(bestfit_dir,
 
 
 
+
 ########################################################################################
 spectra_cuts = {
     "dr6_pa4_f220": dict(T=[975, lmax], P=[lmax, lmax]),
@@ -128,14 +154,18 @@ selected_spectra_list = [["TT"], ["TE", "ET"], ["TB", "BT"], ["EB", "BE"], ["EE"
 only_TT_map_set = ["dr6_pa4_f220"]
 ########################################################################################
 
-iStart = d["iStart"]
-iStop = d["iStop"]
 
+
+#### First start with the combination of all power spectra
+#### we skip TT because the fg make different frequency spectra incompatible
+
+print("")
+print("all")
 
 for spec_select in selected_spectra_list:
-    name = "all"
     spectrum = spec_select[0]
-    if (spectrum == "TT"): continue
+    name = f"all_{spectrum}"
+
     bin_out_dict,  all_indices = covariance.get_indices(bin_low,
                                                         bin_high,
                                                         bin_mean,
@@ -146,54 +176,123 @@ for spec_select in selected_spectra_list:
                                                         excluded_map_set = None,
                                                         only_TT_map_set=only_TT_map_set)
 
-
     print("")
     print(f"{spec_select}, {list(bin_out_dict.keys())}")
     
-    sub_cov = cov[np.ix_(all_indices, all_indices)]
-    i_sub_cov = np.linalg.inv(sub_cov)
-    sub_vec_th = vec_xar_th[all_indices]
-    lb_ml = get_ml_bins(bin_out_dict, bin_mean)
-    P_mat = get_P_mat(len(sub_vec_th), lb_ml, bin_out_dict, spec_select, fig_name=f"{plot_dir}/P_mat_{name}_{spectrum}.png")
-
-    cov_ml = covariance.get_max_likelihood_cov(P_mat,
-                                               i_sub_cov,
-                                               force_sim = True,
-                                               check_pos_def = True)
-
-    vec_th_ml = covariance.max_likelihood_spectra(cov_ml,
-                                                  i_sub_cov,
-                                                  P_mat,
-                                                  sub_vec_th)
-                       
-    sigma_ml = np.sqrt(cov_ml.diagonal())
-    
-    np.savetxt(f"{combined_spec_dir}/bestfit_{name}_{spectrum}.dat", np.transpose([lb_ml, vec_th_ml]))
-    np.save(f"{combined_spec_dir}/cov_{name}_{spectrum}.npy", cov_ml)
+    lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov, sub_vec_fg_th = ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
+    np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
+    np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
 
     for iii in range(iStart, iStop + 1):
-        print(iii)
-
-        vec_xar = covariance.read_x_ar_spectra_vec(spec_dir,
+        sim_name = name + f"_{iii:05d}"
+        print(sim_name)
+        vec_xar = covariance.read_x_ar_spectra_vec(sim_spec_dir,
                                                    spec_name_list,
                                                    f"cross_{iii:05d}",
                                                    spectra_order=spectra,
                                                    type=type)
 
         sub_vec = vec_xar[all_indices]
+        combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, sim_name)
 
-        vec_ml = covariance.max_likelihood_spectra(cov_ml,
-                                                   i_sub_cov,
-                                                   P_mat,
-                                                   sub_vec)
 
-        np.savetxt(f"{combined_spec_dir}/{type}_{name}_{spectrum}_{iii:05d}.dat", np.transpose([lb_ml, vec_ml, sigma_ml]))
 
-        vec_xar -= vec_xar_fg_th
-        sub_vec = vec_xar[all_indices]
-        vec_ml = covariance.max_likelihood_spectra(cov_ml,
-                                                   i_sub_cov,
-                                                   P_mat,
-                                                   sub_vec)
+#### Now do the auto-freq spectra combination
 
-        np.savetxt(f"{combined_spec_dir}/{type}_{name}_{spectrum}_{iii:05d}_cmb_only.dat", np.transpose([lb_ml, vec_ml, sigma_ml]))
+auto_freq_pairs = ["150x150", "90x90", "220x220"]
+excluded_map_set = {}
+excluded_map_set["150x150"] = ["dr6_pa5_f090", "dr6_pa6_f090", "dr6_pa4_f220"]
+excluded_map_set["90x90"] = ["dr6_pa5_f150", "dr6_pa6_f150", "dr6_pa4_f220"]
+excluded_map_set["220x220"] = ["dr6_pa5_f090", "dr6_pa6_f090", "dr6_pa5_f150", "dr6_pa6_f150"]
+
+
+print("")
+print("auto-freq")
+
+for spec_select in selected_spectra_list:
+    spectrum = spec_select[0]
+
+    for fp in auto_freq_pairs:
+        if (fp == "220x220") & (spectrum != "TT"): continue
+        
+        name = f"{fp}_{spectrum}"
+
+        bin_out_dict,  all_indices = covariance.get_indices(bin_low,
+                                                            bin_high,
+                                                            bin_mean,
+                                                            spec_name_list,
+                                                            spectra_cuts=spectra_cuts,
+                                                            spectra_order=spectra,
+                                                            selected_spectra=spec_select,
+                                                            excluded_map_set = excluded_map_set[fp],
+                                                            only_TT_map_set=only_TT_map_set)
+
+        print("")
+        print(f"{spec_select}, {fp}, {list(bin_out_dict.keys())}")
+        lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th = ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
+        np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
+        np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
+
+        for iii in range(iStart, iStop + 1):
+            sim_name = name + f"_{iii:05d}"
+            print(sim_name)
+            vec_xar = covariance.read_x_ar_spectra_vec(sim_spec_dir,
+                                                       spec_name_list,
+                                                       f"cross_{iii:05d}",
+                                                       spectra_order=spectra,
+                                                       type=type)
+
+            sub_vec = vec_xar[all_indices]
+            combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, name)
+
+        
+#### Now do the cross-freq spectra combination
+
+cross_freq_pairs = ["90x220", "90x150", "150x220"]
+
+map_set_A, map_set_B = {}, {}
+
+map_set_A["90x150"] = ["dr6_pa5_f090", "dr6_pa6_f090"]
+map_set_A["90x220"] = ["dr6_pa5_f090", "dr6_pa6_f090"]
+map_set_A["150x220"] = ["dr6_pa5_f150", "dr6_pa6_f150"]
+map_set_B["90x150"] = ["dr6_pa5_f150", "dr6_pa6_f150"]
+map_set_B["90x220"] = ["dr6_pa4_f220"]
+map_set_B["150x220"] = ["dr6_pa4_f220"]
+
+print("")
+print("x-freq")
+for spec_select in selected_spectra_list:
+    spectrum = spec_select[0]
+    for fp in cross_freq_pairs:
+        if ("220" in fp) & (spectrum != "TT"): continue
+        name = f"{fp}_{spectrum}"
+
+        bin_out_dict,  all_indices = covariance.get_cross_indices(bin_low,
+                                                                  bin_high,
+                                                                  bin_mean,
+                                                                  spec_name_list,
+                                                                  map_set_A = map_set_A[fp],
+                                                                  map_set_B = map_set_B[fp],
+                                                                  spectra_cuts=spectra_cuts,
+                                                                  spectra_order=spectra,
+                                                                  selected_spectra=spec_select,
+                                                                  only_TT_map_set=only_TT_map_set)
+
+        lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th = ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
+        np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
+        np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
+        for iii in range(iStart, iStop + 1):
+            sim_name = name + f"_{iii:05d}"
+            print(sim_name)
+
+            vec_xar = covariance.read_x_ar_spectra_vec(sim_spec_dir,
+                                                       spec_name_list,
+                                                       f"cross_{iii:05d}",
+                                                       spectra_order=spectra,
+                                                       type=type)
+
+
+            sub_vec = vec_xar[all_indices]
+            combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, name)
+
+        

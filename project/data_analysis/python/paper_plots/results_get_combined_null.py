@@ -1,5 +1,5 @@
 """
-This script test the bias and covariance of combined spectra
+This script compute combined null test
 """
 
 from pspy import so_dict, pspy_utils, so_spectra, so_cov

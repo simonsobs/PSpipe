@@ -113,8 +113,6 @@ plt.savefig("all_beta.png")
 plt.clf()
 plt.close()
 
-
-
 beta_ACT =  angle["optimal", "post_unblinding"]["beta_ACT", "mean"]
 print(beta_ACT)
 
@@ -192,72 +190,3 @@ for spec in ["EB", "TB"]:
             plt.ylim(-4,6)
 
         plt.show()
-
-
-for spec in ["EB", "TB"]:
-
-    lb_90x90, ps_90x90, error_90x90 = np.loadtxt(f"combined_spectra_paper_optimal/Dl_90x90_{spec}.dat", unpack=True)
-    lb_150x150, ps_150x150, error_150x150 = np.loadtxt(f"combined_spectra_paper_optimal/Dl_150x150_{spec}.dat", unpack=True)
-    lb_90x150, ps_90x150, error_90x150 = np.loadtxt(f"combined_spectra_paper_optimal/Dl_90x150_{spec}.dat", unpack=True)
-
-    id = np.where(lb_150x150>= lb_90x90[0])
-    lb_150x150, ps_150x150, error_150x150 = lb_150x150[id], ps_150x150[id], error_150x150[id]
-
-    diff_data_150x150_90x90 = ps_150x150 - ps_90x90
-    diff_data_150x150_90x150 = ps_150x150 - ps_90x150
-
-    diff_150x150_90x90_list = []
-    diff_150x150_90x150_list = []
-    
-    for iii in range(399):
-        lb_90x90, ps_sim_90x90, error_sim_90x90 = np.loadtxt(f"combined_sim_spectra_optimal/Dl_90x90_{spec}_{iii:05d}.dat", unpack=True)
-        lb_90x150, ps_sim_90x150, error_sim_90x150 = np.loadtxt(f"combined_sim_spectra_optimal/Dl_90x150_{spec}_{iii:05d}.dat", unpack=True)
-        lb_150x150, ps_sim_150x150, error_sim_150x150 = np.loadtxt(f"combined_sim_spectra_optimal/Dl_150x150_{spec}_{iii:05d}.dat", unpack=True)
-        id = np.where(lb_150x150>= lb_90x90[0])
-    
-        lb_150x150, ps_sim_150x150, error_sim_150x150 = lb_150x150[id], ps_sim_150x150[id], error_sim_150x150[id]
-    
-        diff_150x150_90x90_list += [ps_sim_150x150 - ps_sim_90x90]
-        diff_150x150_90x150_list  += [ps_sim_150x150 - ps_sim_90x150]
-
-    error_mc_150x150_90x90 = np.std(diff_150x150_90x90_list, axis=0)
-    error_mc_150x150_90x150 = np.std(diff_150x150_90x150_list, axis=0)
-
-    cov_mc_150x150_90x90 = np.cov(diff_150x150_90x90_list, rowvar=False)
-    cov_mc_150x150_90x150 = np.cov(diff_150x150_90x150_list, rowvar=False)
-
-
-    corr_mc_150x150_90x90 = so_cov.cov2corr(cov_mc_150x150_90x90, remove_diag=True)
-    corr_mc_150x150_90x150 = so_cov.cov2corr(cov_mc_150x150_90x150, remove_diag=True)
-    
-    plt.imshow(corr_mc_150x150_90x90)
-    plt.colorbar()
-    plt.show()
-    
-    plt.imshow(corr_mc_150x150_90x150)
-    plt.colorbar()
-    plt.show()
-    
-
-    chi2_150x150_90x90 = np.sum((diff_data_150x150_90x90) ** 2 / error_mc_150x150_90x90 ** 2)
-    chi2_150x150_90x150 = np.sum((diff_data_150x150_90x150) ** 2 / error_mc_150x150_90x150 ** 2)
-
-    pte_150x150_90x90 = 1 - ss.chi2(len(lb_150x150)).cdf(chi2_150x150_90x90)
-    pte_150x150_90x150  = 1 - ss.chi2(len(lb_150x150)).cdf(chi2_150x150_90x150)
-
-    plt.figure(figsize=(16,6))
-    plt.title("Frequency null", fontsize=24)
-    plt.errorbar(lb_150x150-10, diff_data_150x150_90x90, error_mc_150x150_90x90, fmt="o", label=f"pte 150x150 - 90x90: {pte_150x150_90x90*100:.2f}  %")
-    plt.errorbar(lb_150x150+10, diff_data_150x150_90x150, error_mc_150x150_90x150, fmt="o", label=f"pte 150x150 - 90x150: {pte_150x150_90x150*100:.2f}  %")
-    plt.plot(lb_150x150, lb_150x150*0)
-    if spec == "EB":
-        plt.ylim(-2,2)
-    if spec == "TB":
-        plt.ylim(-5,5)
-    plt.xlabel(r"$\ell$", fontsize=25)
-    plt.ylabel(r"$D^{%s}_{\ell}$" % spec, fontsize=25)
-
-    plt.legend(fontsize=16)
-    plt.savefig(f"freq_null_{spec}.png")
-    plt.clf()
-    plt.close()

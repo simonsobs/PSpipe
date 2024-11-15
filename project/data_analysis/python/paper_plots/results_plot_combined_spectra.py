@@ -60,10 +60,7 @@ lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 for spec_select in selected_spectra_list:
     s_name = spec_select[0]
     for case in case_list:
-    
-        if (s_name == "TT") & (case == "all"):
-            continue
-            
+                
         if ("220" in case) & (s_name != "TT"): continue
         
         lb_ml, vec_ml, sigma_ml = np.loadtxt(f"{combined_spec_dir}/{type}_{case}_{s_name}.dat", unpack=True)

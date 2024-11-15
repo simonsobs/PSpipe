@@ -38,35 +38,41 @@ type = d["type"]
 planck_data_path = os.path.join(os.path.dirname(os.path.abspath(pspipe_utils.__file__)), "data/spectra/planck")
 
 ########################################################################################
-selected_spectra_list = [["EE"], ["TE", "ET"]]
+selected_spectra_list = [["TT"], ["EE"], ["TE", "ET"]]
 ########################################################################################
 
 ylim = {}
-
+ylim["TT"] = [5, 6000]
 ylim["TE"] = [0, 60000]
 ylim["TE"] = [-105000, 75000]
 ylim["EE"] = [0, 45]
 fac = {}
+fac["TT"] = 0
 fac["TE"] = 1
 fac["EE"] = 0
-fac["TT"] = 0
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 
-plt.figure(figsize=(40, 40))
+plt.figure(figsize=(40, 50))
 count = 1
 for spec_select in selected_spectra_list:
     s_name = spec_select[0]
     
     lb_ml, vec_ml, sigma_ml = np.loadtxt(f"{combined_spec_dir}/{type}_all_{s_name}_cmb_only.dat", unpack=True)
     cov_ml = np.load(f"{combined_spec_dir}/cov_all_{s_name}.npy")
+ 
+    if s_name == "TT":
+        lp, Dlp, sigmap, _, _ = np.loadtxt(f"{planck_data_path}/COM_PowerSpect_CMB-{s_name}-binned_R3.01.txt", unpack=True)
+    else:
+        lp, Dlp, sigmap, _, _ = np.loadtxt(f"{planck_data_path}/COM_PowerSpect_CMB-{s_name}-binned_R3.02.txt", unpack=True)
 
-    lp, Dlp, sigmap, _, _ = np.loadtxt(f"{planck_data_path}/COM_PowerSpect_CMB-{s_name}-binned_R3.02.txt", unpack=True)
-    if s_name == "TT": plt.semilogy()
+  #  if s_name == "TT": plt.semilogy()
     
-    plt.subplot(2,1,count)
+    plt.subplot(3,1,count)
+    if s_name == "TT": plt.semilogy()
+
     plt.xlim(0,4000)
     plt.ylim(ylim[s_name])
     plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt="o", color="royalblue", label="ACT")
@@ -84,25 +90,27 @@ for spec_select in selected_spectra_list:
         plt.ylabel(r"$\ell^{%s}D^{%s}_{\ell}$" % (fac[s_name], s_name), fontsize=50)
 
     if count == 1:
-        plt.legend(fontsize=50)
+        plt.legend(fontsize=80)
     count += 1
+    if count < 4:
+        print("ok")
+        plt.xticks([])
+        
+plt.subplots_adjust(wspace=0, hspace=0)
+
+#plt.show()
 plt.savefig(f"{plot_dir}/all_spectra_with_planck.png", bbox_inches="tight")
 plt.clf()
 plt.close()
-
 
 Dlb_th = {}
 for spectrum in spectra:
     lb_th, Dlb_th[spectrum] = pspy_utils.naive_binning(lth, Dlth[spectrum], binning_file, lmax)
 
-
-
 ylim_res = {}
+ylim_res["TT"] = [-40, 40]
 ylim_res["TE"] = [-10, 10]
 ylim_res["EE"] = [-5, 5]
-
-
-
 
 count = 1
 plt.figure(figsize=(12, 8))
@@ -123,7 +131,7 @@ for spec_select in selected_spectra_list:
     
     id = np.where(lb_th>=lb_ml[0])
     
-    plt.subplot(2,1,count)
+    plt.subplot(3,1,count)
     plt.xlabel(r"$\ell$", fontsize=25)
     plt.ylabel(r"$D^{%s}_{\ell} - D^{%s, th}_{\ell} $" % (s_name, s_name), fontsize=25)
     plt.xticks(fontsize=16)

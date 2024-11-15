@@ -54,10 +54,13 @@ for sv in surveys:
         name = f"{sv}_{ar}"
         log.info(f"reading leakage info {name}")
         gamma[name], err_m_gamma[name], var[name] = {}, {}, {}
+
         l, gamma[name]["TE"], err_m_gamma[name]["TE"], gamma[name]["TB"], err_m_gamma[name]["TB"] = leakage.read_leakage_model(leakage_file_dir,
-                                                                                                                               d[f"leakage_beam_{name}"][0],
-                                                                                                                               lmax,
-                                                                                                                              lmin=2)
+                                                                                                    d[f"leakage_beam_{name}_TE"][0],
+                                                                                                    d[f"leakage_beam_{name}_TB"][0],
+                                                                                                    lmax,
+                                                                                                    lmin=2)
+
 
         cov = {}
         cov["TETE"] = leakage.error_modes_to_cov(err_m_gamma[name]["TE"])

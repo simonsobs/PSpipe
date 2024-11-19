@@ -27,6 +27,8 @@ tag = d["best_fit_tag"]
 combined_spec_dir = f"combined_spectra{tag}"
 
 combined_sim_spec_dir = f"combined_sim_spectra_syst"
+bestfit_dir = f"best_fits{tag}"
+
 plot_dir = f"plots/combined_null_test/"
 
 pspy_utils.create_directory(plot_dir)
@@ -35,30 +37,77 @@ binning_file = d["binning_file"]
 lmax = d["lmax"]
 type = d["type"]
 iStart = 0
-iStop =  1639
+iStop =  1500
+print(iStart, iStop)
+freq_pairs = ["90x90", "150x150", "90x150"]
 
-freq_pairs = ["90x90", "90x150", "150x150"]
 
-ylim = {}
-ylim["TT"] = (-10,10)
-ylim["TE"] = (-3,3)
-ylim["TB"] = (-3,3)
-ylim["EE"] = (-2,2)
-ylim["EB"] = (-1,1)
-ylim["BB"] = (-1,1)
+
+
+lscale = {}
+lscale["TT"] = 2
+lscale["TE"] = 2
+lscale["TB"] = 0
+lscale["EE"] = 1
+lscale["EB"] = 0
+lscale["BB"] = 0
+
+
+ylim= {}
+ylim["TT"] = (-1.5*10**7, 1.8*10**9)
+ylim["TE"] =  (-1.2*10**8, 0.55*10**8)
+ylim["TB"] = (-10,10)
+ylim["EE"] =(-2*10**3,4.3*10**4)
+ylim["EB"] = (-1.2,1.2)
+ylim["BB"] = (-1.2,1.2)
+
+ylim_res = {}
+ylim_res["TT"] = (-10,10)
+ylim_res["TE"] = (-3,3)
+ylim_res["TB"] = (-3,3)
+ylim_res["EE"] = (-2,2)
+ylim_res["EB"] = (-1,1)
+ylim_res["BB"] = (-1,1)
 
 #plt.figure(figsize=(18,20))
+color_list = ["green", "red", "black"]
+color_list_null = ["blue", "steelblue", "purple"]
 
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 combined_spectra = ["TT", "TE", "TB", "EE", "EB", "BB"]
+
+
+
+lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
+
+
+
 for ispec, spectrum in enumerate(combined_spectra):
-    
-    plt.figure(figsize=(18,6))
+    f, (a0, a1) = plt.subplots(2, 1, height_ratios=[3, 1], figsize=(16, 12))
+
 
     count=0
+    
+    a0.plot(lth, Dlth[spectrum] * lth ** lscale[spectrum], color="gray", linestyle="--", alpha=0.6)
+    for my_c, fp in enumerate(freq_pairs[:]):
+        fa, fb = fp.split("x")
+
+        l, Dl_fg_sub, error = np.loadtxt(f"{combined_spec_dir}/Dl_{fp}_{spectrum}_cmb_only.dat", unpack=True)
+        a0.errorbar(l + my_c*13 - 13, Dl_fg_sub * l ** lscale[spectrum], error * l ** lscale[spectrum], fmt=".", label=f"{fa} GHz x {fb} GHz", color=color_list[my_c])
+    a0.legend(fontsize=20)
+    a0.set_xlim(500, 4500)
+    a0.set_ylim(ylim[spectrum])
+    a0.set_xticks([])
+    if lscale[spectrum] !=0:
+        a0.set_ylabel(r"$ \ell^{%s} D^{%s}_{\ell}$" % (lscale[spectrum], spectrum), fontsize=30)
+
+    else:
+        a0.set_ylabel(r"$ D^{%s}_{\ell}$" % spectrum, fontsize=30)
 
     for fp1 in freq_pairs:
         for fp2 in freq_pairs:
             if fp1 <= fp2: continue
+            print(spectrum, fp1,fp2)
             l1, Dl1_fg_sub, _ = np.loadtxt(f"{combined_spec_dir}/Dl_{fp1}_{spectrum}_cmb_only.dat", unpack=True)
             l2, Dl2_fg_sub, _ = np.loadtxt(f"{combined_spec_dir}/Dl_{fp2}_{spectrum}_cmb_only.dat", unpack=True)
             
@@ -88,16 +137,18 @@ for ispec, spectrum in enumerate(combined_spectra):
             fa1, fb1 = fp1.split("x")
             fa2, fb2 = fp2.split("x")
 
-            plt.errorbar(l1 - 8 + 8*count, diff, std, fmt="o", label=f"{fa1} GHz x {fb1} GHz - {fa2} GHz x {fb2} GHz, PTE: {pte*100:0.2f} %")
+            a1.errorbar(l1 - 13 + 13*count, diff, std, fmt=".", label=f"{fa1} GHz x {fb1} GHz - {fa2} GHz x {fb2} GHz, PTE: {pte*100:0.2f} %", color=color_list_null[count])
             count += 1
             
-    lth = np.linspace(0, 8500)
-    plt.plot(lth, lth*0, color="black", linestyle="--", alpha=0.5)
-    plt.ylim(ylim[spectrum])
-    plt.xlim(800, 4000)
-    plt.legend(fontsize=16)
-    plt.xlabel(r"$\ell$", fontsize=30)
-    plt.ylabel(r"$D^{%s}_{\ell}$" % spectrum, fontsize=30)
+    a1.plot(lth, lth*0, color="black", linestyle="--", alpha=0.5)
+    a1.set_ylim(ylim_res[spectrum])
+    a1.set_xlim(500, 4500)
+    a1.legend(fontsize=12)
+    a1.set_xlabel(r"$\ell$", fontsize=30)
+    a1.set_ylabel(r"$\Delta D^{%s}_{\ell}$" % spectrum, fontsize=30)
+    plt.subplots_adjust(wspace=0, hspace=0)
+
+    #plt.show()
 
     plt.savefig(f"{plot_dir}/null_{spectrum}.png", bbox_inches="tight")
     plt.clf()

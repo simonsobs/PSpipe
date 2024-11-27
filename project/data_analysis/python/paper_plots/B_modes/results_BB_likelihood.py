@@ -105,7 +105,9 @@ spectra_cuts = B_modes_utils.get_spectra_cuts(cut, lmax)
 
 if cut == "pre_unblinding":
     # list of new [bin_low, bin_max] for the final BB spectra
-    bin_scheme_edge = [[500, 750.5], [751, 1050.5], [1051, 1350.5], [1351, 1600.5], [1601, 2275.5], [2276, 9000]]
+    #bin_scheme_edge = [[500, 750.5], [751, 1050.5], [1051, 1350.5], [1351, 1600.5], [1601, 2275.5], [2276, 9000]]
+    bin_scheme_edge = [[500, 1200.5], [1201, 1500.5], [1501, 2000.5], [2001, 9000]]
+
 if cut == "post_unblinding":
     bin_scheme_edge = [[500, 1200.5], [1201, 1500.5], [1501, 2000.5], [2001, 9000]]
    # bin_scheme_edge = [[500, 750.5], [751, 1050.5], [1051, 1350.5], [1351, 1600.5], [1601, 2275.5], [2276, 9000]]
@@ -187,7 +189,7 @@ plt.close()
 
 add_BK = True
 add_sptpol = True
-
+add_polarbear = True
 fac_ell = -1.
     
 fig, ax = plt.subplots( figsize=(14,8))
@@ -206,6 +208,9 @@ if add_BK:
 if add_sptpol:
     lb_sptpol, Db_sptpol, err_sptpol = external_data.get_sptpol_BB_spectrum()
     ax.errorbar(lb_sptpol, Db_sptpol * lb_sptpol ** fac_ell, err_sptpol * lb_sptpol ** fac_ell, fmt="o", color="orange", label="SPTpol (2020)")
+if add_polarbear:
+    lb_polarbear, Db_polarbear, err_polarbear = external_data.get_polarbear_BB_spectrum()
+    ax.errorbar(lb_polarbear, Db_polarbear * lb_polarbear ** fac_ell, err_polarbear * lb_polarbear ** fac_ell, fmt="o", color="green", label="POLARBEAR (2017)")
 
 ax.plot(l_th, ps_dict["BB"] * 0, linestyle="--", color="black")
 ax.legend(fontsize=22)

@@ -248,3 +248,4 @@ In order to do plots for the paper it is useful to apply them to the spectra (an
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python results_plot_TT.py post_likelihood.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python results_plot_combined_spectra.py post_likelihood.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python results_plot_with_planck.py post_likelihood.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python results_plot_residuals.py post_likelihood.dict

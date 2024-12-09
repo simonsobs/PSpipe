@@ -93,7 +93,7 @@ pol_eff_dr6_pa6_f090 = 1.
 pol_eff_dr6_pa6_f150 = 1.
 
 
-passband_dir = "passbands/"
+passband_dir = data_dir + "passbands/"
 do_bandpass_integration = True
 freq_info_dr6_pa4_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa4_f150.dat"} ##
 freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir + "passband_dr6_pa4_f220.dat"} ##
@@ -145,20 +145,13 @@ window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)
-cosmo_params = {"cosmomc_theta":0.01041628, "logA": 3.04374, "ombh2": 0.0221399, "omch2": 0.1189110, "ns": 0.96, "Alens": 1.0, "tau": 0.06}
+cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
 accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
 
-# Note that these params are the best fit without include_beam_chromaticity_effect
 fg_params = {"a_tSZ": 3.69, "alpha_tSZ":-0.44, "a_kSZ": 1, "a_p": 8.08, "beta_p": 1.823, "a_c": 3.35, "beta_c": 1.823, "a_s": 2.66, "a_gtt": 8.02,  "xi": 0.075, "T_d": 9.60, "a_gte": 0.419, "a_gtb": 0.012, "a_gee": 0.167,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.795, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
-
-bandpass_shift_dr6_pa4_f220  =  0.
-bandpass_shift_dr6_pa5_f090  =  0.
-bandpass_shift_dr6_pa5_f150  =  0.
-bandpass_shift_dr6_pa6_f090  =  0.
-bandpass_shift_dr6_pa6_f150  =  0.
 
 
 #sim

@@ -154,6 +154,14 @@ fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['
 fg_params = {"a_tSZ": 3.69, "alpha_tSZ":-0.44, "a_kSZ": 1, "a_p": 8.08, "beta_p": 1.823, "a_c": 3.35, "beta_c": 1.823, "a_s": 2.66, "a_gtt": 8.02,  "xi": 0.075, "T_d": 9.60, "a_gte": 0.419, "a_gtb": 0.012, "a_gee": 0.167,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.795, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
 
 
+
+bandpass_shift_dr6_pa4_f220  = 0
+bandpass_shift_dr6_pa5_f090  = 0
+bandpass_shift_dr6_pa5_f150  = 0
+bandpass_shift_dr6_pa6_f090  = 0
+bandpass_shift_dr6_pa6_f150  = 0
+
+
 #sim
 iStart = 0
 iStop = 99

@@ -1,0 +1,20 @@
+For getting the power spectra of all agora components
+(components = ["anomalous", "cib", "cmb", "dust", "ksz", "radio", "rksz", "sync", "tsz"])
+we assume the component lives in: component_path = "/pscratch/sd/k/kmsurrao/ACT_DR6_non_gaussian_sims/individual_components_092924/car_withbeam/"
+
+
+salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
+OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_window_dr6_noxlink.py global_ng_components.dict
+salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
+OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_mcm_and_bbl.py global_ng_components.dict
+salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
+OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_alms_components.py global_ng_components.dict
+OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_spectra_from_alms_components.py global_ng_components.dict
+
+So I have ran it for two setting, one with kspace space filter enabled and one without, I then copy the results of "spectra_components" into two folders corresponding to the two runs:
+"spectra_components_no_kspace" and "spectra_components_std".
+
+Then you can plot the results with
+python plot_freq_scaling.py global_ng_components.dict
+python plot_spectra_components.py global_ng_components.dict
+python plot_full_sky_vs_cut_sky.py global_ng_components.dict

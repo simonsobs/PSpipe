@@ -145,7 +145,7 @@ window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)
-cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
+cosmo_params = {"cosmomc_theta":0.01041628, "logA": 3.04374, "ombh2": 0.0221399, "omch2": 0.1189110, "ns": 0.96, "Alens": 1.0, "tau": 0.06}
 accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}

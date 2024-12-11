@@ -1,5 +1,5 @@
 **************************
-Figure for the paper
+Figures for the paper
 **************************
 
 Here I assume that the entire pipeline described in `dr6 <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6.rst/>`_
@@ -33,7 +33,7 @@ To plot the x-freq TT power spectrum
 
     python results_multifrequency_TT.py post_likelihood.dict
 
-To plot the x-freq EE and TE power spectra together with their null residuals, you need some work
+To plot the x-freq EE and TE power spectra together with their null residuals, you need to do some work.
 First apply the systematic model to your simulation and combine your x-ar simulation spectra into x-freq cmb only simulation spectra
 
 .. code:: shell

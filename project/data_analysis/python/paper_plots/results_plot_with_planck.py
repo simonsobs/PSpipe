@@ -70,18 +70,19 @@ for spec_select in selected_spectra_list:
 
   #  if s_name == "TT": plt.semilogy()
     
-    plt.subplot(3,1,count)
+    ax = plt.subplot(3,1,count)
+    for axis in ['left', 'bottom', 'right', 'top']:
+        ax.spines[axis].set_linewidth(3.5)
+
     if s_name == "TT": plt.semilogy()
 
     plt.xlim(0,4000)
     plt.ylim(ylim[s_name])
-    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt="o", color="royalblue", label="ACT")
-    plt.errorbar(lp, Dlp * lp ** fac[s_name], sigmap * lp ** fac[s_name], fmt="o", color="darkorange", alpha=1, label="Planck")
-    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", alpha=0.4)
+    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt="o", color="royalblue", label="ACT", markersize=8)
+    plt.errorbar(lp, Dlp * lp ** fac[s_name], sigmap * lp ** fac[s_name], fmt="o", color="darkorange", alpha=1, label="Planck",markersize=8)
+    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", alpha=0.9)
     plt.xlabel(r"$\ell$", fontsize=70)
-    
-    
-    
+
     if fac[s_name] == 0:
         plt.ylabel(r"$D^{%s}_{\ell}$" % s_name, fontsize=70)
     if fac[s_name] == 1:
@@ -107,13 +108,8 @@ Dlb_th = {}
 for spectrum in spectra:
     lb_th, Dlb_th[spectrum] = pspy_utils.naive_binning(lth, Dlth[spectrum], binning_file, lmax)
 
-ylim_res = {}
-ylim_res["TT"] = [-40, 40]
-ylim_res["TE"] = [-10, 10]
-ylim_res["EE"] = [-5, 5]
-
 count = 1
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(16, 8))
 for spec_select in selected_spectra_list:
     s_name = spec_select[0]
     
@@ -133,12 +129,11 @@ for spec_select in selected_spectra_list:
     
     plt.subplot(3,1,count)
     plt.xlabel(r"$\ell$", fontsize=25)
-    plt.ylabel(r"$D^{%s}_{\ell} - D^{%s, th}_{\ell} $" % (s_name, s_name), fontsize=25)
+    plt.ylabel(r"$(D^{%s}_{\ell} - D^{%s, th}_{\ell})/ \sigma $" % (s_name, s_name), fontsize=18)
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
-    plt.ylim(ylim_res[s_name])
-
-    plt.errorbar(lb_ml, res, sigma_ml, label=f"p = {pte:.3f}", fmt=".")
+    plt.ylim(-5,5)
+    plt.errorbar(lb_ml, res/sigma_ml, label=f"p = {pte:.3f}", fmt=".")
     plt.plot(lb_th, lb_th * 0, color="gray")
     plt.legend(fontsize=18)
     count += 1

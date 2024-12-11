@@ -9,11 +9,13 @@ has been ran, here is the script producing the different figures of the paper.
 To plot the TT/TE/EE ACT DR6 power spectrum together with Planck public spectra
 
 .. code:: shell
+
     python results_plot_with_planck.py post_likelihood.dict
     
 To plot the residuals with respect to a LCDM model use either
 
 .. code:: shell
+
     python results_plot_residuals.py post_likelihood.dict
     python results_plot_residuals.py post_likelihood_PACT.dict
 
@@ -22,17 +24,20 @@ PACT is for the bestfit model of ACT + Planck.
 To plot the x-array TT power spectrum together with his best fit model and with its different components use
 
 .. code:: shell
+
     python results_multifrequency_components_TT.py post_likelihood.dict
 
 To plot the x-freq TT power spectrum
 
 .. code:: shell
+
     python results_multifrequency_TT.py post_likelihood.dict
 
 To plot the x-freq EE and TE power spectra together with their null residuals, you need some work
 First apply the systematic model to your simulation and combine your x-ar simulation spectra into x-freq cmb only simulation spectra
 
 .. code:: shell
+
     python mc_apply_syst_model.py global_dr6.dict
     python mc_get_combined_spectra.py global_dr6.dict
     python mc_analyze_combined_spectra.py global_dr6.dict
@@ -40,4 +45,5 @@ First apply the systematic model to your simulation and combine your x-ar simula
 Then you can make the plot
 
 .. code:: shell
+
     python results_get_combined_null.py post_likelihood.dict

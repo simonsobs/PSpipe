@@ -28,10 +28,14 @@ tag = d.get("best_fit_tag", "")
 
 bestfit_dir = f"best_fits{tag}"
 plot_dir = f"plots/best_fits{tag}/"
+
+components_dir = f"{bestfit_dir}/components"
+
+
 log.info(f"save best fits in  {bestfit_dir} folder")
 
-
 pspy_utils.create_directory(bestfit_dir)
+pspy_utils.create_directory(components_dir)
 pspy_utils.create_directory(plot_dir)
 
 cosmo_params = d["cosmo_params"]
@@ -147,6 +151,7 @@ for mode in ["tt", "te", "tb", "ee", "eb", "bb"]:
 
         for comp in fg_components[mode]:
             ax.plot(l_th, fg_dict[mode, comp, name1, name2])
+            np.savetxt(f"{components_dir}/{mode}_{comp}_{cross}.dat", np.transpose([l_th, fg_dict[mode, comp, name1, name2]]))
         ax.plot(l_th, fg_dict[mode, "all", name1, name2], color="k")
         ax.plot(l_th, ps_dict[mode.upper()], color="gray")
         ax.set_title(cross)

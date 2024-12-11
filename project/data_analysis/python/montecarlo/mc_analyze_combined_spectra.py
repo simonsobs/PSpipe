@@ -47,16 +47,16 @@ for spectrum in my_spectra:
 
     cov_ml = np.load(f"{combined_spec_dir}/cov_{name}_{spectrum}.npy")
     
-    Dl_list = []
+  #  Dl_list = []
     Dl_list_fg_sub = []
 
     inv_cov_ml = np.linalg.inv(cov_ml)
 
     chi2_list = []
     for iii in range(iStart, iStop + 1):
-        l, Dl, sigma = np.loadtxt(f"{combined_spec_dir}/Dl_{name}_{spectrum}_{iii:05d}.dat", unpack=True)
+       # l, Dl, sigma = np.loadtxt(f"{combined_spec_dir}/Dl_{name}_{spectrum}_{iii:05d}.dat", unpack=True)
         l, Dl_fg_sub, sigma = np.loadtxt(f"{combined_spec_dir}/Dl_{name}_{spectrum}_{iii:05d}_cmb_only.dat", unpack=True)
-        Dl_list += [Dl]
+       # Dl_list += [Dl]
         Dl_list_fg_sub += [Dl_fg_sub]
         
         id = np.where(lb >= l[0])
@@ -82,7 +82,7 @@ for spectrum in my_spectra:
     plt.clf()
     plt.close()
     
-    Dl_mean = np.mean(Dl_list, axis=0)
+  #  Dl_mean = np.mean(Dl_list, axis=0)
     Dl_fg_sub_mean = np.mean(Dl_list_fg_sub, axis=0)
 
     print("ok")
@@ -95,7 +95,7 @@ for spectrum in my_spectra:
     plt.xlabel(r"$\ell$", fontsize=19)
     plt.ylabel(r"$D^{%s}_{\ell}$" % spectrum, fontsize=19)
     plt.plot(lb, Dbth)
-    plt.errorbar(l, Dl_mean, sigma_mc, fmt=".", label="mean spectrum")
+  #  plt.errorbar(l, Dl_mean, sigma_mc, fmt=".", label="mean spectrum")
     plt.errorbar(l, Dl_fg_sub_mean, sigma_mc, fmt=".", label="mean spectrum fg subtracted")
     plt.legend()
     plt.savefig(f"{plot_dir}/{spectrum}.png", bbox_inches="tight")
@@ -105,7 +105,7 @@ for spectrum in my_spectra:
     plt.figure(figsize=(12,8))
     plt.xlabel(r"$\ell$", fontsize=19)
     plt.ylabel(r"$D^{%s}_{\ell} - D^{%s, th}_{\ell}$" % (spectrum,spectrum), fontsize=19)
-    plt.errorbar(l, Dl_mean - Dbth[id], sigma_mc / np.sqrt(iStop + 1 - iStart), label="mean - theory")
+ #   plt.errorbar(l, Dl_mean - Dbth[id], sigma_mc / np.sqrt(iStop + 1 - iStart), label="mean - theory")
     plt.errorbar(l, Dl_fg_sub_mean - Dbth[id], sigma_mc / np.sqrt(iStop + 1 - iStart), label="mean fg subtracted - theory")
     plt.legend()
     plt.savefig(f"{plot_dir}/{spectrum}_residual.png", bbox_inches="tight")

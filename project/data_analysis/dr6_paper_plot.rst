@@ -47,3 +47,9 @@ Then you can make the plot
 .. code:: shell
 
     python results_get_combined_null.py post_likelihood.dict
+
+To redo the plot showing how the tSZ power spectrum depends on alpha_tSZ
+
+.. code:: shell
+
+    python results_tsz_plot.py post_likelihood.dict

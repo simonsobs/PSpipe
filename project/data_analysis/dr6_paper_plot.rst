@@ -53,3 +53,9 @@ To redo the plot showing how the tSZ power spectrum depends on alpha_tSZ
 .. code:: shell
 
     python results_tsz_plot.py post_likelihood.dict
+
+To redo the plot showing the relative contribution of each covariance term
+
+.. code:: shell
+
+    python results_compare_covariance_terms.py post_likelihood.dict

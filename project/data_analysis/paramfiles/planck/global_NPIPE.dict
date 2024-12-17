@@ -1,14 +1,15 @@
 surveys = ["Planck"]
 arrays_Planck = ["f100", "f143", "f217"]
 planck_version = "npipe"
+use_planck_like_binning = True
 
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/'
+data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
 npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
 
 deconvolve_pixwin = True
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
 
-binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
+binning_file = data_dir + "binning/bin_planck.dat"
 niter = 3
 remove_mean = False
 binned_mcm = False

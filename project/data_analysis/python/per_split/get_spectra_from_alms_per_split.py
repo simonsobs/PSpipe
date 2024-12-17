@@ -18,6 +18,85 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+
+def bin_spectra_alaPlanck(l, cl, binning_file, lmax, type, spectra=None, mbb_inv=None, binned_mcm=True):
+
+    """Bin the power spectra following planck analysis
+    denoting f = l * (l+1)/(2*pi)
+    Planck create Cl_b = \sum_{l \in b} (C_l * f_L) / \sum_{l \in b}  f_l
+    not entirely sure why
+    The reason the routine lives here is because this script is used to reproduce planck spectra
+    
+    Parameters
+    ----------
+    l: 1d array
+      the multipoles
+    cl: 1d array or dict of 1d array
+      the power spectra to bin, can be a 1d array (spin0) or a dictionnary (spin0 and spin2)
+    binning_file: data file
+      a binning file with format bin low, bin high, bin mean
+    lmax: int
+      the maximum multipole to consider
+    type: string
+      the type of binning, either bin Cl or bin Dl
+    spectra: list of string
+      needed for spin0 and spin2 cross correlation, the arrangement of the spectra
+    mbb_inv: 2d array
+      optionnaly apply the inverse of the  mode coupling matrix to debiais the spectra
+    binned_mcm: boolean
+      if mbb_inv is not None, specify if it's binned or not
+      
+    Return
+    ----------
+    The function return the binned multipole array bin_c and a 1d power spectrum
+    array (or dictionnary of 1d power spectra if spectra is not None).
+    """
+
+    bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
+    n_bins = len(bin_hi)
+
+    # the alm2cl return cl starting at l = 0, we use spectra from l = 2
+    # this is due in particular to the fact that the mcm is computed only for l>=2
+    
+    l = np.arange(2, lmax)
+    if spectra is None: cl = cl[l]
+    else: cl = {f: cl[f][l] for f in spectra}
+    
+    if type == "Dl": fac = (l * (l + 1) / (2 * np.pi))
+    elif type == "Cl": fac = l * 0 + 1
+
+    
+    assert binned_mcm == False, "Planck deconvolve unbinned mcm"
+    assert mbb_inv is not None, "you need to pass a mode_coupling matrix"
+
+    l, cl = so_spectra.deconvolve_mode_coupling_matrix(l, cl, mbb_inv, spectra)
+    
+    # Now the binning part
+    if spectra is None:
+        ps = np.zeros(n_bins)
+        for ibin in range(n_bins):
+            loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))
+            ps[ibin] = (cl[loc] * fac[loc]).sum() / fac[loc].sum()
+    else:
+        vec = []
+        for f in spectra:
+            binned_power = np.zeros(n_bins)
+            for ibin in range(n_bins):
+                loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))
+                binned_power[ibin] = (cl[f][loc] * fac[loc]).sum()  / fac[loc].sum()
+            vec = np.append(vec, binned_power)
+        ps = so_spectra.vec2spec_dict(n_bins, vec, spectra)
+
+    # still to convert with Dl, but with a binned vector, no way to do otherwise
+    if type == "Dl": fac = (lb * (lb + 1) / (2 * np.pi))
+    elif type == "Cl": fac = lb * 0 + 1
+
+    for f in spectra:
+        ps[f] *= fac
+
+    return lb, ps
+    
+
 surveys = d["surveys"]
 lmax = d["lmax"]
 type = d["type"]
@@ -27,6 +106,11 @@ deconvolve_pixwin = d["deconvolve_pixwin"]
 binned_mcm = d["binned_mcm"]
 apply_kspace_filter = d["apply_kspace_filter"]
 cov_T_E_only = d["cov_T_E_only"]
+planck_like_binning = d.get("use_planck_like_binning", False)
+
+log.info(f"use planck-like binning : {planck_like_binning}")
+
+
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -135,14 +219,27 @@ for task in subtasks:
 
             spec_name=f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_{s1}{s2}"
 
-            lb, ps = so_spectra.bin_spectra(l,
-                                            ps_master,
-                                            binning_file,
-                                            lmax,
-                                            type=type,
-                                            mbb_inv=mbb_inv,
-                                            spectra=spectra,
-                                            binned_mcm=binned_mcm)
+            if planck_like_binning == True:
+                lb, ps = bin_spectra_alaPlanck(l,
+                                               ps_master,
+                                               binning_file,
+                                               lmax,
+                                               type=type,
+                                               spectra=spectra,
+                                               mbb_inv=mbb_inv,
+                                               binned_mcm=binned_mcm)
+            
+            else:
+                lb, ps = so_spectra.bin_spectra(l,
+                                                ps_master,
+                                                binning_file,
+                                                lmax,
+                                                type=type,
+                                                mbb_inv=mbb_inv,
+                                                spectra=spectra,
+                                                binned_mcm=binned_mcm)
+                                                
+                                                
             if apply_kspace_filter:
                 if kspace_tf_path == "analytical":
                     xtra_corr = None

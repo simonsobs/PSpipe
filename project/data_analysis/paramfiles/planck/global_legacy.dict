@@ -1,10 +1,10 @@
 surveys = ["Planck"]
 arrays_Planck = ["f100", "f143", "f217"]
-planck_version = "npipe"
+planck_version = "legacy"
 use_planck_like_binning = True
 
 data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
-npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
+legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"
 
 deconvolve_pixwin = True
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
@@ -32,9 +32,10 @@ mm_tf_Planck_f217 = data_dir + "transfer_fcns/tf_unity.dat"
 # maps
 n_splits_Planck = 2
 
-maps_Planck_f100 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_100_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_100_map.fits']
-maps_Planck_f143 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_143_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_143_map.fits']
-maps_Planck_f217 = [npipe_map_dir + 'npipe6v20A/npipe6v20A_217_map.fits', npipe_map_dir + 'npipe6v20B/npipe6v20B_217_map.fits']
+maps_Planck_f100 = [legacy_map_dir + 'HFI_SkyMap_100_2048_R3.01_halfmission-%d.fits' % i for i in [1, 2]]
+maps_Planck_f143 = [legacy_map_dir + 'HFI_SkyMap_143_2048_R3.01_halfmission-%d.fits' % i for i in [1, 2]]
+maps_Planck_f217 = [legacy_map_dir + 'HFI_SkyMap_217_2048_R3.01_halfmission-%d.fits' % i for i in [1, 2]]
+
 
 cal_Planck_f100 = 1 # only used in the simulation script where the uk->K conv is already done by default
 cal_Planck_f143 = 1 #
@@ -59,20 +60,20 @@ freq_info_Planck_f100 = {"freq_tag": 100, "passband": passband_dir + "passband_n
 freq_info_Planck_f143 = {"freq_tag": 143, "passband": passband_dir + "passband_npipe_f143.dat"}
 freq_info_Planck_f217 = {"freq_tag": 217, "passband": passband_dir + "passband_npipe_f217.dat"}
 
-beam_dir_Planck = f'{data_dir}/beams/npipe/'
+beam_dir_Planck = f'{data_dir}/beams/legacy/'
 
-beam_T_Planck_f100_per_split = [beam_dir_Planck + 'bl_T_npipe_100Ax100A.dat', beam_dir_Planck + 'bl_T_npipe_100Bx100B.dat']
-beam_T_Planck_f143_per_split = [beam_dir_Planck + 'bl_T_npipe_143Ax143A.dat', beam_dir_Planck + 'bl_T_npipe_143Bx143B.dat']
-beam_T_Planck_f217_per_split = [beam_dir_Planck + 'bl_T_npipe_217Ax217A.dat', beam_dir_Planck + 'bl_T_npipe_217Bx217B.dat']
+beam_T_Planck_f100_per_split = [beam_dir_Planck + 'bl_T_legacy_100hm1x100hm1.dat', beam_dir_Planck + 'bl_T_legacy_100hm2x100hm2.dat']
+beam_T_Planck_f143_per_split = [beam_dir_Planck + 'bl_T_legacy_143hm1x143hm1.dat', beam_dir_Planck + 'bl_T_legacy_143hm2x143hm2.dat']
+beam_T_Planck_f217_per_split = [beam_dir_Planck + 'bl_T_legacy_217hm1x217hm1.dat', beam_dir_Planck + 'bl_T_legacy_217hm2x217hm2.dat']
 
-beam_pol_Planck_f100_per_split = [beam_dir_Planck + 'bl_pol_npipe_100Ax100A.dat', beam_dir_Planck + 'bl_pol_npipe_100Bx100B.dat']
-beam_pol_Planck_f143_per_split = [beam_dir_Planck + 'bl_pol_npipe_143Ax143A.dat', beam_dir_Planck + 'bl_pol_npipe_143Bx143B.dat']
-beam_pol_Planck_f217_per_split = [beam_dir_Planck + 'bl_pol_npipe_217Ax217A.dat', beam_dir_Planck + 'bl_pol_npipe_217Bx217B.dat']
+beam_pol_Planck_f100_per_split = [beam_dir_Planck + 'bl_pol_legacy_100hm1x100hm1.dat', beam_dir_Planck + 'bl_pol_legacy_100hm2x100hm2.dat']
+beam_pol_Planck_f143_per_split = [beam_dir_Planck + 'bl_pol_legacy_143hm1x143hm1.dat', beam_dir_Planck + 'bl_pol_legacy_143hm2x143hm2.dat']
+beam_pol_Planck_f217_per_split = [beam_dir_Planck + 'bl_pol_legacy_217hm1x217hm1.dat', beam_dir_Planck + 'bl_pol_legacy_217hm2x217hm2.dat']
 
-leakage_file_dir = beam_dir_Planck
-leakage_beam_Planck_f100 = ['gamma_npipe_100%s.dat' % split for split in ["A", "B"]]
-leakage_beam_Planck_f143 = ['gamma_npipe_143%s.dat' % split for split in ["A", "B"]]
-leakage_beam_Planck_f217 = ['gamma_npipe_217%s.dat' % split for split in ["A", "B"]]
+leakage_file_dir = data_dir + 'beams/20230902_beams/'
+leakage_beam_Planck_f100 = ['gamma_legacy_100%s.dat' % split for split in ["hm1", "hm2"]]
+leakage_beam_Planck_f143 = ['gamma_legacy_143%s.dat' % split for split in ["hm1", "hm2"]]
+leakage_beam_Planck_f217 = ['gamma_legacy_217%s.dat' % split for split in ["hm1", "hm2"]]
 
 win_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/planck/download/planck_data/likelihood_mask/"
 
@@ -88,6 +89,7 @@ window_pol_Planck_f217_per_split =[win_dir + "COM_Mask_Likelihood-polarization-2
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104085, "logA": 3.044, "ombh2": 0.02237, "omch2": 0.1200, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
 accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
+
 
 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}

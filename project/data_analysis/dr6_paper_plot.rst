@@ -59,3 +59,9 @@ To redo the plot showing the relative contribution of each covariance term
 .. code:: shell
 
     python results_compare_covariance_terms.py post_likelihood.dict
+
+To redo the plot showing the comparison of ACT and Planck errors (note that you do need the ACT-CMB only likelihood)
+
+.. code:: shell
+
+    python results_compare_ACT_Planck_errors.py post_likelihood.dict

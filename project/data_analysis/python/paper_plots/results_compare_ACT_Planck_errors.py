@@ -138,32 +138,78 @@ for spec in ["TT", "TE", "EE"]:
 l_planck, ps_planck_b, sigma_planck, cov_planck = external_data.get_planck_cmb_only_data()
 
 
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+l_th, ps_th = so_spectra.read_ps("best_fits/cmb.dat", spectra=spectra)
+ps_b_ACT = {}
+ps_b_Planck = {}
+
+for spec in spectra:
+    lb, ps_b_ACT[spec] = pspy_utils.naive_binning(l_th, ps_th[spec], binning_file, lmax)
+    lb, ps_b_Planck[spec] = pspy_utils.naive_binning(l_th, ps_th[spec], f"{planck_data_path}/bin_planck.dat", lmax)
+
+
 plt.figure(figsize=(12,8))
-plt.semilogy()
-colors = ["red", "black", "gray"]
+#plt.semilogy()
+plt.title("CMB-only uncertainties")
+colors = ["red", "teal", "blueviolet"]
+
 for count, spec_select in enumerate(selected_spectra_list):
     s_name = spec_select[0]
-    if s_name == "TT": continue
+    if s_name in "TT": continue
 
     id_act = np.where((bin_mean_act >= lb_act_co[s_name][0]) & (bin_mean_act <= lb_act_co[s_name][-1]))
     assert (lb_act_co[s_name] == bin_mean_act[id_act]).all()
     
     
-    plt.plot(lb_act_co[s_name], sigma_act_co[s_name] * np.sqrt(bin_size_act[id_act]), label = f"ACT CMB-only {s_name}", linewidth=2, color=colors[count])
+    plt.plot(lb_act_co[s_name], np.abs(ps_b_ACT[s_name][id_act])  / (sigma_act_co[s_name] * np.sqrt(bin_size_act[id_act])), label = f"ACT {s_name}", linewidth=2, color=colors[count])
     
 
-    my_l_planck, my_sigma_planck = l_planck[s_name], sigma_planck[s_name]
+    my_l_planck, my_sigma_planck = l_planck[s_name].copy(), sigma_planck[s_name].copy()
     id_planck = np.where((bin_mean_p >= my_l_planck[0]) & (bin_mean_p <= my_l_planck[-1]))
     my_sigma_planck *= my_l_planck * (my_l_planck + 1) / (2 * np.pi)
     
     assert (my_l_planck == bin_mean_p[id_planck]).all()
 
-    plt.plot(my_l_planck, my_sigma_planck * np.sqrt(bin_size_p[id_planck]), linestyle="--", label = f"Planck CMB-only {s_name}", linewidth=2, color=colors[count])
+    plt.plot(my_l_planck, np.abs(ps_b_Planck[s_name][id_planck]) / (my_sigma_planck * np.sqrt(bin_size_p[id_planck])), linestyle="--", label = f"Planck {s_name}", linewidth=2, color=colors[count])
+    
 plt.ylabel(r"$\sigma^{\rm CMB-only}_{\ell_{b}} \sqrt{\Delta \ell_{b}}$" , fontsize=30)
 plt.xlabel(r"$\ell$", fontsize=30)
 plt.legend(fontsize=20)
 plt.xlim(0,5000)
-plt.savefig(f"{plot_dir}/cmb-only_error_comparison.png", bbox_inches='tight')
+plt.savefig(f"{plot_dir}/signal_to_noise.png", bbox_inches='tight')
 plt.clf()
 plt.close()
 
+plt.figure(figsize=(12,8))
+plt.semilogy()
+plt.title("CMB-only uncertainties", fontsize=30)
+colors = ["red", "teal", "blueviolet"]
+
+for count, spec_select in enumerate(selected_spectra_list):
+    s_name = spec_select[0]
+    if s_name in "TT": continue
+
+    id_act = np.where((bin_mean_act >= lb_act_co[s_name][0]) & (bin_mean_act <= lb_act_co[s_name][-1]))
+    assert (lb_act_co[s_name] == bin_mean_act[id_act]).all()
+    
+    
+    plt.plot(lb_act_co[s_name], sigma_act_co[s_name] * np.sqrt(bin_size_act[id_act]), label = f"{s_name}   ACT ", linewidth=2, color=colors[count])
+    
+
+    my_l_planck, my_sigma_planck = l_planck[s_name].copy(), sigma_planck[s_name].copy()
+    id_planck = np.where((bin_mean_p >= my_l_planck[0]) & (bin_mean_p <= my_l_planck[-1]))
+    my_sigma_planck *= my_l_planck * (my_l_planck + 1) / (2 * np.pi)
+    
+    assert (my_l_planck == bin_mean_p[id_planck]).all()
+
+    plt.plot(my_l_planck, my_sigma_planck * np.sqrt(bin_size_p[id_planck]), linestyle="--", label = f"{s_name}  Planck ", linewidth=2, color=colors[count])
+    
+plt.ylabel(r"$\sigma^{\rm CMB-only}_{\ell_{b}} \sqrt{\Delta \ell_{b}}$" , fontsize=30)
+plt.xlabel(r"$\ell$", fontsize=30)
+plt.legend(fontsize=20)
+plt.xlim(0,5000)
+plt.ylim(0.2, 80)
+#plt.show()
+plt.savefig(f"{plot_dir}/cmb-only_error_comparison.png", bbox_inches='tight')
+plt.clf()
+plt.close()

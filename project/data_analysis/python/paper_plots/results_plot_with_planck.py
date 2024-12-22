@@ -78,9 +78,9 @@ for spec_select in selected_spectra_list:
 
     plt.xlim(0,4000)
     plt.ylim(ylim[s_name])
-    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt="o", color="royalblue", label="ACT", markersize=8)
-    plt.errorbar(lp, Dlp * lp ** fac[s_name], sigmap * lp ** fac[s_name], fmt="o", color="darkorange", alpha=1, label="Planck",markersize=8)
-    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", alpha=0.9)
+    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt="o", color="royalblue", label="ACT", markersize=8, elinewidth=3)
+    plt.errorbar(lp, Dlp * lp ** fac[s_name], sigmap * lp ** fac[s_name], fmt="o", color="darkorange", alpha=1, label="Planck",markersize=8, elinewidth=3)
+    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", alpha=1)
     plt.xlabel(r"$\ell$", fontsize=70)
 
     if fac[s_name] == 0:

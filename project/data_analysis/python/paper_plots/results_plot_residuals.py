@@ -12,11 +12,11 @@ import pspipe_utils
 import scipy.stats as ss
 
 rcParams["font.family"] = "serif"
-rcParams["font.size"] = "12"
-rcParams["xtick.labelsize"] = 12
-rcParams["ytick.labelsize"] = 12
-rcParams["axes.labelsize"] = 12
-rcParams["axes.titlesize"] = 12
+rcParams["font.size"] = "18"
+rcParams["xtick.labelsize"] = 18
+rcParams["ytick.labelsize"] = 18
+rcParams["axes.labelsize"] = 18
+rcParams["axes.titlesize"] = 18
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -124,7 +124,7 @@ for spec_select in selected_spectra_list:
 
     print(pte, pte_p, pte_p_rebin)
     
-    plt.figure(figsize=(16, 8))
+    plt.figure(figsize=(20, 9))
     plt.subplot(2,1,1)
     if s_name == "TT": plt.semilogy()
     plt.ylim(ylim[s_name])
@@ -155,9 +155,9 @@ for spec_select in selected_spectra_list:
 
 
     plt.errorbar(lb_ml, res  *  lb_ml ** res_fac[s_name], sigma_ml  *  lb_ml ** res_fac[s_name],
-                 label=f"ACT (PTE: {pte:.3f})", fmt=".", color="royalblue")
+                 label=r"ACT", fmt=".", color="royalblue", elinewidth=2)
     plt.errorbar(l_p_rebin, res_p_rebin  *  l_p_rebin ** res_fac[s_name], sigma_p_rebin  *  l_p_rebin ** res_fac[s_name],
-                 label=f"Planck (PTE: {pte_p_rebin:.3f})", alpha=0.6, fmt=".", color="darkorange")
+                 label=r"Planck", alpha=0.6, fmt=".", color="darkorange", elinewidth=2)
     
     plt.plot(lb_th, lb_th * 0, color="gray")
     plt.xlim(0,4000)

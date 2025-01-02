@@ -4,7 +4,7 @@ This script compute the analytical covariance matrix elements.
 import sys
 
 import numpy as np
-from pspipe_utils import best_fits, log, pspipe_list, misc
+from pspipe_utils import best_fits, log, pspipe_list
 from pspy import pspy_utils, so_cov, so_dict, so_map, so_mcm, so_mpi
 
 d = so_dict.so_dict()
@@ -12,15 +12,16 @@ d.read_from_file(sys.argv[1])
 
 log = log.get_logger(**d)
 
-windows_dir = "windows"
-mcms_dir = "mcms"
-spectra_dir = "spectra"
-noise_dir = "noise_model"
-cov_dir = "covariances"
-bestfit_dir = "best_fits"
-sq_win_alms_dir = "sq_win_alms"
+mcms_dir = d["mcms_dir"]
+spectra_dir = d["spectra_dir"]
+noise_dir = d["noise_model_dir"]
+bestfit_dir = d["best_fits_dir"]
+sq_win_alms_dir = d["sq_win_alms_dir"]
+
+cov_dir = d["covariances_dir"]
 
 pspy_utils.create_directory(cov_dir)
+
 surveys = d["surveys"]
 binning_file = d["binning_file"]
 lmax = d["lmax"]
@@ -41,12 +42,9 @@ arrays, n_splits, bl_dict = {}, {}, {}
 for sv in surveys:
     arrays[sv] = d[f"arrays_{sv}"]
     for ar in arrays[sv]:
-        l_beam, bl = misc.read_beams(d[f"beam_T_{sv}_{ar}"], d[f"beam_pol_{sv}_{ar}"])
+        l_beam, bl_dict[sv, ar] = pspy_utils.read_beam_file(d[f"beam_{sv}_{ar}"])
         id_beam = np.where((l_beam >= 2) & (l_beam < lmax))
-        bl_dict[sv, ar] = {}
-        for field in ["T", "E", "B"]:
-            bl_dict[sv, ar][field] = bl[field][id_beam]
-            
+        bl_dict[sv, ar] = bl_dict[sv, ar][id_beam]
         n_splits[sv] = d[f"n_splits_{sv}"]
         assert n_splits[sv] == len(d.get(f"maps_{sv}_{ar}", [0]*n_splits[sv])), "the number of splits does not correspond to the number of maps"
 

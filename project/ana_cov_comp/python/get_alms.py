@@ -23,8 +23,8 @@ niter = d["niter"]
 apply_kspace_filter = d["apply_kspace_filter"]
 
 
-window_dir = "windows"
-alms_dir = "alms"
+window_dir = d["window_dir"]
+alms_dir = d["alms_dir"]
 pspy_utils.create_directory(alms_dir)
 
 n_ar, sv_list, ar_list = pspipe_list.get_arrays_list(d)
@@ -49,9 +49,13 @@ for task in subtasks:
 
     window_tuple = (win_T, win_pol)
 
-
     if win_T.pixel == "CAR":
-        win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
+        # if None, don't apply window in fourier operations,
+        # will result in exception if ks_f["weighted"] is True
+        if d[f"window_kspace_{sv}_{ar}"] is not None:
+            win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
+        else:
+            win_kspace = None
 
         if apply_kspace_filter:
             ks_f = d[f"k_filter_{sv}"]
@@ -74,14 +78,16 @@ for task in subtasks:
         if win_T.pixel == "CAR":
             split = so_map.read_map(map, geometry=win_T.data.geometry)
 
-            if d[f"src_free_maps_{sv}"] == True:
-                ps_map_name = map.replace("srcfree.fits", "model.fits")
-                if ps_map_name == map:
-                    raise ValueError("No model map is provided! Check map names!")
-                ps_map = so_map.read_map(ps_map_name)
-                ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
-                ps_map.data *= ps_mask.data
-                split.data += ps_map.data
+            ### NOTE: comment-out because we don't care about ps, and 
+            ### *don't* want ps mask!
+            # if d[f"src_free_maps_{sv}"] == True:
+            #     ps_map_name = map.replace("srcfree.fits", "model.fits")
+            #     if ps_map_name == map:
+            #         raise ValueError("No model map is provided! Check map names!")
+            #     ps_map = so_map.read_map(ps_map_name)
+            #     ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
+            #     ps_map.data *= ps_mask.data
+            #     split.data += ps_map.data
 
             if apply_kspace_filter:
                 log.info(f"[{task}] apply kspace filter on {map}")
@@ -94,7 +100,7 @@ for task in subtasks:
                         
             else:
                 log.info(f"[{task}] WARNING: no kspace filter is applied")
-                if (deconvolve_pixwin) & (inv_pixwin_lxly is not None):
+                if deconvolve_pixwin:
                     split = so_map.fourier_convolution(split,
                                                        inv_pixwin_lxly,
                                                        window=win_kspace,

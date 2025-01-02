@@ -17,7 +17,7 @@ out_dir = "source_sub_check"
 pspy_utils.create_directory(out_dir)
 
 # Read catalog
-cat_file = "/global/cfs/cdirs/act/data/tlouis/s17s18s19/catalogs/cat_skn_multifreq_20220526_nightonly.txt"
+cat_file = "/global/cfs/cdirs/act/data/tlouis/dr6v4/catalogs/cat_skn_multifreq_20220526_nightonly.txt"
 cat = pd.read_table(cat_file, escapechar="#", sep="\s+")
 cat = cat.shift(1, axis=1)
 
@@ -75,11 +75,11 @@ for freq in map_freqs:
             sub = so_map.get_submap_car(m, box)
             sub_srcfree = so_map.get_submap_car(m_srcfree, box)
 
-            sub.plot(file_name=f"{out_dir}/{release}_f{freq}_{split}_{task:03d}", 
+            sub.plot(file_name=f"{out_dir}/{release}_f{freq}_{split}_{task:03d}",
                      color_range=[250, 100, 100],
                      ticks_spacing_car=0.6
             )
-            sub_srcfree.plot(file_name=f"{out_dir}/{release}_srcfree_f{freq}_{split}_{task:03d}", 
+            sub_srcfree.plot(file_name=f"{out_dir}/{release}_srcfree_f{freq}_{split}_{task:03d}",
                      color_range=[250, 100, 100],
                      ticks_spacing_car=0.6
             )
@@ -116,7 +116,7 @@ for src_id in ids_src:
         prefix = f"{release}{type}"
         g.write('<div class=map>\n')
         for map_name in maps:
-            
+
             freq, split = map_name.split("_")
             file_name = f"{prefix}_f{freq}_{split}_{src_id:03d}_T.png"
             g.write(f'<h2> {freq} GHz split {split} - {prefix} [Source no {src_id:03d}] </p> \n')
@@ -128,5 +128,3 @@ g.write('</div> \n')
 g.write('</body> \n')
 g.write('</html> \n')
 g.close()
-
-

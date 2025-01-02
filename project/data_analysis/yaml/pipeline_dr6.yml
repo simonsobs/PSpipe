@@ -39,7 +39,7 @@ pipeline:
       cpus_per_task: 36
   get_covariance_blocks:
     slurm:
-      nnodes: 2
+      nodes: 2
       ntasks: 8
       cpus_per_task: 64
       minimal_needed_time: 02:00:00
@@ -63,7 +63,7 @@ pipeline:
   # Monte-Carlo kspace filter transfer function
   kspace/mc_get_kspace_tf_spectra:
     slurm:
-      nnodes: 4
+      nodes: 4
       ntasks: 32
       cpus_per_task: 32
       minimal_needed_time: 03:00:00
@@ -72,13 +72,13 @@ pipeline:
   # Monte Carlo correction to the covariance matrix
   montecarlo/mc_mnms_get_nlms:
     slurm:
-      nnodes: 2
+      nodes: 2
       ntasks: 4
       cpus_per_task: 128
       minimal_needed_time: 03:30:00
   montecarlo/mc_mnms_get_spectra_from_nlms:
     slurm:
-      nnodes: 4
+      nodes: 4
       ntasks: 16
       cpus_per_task: 64
       minimal_needed_time: 02:30:00
@@ -92,7 +92,7 @@ pipeline:
   # Aberration correction
   aberration/mc_get_aberrated_spectra:
     slurm:
-      nnodes: 4
+      nodes: 4
       ntasks: 16
       cpus_per_task: 64
   aberration/mc_aberration_analysis: null
@@ -109,7 +109,7 @@ pipeline:
   lensing/lensing_mcm_and_gaussian_cov: null
   lensing/lensing_sim:
     slurm:
-      nnodes: 4
+      nodes: 4
       ntasks: 16
       cpus_per_task: 64
       minimal_needed_time: 03:00:00

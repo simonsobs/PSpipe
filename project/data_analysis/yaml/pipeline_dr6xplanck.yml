@@ -47,7 +47,7 @@ pipeline:
       cpus_per_task: 36
   get_covariance_blocks:
     slurm:
-      nnodes: 2
+      nodes: 2
       ntasks: 8
       cpus_per_task: 64
       minimal_needed_time: 02:00:00
@@ -66,7 +66,7 @@ pipeline:
   # End-to-end sim correction
   planck/get_planck_spectra_correction_from_nlms:
     slurm:
-      nnodes: 4
+      nodes: 4
       ntasks: 32
       cpus_per_task: 32
       minimal_needed_time: 03:00:00
@@ -80,7 +80,7 @@ pipeline:
   # Simulations
   montecarlo/mc_mnms_get_nlms:
     slurm:
-      nnodes: 2
+      nodes: 2
       ntasks: 4
       cpus_per_task: 128
       minimal_needed_time: 03:30:00
@@ -90,7 +90,7 @@ pipeline:
       cpus_per_task: 4
   montecarlo/mc_mnms_get_spectra_from_nlms:
     slurm:
-      nnodes: 4
+      nodes: 4
       ntasks: 16
       cpus_per_task: 64
 

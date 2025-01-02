@@ -35,7 +35,8 @@ yaml.add_constructor("!concat", yaml_concat)
 yaml.add_constructor("tag:yaml.org,2002:str", yaml_sub)
 
 
-def main():
+def main(args=None):
+
     # Homemade tools
     plural = lambda n: "s" if n > 1 else ""
 
@@ -86,7 +87,7 @@ def main():
         default=list(),
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     logging.basicConfig(
         format="%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s: %(message)s",
@@ -248,6 +249,15 @@ def main():
             )
             continue
 
+        # Make sure the script exists
+        script_base_dir = pipeline_dict.get("script_base_dir") or os.path.join(
+            pspipe_root, "project/data_analysis/python"
+        )
+        script_file, ext = os.path.splitext(params.get("script_file", module))
+        script_file = f"{os.path.join(script_base_dir, script_file)}" + (ext or ".py")
+        if not os.path.exists(script_file):
+            raise ValueError(f"File {script_file} does not exist!")
+
         # Check for slurm need
         need_slurm = params.get("slurm", True)
         if need_slurm and not os.environ.get("SLURM_NNODES"):
@@ -256,11 +266,10 @@ def main():
 
         # Make sure we have enough nodes
         slurm_params = params.get("slurm") or dict()
-        nnodes = slurm_params.pop("nnodes", None)
-        if nnodes and nnodes > slurm_nnodes:
+        if nodes := slurm_params.get("nodes") and nodes > slurm_nnodes:
             logging.error(
                 f"Module '{module}' can not be run on only {slurm_nnodes} nodes "
-                + f"(needs {nnodes} nodes)"
+                + f"(needs {nodes} nodes)"
             )
             raise SystemExit()
 
@@ -278,15 +287,6 @@ def main():
                 logging.error(f"Module {module} does not have enough time in the current node")
                 raise SystemExit()
 
-        # Make sure the script exists
-        script_base_dir = pipeline_dict.get(
-            "script_base_dir", os.path.join(pspipe_root, "project/data_analysis/python")
-        )
-        script_file, ext = os.path.splitext(params.get("script_file", module))
-        script_file = f"{os.path.join(script_base_dir, script_file)}" + (ext or ".py")
-        if not os.path.exists(script_file):
-            raise ValueError(f"File {script_file} does not exist!")
-
         # Prepare slurm job
         slurm_kwargs = deepcopy(default_kwargs)
         slurm_kwargs.update(cpus_per_task=get_cpus_per_task(slurm_params.get("ntasks", 1)))
@@ -302,6 +302,7 @@ def main():
         )
         if args.test:
             continue
+
         # Get additionnal parameters to pass to script
         if kwargs := params.get("kwargs"):
             logging.info(f"Passing the following arguments to the module: {kwargs}")

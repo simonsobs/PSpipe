@@ -1,126 +1,94 @@
-**************************
+***************************************************
 INSTALLING THE ACT POWER SPECTRUM PIPELINE AT NERSC
-**************************
+***************************************************
 
 Here we give instructions to install and to run the full thing on interactive nodes, you can of
 course also submit it to NERSC standard nodes
 
 Installation steps
----------------------------------------------------------
+------------------
 
 First, we strongly recommand to install everything in a virtual ``python`` environment in order to
 avoid clash with other ``python`` modules installed, for instance, within the ``.local``
-directory. You can use the following script to install everything (the ``mpi4py`` installation
-command is especially important @ NERSC)
-
-.. code:: shell
-
-    slurm_account=mp107
-    export SBATCH_ACCOUNT=${slurm_account}
-    export SALLOC_ACCOUNT=${slurm_account}
-
-    module load python
-    module load intel
-
-    base_dir=/path/to/base/dir
-
-    pyenv_dir=${base_dir}/pyenv/perlmutter
-    if  [ ! -d ${pyenv_dir} ]; then
-        python -m venv ${pyenv_dir}
-        source ${pyenv_dir}/bin/activate
-        python -m pip install -U pip wheel
-        python -m pip install ipython
-        python -m pip install numpy
-        module swap PrgEnv-${PE_ENV,,} PrgEnv-gnu
-        MPICC="cc -shared" pip install --force-reinstall --no-cache-dir --no-binary=mpi4py mpi4py
-    fi
-
-    software_dir=${base_dir}/software
-    if  [ ! -d ${software_dir} ]; then
-        mkdir -p ${software_dir}
-        (
-            cd ${software_dir}
-            git clone git@github.com:simonsobs/pspy.git
-            cd pspy
-            python -m pip install -e .
-        )
-        (
-            cd ${software_dir}
-            git clone git@github.com:simonsobs/pspipe_utils.git
-            cd pspipe_utils
-            python -m pip install -e .
-        )
-        (
-            cd ${software_dir}
-            git clone git@github.com:simonsobs/PSpipe.git
-            cd PSpipe
-            python -m pip install -e .
-        )
-        (
-            cd ${software_dir}
-            git clone git@github.com:AdriJD/optweight.git
-            cd optweight
-            python -m pip install -e .
-        )
-        (
-            cd ${software_dir}
-            git clone git@github.com:amaurea/enlib.git
-            cd enlib
-            export ENLIB_COMP=cca_intel
-            make array_ops
-        )
-        (
-            cd ${software_dir}
-            git clone git@github.com:simonsobs/sofind.git
-            cd sofind
-            python -m pip install -e .
-        )
-        (
-            cd ${software_dir}
-            git clone git@github.com:simonsobs/mnms.git
-            cd mnms
-            python -m pip install -e .
-
-        )
-    fi
-
-    export SOFIND_SYSTEM=perlmutter
-    export PYTHONPATH=$PYTHONPATH:${software_dir}
-    source ${pyenv_dir}/bin/activate
-
-The ``base_dir`` is where everything (virtual env. and ``pspipe`` scripts) will be located. Save the
-above commands within a ``setup.sh`` file and run it with
+directory. You can use the `setup.sh
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/setup.sh>`_ script file to
+install everything (the ``mpi4py`` installation command is especially important @ NERSC).
 
 .. code:: shell
 
     source setup.sh
-    
 
+In this case, everything will be installed in the current working directory. You can set the
+installation path by exporting the ``BASE_DIR`` before running the ``source`` command.
 
-The first time you run the script, it will install everything. Every time you log to NERSC machines,
-you **need to source this file** with ``source setup.sh`` to get into the virtual environment and
-use the proper software suite.
+Every time you log to NERSC machines, you **need to source this file** with ``source setup.sh`` to
+get into the virtual environment and use the proper software suite.
 
-Requirements
-============
+Running the DR6 pipelines
+-------------------------
 
-* pspy >= 1.7.0
-* pspipe_utils >= 0.1.4
+When installing ``pspipe``, you will get a ``pspipe-run`` binary that can be used to sequentially
+run the different modules involved in DR6 power spectra production. The ``pspipe-run`` is feed by a
+``yaml`` file that holds the sequence of modules with their corresponding computer resources needs @
+NERSC. For instance, you can run the DR6 pipeline (see next section) with the following command
+
+.. code:: shell
+
+    pspipe-run -p data_analysis/yaml/pipeline_dr6.yml
+
+Within the ``yaml/pipeline_dr6.yml`` file, the pipeline itself is defined inside the ``pipeline``
+block where a module block is defined as follow
+
+.. code:: yaml
+
+    get_covariance_blocks:
+      force: true
+      minimal_needed_time: 03:00:00
+      slurm:
+        nodes: 2
+        ntasks: 8
+        cpus_per_task: 64
+
+The module name refers to the ``python`` script located in ``data_analysis/python``
+directory. Another script directory can be set on top of the ``yaml`` file with the
+``script_base_dir`` variable. The ``force: true`` directive means the module will always be
+processed even if it was already done. The other parameters relate to slurm allocation when running
+the pipeline in an **interactive node**. If you want to use the pipeline in batch mode, you can
+refer to `pipeline_mnms.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_mnms.yml>`_.
+
+The next sections will be linked to their corresponding ``pipeline.yml`` file.
 
 
 Running the dr6 main analysis
----------------------------------------------------------
+-----------------------------
 
-To run the main dr6 analysis follow the instructions in `dr6 <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6.rst/>`_
+To run the main dr6 analysis follow the detailed instructions in `dr6
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6.rst>`_. You can also run
+the whole pipeline (with a limited set of 50 simulations) with the `pipeline_dr6.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_dr6.yml>`_
+file.
 
 Running the dr6xPlanck pipeline
----------------------------------------------------------
-To run the dr6xPlanck analysis follow the instructions in `dr6xplanck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6xplanck.rst/>`_
+-------------------------------
+
+To run the dr6xPlanck analysis follow the instructions in `dr6xplanck
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6xplanck.rst>`_. The
+corresponding pipeline file is `pipeline_dr6xplanck.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_dr6xplanck.yml>`_.
 
 Estimation of the dust
----------------------------------------------------------
-To estimate the dust in the dr6 patch we use Planck 353 GHz maps, follow the instructions in `dust  <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dust.rst/>`_
+----------------------
+
+To estimate the dust in the dr6 patch we use Planck 353 GHz maps, follow the instructions in `dust
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dust.rst/>`_ and run the
+pipeline with the `pipeline_dust.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_dust.yml>`_.
 
 Running our reproduction of the Planck pipeline
----------------------------------------------------------
-To run a reproduction of the Planck official result follow the instructions in `planck <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/planck.rst/>`_
+-----------------------------------------------
+
+To run a reproduction of the Planck official result follow the instructions in `planck
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/planck.rst>`_ (same as before
+with the `pipeline_planck.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_planck.yml>`_).

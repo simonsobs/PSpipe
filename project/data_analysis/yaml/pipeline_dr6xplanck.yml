@@ -50,7 +50,7 @@ pipeline:
       nodes: 2
       ntasks: 8
       cpus_per_task: 64
-      minimal_needed_time: 02:00:00
+    minimal_needed_time: 02:00:00
 
   # Leakage correction/covariance
   leakage/get_leakage_corrected_spectra_per_split:
@@ -69,7 +69,7 @@ pipeline:
       nodes: 4
       ntasks: 32
       cpus_per_task: 32
-      minimal_needed_time: 03:00:00
+    minimal_needed_time: 03:00:00
   montecarlo/mc_analysis: null
   planck/get_corrected_planck_spectra: null
 
@@ -83,7 +83,7 @@ pipeline:
       nodes: 2
       ntasks: 4
       cpus_per_task: 128
-      minimal_needed_time: 03:30:00
+    minimal_needed_time: 03:30:00
   planck/get_planck_sim_nlms:
     slurm:
       ntasks: 64

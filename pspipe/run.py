@@ -63,9 +63,6 @@ def main(args=None):
         action="store_true",
     )
     parser.add_argument(
-        "-s", "--skip-dict-check", help="Skip global dict check", default=False, action="store_true"
-    )
-    parser.add_argument(
         "-p", "--pipeline", help="Set pipeline file", required=True, type=os.path.realpath
     )
     parser.add_argument("-c", "--config", help="Set config/dict file", type=os.path.realpath)
@@ -85,6 +82,16 @@ def main(args=None):
         help="Set variable to be overloaded in config file",
         action="append",
         default=list(),
+    )
+    parser.add_argument(
+        "-b",
+        "--batch",
+        help="Execute pipeline in slurm batch mode",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "-s", "--skip-dict-check", help="Skip global dict check", default=False, action="store_true"
     )
 
     args = parser.parse_args(args)
@@ -227,8 +234,9 @@ def main(args=None):
             updated_params = updated_pipeline_dict.get("pipeline", {}).get(module, {})
             params |= {k: updated_params.get(k) for k in ["done", "duration"]}
 
+    pipeline = deepcopy(matrix_pipeline)
     updated_pipeline_dict = deepcopy(pipeline_dict)
-    updated_pipeline_dict.update(pipeline=deepcopy(matrix_pipeline))
+    updated_pipeline_dict.update(pipeline=pipeline)
 
     # Slurm default parameters
     slurm_nnodes = int(os.environ.get("SLURM_NNODES", 1))
@@ -239,8 +247,10 @@ def main(args=None):
         else (slurm_nnodes * slurm_cpus_on_node) // ntasks
     )
     default_kwargs = dict(ntasks=1, cpus_per_task=256)
+    if args.batch:
+        slurm = Slurm(**updated_pipeline_dict.get("slurm", {}))
 
-    for module, params in updated_pipeline_dict.get("pipeline", {}).items():
+    for module, params in pipeline.items():
         # Get job status
         if done := params.get("done", False):
             logging.info(
@@ -254,44 +264,46 @@ def main(args=None):
             pspipe_root, "project/data_analysis/python"
         )
         script_file, ext = os.path.splitext(params.get("script_file", module))
-        script_file = f"{os.path.join(script_base_dir, script_file)}" + (ext or ".py")
+        script_file = os.path.join(script_base_dir, script_file) + (ext or ".py")
         if not os.path.exists(script_file):
             raise ValueError(f"File {script_file} does not exist!")
 
-        # Check for slurm need
+        # Prepare slurm job if any
         need_slurm = params.get("slurm", True)
-        if need_slurm and not os.environ.get("SLURM_NNODES"):
-            logging.error("Pipeline need to be run on slurm ! Log first with salloc.")
-            raise SystemExit()
-
-        # Make sure we have enough nodes
         slurm_params = params.get("slurm") or dict()
-        if nodes := slurm_params.get("nodes") and nodes > slurm_nnodes:
-            logging.error(
-                f"Module '{module}' can not be run on only {slurm_nnodes} nodes "
-                + f"(needs {nodes} nodes)"
-            )
-            raise SystemExit()
-
-        # Make sure we have enough time
-        if minimal_time := slurm_params.pop("minimal_needed_time", None):
-            cmd = subprocess.run(
-                ["squeue", "-h", "-j", os.environ.get("SLURM_JOBID"), "-o", '"%L"'],
-                capture_output=True,
-                text=True,
-            )
-            remaining_time = cmd.stdout.replace("\n", "").replace('"', "")
-            if len(remaining_time.split(":")) < 3:
-                remaining_time = "00:" + remaining_time
-            if time_parser(remaining_time) < time_parser(minimal_time):
-                logging.error(f"Module {module} does not have enough time in the current node")
-                raise SystemExit()
-
-        # Prepare slurm job
         slurm_kwargs = deepcopy(default_kwargs)
         slurm_kwargs.update(cpus_per_task=get_cpus_per_task(slurm_params.get("ntasks", 1)))
         slurm_kwargs.update(slurm_params)
-        slurm = Slurm(**slurm_kwargs) if need_slurm else None
+        if not slurm:
+            slurm = Slurm(**slurm_kwargs) if need_slurm else None
+
+        if not args.batch:
+            # Check for slurm need
+            if need_slurm and not os.environ.get("SLURM_NNODES"):
+                logging.error("Pipeline need to be run on slurm ! Log first with salloc.")
+                raise SystemExit()
+
+            # Make sure we have enough nodes
+            if nodes := slurm_params.get("nodes") and nodes > slurm_nnodes:
+                logging.error(
+                    f"Module '{module}' can not be run on only {slurm_nnodes} nodes "
+                    + f"(needs {nodes} nodes)"
+                )
+                raise SystemExit()
+
+            # Make sure we have enough time
+            if minimal_time := params.get("minimal_needed_time"):
+                cmd = subprocess.run(
+                    ["squeue", "-h", "-j", os.environ.get("SLURM_JOBID"), "-o", '"%L"'],
+                    capture_output=True,
+                    text=True,
+                )
+                remaining_time = cmd.stdout.replace("\n", "").replace('"', "")
+                if len(remaining_time.split(":")) < 3:
+                    remaining_time = "00:" + remaining_time
+                if time_parser(remaining_time) < time_parser(minimal_time):
+                    logging.error(f"Module {module} does not have enough time in the current node")
+                    raise SystemExit()
 
         logging.info(
             f"Running '{module}' script on {(ntasks := slurm_kwargs.get('ntasks'))} task"
@@ -300,36 +312,44 @@ def main(args=None):
             + plural(cpus)
             + " per task)"
         )
+
+        # Get additionnal parameters to pass to script
+        if kwargs := params.get("kwargs", ""):
+            logging.info(f"Passing the following arguments to the module: {kwargs}")
+
         if args.test:
             continue
 
-        # Get additionnal parameters to pass to script
-        if kwargs := params.get("kwargs"):
-            logging.info(f"Passing the following arguments to the module: {kwargs}")
-        # If no extension is provided, assume it's a python file
+        srun_cmd = f"OMP_NUM_THREADS={cpus} srun --cpu-bind=cores"
         cmd = f"{script_file} {updated_dict_file} {kwargs}"
+        # If no extension is provided, assume it's a python file
         if not ext:
             cmd = f"python -u {cmd}"
-        t0 = time.time()
-        if slurm:
-            ret = slurm.srun(
-                cmd,
-                srun_cmd=f"OMP_NUM_THREADS={slurm_kwargs.get('cpus_per_task')} srun --cpu-bind=cores",
+
+        if args.batch:
+            srun_args = (
+                f"--{k.replace('_', '-')}={v}" for k, v in slurm_kwargs.items() if v is not None
             )
+            slurm.add_cmd(" ".join((srun_cmd, *srun_args, cmd)))
         else:
-            result = subprocess.run(cmd, shell=True, check=True)
-            ret = result.returncode
-        if ret:
-            logging.error(f"Running {module} fails ! Check previous errors.")
-        else:
-            logging.info(f"Module '{module}' succesfully runs in {parse_time(time.time() - t0)}")
-            params.update(
-                slurm=slurm_kwargs,
-                done=datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S"),
-                duration=parse_time(time.time() - t0, human=False),
-            )
-            with open(updated_yaml_file, "w") as f:
-                yaml.dump(updated_pipeline_dict, f, sort_keys=False)
+            t0 = time.time()
+            if slurm:
+                ret = slurm.srun(cmd, srun_cmd=srun_cmd)
+            else:
+                ret = subprocess.run(cmd, shell=True, check=True).returncode
+            if ret:
+                logging.error(f"Running {module} fails ! Check previous errors.")
+            else:
+                logging.info(
+                    f"Module '{module}' succesfully runs in {parse_time(time.time() - t0)}"
+                )
+                params.update(
+                    slurm=slurm_kwargs,
+                    done=datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S"),
+                    duration=parse_time(time.time() - t0, human=False),
+                )
+                with open(updated_yaml_file, "w") as f:
+                    yaml.dump(updated_pipeline_dict, f, sort_keys=False)
 
     if args.test:
         logging.info(
@@ -337,21 +357,27 @@ def main(args=None):
         )
         return
 
-    info, total_time = "", 0.0
-    for module, params in updated_pipeline_dict.get("pipeline", {}).items():
-        duration = params.get("duration")
-        slurm = params.get("slurm", {})
-        ntasks, cpus_per_task = slurm.get("ntasks", 1), slurm.get("cpus_per_task", 256)
-        info += f"\n - '{module}' takes {parse_time(duration)} "
-        info += f"({ntasks} task" + plural(ntasks)
-        info += f" with {cpus_per_task} cpu" + plural(cpus_per_task) + " per task "
-        info += f"- {params.get('done')})"
-        h, m, s = map(int, duration.split(":"))
-        total_time += datetime.timedelta(hours=h, minutes=m, seconds=s).seconds
-    logging.info(
-        f"Pipeline runs in {parse_time(total_time)} with the following amount of time per module:"
-        + info
-    )
+    if args.batch:
+        logging.info(
+            "The following script will be sent to slurm batch system:\n"
+            + slurm.script(shell="/bin/bash", convert=False)
+        )
+    else:
+        info, total_time = "", 0.0
+        for module, params in updated_pipeline_dict.get("pipeline", {}).items():
+            duration = params.get("duration")
+            slurm = params.get("slurm", {})
+            ntasks, cpus_per_task = slurm.get("ntasks", 1), slurm.get("cpus_per_task", 256)
+            info += f"\n - '{module}' takes {parse_time(duration)} "
+            info += f"({ntasks} task" + plural(ntasks)
+            info += f" with {cpus_per_task} cpu" + plural(cpus_per_task) + " per task "
+            info += f"- {params.get('done')})"
+            h, m, s = map(int, duration.split(":"))
+            total_time += datetime.timedelta(hours=h, minutes=m, seconds=s).seconds
+        logging.info(
+            f"Pipeline runs in {parse_time(total_time)} with the following amount of time per module:"
+            + info
+        )
 
 
 if __name__ == "__main__":

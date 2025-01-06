@@ -10,14 +10,16 @@ slurm:
   constraint: cpu
   array: 0-9
   nodes: 4
-  time: 08:00:00
+  time: 04:00:00
+  output: logs/pipeline_mnms_%A_%a.log
+  job_name: pipeline_mnms
 
 pipeline:
   # Monte Carlo correction to the covariance matrix
   montecarlo/mc_mnms_get_nlms:
     slurm:
-      nodes: 2
-      ntasks: 4
+      nodes: 4
+      ntasks: 8
       cpus_per_task: 128
     kwargs: --bunch $SLURM_ARRAY_TASK_ID --nbunch 50
   montecarlo/mc_mnms_get_spectra_from_nlms:

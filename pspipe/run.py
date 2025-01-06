@@ -248,6 +248,7 @@ def main(args=None):
     )
     default_kwargs = dict(ntasks=1, cpus_per_task=256)
     if args.batch:
+        logging.info("Pipeline will be run in batch mode")
         slurm = Slurm(**updated_pipeline_dict.get("slurm", {}))
 
     for module, params in pipeline.items():
@@ -333,10 +334,11 @@ def main(args=None):
             slurm.add_cmd(" ".join((srun_cmd, *srun_args, cmd)))
         else:
             t0 = time.time()
-            if slurm:
-                ret = slurm.srun(cmd, srun_cmd=srun_cmd)
-            else:
-                ret = subprocess.run(cmd, shell=True, check=True).returncode
+            ret = (
+                slurm.srun(cmd, srun_cmd=srun_cmd)
+                if slurm
+                else subprocess.run(cmd, shell=True, check=True).returncode
+            )
             if ret:
                 logging.error(f"Running {module} fails ! Check previous errors.")
             else:
@@ -358,10 +360,12 @@ def main(args=None):
         return
 
     if args.batch:
+        sbatch_kwargs = dict(shell="/bin/bash", convert=False)
         logging.info(
             "The following script will be sent to slurm batch system:\n"
-            + slurm.script(shell="/bin/bash", convert=False)
+            + slurm.script(**sbatch_kwargs)
         )
+        # slurm.sbatch(**sbatch_kwargs)
     else:
         info, total_time = "", 0.0
         for module, params in updated_pipeline_dict.get("pipeline", {}).items():

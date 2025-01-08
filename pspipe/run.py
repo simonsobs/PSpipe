@@ -295,7 +295,8 @@ def main(args=None):
                 raise SystemExit()
 
             # Make sure we have enough nodes
-            if nodes := slurm_params.get("nodes") and nodes > slurm_nnodes:
+            slurm_nnodes = int(os.environ.get("SLURM_NNODES", 1))
+            if (nodes := slurm_params.get("nodes")) and nodes > slurm_nnodes:
                 logging.error(
                     f"Module '{module}' can not be run on only {slurm_nnodes} nodes "
                     + f"(needs {nodes} nodes)"

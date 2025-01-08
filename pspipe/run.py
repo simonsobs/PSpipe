@@ -280,15 +280,15 @@ def main(args=None):
             raise ValueError(f"File {script_file} does not exist!")
 
         # Prepare slurm job if any
-        need_slurm = params.get("slurm", True)
         slurm_params = params.get("slurm") or dict()
         slurm_kwargs = deepcopy(default_kwargs)
         slurm_kwargs.update(cpus_per_task=get_cpus_per_task(slurm_params.get("ntasks", 1)))
         slurm_kwargs.update(slurm_params)
-        if not slurm:
-            slurm = Slurm(**slurm_kwargs) if need_slurm else None
 
         if not args.batch:
+            # Create slurm instance
+            need_slurm = params.get("slurm", True)
+            slurm = Slurm(**slurm_kwargs) if need_slurm else None
             # Check for slurm need
             if need_slurm and not os.environ.get("SLURM_NNODES"):
                 logging.error("Pipeline need to be run on slurm ! Log first with salloc.")
@@ -382,6 +382,7 @@ def main(args=None):
         job_id = slurm.sbatch(postcmd, **sbatch_kwargs)
         logging.info(f"Job '{job_id}' has been sent.")
     else:
+        # Print info time
         info, total_time = "", 0.0
         for module, params in updated_pipeline_dict.get("pipeline", {}).items():
             duration = params.get("duration")

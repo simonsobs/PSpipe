@@ -25,7 +25,10 @@ def yaml_concat(loader, node):
 
 def yaml_sub(loader, node):
     value = loader.construct_scalar(node)
-    placeholders = {"__pspipe_root__": str(pspipe_root)}
+    placeholders = {
+        "__pspipe_root__": str(pspipe_root),
+        "__base_dir__": os.environ.get("BASE_DIR", ""),
+    }
     for place, holder in placeholders.items():
         value = value.replace(place, holder)
     return value
@@ -249,7 +252,14 @@ def main(args=None):
     default_kwargs = dict(ntasks=1, cpus_per_task=256)
     if args.batch:
         logging.info("Pipeline will be run in batch mode")
-        slurm = Slurm(**updated_pipeline_dict.get("slurm", {}))
+        slurm_kwargs = updated_pipeline_dict.get("slurm", {})
+        precmd = slurm_kwargs.pop("precmd", "")
+        postcmd = slurm_kwargs.pop("postcmd", "")
+        slurm = Slurm(**slurm_kwargs)
+        slurm.add_cmd(precmd)
+        # Prepare log directory
+        if output := slurm_kwargs.get("output"):
+            os.makedirs(os.path.basename(output), exist_ok=True)
 
     for module, params in pipeline.items():
         # Get job status
@@ -307,7 +317,8 @@ def main(args=None):
                     raise SystemExit()
 
         logging.info(
-            f"Running '{module}' script on {(ntasks := slurm_kwargs.get('ntasks'))} task"
+            ("Preparing" if args.batch else "Running")
+            + f" '{module}' script on {(ntasks := slurm_kwargs.get('ntasks'))} task"
             + plural(ntasks)
             + f" ({(cpus := slurm_kwargs.get('cpus_per_task'))} cpu"
             + plural(cpus)
@@ -328,6 +339,7 @@ def main(args=None):
             cmd = f"python -u {cmd}"
 
         if args.batch:
+            cmd += " && " if module != list(pipeline)[-1] else ""
             srun_args = (
                 f"--{k.replace('_', '-')}={v}" for k, v in slurm_kwargs.items() if v is not None
             )
@@ -360,12 +372,15 @@ def main(args=None):
         return
 
     if args.batch:
-        sbatch_kwargs = dict(shell="/bin/bash", convert=False)
+        sbatch_kwargs = dict(shell="/bin/bash")
         logging.info(
             "The following script will be sent to slurm batch system:\n"
             + slurm.script(**sbatch_kwargs)
         )
-        # slurm.sbatch(**sbatch_kwargs)
+        if input("Do you want to proceed [y/N] ? ") not in list("yY"):
+            return
+        job_id = slurm.sbatch(postcmd, **sbatch_kwargs)
+        logging.info(f"Job '{job_id}' has been sent.")
     else:
         info, total_time = "", 0.0
         for module, params in updated_pipeline_dict.get("pipeline", {}).items():

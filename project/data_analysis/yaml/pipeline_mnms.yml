@@ -1,0 +1,39 @@
+# This configuration file shows how to build a yaml file to submit jobs in batch mode. This example
+# only runs mnms simulations and thus supposed that the previous operation (windows, mcm and best
+# fits computations have been done).
+# Here the strategy is to use the same amount of cpu resources as in interactive mode (so the script
+# will also work in slurm interactive node) and then multiply the number of process using slurm job
+# array https://docs.nersc.gov/jobs/examples/#job-arrays. Anybody can also think differently and ask
+# much mode node and do not rely on job array. It's up to the user.
+
+# Set directory where all pipeline products will be stored
+product_dir: products/mnms
+
+# Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
+# parsing the yaml file by the location to the pspipe installation
+config_file: __pspipe_root__/project/data_analysis/paramfiles/global_dr6_v4.dict
+
+slurm:
+  precmd: |
+    source __base_dir__/setup.sh
+  qos: regular
+  account: mp107b
+  constraint: cpu
+  array: 0-1
+  nodes: 4
+  time: 04:00:00
+  output: logs/pipeline_mnms_%A_%a.log
+  job_name: mnms
+
+pipeline:
+  # Monte Carlo correction to the covariance matrix
+  montecarlo/mc_mnms_get_nlms:
+    slurm:
+      ntasks: 8
+      cpus_per_task: 128
+    kwargs: &kwargs --bunch $SLURM_ARRAY_TASK_ID --nbunch 50
+  montecarlo/mc_mnms_get_spectra_from_nlms:
+    slurm:
+      ntasks: 16
+      cpus_per_task: 64
+    kwargs: *kwargs

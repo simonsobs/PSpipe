@@ -7,10 +7,19 @@ from pixell import curvedsky
 from pspipe_utils import log
 import numpy as np
 import time
-import sys
+import argparse
+
+# Parse arguments
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--iStart", help="Set starting index of simultions", type=int)
+parser.add_argument("--iStop", help="Set stopping index of simulations", type=int)
+parser.add_argument("--bunch", help="Set bunch index", type=int)
+parser.add_argument("--nbunch", help="Set number of simulation per bunch", default=50, type=int)
+args, dict_file = parser.parse_known_args()
 
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(dict_file[0])
 log = log.get_logger(**d)
 
 surveys = ["dr6"]
@@ -47,6 +56,12 @@ for sv in surveys:
     for id_split in range(n_splits[sv]):
         mpi_list.append((sv, id_split))
 
+iStart = args.iStart or d["iStart"]
+iStop = args.iStop or d["iStop"]
+if args.bunch is not None:
+    iStart = int(args.bunch * args.nbunch)
+    iStop = int((args.bunch + 1) * args.nbunch) - 1
+
 # we will use mpi over the number of splits
 so_mpi.init(True)
 #subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
@@ -62,7 +77,7 @@ for id_mpi in subtasks:
     t1 = time.time()
     for wafer_name in wafers:
 
-        for iii in range(d["iStart"], d["iStop"]+1):
+        for iii in range(iStart, iStop+1):
 
             t2 = time.time()
             sim_arrays = noise_models[wafer_name].get_sim(split_num=k,
@@ -84,4 +99,4 @@ for id_mpi in subtasks:
 
         noise_models[wafer_name].cache_clear()
 
-    log.info(f"split {k} {d['iStop']-d['iStart']+1} sims generated in {time.time()-t1:.2f} s")
+    log.info(f"split {k} {iStop-iStart+1} sims generated in {time.time()-t1:.2f} s")

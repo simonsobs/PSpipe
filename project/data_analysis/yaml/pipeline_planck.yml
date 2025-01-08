@@ -1,0 +1,20 @@
+# Set directory where all pipeline products will be stored
+product_dir: products/planck
+
+# Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
+# parsing the yaml file by the location to the pspipe installation
+config_file: __pspipe_root__/project/data_analysis/paramfiles/planck/global_legacy.dict
+
+pipeline:
+  per_split/get_mcm_and_bbl_per_split:
+    slurm:
+      ntasks: 6
+      cpus_per_task: 32
+  per_split/get_alms_per_split:
+    slurm:
+      ntasks: 8
+      cpus_per_task: 32
+  per_split/get_spectra_from_alms_per_split:
+    slurm:
+      ntasks: 8
+      cpus_per_task: 32

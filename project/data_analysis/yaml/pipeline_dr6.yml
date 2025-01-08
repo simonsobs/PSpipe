@@ -1,0 +1,123 @@
+# Set directory where all pipeline products will be stored
+product_dir: products/dr6
+
+# Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
+# parsing the yaml file by the location to the pspipe installation
+config_file: !concat [__pspipe_root__, project/data_analysis/paramfiles/global_dr6_v4.dict]
+
+# Set location of scripts: default to pspipe_root/project/data_analysis/python
+script_base_dir: null
+
+# Set variable to override default from global.dict
+variables:
+  iStart: 0
+  iStop: 49
+
+pipeline:
+  # Main pipeline
+  get_window_dr6:
+    slurm:
+      ntasks: 5
+      cpus_per_task: 48
+  get_mcm_and_bbl:
+    slurm:
+      ntasks: 5
+      cpus_per_task: 48
+  get_alms:
+    slurm:
+      ntasks: 5
+      cpus_per_task: 48
+  get_spectra_from_alms:
+    slurm:
+      ntasks: 5
+      cpus_per_task: 48
+  get_best_fit_mflike: null
+  get_noise_model: null
+  get_sq_windows_alms:
+    slurm:
+      ntasks: 7
+      cpus_per_task: 36
+  get_covariance_blocks:
+    slurm:
+      nodes: 2
+      ntasks: 8
+      cpus_per_task: 64
+    minimal_needed_time: 02:00:00
+  get_beam_covariance:
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  get_xarrays_covmat: null
+
+  # Leakage correction/covariance
+  leakage/get_leakage_corrected_spectra_per_split:
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  leakage/get_leakage_sim:
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  leakage/get_leakage_covariance: null
+
+  # Monte-Carlo kspace filter transfer function
+  kspace/mc_get_kspace_tf_spectra:
+    slurm:
+      nodes: 4
+      ntasks: 32
+      cpus_per_task: 32
+    minimal_needed_time: 03:00:00
+  kspace/mc_kspace_tf_analysis: null
+
+  # Monte Carlo correction to the covariance matrix
+  montecarlo/mc_mnms_get_nlms:
+    slurm:
+      nodes: 2
+      ntasks: 4
+      cpus_per_task: 128
+    minimal_needed_time: 03:30:00
+  montecarlo/mc_mnms_get_spectra_from_nlms:
+    slurm:
+      nodes: 4
+      ntasks: 16
+      cpus_per_task: 64
+    minimal_needed_time: 02:30:00
+  montecarlo/mc_analysis: null
+  montecarlo/mc_cov_analysis: null
+  montecarlo/mc_plot_spectra: null
+  montecarlo/mc_plot_covariances: null
+  montecarlo/mc_cov_analysis_for_gp: null
+  montecarlo/get_mc_corrected_xarrays_covmat_gp: null
+
+  # Aberration correction
+  aberration/mc_get_aberrated_spectra:
+    slurm:
+      nodes: 4
+      ntasks: 16
+      cpus_per_task: 64
+  aberration/mc_aberration_analysis: null
+  aberration/get_aberration_corrected_spectra: null
+
+  # Radio and tSZ trispectrum
+  non_gaussian_fg/get_connected_trispectrum_radio: null
+  non_gaussian_fg/get_connected_trispectrum_tSZ: null
+  non_gaussian_fg/get_connected_trispectrum_CIB: null
+
+  # Non gaussian lensing terms (need prerun of CLASS)
+  lensing/lensing_combine_cov_mat: null
+  lensing/lensing_camb: null
+  lensing/lensing_mcm_and_gaussian_cov: null
+  lensing/lensing_sim:
+    slurm:
+      nodes: 4
+      ntasks: 16
+      cpus_per_task: 64
+    minimal_needed_time: 03:00:00
+  lensing/lensing_analysis: null
+
+  # Array null test
+  null_tests/compute_null_tests: null
+
+  # Combine cov mat and write data in a SACC file
+  get_combined_cov_mats: null
+  port2sacc: null

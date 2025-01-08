@@ -4,8 +4,8 @@ it generates gaussian simulations of cmb, fg and add noise based on the mnms sim
 the fg is based on fgspectra, note that the noise sim include the pixwin so we have to convolve the signal sim with it
 """
 
-import sys
 import time
+import argparse
 
 import healpy as hp
 import numpy as np
@@ -13,8 +13,17 @@ from pixell import curvedsky, enmap
 from pspipe_utils import kspace, log, misc, pspipe_list, simulation, transfer_function
 from pspy import pspy_utils, so_dict, so_map, so_mcm, so_mpi, so_spectra, sph_tools
 
+# Parse arguments
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--iStart", help="Set starting index of simultions", type=int)
+parser.add_argument("--iStop", help="Set stopping index of simulations", type=int)
+parser.add_argument("--bunch", help="Set bunch index", type=int)
+parser.add_argument("--nbunch", help="Set number of simulation per bunch", default=50, type=int)
+args, dict_file = parser.parse_known_args()
+
 d = so_dict.so_dict()
-d.read_from_file(sys.argv[1])
+d.read_from_file(dict_file[0])
 log = log.get_logger(**d)
 
 surveys = d["surveys"]
@@ -30,7 +39,6 @@ if sim_alm_dtype in ["complex64", "complex128"]: sim_alm_dtype = getattr(np, sim
 else: raise ValueError(f"Unsupported sim_alm_dtype {sim_alm_dtype}")
 dtype = np.float32 if sim_alm_dtype == "complex64" else np.float64
 
-window_dir = "windows"
 mcm_dir = "mcms"
 spec_dir = "sim_spectra"
 bestfit_dir = "best_fits"
@@ -92,7 +100,13 @@ l, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, array_list, lmax,
 
 # we will use mpi over the number of simulations
 so_mpi.init(True)
-subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
+iStart = args.iStart or d["iStart"]
+iStop = args.iStop or d["iStop"]
+if args.bunch is not None:
+    iStart = int(args.bunch * args.nbunch)
+    iStop = int((args.bunch + 1) * args.nbunch) - 1
+
+subtasks = so_mpi.taskrange(imin=iStart, imax=iStop)
 
 for iii in subtasks:
     t0 = time.time()

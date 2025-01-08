@@ -259,7 +259,7 @@ def main(args=None):
         slurm.add_cmd(precmd)
         # Prepare log directory
         if output := slurm_kwargs.get("output"):
-            os.makedirs(os.path.basename(output), exist_ok=True)
+            os.makedirs(os.path.dirname(output), exist_ok=True)
 
     for module, params in pipeline.items():
         # Get job status

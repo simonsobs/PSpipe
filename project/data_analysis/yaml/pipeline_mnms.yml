@@ -1,3 +1,11 @@
+# This configuration file shows how to build a yaml file to submit jobs in batch mode. This example
+# only runs mnms simulations and thus supposed that the previous operation (windows, mcm and best
+# fits computations have been done).
+# Here the strategy is to use the same amount of cpu resources as in interactive mode (so the script
+# will also work in slurm interactive node) and then multiply the number of process using slurm job
+# array https://docs.nersc.gov/jobs/examples/#job-arrays. Anybody can also think differently and ask
+# much mode node and do not rely on job array. It's up to the user.
+
 # Set directory where all pipeline products will be stored
 product_dir: products/mnms
 

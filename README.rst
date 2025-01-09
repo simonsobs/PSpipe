@@ -9,8 +9,8 @@
 The package
 ===========
 
-.. image:: https://travis-ci.com/simonsobs/PSpipe.svg?branch=master
-   :target: https://travis-ci.com/simonsobs/PSpipe
+.. image:: https://img.shields.io/github/actions/workflow/status/simonsobs/pspipe/testing.yml?branch=master
+   :target: https://github.com/simonsobs/pspipe/actions?query=workflow%3ATesting
 
 ``PSpipe`` is a pipeline creator for the analysis of the high resolution maps of the large aperture
 telescope of the Simons Observatory. It contains tools for estimating power spectra and a
@@ -28,7 +28,6 @@ Requirements
 ============
 
 * Python >= 3.8
-* `FFTW <http://www.fftw.org/>`_: version 3 required
 
 Installing
 ==========

@@ -70,7 +70,7 @@ if [ ! -d ${software_dir} ]; then
   python -m pip uninstall -y ducc0; python -m pip install --no-binary ducc0 ducc0
 
   # To keep track of what have been installed
-  pip freeze > ${cwd}/requirements.txt
+  python -m pip freeze > ${cwd}/requirements.txt
 fi
 
 export TENKI_PATH=${software_dir}/tenki

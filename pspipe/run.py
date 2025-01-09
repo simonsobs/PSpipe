@@ -291,7 +291,7 @@ def main(args=None):
             slurm = Slurm(**slurm_kwargs) if need_slurm else None
             # Check for slurm need
             if need_slurm and not os.environ.get("SLURM_NNODES"):
-                logging.error("Pipeline need to be run on slurm ! Log first with salloc.")
+                logging.error("Pipeline needs to be run on slurm ! Log first with salloc.")
                 raise SystemExit()
 
             # Make sure we have enough nodes

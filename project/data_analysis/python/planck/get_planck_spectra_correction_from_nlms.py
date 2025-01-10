@@ -1,5 +1,6 @@
 """
-This script generate spectra to get the correction to apply to Planck Npipe data
+This script generate spectra from planck end-to-end simulation to get the correction to apply to Planck data
+It's very similar to mnms_get_spectra_from_nlms but there is no signal added to the simulations
 """
 
 from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
@@ -29,7 +30,7 @@ dtype = np.float32 if sim_alm_dtype == "complex64" else np.float64
 
 window_dir = "windows"
 mcm_dir = "mcms"
-spec_dir = "sim_spectra"
+spec_dir = "sim_spectra_planck_noise_and_syst"
 nlms_dir = "noise_alms"
 
 pspy_utils.create_directory(spec_dir)

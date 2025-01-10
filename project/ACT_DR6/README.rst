@@ -11,7 +11,7 @@ Installation steps
 First, we strongly recommand to install everything in a virtual ``python`` environment in order to
 avoid clash with other ``python`` modules installed, for instance, within the ``.local``
 directory. You can use the `setup.sh
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/setup.sh>`_ script file to
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/setup.sh>`_ script file to
 install everything (the ``mpi4py`` installation command is especially important @ NERSC).
 
 .. code:: shell
@@ -34,7 +34,7 @@ NERSC. For instance, you can run the DR6 pipeline (see next section) with the fo
 
 .. code:: shell
 
-    pspipe-run -p data_analysis/yaml/pipeline_dr6.yml
+    pspipe-run -p ACT_DR6/yaml/pipeline_dr6.yml
 
 Within the ``yaml/pipeline_dr6.yml`` file, the pipeline itself is defined inside the ``pipeline``
 block where a module block is defined as follow
@@ -49,13 +49,13 @@ block where a module block is defined as follow
         ntasks: 8
         cpus_per_task: 64
 
-The module name refers to the ``python`` script located in ``data_analysis/python``
+The module name refers to the ``python`` script located in ``ACT_DR6/python``
 directory. Another script directory can be set on top of the ``yaml`` file with the
 ``script_base_dir`` variable. The ``force: true`` directive means the module will always be
 processed even if it was already done. The other parameters relate to slurm allocation when running
 the pipeline in an **interactive node**. If you want to use the pipeline in batch mode, you can
 refer to `pipeline_mnms.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_mnms.yml>`_.
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_mnms.yml>`_.
 
 The next sections will be linked to their corresponding ``pipeline.yml`` file.
 
@@ -64,31 +64,31 @@ Running the dr6 main analysis
 -----------------------------
 
 To run the main dr6 analysis follow the detailed instructions in `dr6
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6.rst>`_. You can also run
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6.rst>`_. You can also run
 the whole pipeline (with a limited set of 50 simulations) with the `pipeline_dr6.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_dr6.yml>`_
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dr6.yml>`_
 file.
 
 Running the dr6xPlanck pipeline
 -------------------------------
 
 To run the dr6xPlanck analysis follow the instructions in `dr6xplanck
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dr6xplanck.rst>`_. The
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6xplanck.rst>`_. The
 corresponding pipeline file is `pipeline_dr6xplanck.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_dr6xplanck.yml>`_.
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dr6xplanck.yml>`_.
 
 Estimation of the dust
 ----------------------
 
 To estimate the dust in the dr6 patch we use Planck 353 GHz maps, follow the instructions in `dust
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/dust.rst/>`_ and run the
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dust.rst/>`_ and run the
 pipeline with the `pipeline_dust.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_dust.yml>`_.
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dust.yml>`_.
 
 Running our reproduction of the Planck pipeline
 -----------------------------------------------
 
 To run a reproduction of the Planck official result follow the instructions in `planck
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/planck.rst>`_ (same as before
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/planck.rst>`_ (same as before
 with the `pipeline_planck.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_planck.yml>`_).
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_planck.yml>`_).

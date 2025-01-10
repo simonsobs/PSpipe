@@ -272,7 +272,7 @@ def main(args=None):
 
         # Make sure the script exists
         script_base_dir = pipeline_dict.get("script_base_dir") or os.path.join(
-            pspipe_root, "project/data_analysis/python"
+            pspipe_root, "project/ACT_DR6/python"
         )
         script_file, ext = os.path.splitext(params.get("script_file", module))
         script_file = os.path.join(script_base_dir, script_file) + (ext or ".py")

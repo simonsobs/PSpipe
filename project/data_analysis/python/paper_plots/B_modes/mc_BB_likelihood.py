@@ -57,7 +57,7 @@ Rminus1_stop = 0.03
 Rminus1_cl_stop = 0.03
 
 cov_dir = "covariances"
-sim_spec_dir = "sim_spectra"
+sim_spec_dir = d["sim_spec_dir"]
 
 BB_dir = f"results_BB_MC"
 

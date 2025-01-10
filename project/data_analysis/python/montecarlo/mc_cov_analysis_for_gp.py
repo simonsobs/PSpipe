@@ -42,7 +42,7 @@ if args.iStart is not None:
 sim_idxs = range(iStart, iStop + 1) # iStart + (iStop + 1 - iStart)
 N = len(sim_idxs)
 
-sim_spec_dir = "sim_spectra"
+sim_spec_dir = d["sim_spec_dir"]
 covariances_dir = "covariances"
 
 pspy_utils.create_directory(covariances_dir)

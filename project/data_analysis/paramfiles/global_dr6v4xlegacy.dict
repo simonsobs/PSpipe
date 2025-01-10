@@ -3,9 +3,11 @@ arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 arrays_Planck = ["f100", "f143", "f217"]
 planck_version = "legacy"
 
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
+data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/"
+sim_spec_dir = f"{data_dir}/all_sim_spectra/sim_spectra_legacy_final/"
 
 planck_mc_correction = data_dir + "/planck_mc_correction/legacy_spectra_correction/15mJy_mask/"
+
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": "CAR", "order": 0}

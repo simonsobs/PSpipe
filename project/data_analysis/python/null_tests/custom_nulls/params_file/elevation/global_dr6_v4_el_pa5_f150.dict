@@ -3,7 +3,8 @@ arrays_el1 = ["pa5_f150"]
 arrays_el2 = ["pa5_f150"]
 arrays_el3 = ["pa5_f150"]
 
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
+data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/"
+sim_spec_dir = f"{data_dir}/all_sim_spectra/custom_nulls/elevation/sim_spectra_pa5_f150/"
 
 deconvolve_pixwin = True
 pixwin_el1 = {"pix": 'CAR', "order": 0}

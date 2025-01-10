@@ -20,7 +20,7 @@ surveys = d["surveys"]
 iStart = d["iStart"]
 iStop = d["iStop"]
 
-spec_dir = "sim_spectra"
+sim_spec_dir = d["sim_spec_dir"]
 cov_dir = "split_covariances"
 
 pspy_utils.create_directory(cov_dir)
@@ -60,8 +60,8 @@ for sv in surveys:
                 spec_name_cross_12 = f"{type}_{sv}_{ar}x{sv}_{ar}_{s1}{s2}_{iii:05d}.dat"
                 spec_name_cross_34 = f"{type}_{sv}_{ar}x{sv}_{ar}_{s3}{s4}_{iii:05d}.dat"
 
-                lb, ps_12 = so_spectra.read_ps(f"{spec_dir}/{spec_name_cross_12}", spectra = spectra)
-                lb, ps_34 = so_spectra.read_ps(f"{spec_dir}/{spec_name_cross_34}", spectra = spectra)
+                lb, ps_12 = so_spectra.read_ps(f"{sim_spec_dir}/{spec_name_cross_12}", spectra = spectra)
+                lb, ps_34 = so_spectra.read_ps(f"{sim_spec_dir}/{spec_name_cross_34}", spectra = spectra)
 
                 vec_12 = []
                 vec_34 = []
@@ -80,7 +80,7 @@ for sv in surveys:
 
             np.save(f"{cov_dir}/mc_cov_{sv}_{ar}_{s1}x{sv}_{ar}_{s2}_{sv}_{ar}_{s3}x{sv}_{ar}_{s4}.npy", cov_mc)
 
-lb, _ = so_spectra.read_ps(f"{spec_dir}/{type}_{sv}_{ar}x{sv}_{ar}_{s1}{s2}_00000.dat")
+lb, _ = so_spectra.read_ps(f"{sim_spec_dir}/{type}_{sv}_{ar}x{sv}_{ar}_{s1}{s2}_00000.dat")
 n_bins = len(lb)
 
 for ar in arrays["dr6"]:

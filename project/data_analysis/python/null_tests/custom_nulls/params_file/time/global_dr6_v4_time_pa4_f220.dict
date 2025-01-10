@@ -2,7 +2,8 @@ surveys = ["t1", "t2"]
 arrays_t1 = ["pa4_f220"]
 arrays_t2 = ["pa4_f220"]
 
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
+data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/"
+sim_spec_dir = f"{data_dir}/all_sim_spectra/custom_nulls/time/sim_spectra_pa4_f220/"
 
 deconvolve_pixwin = True
 pixwin_t1 = {"pix": 'CAR', "order": 0}

@@ -43,6 +43,10 @@ def pte_histo(pte_list, file_name, n_bins):
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+
+sim_spec_dir_north = d["sim_spec_dir_north"]
+sim_spec_dir_south = d["sim_spec_dir_south"]
+
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -175,8 +179,8 @@ for my_spec in spectra:
         
         diff_all = []
         for iii in range(nsims):
-            lb, Db_north_sim = so_spectra.read_ps(f"patch_north/sim_spectra/Dl_{spec}_cross_{iii:05d}.dat", spectra=spectra)
-            lb, Db_south_sim = so_spectra.read_ps(f"patch_south/sim_spectra/Dl_{spec}_cross_{iii:05d}.dat", spectra=spectra)
+            lb, Db_north_sim = so_spectra.read_ps(f"{sim_spec_dir_north}/Dl_{spec}_cross_{iii:05d}.dat", spectra=spectra)
+            lb, Db_south_sim = so_spectra.read_ps(f"{sim_spec_dir_south}/Dl_{spec}_cross_{iii:05d}.dat", spectra=spectra)
             diff_all += [Db_north_sim[my_spec] - Db_south_sim[my_spec]]
             
         diff_mean = np.mean(diff_all, axis=0)

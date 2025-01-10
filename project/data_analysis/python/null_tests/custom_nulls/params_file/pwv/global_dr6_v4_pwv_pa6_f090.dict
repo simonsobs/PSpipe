@@ -2,7 +2,8 @@ surveys = ["pwv1", "pwv2"]
 arrays_pwv1 = ["pa6_f090"]
 arrays_pwv2 = ["pa6_f090"]
 
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
+data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/"
+sim_spec_dir = f"{data_dir}/all_sim_spectra/custom_nulls/pwv/sim_spectra_pa6_f090/"
 
 
 deconvolve_pixwin = True

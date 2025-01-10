@@ -14,7 +14,7 @@ import scipy.stats as ss
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-ps_dir = "sim_spectra"
+sim_spec_dir = d["sim_spec_dir"]
 cov_dir = "split_covariances"
 
 output_dir = "split_nulls"
@@ -82,7 +82,7 @@ for iii in range(iStart, iStop+1):
         cross_splits = combinations(splits_id, 2)
         split_diff_list = combinations(cross_splits, 2)
 
-        ps_template = f"{ps_dir}/Dl_{ar}x{ar}_" + "{}{}" + f"_{iii:05d}.dat"
+        ps_template = f"{sim_spec_dir}/Dl_{ar}x{ar}_" + "{}{}" + f"_{iii:05d}.dat"
         name = f"{ar}" + "_{}"
         cov_dict = {}
         for cov_type in covariances_type:

@@ -1,8 +1,10 @@
 """
-This script compute the montecarlo chi2 distribution using the estimted simulation power spectra, the covariance matrix and the input theory, we use the ell cut of ACT DR6
-You can choose sim_spec_dir = "sim_spectra" for sim without systematic model or sim_spec_dir = "sim_spectra_syst" for sim with systematic, the code will choose
-the corresponding covariance matrix
+This script compute the montecarlo chi2 distribution using the estimated simulation power spectra, the covariance matrix and the input theory.
+We use the nominal ell cut of ACT DR6.
+if the name of the folder containing the simulation spectra contains the string "_syst", we will use a covariance
+with S+N+beam+leakage beam, otherwise we use simply the S+N covariance.
 """
+
 import numpy as np
 import pylab as plt
 from pspipe_utils import covariance, pspipe_list, log
@@ -11,11 +13,9 @@ from pixell import utils
 import sys
 import scipy.stats as stats
 
-
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
-
     
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 binning_file = d["binning_file"]
@@ -26,20 +26,37 @@ iStop = d["iStop"]
 
 cov_dir = "covariances"
 bestfit_dir = "best_fits"
-sim_spec_dir = "sim_spectra_syst"
+sim_spec_dir = d["sim_spec_dir"]
 mcm_dir = "mcms"
-plot_dir = "plots/chi2_distrib"
+
+
+if "_syst" in sim_spec_dir:
+    # so this is a bit dangerous but I need to know which covariance
+    # to use when computing the chi2
+    # usual sim don't include systematic and x_ar_final_cov_sim_gp.npy is appropriate
+    # for sim with syst generated with mc_apply_syst_model we need to include beam and leakage beam cov
+    # so I look for the string _syst in sim_spec_dir to know if systematic
+    #have been included or not
+    log.info(f"{sim_spec_dir} contains the string _syst, we will use covariance with beam and leakage beam")
+    include_syst = True
+    add_str = "_syst"
+else:
+    log.info(f"{sim_spec_dir} does not contains the string _syst, we will use covariance with only S+N")
+    add_str = ""
+
+
+plot_dir = f"plots/chi2_distrib{add_str}"
+
 
 pspy_utils.create_directory(plot_dir)
-
 bin_low, bin_high, bin_mean, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
-
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
-if sim_spec_dir == "sim_spectra":
-    x_ar_cov = np.load(f"{cov_dir}/x_ar_final_cov_sim.npy")
-if sim_spec_dir == "sim_spectra_syst":
-    x_ar_cov = np.load(f"{cov_dir}/x_ar_final_cov_data.npy")
+x_ar_cov = np.load(f"{cov_dir}/x_ar_final_cov_sim_gp.npy")
+if include_syst:
+    x_ar_beam_cov = np.load("covariances/x_ar_beam_cov.npy")
+    x_ar_leakage_cov = np.load("covariances/x_ar_leakage_cov.npy")
+    x_ar_cov += x_ar_beam_cov + x_ar_leakage_cov
 
 
 selected_spectra = [spectra, ["TT", "TE", "ET", "EE"], ["TT"], ["TE"], ["ET"], ["TB"], ["BT"], ["EE"], ["EB"], ["BE"], ["BB"]]

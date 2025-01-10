@@ -32,11 +32,11 @@ elif sim_alm_dtype == "complex128": sim_alm_dtype = np.complex128
 
 window_dir = "windows"
 mcm_dir = "mcms"
-spec_dir = "sim_spectra"
+sim_spec_dir = "sim_spectra"
 bestfit_dir = "best_fits"
 noise_model_dir = "noise_model"
 
-pspy_utils.create_directory(spec_dir)
+pspy_utils.create_directory(sim_spec_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
@@ -226,7 +226,7 @@ for iii in subtasks:
                                                                     xtra_corr=xtra_corr)
 
                 if write_all_spectra:
-                    so_spectra.write_ps(spec_dir + f"/{spec_name}_{iii:05d}.dat", lb, ps, type, spectra=spectra)
+                    so_spectra.write_ps(sim_spec_dir + f"/{spec_name}_{iii:05d}.dat", lb, ps, type, spectra=spectra)
 
                 for count, spec in enumerate(spectra):
                     if (s1 == s2) & (sv1 == sv2):
@@ -251,15 +251,15 @@ for iii in subtasks:
 
 
         spec_name_cross = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_cross_{iii:05d}"
-        so_spectra.write_ps(spec_dir + f"/{spec_name_cross}.dat", lb, ps_dict_cross_mean, type, spectra=spectra)
+        so_spectra.write_ps(sim_spec_dir + f"/{spec_name_cross}.dat", lb, ps_dict_cross_mean, type, spectra=spectra)
 
         if sv1 == sv2:
         
             spec_name_auto = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_auto_{iii:05d}"
-            so_spectra.write_ps(spec_dir + f"/{spec_name_auto}.dat" , lb, ps_dict_auto_mean, type, spectra=spectra)
+            so_spectra.write_ps(sim_spec_dir + f"/{spec_name_auto}.dat" , lb, ps_dict_auto_mean, type, spectra=spectra)
             
             spec_name_noise = f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_noise_{iii:05d}"
-            so_spectra.write_ps(spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
+            so_spectra.write_ps(sim_spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
 
     log.info(f"[{iii}]  Spectra computation in {time.time()-t1:.02f} s")
     log.info(f"[{iii}]  Simulation n° {iii:05d} done in {time.time()-t0:.02f} s")

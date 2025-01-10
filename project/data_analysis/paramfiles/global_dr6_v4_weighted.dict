@@ -3,12 +3,11 @@ surveys = ["dr6"]
 arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 
 data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/"
-sim_spec_dir = f"{data_dir}/all_sim_spectra/sim_spectra_dr6_final_small_bins/"
-
+sim_spec_dir =  f"{data_dir}/all_sim_spectra/sim_spectra_weighted_final/"
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": 'CAR', "order": 0}
-binning_file = data_dir + "binning/binning_dr6_new.dat"
+binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
 niter = 0
 remove_mean = False
 binned_mcm = False
@@ -57,11 +56,11 @@ n_med_ivar = 3
 
 # kspace filter parameters
 apply_kspace_filter  = True
-kspace_tf_path  = data_dir + "kspace_tf_binning_dr6_new/"
+kspace_tf_path  = data_dir + "kspace_tf/"
 k_filter_dr6 = {"type":"binary_cross","vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
 
 
-aberration_correction = data_dir + "aberration_correction_binning_dr6_new"
+aberration_correction = data_dir + "aberration_correction"
 
 deconvolve_map_maker_tf_dr6 = False
 
@@ -127,7 +126,7 @@ beam_pol_dr6_pa6_f090 = beam_file_dir + 'coadd_pa6_f090_night_beam_tform_jitter_
 beam_pol_dr6_pa6_f150 = beam_file_dir + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
 
 include_beam_chromaticity_effect_in_best_fit = False # Note that best fit and corresponding sims were generated without include_beam_chromaticity_effect
-include_beam_chromaticity_effect_in_sacc = True
+include_beam_chromaticity_effect_in_sacc = True 
 
 beam_mono_dr6_pa4_f150 = beam_file_dir + 'coadd_pa4_f150_night_beam_tform_jitter_mono.txt'
 beam_mono_dr6_pa4_f220 = beam_file_dir + 'coadd_pa4_f220_night_beam_tform_jitter_mono.txt'
@@ -156,28 +155,28 @@ leakage_beam_dr6_pa6_f150_TB = ['pa6_f150_gamma_t2b.txt' for i in range(4)]
 
 
 window_kspace_dr6_pa4_f150 =  "windows/kspace_mask_dr6_pa4_f150.fits"
-window_T_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150_baseline.fits"
-window_pol_dr6_pa4_f150 =  "windows/window_dr6_pa4_f150_baseline.fits"
+window_T_dr6_pa4_f150 =  "windows/window_w_dr6_pa4_f150_baseline.fits"
+window_pol_dr6_pa4_f150 =  "windows/window_w_dr6_pa4_f150_baseline.fits"
 
 window_kspace_dr6_pa4_f220 =  "windows/kspace_mask_dr6_pa4_f220.fits"
-window_T_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220_baseline.fits"
-window_pol_dr6_pa4_f220 =  "windows/window_dr6_pa4_f220_baseline.fits"
+window_T_dr6_pa4_f220 =  "windows/window_w_dr6_pa4_f220_baseline.fits"
+window_pol_dr6_pa4_f220 =  "windows/window_w_dr6_pa4_f220_baseline.fits"
 
 window_kspace_dr6_pa5_f090 =  "windows/kspace_mask_dr6_pa5_f090.fits"
-window_T_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090_baseline.fits"
-window_pol_dr6_pa5_f090 =  "windows/window_dr6_pa5_f090_baseline.fits"
+window_T_dr6_pa5_f090 =  "windows/window_w_dr6_pa5_f090_baseline.fits"
+window_pol_dr6_pa5_f090 =  "windows/window_w_dr6_pa5_f090_baseline.fits"
 
 window_kspace_dr6_pa5_f150 =  "windows/kspace_mask_dr6_pa5_f150.fits"
-window_T_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150_baseline.fits"
-window_pol_dr6_pa5_f150 =  "windows/window_dr6_pa5_f150_baseline.fits"
+window_T_dr6_pa5_f150 =  "windows/window_w_dr6_pa5_f150_baseline.fits"
+window_pol_dr6_pa5_f150 =  "windows/window_w_dr6_pa5_f150_baseline.fits"
 
 window_kspace_dr6_pa6_f090 =  "windows/kspace_mask_dr6_pa6_f090.fits"
-window_T_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090_baseline.fits"
-window_pol_dr6_pa6_f090 =  "windows/window_dr6_pa6_f090_baseline.fits"
+window_T_dr6_pa6_f090 =  "windows/window_w_dr6_pa6_f090_baseline.fits"
+window_pol_dr6_pa6_f090 =  "windows/window_w_dr6_pa6_f090_baseline.fits"
 
 window_kspace_dr6_pa6_f150 =  "windows/kspace_mask_dr6_pa6_f150.fits"
-window_T_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
-window_pol_dr6_pa6_f150 =  "windows/window_dr6_pa6_f150_baseline.fits"
+window_T_dr6_pa6_f150 =  "windows/window_w_dr6_pa6_f150_baseline.fits"
+window_pol_dr6_pa6_f150 =  "windows/window_w_dr6_pa6_f150_baseline.fits"
 
 
 # best fit params (only used for sim generation and covariances computation)
@@ -187,7 +186,8 @@ accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyB
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
 
-fg_params = {"a_tSZ": 3.69, "alpha_tSZ":-0.44, "a_kSZ": 1, "a_p": 8.08, "beta_p": 1.823, "a_c": 3.35, "beta_c": 1.823, "a_s": 2.66, "a_gtt": 8.02,  "xi": 0.075, "T_d": 9.60, "a_gte": 0.419, "a_gtb": 0.012, "a_gee": 0.167,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.795, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+# Note that these params are the best fit without include_beam_chromaticity_effect
+fg_params = {"a_tSZ": 3.69, "alpha_tSZ":-0.44, "a_kSZ": 1, "a_p": 8.08, "beta_p": 1.823, "a_c": 3.35, "beta_c": 1.823, "a_s": 2.66, "a_gtt": 7.55,  "xi": 0.075, "T_d": 9.60, "a_gte": 0.415, "a_gtb": 0.008, "a_gee": 0.168,  "a_gbb": 0.122, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.795, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
 
 bandpass_shift_dr6_pa4_f220  =  7.5
 bandpass_shift_dr6_pa5_f090  = -0.06
@@ -198,7 +198,7 @@ bandpass_shift_dr6_pa6_f150  = -0.19
 
 #sim
 iStart = 0
-iStop = 1559
+iStop = 1639
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

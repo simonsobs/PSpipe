@@ -1,7 +1,9 @@
 surveys = ["dr6"]
 arrays_dr6 = [ "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
+data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/"
+sim_spec_dir = f"{data_dir}/all_sim_spectra/custom_nulls/isotropy/sim_spectra_south/"
+
 patch = data_dir + "patch_mask/patch_1.fits"
 
 deconvolve_pixwin = True

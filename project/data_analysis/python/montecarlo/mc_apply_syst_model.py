@@ -1,6 +1,6 @@
 """
 This script read the estimated power spectra of the simulation and apply the ACT DR6 systematic model
-to propagate beam and leakage uncertainties
+to propagate beam and leakage uncertainties it then write them to the folder  sim_spectra_syst
 """
 
 import matplotlib
@@ -41,10 +41,10 @@ binning_file = d["binning_file"]
 leakage_file_dir = d["leakage_file_dir"]
 
 bestfit_dir = "best_fits"
-in_sim_dir = "sim_spectra"
-out_sim_dir = "sim_spectra_syst"
+in_sim_spec_dir = d["sim_spec_dir"]
+out_sim_spec_dir = "sim_spectra_syst"
 
-pspy_utils.create_directory(out_sim_dir)
+pspy_utils.create_directory(out_sim_spec_dir)
 
 bl_mean, bb_mean, error_m_beam, gamma, err_m_gamma, var = {}, {}, {}, {}, {}, {}
 
@@ -124,10 +124,10 @@ for iii in range(iStart, iStop + 1):
                                                   gamma_beta=gamma_sim[name2],
                                                   binning_file=binning_file)
 
-        lb, Db = so_spectra.read_ps(in_sim_dir + f"/{spec_name_cross}.dat", spectra=spectra)
+        lb, Db = so_spectra.read_ps(in_sim_spec_dir + f"/{spec_name_cross}.dat", spectra=spectra)
 
         for spec in spectra:
             Db[spec] *= (bb_sim[name1] * bb_sim[name2]) / (bb_mean[name1] * bb_mean[name2])
             Db[spec] += leak_sim[spec] - leak_mean[spec_name][spec]
             
-        so_spectra.write_ps(out_sim_dir + f"/{spec_name_cross}.dat", lb, Db, type, spectra=spectra)
+        so_spectra.write_ps(out_sim_spec_dir + f"/{spec_name_cross}.dat", lb, Db, type, spectra=spectra)

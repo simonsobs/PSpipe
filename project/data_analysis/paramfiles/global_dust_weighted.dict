@@ -1,7 +1,8 @@
 surveys = ["Planck"]
 arrays_Planck = ["f143", "f353"]
 planck_version = "npipe"
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
+data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/"
+sim_spec_dir = f"{data_dir}/all_sim_spectra/sim_spectra_dust_weighted_final/"
 
 deconvolve_pixwin = True
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}

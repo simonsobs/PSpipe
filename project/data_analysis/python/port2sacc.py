@@ -108,15 +108,18 @@ common_kwargs = dict(
 
 if sacc_fname in ["simu_sacc", "simu_w_syst_sacc"]:
 
-    if sacc_fname == "simu_sacc":
-        spec_dir = "sim_spectra"
-        cov_name = "final_cov_sim"
+    spec_dir = d["sim_spec_dir"]
+    cov_name = "final_cov_sim"
+
+    cov = np.load(f"{cov_dir}/x_ar_{cov_name}_gp.npy")
 
     if sacc_fname == "simu_w_syst_sacc":
-        spec_dir = "sim_spectra_syst"
-        cov_name = "final_cov_data"
-
-    cov = np.load(os.path.join(cov_dir, f"x_ar_{cov_name}.npy"))
+        assert "_syst" in sim_spec_dir
+        
+        beam_cov = np.load(f"{cov_dir}/x_ar_beam_cov.npy")
+        leakage_cov = np.load(f"{cov_dir}/x_ar_leakage_cov.npy")
+        cov += beam_cov + leakage_cov
+        cov_name = "final_cov_sim_with_syst"
 
     i_start = d["iStart"]
     i_stop = d["iStop"] + 1

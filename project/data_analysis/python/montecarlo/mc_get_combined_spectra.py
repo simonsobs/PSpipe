@@ -1,5 +1,8 @@
 """
-This script combined the spectra together
+This script combine the x-ar simulation spectra into x-freq and total (including all) spectra.
+Note that we subtract the best fit fg model in order for all spectra to have the same expected mean.
+if the name of the folder containing the simulation spectra contains the string "_syst", we will use a covariance
+with S+N+beam+leakage beam for combining, otherwise we use simply the S+N covariance.
 """
 
 from pspy import so_dict, pspy_utils
@@ -74,9 +77,9 @@ def combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_
     
     np.savetxt(f"{combined_spec_dir}/{type}_{name}_cmb_only.dat", np.transpose([lb_ml, vec_ml_fg_sub, np.sqrt(cov_ml.diagonal())]))
 
-def ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict):
+def ml_helper(x_ar_cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict):
 
-    sub_cov = cov[np.ix_(all_indices, all_indices)]
+    sub_cov = x_ar_cov[np.ix_(all_indices, all_indices)]
     i_sub_cov = np.linalg.inv(sub_cov)
         
     sub_vec_th = vec_xar_th[all_indices]
@@ -102,21 +105,29 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-include_syst = True
-if include_syst:
-    print(f"Use sim spectra with beam and leakage uncertainties")
+sim_spec_dir = d["sim_spec_dir"]
+
+if "_syst" in sim_spec_dir:
+    # so this is a bit dangerous but I need to know which covariance
+    # to use when computing the chi2
+    # usual sim don't include systematic and x_ar_final_cov_sim_gp.npy is appropriate
+    # for sim with syst generated with mc_apply_syst_model we need to include beam and leakage beam cov
+    # so I look for the string _syst in sim_spec_dir to know if systematic
+    #have been included or not
+    
+    log.info(f"{sim_spec_dir} contains the string _syst, we will use covariance with beam and leakage beam")
+    include_syst = True
     add_str = "_syst"
 else:
+    log.info(f"{sim_spec_dir} does not contains the string _syst, we will use covariance with only S+N")
     add_str = ""
 
-sim_spec_dir = f"sim_spectra{add_str}"
+
+combined_spec_dir = f"combined_sim_spectra{add_str}"
 bestfit_dir = f"best_fits"
 mcm_dir = "mcms"
-combined_spec_dir = f"combined_sim_spectra{add_str}"
-plot_dir = f"plots/combined_sim_spectra/"
 
 pspy_utils.create_directory(combined_spec_dir)
-pspy_utils.create_directory(plot_dir)
 
 binning_file = d["binning_file"]
 lmax = d["lmax"]
@@ -128,12 +139,12 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 bin_low, bin_high, bin_mean, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 
-cov = np.load("covariances/x_ar_final_cov_sim_gp.npy")
+x_ar_cov = np.load("covariances/x_ar_final_cov_sim_gp.npy")
 
 if include_syst:
-    cov_beam = np.load("covariances/x_ar_beam_cov.npy")
-    cov_leakage = np.load("covariances/x_ar_leakage_cov.npy")
-    cov += cov_beam + cov_leakage
+    x_ar_beam_cov = np.load("covariances/x_ar_beam_cov.npy")
+    x_ar_leakage_cov = np.load("covariances/x_ar_leakage_cov.npy")
+    x_ar_cov += x_ar_beam_cov + x_ar_leakage_cov
 
 vec_xar_th = covariance.read_x_ar_theory_vec(bestfit_dir,
                                              mcm_dir,
@@ -162,7 +173,6 @@ only_TT_map_set = ["dr6_pa4_f220"]
 ########################################################################################
 
 
-
 #### First start with the combination of all power spectra
 #### we skip TT because the fg make different frequency spectra incompatible
 
@@ -186,7 +196,7 @@ for spec_select in selected_spectra_list:
     print("")
     print(f"{spec_select}, {list(bin_out_dict.keys())}")
     
-    lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov, sub_vec_fg_th = ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
+    lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov, sub_vec_fg_th = ml_helper(x_ar_cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
     np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
     np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
 
@@ -236,7 +246,7 @@ for spec_select in selected_spectra_list:
 
         print("")
         print(f"{spec_select}, {fp}, {list(bin_out_dict.keys())}")
-        lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th = ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
+        lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th = ml_helper(x_ar_cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
         np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
         np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
 
@@ -284,7 +294,7 @@ for spec_select in selected_spectra_list:
                                                                   selected_spectra=spec_select,
                                                                   only_TT_map_set=only_TT_map_set)
 
-        lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th = ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
+        lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th = ml_helper(x_ar_cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
         np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
         np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
         for iii in range(iStart, iStop + 1):

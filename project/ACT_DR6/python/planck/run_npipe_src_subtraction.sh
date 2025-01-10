@@ -3,7 +3,7 @@
 # This bash script is used to run the dory src subtraction code
 
 # Path to dory.py (part of the tenki python package)
-dory_path=/path/to/tenki/point_sources
+dory_path=${TENKI_PATH}/point_sources
 
 # Path to npipe maps & beams
 map_path=planck_projected

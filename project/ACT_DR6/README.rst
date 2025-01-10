@@ -45,20 +45,29 @@ block where a module block is defined as follow
       force: true
       minimal_needed_time: 03:00:00
       slurm:
-        nodes: 2
-        ntasks: 8
+        nodes: 4
+        ntasks: 16
         cpus_per_task: 64
 
-The module name refers to the ``python`` script located in ``ACT_DR6/python``
+The module name refers to the ``python`` script located in ``data_analysis/python``
 directory. Another script directory can be set on top of the ``yaml`` file with the
 ``script_base_dir`` variable. The ``force: true`` directive means the module will always be
 processed even if it was already done. The other parameters relate to slurm allocation when running
-the pipeline in an **interactive node**. If you want to use the pipeline in batch mode, you can
-refer to `pipeline_mnms.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_mnms.yml>`_.
+the pipeline in an **interactive node**.
+
+If you want to use the pipeline in batch mode, you can refer to `pipeline_mnms.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_mnms.yml>`_ file to
+setup the slurm batch allocation. Then, you can send the job by doing
+
+.. code:: shell
+
+    pspipe-run -p data_analysis/yaml/pipeline_mnms.yml --batch
+
+
+This will add the job to the slurm queue and you can monitor your job with the usual ``squeue``
+command.
 
 The next sections will be linked to their corresponding ``pipeline.yml`` file.
-
 
 Running the dr6 main analysis
 -----------------------------

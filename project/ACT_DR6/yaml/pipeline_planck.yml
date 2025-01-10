@@ -3,7 +3,7 @@ product_dir: products/planck
 
 # Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
 # parsing the yaml file by the location to the pspipe installation
-config_file: __pspipe_root__/project/data_analysis/paramfiles/planck/global_legacy.dict
+config_file: __pspipe_root__/project/ACT_DR6/paramfiles/planck/global_legacy.dict
 
 pipeline:
   per_split/get_mcm_and_bbl_per_split:

@@ -11,7 +11,7 @@ product_dir: products/mnms
 
 # Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
 # parsing the yaml file by the location to the pspipe installation
-config_file: __pspipe_root__/project/data_analysis/paramfiles/global_dr6_v4.dict
+config_file: __pspipe_root__/project/ACT_DR6/paramfiles/global_dr6_v4.dict
 
 slurm:
   precmd: |

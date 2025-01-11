@@ -70,7 +70,7 @@ l_th = np.arange(lmin,6000)
 
 ref_array = "dr6_pa5_f150" # can be any not important for this script
 
-l, tSZ_agora = external_data.get_agora_spectrum(f"{ref_array}x{ref_array}", "tSZ", "tSZ", spectrum="TT")
+l, tSZ_agora = external_data.get_agora_spectrum(f"{ref_array}x{ref_array}", "tsz", "tsz", spectrum="TT")
 f = interpolate.interp1d(l, tSZ_agora)
 tSZ_agora_interp = f(l_th)
 

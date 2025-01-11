@@ -56,7 +56,7 @@ processed even if it was already done. The other parameters relate to slurm allo
 the pipeline in an **interactive node**.
 
 If you want to use the pipeline in batch mode, you can refer to `pipeline_mnms.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/yaml/pipeline_mnms.yml>`_ file to
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_mnms.yml>`_ file to
 setup the slurm batch allocation. Then, you can send the job by doing
 
 .. code:: shell

@@ -9,8 +9,6 @@ import pylab as plt
 import sys, os
 from matplotlib import rcParams
 
-rcParams["text.usetex"] = True
-rcParams["text.latex.preamble"] = r"\usepackage{amsmath}"
 rcParams["font.family"] = "serif"
 rcParams["font.size"] = "18"
 rcParams["xtick.labelsize"] = 16
@@ -209,10 +207,10 @@ for spec_select in selected_spectra_list:
         else:
             plt.xticks([])
         if count == 2:
-            legend = plt.legend(bbox_to_anchor=(1.02, 0), fontsize=16, title=r"$\boldsymbol{X}:$")
+            legend = plt.legend(bbox_to_anchor=(1.02, 0), fontsize=16, title=r"$X:$")
             legend._legend_box.align = "left"
         if count == 3:
-            plt.ylabel(r"$\left(\sigma^{(\rm CV + noise + \boldsymbol{X})}/\sigma^{(\rm CV + noise)} - 1 \right) $", fontsize=25)
+            plt.ylabel(r"$\left(\sigma^{(\rm CV + noise + X)}/\sigma^{(\rm CV + noise)} - 1 \right) $", fontsize=25)
 
         plt.xlim(0,6000)
         count += 1

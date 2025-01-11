@@ -10,7 +10,7 @@ import sys, os
 from matplotlib import rcParams
 
 rcParams["text.usetex"] = True
-rcParams["text.latex.preamble"] = [r"\usepackage{amsmath}"]
+rcParams["text.latex.preamble"] = r"\usepackage{amsmath}"
 rcParams["font.family"] = "serif"
 rcParams["font.size"] = "18"
 rcParams["xtick.labelsize"] = 16

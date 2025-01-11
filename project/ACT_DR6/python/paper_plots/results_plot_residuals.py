@@ -74,10 +74,9 @@ y_ticks_res["TE"] = [-10000, -5000, 0, 5000, 10000]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
-Dlb_th,Dlb_th_large = {}, {}
+Dlb_th = {}
 for spectrum in spectra:
     lb_th, Dlb_th[spectrum] = pspy_utils.naive_binning(lth, Dlth[spectrum], binning_file, lmax)
-    lb_th_large, Dlb_th_large[spectrum] = pspy_utils.naive_binning(lth, Dlth[spectrum], "../dr6/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell", lmax)
 
 
 l_planck, ps_planck_b, sigma_planck, cov_planck = external_data.get_planck_cmb_only_data()

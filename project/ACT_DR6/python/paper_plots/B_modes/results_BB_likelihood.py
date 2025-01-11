@@ -58,7 +58,6 @@ Rminus1_cl_stop = 0.02
 
 cov_dir = "covariances"
 spec_dir = "spectra_leak_corr_ab_corr"
-sim_spec_dir = d["sim_spec_dir"]
 tag = d["best_fit_tag"]
 
 BB_dir = f"results_BB{tag}"

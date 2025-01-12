@@ -44,7 +44,7 @@ def loglike(alpha_pa5_f090, alpha_pa5_f150, alpha_pa6_f090, alpha_pa6_f150):
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-cut = "pre_unblinding"
+cut = "post_unblinding"
 Rminus1_stop = 0.01
 Rminus1_cl_stop = 0.02
 

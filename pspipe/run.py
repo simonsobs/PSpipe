@@ -17,24 +17,28 @@ from pspy import so_dict
 from simple_slurm import Slurm
 
 pspipe_root = Path(__file__).parents[1]
+placeholders = {
+    "__pspipe_root__": str(pspipe_root),
+} | {f"${key}": value for key, value in os.environ.items()}
 
 
 def yaml_concat(loader, node):
     return os.path.join(*loader.construct_sequence(node))
 
 
+def yaml_eval(loader, node):
+    return eval(loader.construct_scalar(node))
+
+
 def yaml_sub(loader, node):
     value = loader.construct_scalar(node)
-    placeholders = {
-        "__pspipe_root__": str(pspipe_root),
-        "__base_dir__": os.environ.get("BASE_DIR", ""),
-    }
     for place, holder in placeholders.items():
         value = value.replace(place, holder)
     return value
 
 
 yaml.add_constructor("!concat", yaml_concat)
+yaml.add_constructor("!eval", yaml_eval)
 yaml.add_constructor("tag:yaml.org,2002:str", yaml_sub)
 
 

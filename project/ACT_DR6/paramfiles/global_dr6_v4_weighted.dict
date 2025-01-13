@@ -198,7 +198,7 @@ bandpass_shift_dr6_pa6_f150  = -0.19
 
 #sim
 iStart = 0
-iStop = 1639
+iStop = 959
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

@@ -37,7 +37,7 @@ freqs=("100" "143" "217")
 for freq in ${freqs[@]}; do
   for split in ${splits[@]}; do
 
-    beam_file=${beam_path}/bl_T_npipe_${freq}${split}x${freq}${split}.dat
+    beam_file=${beam_path}/bl_T_npipe_DR6_${freq}${split}x${freq}${split}.dat
     map_file=${map_path}/npipe6v20${split}_f${freq}_map.fits
     ivar_file=${map_path}/npipe6v20${split}_f${freq}_ivar.fits
 

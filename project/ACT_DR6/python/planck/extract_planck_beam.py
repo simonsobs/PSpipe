@@ -14,7 +14,7 @@ releases = ["npipe", "legacy", "npipe_DR6"]
 
 
 for release in releases:
-    pspy_utils.create_directory(release)
+    pspy_utils.create_directory(f"beams/{release}")
     for freq in freqs:
         
         if release == "npipe":

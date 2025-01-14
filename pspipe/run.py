@@ -391,7 +391,7 @@ def main(args=None):
         info, total_time = "", 0.0
         for module, params in updated_pipeline_dict.get("pipeline", {}).items():
             duration = params.get("duration")
-            slurm = params.get("slurm", {})
+            slurm = params.get("slurm") or dict()
             ntasks, cpus_per_task = slurm.get("ntasks", 1), slurm.get("cpus_per_task", 256)
             info += f"\n - '{module}' takes {parse_time(duration)} "
             info += f"({ntasks} task" + plural(ntasks)

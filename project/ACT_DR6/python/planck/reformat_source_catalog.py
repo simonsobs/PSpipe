@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from pspy import pspy_utils, so_dict
 from pspipe_utils import log
-
+import sys
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])

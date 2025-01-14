@@ -6,9 +6,10 @@ of the residual map (i.e. the source subtracted map)
 from pspy import so_map, pspy_utils, so_map, so_mpi, so_dict
 import numpy as np
 import pandas as pd
-import os
+import os, sys
 import pspipe
 from pspipe_utils import log
+
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -111,7 +112,6 @@ g.write('<p> This webpage display the 100 brightest sources at 150 GHz, with a f
 g.write('<p> You can switch between sources (c/v), between the map and source free map (j/k) and between the maps (a/z). </p> \n')
 g.write('<div class=src_id> \n')
 for src_id in ids_src:
-
 
     g.write('<div class=srcfree>\n')
     for type in ["", "_srcfree"]:

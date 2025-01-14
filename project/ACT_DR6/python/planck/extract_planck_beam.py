@@ -14,7 +14,8 @@ releases = ["npipe", "legacy", "npipe_DR6"]
 
 
 for release in releases:
-    pspy_utils.create_directory(f"beams/{release}")
+    beam_dir = f"beams/{release}"
+    pspy_utils.create_directory(beam_dir)
     for freq in freqs:
         
         if release == "npipe":
@@ -53,14 +54,14 @@ for release in releases:
                 plt.plot(l[:lmax_for_plot], (bl_T[:lmax_for_plot] / bl_pol[:lmax_for_plot]) ** 2)
                 plt.ylabel(r"$ (B^{\rm T}_{\ell}/B^{\rm pol}_{\ell})^{2} $", fontsize=14)
                 plt.xlabel(r"$\ell$", fontsize=14)
-                plt.savefig(f"{release}/beam_{freq}.png")
+                plt.savefig(f"{beam_dir}/beam_{freq}.png")
                 plt.clf()
                 plt.close()
 
             bl_dict[s1, s2, "T"] = bl_T
             bl_dict[s1, s2, "pol"] = bl_pol
-            np.savetxt(f"{release}/bl_T_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, bl_T]))
-            np.savetxt(f"{release}/bl_pol_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, bl_pol]))
+            np.savetxt(f"{beam_dir}/bl_T_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, bl_T]))
+            np.savetxt(f"{beam_dir}/bl_pol_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, bl_pol]))
 
             # extract leakage beam
             Wl_TE_2_TE = Wl[4].data["TE_2_TE"][0]
@@ -85,26 +86,26 @@ for release in releases:
                 plt.ylabel(r"$ \gamma_{\ell}$", fontsize=14)
                 plt.legend()
                 plt.xlabel(r"$\ell$", fontsize=14)
-                plt.savefig(f"{release}/beam_leakage_{freq}.png")
+                plt.savefig(f"{beam_dir}/beam_leakage_{freq}.png")
                 plt.clf()
                 plt.close()
 
 
             zeros = np.zeros(len(l))
 
-            np.savetxt(f"{release}/gamma_TP_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, gamma_TE, gamma_TB, zeros, zeros]))
-            np.savetxt(f"{release}/gamma_PT_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, gamma_ET, gamma_BT, zeros, zeros]))
+            np.savetxt(f"{beam_dir}/gamma_TP_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, gamma_TE, gamma_TB, zeros, zeros]))
+            np.savetxt(f"{beam_dir}/gamma_PT_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, gamma_ET, gamma_BT, zeros, zeros]))
             
             gamma_mean_TE = (gamma_TE + gamma_ET) / 2
             gamma_mean_TB = (gamma_TB + gamma_BT) / 2
 
-            np.savetxt(f"{release}/gamma_mean_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, gamma_mean_TE,  gamma_mean_TB, zeros,  zeros]))
+            np.savetxt(f"{beam_dir}/gamma_mean_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, gamma_mean_TE,  gamma_mean_TB, zeros,  zeros]))
 
 
-            np.savetxt(f"{release}/error_modes_gamma_TP_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, zeros, zeros, zeros, zeros, zeros, zeros]))
-            np.savetxt(f"{release}/error_modes_gamma_PT_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, zeros, zeros, zeros, zeros, zeros, zeros]))
+            np.savetxt(f"{beam_dir}/error_modes_gamma_TP_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, zeros, zeros, zeros, zeros, zeros, zeros]))
+            np.savetxt(f"{beam_dir}/error_modes_gamma_PT_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, zeros, zeros, zeros, zeros, zeros, zeros]))
         
-            np.savetxt(f"{release}/error_modes_gamma_mean_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, zeros, zeros, zeros, zeros, zeros, zeros]))
+            np.savetxt(f"{beam_dir}/error_modes_gamma_mean_{release}_{freq}{s1}x{freq}{s2}.dat", np.transpose([l, zeros, zeros, zeros, zeros, zeros, zeros]))
 
         if "npipe" in release:
             bl_T_coadd = (bl_dict["A", "A", "T"] + bl_dict["B", "B", "T"]) / 2.
@@ -114,5 +115,5 @@ for release in releases:
             bl_T_coadd = (bl_dict["hm1", "hm1", "T"] + bl_dict["hm2", "hm2", "T"]) / 2.
             bl_pol_coadd = (bl_dict["hm1", "hm1", "pol"] + bl_dict["hm2", "hm2", "pol"]) / 2.
 
-        np.savetxt(f"{release}/bl_T_{release}_{freq}_coadd.dat", np.transpose([l, bl_T_coadd]))
-        np.savetxt(f"{release}/bl_pol_{release}_{freq}_coadd.dat", np.transpose([l, bl_pol_coadd]))
+        np.savetxt(f"{beam_dir}/bl_T_{release}_{freq}_coadd.dat", np.transpose([l, bl_T_coadd]))
+        np.savetxt(f"{beam_dir}/bl_pol_{release}_{freq}_coadd.dat", np.transpose([l, bl_pol_coadd]))

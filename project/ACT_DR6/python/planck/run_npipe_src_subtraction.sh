@@ -7,7 +7,7 @@ dory_path=${TENKI_PATH}/point_sources
 
 # Path to npipe maps & beams
 map_path=planck_projected
-beam_path=beams/npipe
+beam_path=beams/npipe_DR6
 
 # Path to the input point source catalog
 ps_catalog_path=catalogs/cat_skn_090_20220526_nightonly_ordered.txt

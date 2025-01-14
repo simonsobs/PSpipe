@@ -8,6 +8,8 @@ sim_spec_dir = f"{data_dir}/all_sim_spectra/sim_spectra_legacy_final/"
 
 planck_mc_correction = data_dir + "/planck_mc_correction/legacy_spectra_correction/15mJy_mask/"
 
+source_catalog = "/global/cfs/cdirs/act/data/tlouis/dr6v4/catalogs/cat_skn_multifreq_20220526_nightonly.txt"
+
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": "CAR", "order": 0}

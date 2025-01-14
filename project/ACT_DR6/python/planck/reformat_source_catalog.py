@@ -8,9 +8,9 @@ from pixell import utils
 import pandas as pd
 import numpy as np
 
-ps_catalog_path="/global/cfs/cdirs/act/data/tlouis/s17s18s19/catalogs/cat_skn_multifreq_20220526_nightonly.txt"
+cat_file = d["source_catalog"] 
 
-input_catalog = pd.read_table(ps_catalog_path, escapechar="#", sep="\s+")
+input_catalog = pd.read_table(cat_file, escapechar="#", sep="\s+")
 input_catalog = input_catalog.shift(1, axis=1)
 
 flux_id = {90: 1, 150: 2, 220: 3}

@@ -17,7 +17,7 @@ out_dir = "source_sub_check"
 pspy_utils.create_directory(out_dir)
 
 # Read catalog
-cat_file = "/global/cfs/cdirs/act/data/tlouis/dr6v4/catalogs/cat_skn_multifreq_20220526_nightonly.txt"
+cat_file = d["source_catalog"]
 cat = pd.read_table(cat_file, escapechar="#", sep="\s+")
 cat = cat.shift(1, axis=1)
 

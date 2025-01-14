@@ -11,9 +11,15 @@ import pspipe
 from pspipe_utils import log
 from pspy import so_mpi
 
-log=log.get_logger()
+d = so_dict.so_dict()
+d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
-out_dir = "source_sub_check"
+map_dir = "planck_projected"
+
+planck_version = d["planck_version"]
+
+out_dir = "plots/source_sub_check"
 pspy_utils.create_directory(out_dir)
 
 # Read catalog
@@ -38,13 +44,11 @@ dec_list = [dec for i, dec in enumerate(cat.dec) if i < n_src_max]
 n = len(ra_list)
 log.info(f"Display {n} sources with 150 GHz flux >= {flux_cut:.1f} mJy and SNR >= {snr_cut:.1f}")
 
-release = "legacy"
-map_dir = "planck_projected"
-if release == "legacy":
+if planck_version == "legacy":
     map_root = "HFI_SkyMap_2048_R3.01_halfmission-{}_f{}_map.fits"
     map_splits = [1, 2]
 
-if release == "npipe":
+if planck_version == "npipe":
     map_root = "npipe6v20{}_f{}_map.fits"
     map_splits = ['A', 'B']
 
@@ -75,11 +79,11 @@ for freq in map_freqs:
             sub = so_map.get_submap_car(m, box)
             sub_srcfree = so_map.get_submap_car(m_srcfree, box)
 
-            sub.plot(file_name=f"{out_dir}/{release}_f{freq}_{split}_{task:03d}",
+            sub.plot(file_name=f"{out_dir}/{planck_version}_f{freq}_{split}_{task:03d}",
                      color_range=[250, 100, 100],
                      ticks_spacing_car=0.6
             )
-            sub_srcfree.plot(file_name=f"{out_dir}/{release}_srcfree_f{freq}_{split}_{task:03d}",
+            sub_srcfree.plot(file_name=f"{out_dir}/{planck_version}_srcfree_f{freq}_{split}_{task:03d}",
                      color_range=[250, 100, 100],
                      ticks_spacing_car=0.6
             )
@@ -92,18 +96,18 @@ os.system(f"cp {multistep_path}/multistep2.js {out_dir}/")
 
 maps = [f"{freq}_{split}" for freq in map_freqs for split in map_splits]
 
-filename = f"{out_dir}/{release}_sources.html"
+filename = f"{out_dir}/{planck_version}_sources.html"
 g = open(filename, mode='w')
 g.write('<html>\n')
 g.write('<head>\n')
-g.write(f'<title> Source subtraction for Planck {release} </title>\n')
+g.write(f'<title> Source subtraction for Planck {planck_version} </title>\n')
 g.write(f'<script src="multistep2.js"></script>\n')
 g.write('<script> add_step("src_id", ["c","v"]) </script> \n')
 g.write('<script> add_step("srcfree", ["j","k"]) </script> \n')
 g.write('<script> add_step("map", ["a","z"]) </script> \n')
 g.write('</head> \n')
 g.write('<body> \n')
-g.write(f'<h1> Source subtraction for Planck {release} </h1>')
+g.write(f'<h1> Source subtraction for Planck {planck_version} </h1>')
 g.write('<p> This webpage display the 100 brightest sources at 150 GHz, with a flux higher than 150mJy detected with a SNR > 5. </p> \n')
 g.write('<p> You can switch between sources (c/v), between the map and source free map (j/k) and between the maps (a/z). </p> \n')
 g.write('<div class=src_id> \n')
@@ -113,7 +117,7 @@ for src_id in ids_src:
     g.write('<div class=srcfree>\n')
     for type in ["", "_srcfree"]:
 
-        prefix = f"{release}{type}"
+        prefix = f"{planck_version}{type}"
         g.write('<div class=map>\n')
         for map_name in maps:
 

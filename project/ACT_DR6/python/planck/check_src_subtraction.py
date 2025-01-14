@@ -3,13 +3,12 @@ Iterates over the sources in the MF ACT catalog
 and plot a submap centered on individual sources
 of the residual map (i.e. the source subtracted map)
 """
-from pspy import so_map, pspy_utils, so_map
+from pspy import so_map, pspy_utils, so_map, so_mpi, so_dict
 import numpy as np
 import pandas as pd
 import os
 import pspipe
 from pspipe_utils import log
-from pspy import so_mpi
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])

@@ -7,8 +7,13 @@ Main usage: run dory point sources subtraction for NPIPE maps
 from pixell import utils
 import pandas as pd
 import numpy as np
+from pspy import pspy_utils
 
-cat_file = d["source_catalog"] 
+
+cat_file = d["source_catalog"]
+out_dir = "catalogs"
+
+pspy_utils.create_directory(out_dir)
 
 input_catalog = pd.read_table(cat_file, escapechar="#", sep="\s+")
 input_catalog = input_catalog.shift(1, axis=1)
@@ -60,4 +65,4 @@ for freq, freq_id in flux_id.items():
 
     header = "ra dec SNR Tamp dTamp Qamp dQamp Uamp dUamp Tflux dTflux Qflux dQflux Uflux dUflux npix status"
     fmt = "%11.6f %11.6f %8.3f %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f %5.0f %2.0f"
-    np.savetxt(f"cat_skn_{freq:03d}_20220526_nightonly_ordered.txt", output_catalog, header=header, fmt=fmt)
+    np.savetxt(f"{out_dir}/cat_skn_{freq:03d}_20220526_nightonly_ordered.txt", output_catalog, header=header, fmt=fmt)

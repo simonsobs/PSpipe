@@ -10,7 +10,7 @@ map_path=planck_projected
 beam_path=npipe
 
 # Path to the input point source catalog
-ps_catalog_path=cat_skn_090_20220526_nightonly_ordered.txt
+ps_catalog_path=catalogs/cat_skn_090_20220526_nightonly_ordered.txt
 # Note that we chose here to use the 90 GHz catalog
 
 # Path to galactic mask

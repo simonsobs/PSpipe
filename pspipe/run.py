@@ -1,5 +1,4 @@
 import argparse
-import ast
 import datetime
 import importlib
 import logging
@@ -118,15 +117,18 @@ def main(args=None):
             setattr(args, k, v)
     pipeline_dict["args"] = vars(args)
 
-    if not (config_file := args.config or pipeline_dict.get("config_file")):
-        logging.error(
-            "Missing config/dict file ! Either set 'config_file' in the pipeline file or in command line."
-        )
-        raise SystemExit()
-    logging.info("Reading & updating configuration file...")
     config_dict = so_dict.so_dict()
-    config_dict.read_from_file(config_file)
-    config_dict.update(dict(debug=pipeline_dict.get("debug", False) or args.debug))
+    if not (config_file := args.config or pipeline_dict.get("config_file")):
+        if config_file is not False:
+            logging.error(
+                "Missing config/dict file ! "
+                + "Either set 'config_file' in the pipeline file or in command line."
+            )
+            raise SystemExit()
+    else:
+        logging.info("Reading & updating configuration file...")
+        config_dict.read_from_file(config_file)
+        config_dict.update(dict(debug=pipeline_dict.get("debug", False) or args.debug))
 
     # Changing configuration value
     variables = pipeline_dict.get("variables", [])
@@ -147,16 +149,14 @@ def main(args=None):
                 break
             d = d[key]
         if do_replace:
-            try:
-                d[key] = ast.literal_eval(val)
-            except SyntaxError:
-                d[key] = val
+            d[key] = val
     logging.debug(f"Configuration dict: {config_dict}")
 
     # Set production directory
     if not (product_dir := args.product_dir or pipeline_dict.get("product_dir")):
         logging.error(
-            "Missing production directory ! Either set 'product_dir' in the pipeline file or in command line."
+            "Missing production directory ! "
+            + "Either set 'product_dir' in the pipeline file or in command line."
         )
         raise SystemExit()
     product_dir = os.path.realpath(product_dir)
@@ -164,30 +164,32 @@ def main(args=None):
         shutil.rmtree(product_dir, ignore_errors=True)
     os.makedirs(product_dir, exist_ok=True)
     os.chdir(product_dir)
-    updated_dict_file = os.path.join(
-        product_dir, "{}_updated{}".format(*os.path.splitext(os.path.basename(config_file)))
-    )
-    if os.path.isfile(updated_dict_file):
-        # Make sure the current and updated dict are the same
-        updated_dict = so_dict.so_dict()
-        updated_dict.read_from_file(updated_dict_file)
-        exclude_patterns = ["debug"]
-        get_dict = lambda d: {k: v for k, v in d.items() if k not in exclude_patterns}
-        d1 = get_dict(config_dict)
-        d2 = get_dict(updated_dict)
-        if d1 != d2:
-            diff_keys = {k for k in d1.keys() if d1.get(k) != d2.get(k)}
-            msg = (
-                "Current setup is different from the previous one ! "
-                + f"The following keys '{diff_keys}' are different !"
-            )
-            if args.skip_dict_check:
-                logging.warning(msg)
-            else:
-                logging.error(msg + " Make sure to run same configuration or use --force.")
-                raise SystemExit()
-    config_dict.write_to_file(updated_dict_file)
     logging.info(f"Produced files are stored within {product_dir}")
+
+    if config_file:
+        updated_dict_file = os.path.join(
+            product_dir, "{}_updated{}".format(*os.path.splitext(os.path.basename(config_file)))
+        )
+        if os.path.isfile(updated_dict_file):
+            # Make sure the current and updated dict are the same
+            updated_dict = so_dict.so_dict()
+            updated_dict.read_from_file(updated_dict_file)
+            exclude_patterns = ["debug"]
+            get_dict = lambda d: {k: v for k, v in d.items() if k not in exclude_patterns}
+            d1 = get_dict(config_dict)
+            d2 = get_dict(updated_dict)
+            if d1 != d2:
+                diff_keys = {k for k in d1.keys() if d1.get(k) != d2.get(k)}
+                msg = (
+                    "Current setup is different from the previous one ! "
+                    + f"The following keys '{diff_keys}' are different !"
+                )
+                if args.skip_dict_check:
+                    logging.warning(msg)
+                else:
+                    logging.error(msg + " Make sure to run same configuration or use --force.")
+                    raise SystemExit()
+        config_dict.write_to_file(updated_dict_file)
 
     info = "Pipeline runs with the following software version:"
     modules = [
@@ -200,6 +202,7 @@ def main(args=None):
         "pspy",
         "pspipe_utils",
         "pspipe",
+        "scipy",
     ]
     for m in modules:
         version = importlib.import_module(m).__version__
@@ -274,14 +277,15 @@ def main(args=None):
             )
             continue
 
-        # Make sure the script exists
-        script_base_dir = pipeline_dict.get("script_base_dir") or os.path.join(
-            pspipe_root, "project/ACT_DR6/python"
-        )
-        script_file, ext = os.path.splitext(params.get("script_file", module))
-        script_file = os.path.join(script_base_dir, script_file) + (ext or ".py")
-        if not os.path.exists(script_file):
-            raise ValueError(f"File {script_file} does not exist!")
+        if not (cmd := params.get("cmd")):
+            # Make sure the script exists
+            script_base_dir = pipeline_dict.get("script_base_dir") or os.path.join(
+                pspipe_root, "project/ACT_DR6/python"
+            )
+            script_file, ext = os.path.splitext(params.get("script_file", module))
+            script_file = os.path.join(script_base_dir, script_file) + (ext or ".py")
+            if not os.path.exists(script_file):
+                raise ValueError(f"File {script_file} does not exist!")
 
         # Prepare slurm job if any
         slurm_params = params.get("slurm") or dict()
@@ -291,7 +295,7 @@ def main(args=None):
 
         if not args.batch:
             # Create slurm instance
-            need_slurm = params.get("slurm", True)
+            need_slurm = params.get("slurm", False)
             slurm = Slurm(**slurm_kwargs) if need_slurm else None
             # Check for slurm need
             if need_slurm and not os.environ.get("SLURM_NNODES"):
@@ -337,14 +341,17 @@ def main(args=None):
         if args.test:
             continue
 
-        srun_cmd = f"OMP_NUM_THREADS={cpus} srun --cpu-bind=cores"
-        cmd = f"{script_file} {updated_dict_file} {kwargs}"
-        # If no extension is provided, assume it's a python file
-        if not ext:
-            cmd = f"python -u {cmd}"
+        if cmd:
+            cmd += f" {kwargs}" + (updated_dict_file if config_file else "")
+        else:
+            cmd = f"{script_file} {updated_dict_file} {kwargs}"
+            # If no extension is provided, assume it's a python file
+            if not ext:
+                cmd = f"python -u {cmd}"
 
+        srun_cmd = f"OMP_NUM_THREADS={cpus} srun --cpu-bind=cores"
         if args.batch:
-            cmd += " && " if module != list(pipeline)[-1] else ""
+            cmd = cmd.strip() + (" &&" if module != list(pipeline)[-1] else "")
             srun_args = (
                 f"--{k.replace('_', '-')}={v}" for k, v in slurm_kwargs.items() if v is not None
             )

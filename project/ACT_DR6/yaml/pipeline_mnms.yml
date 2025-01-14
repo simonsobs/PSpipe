@@ -15,7 +15,7 @@ config_file: __pspipe_root__/project/ACT_DR6/paramfiles/global_dr6_v4.dict
 
 slurm:
   precmd: |
-    source __base_dir__/setup.sh
+    source $BASE_DIR/setup.sh
   qos: regular
   account: mp107b
   constraint: cpu

@@ -2,13 +2,17 @@
 This script is used to reformat the ACT multifrequency
 point source catalog `cat_skn_multifreq_20220526_nightonly`
 in three different monofrequency catalogs (at 90,150 and 220 GHz)
-Main usage: run dory point sources subtraction for NPIPE maps
 """
 from pixell import utils
 import pandas as pd
 import numpy as np
-from pspy import pspy_utils
+from pspy import pspy_utils, so_dict
+from pspipe_utils import log
 
+
+d = so_dict.so_dict()
+d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 cat_file = d["source_catalog"]
 out_dir = "catalogs"

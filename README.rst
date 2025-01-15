@@ -3,8 +3,6 @@
 
       <img src="https://github.com/simonsobs/PSpipe/blob/master/docs/logo.png" height="400px">
 
-.. contents:: **Table of Contents**
-
 
 The package
 ===========

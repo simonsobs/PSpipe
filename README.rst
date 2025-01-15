@@ -11,6 +11,8 @@ The package
 
 .. image:: https://img.shields.io/github/actions/workflow/status/simonsobs/pspipe/testing.yml?branch=master
    :target: https://github.com/simonsobs/pspipe/actions?query=workflow%3ATesting
+.. image:: https://img.shields.io/badge/license-BSD-yellow
+   :target: https://github.com/simonsobs/pspipe/blob/master/LICENSE
 
 ``PSpipe`` is a pipeline creator for the analysis of the high resolution maps of the large aperture
 telescope of the Simons Observatory. It contains tools for estimating power spectra and covariance

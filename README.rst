@@ -28,33 +28,27 @@ The pipelines are mainly written in python and make use of three different codes
 
 The package is licensed under the BSD license.
 
-Requirements
-============
-
-* Python >= 3.8
-
 Installing
 ==========
 
 Using `python/pip`
 ------------------
 
-If the previous requirements are fulfilled, you can install the ``PSpipe`` package with its
-dependencies by doing
+You can install the ``PSpipe`` package with its dependencies by doing
 
 .. code:: shell
 
-   $ pip install --user git+https://github.com/simonsobs/PSpipe.git
+   pip install --user git+https://github.com/simonsobs/PSpipe.git
 
 If you plan to develop or want to use the different projects, it is better to checkout the latest
 version by doing
 
 .. code:: shell
 
-    $ git clone https://github.com/simonsobs/PSpipe.git /where/to/clone
+   git clone https://github.com/simonsobs/PSpipe.git /where/to/clone
 
 Then you can install the ``PSpipe`` library and its dependencies *via*
 
 .. code:: shell
 
-    $ pip install --user /where/to/clone
+   pip install --user /where/to/clone

@@ -194,6 +194,7 @@ def main(args=None):
     info = "Pipeline runs with the following software version:"
     modules = [
         "camb",
+        "cobaya",
         "ducc0",
         "fgspectra",
         "mflike",
@@ -341,13 +342,14 @@ def main(args=None):
         if args.test:
             continue
 
-        if cmd:
-            cmd += f" {kwargs}" + (updated_dict_file if config_file else "")
-        else:
-            cmd = f"{script_file} {updated_dict_file} {kwargs}"
+        if not cmd:
+            cmd = script_file
             # If no extension is provided, assume it's a python file
             if not ext:
-                cmd = f"python -u {cmd}"
+                cmd = "python -u " + cmd
+        # Append kwargs to command line
+        cmd = f"{cmd} {kwargs} {updated_dict_file if config_file else ''}"
+        logging.debug(f"Command line: {cmd}")
 
         srun_cmd = f"OMP_NUM_THREADS={cpus} srun --cpu-bind=cores"
         if args.batch:
@@ -355,7 +357,7 @@ def main(args=None):
             srun_args = (
                 f"--{k.replace('_', '-')}={v}" for k, v in slurm_kwargs.items() if v is not None
             )
-            slurm.add_cmd(" ".join((srun_cmd, *srun_args, cmd)))
+            slurm.add_cmd(" ".join([srun_cmd, *srun_args, cmd]))
         else:
             t0 = time.time()
             ret = (

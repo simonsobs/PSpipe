@@ -1,0 +1,80 @@
+main_cosmo: [cosmomc_theta, ombh2, omch2, logA, ns, tau]
+derived_cosmo: [H0, omegam, sigma8]
+more_derived_cosmo:
+  - thetastar
+  - YHe
+  - zrei
+  - taurend
+  - zstar
+  - rstar
+  - zdrag
+  - rdrag
+  - omega_de
+
+# Foreground parameters
+fg_tt:
+  - a_tSZ
+  - alpha_tSZ
+  - a_kSZ
+  - a_p
+  - beta_p
+  - a_c
+  - a_s
+  - a_gtt
+  - xi
+  - beta_s
+fg_te: [a_gte, a_pste]
+fg_ee: [a_gee, a_psee]
+
+# Nuisance parameters
+nuis_90:
+  - cal_dr6_pa5_f090
+  - cal_dr6_pa6_f090
+  - calE_dr6_pa5_f090
+  - calE_dr6_pa6_f090
+  - bandint_shift_dr6_pa5_f090
+  - bandint_shift_dr6_pa6_f090
+nuis_150:
+  - cal_dr6_pa5_f150
+  - cal_dr6_pa6_f150
+  - calE_dr6_pa5_f150
+  - calE_dr6_pa6_f150
+  - bandint_shift_dr6_pa5_f150
+  - bandint_shift_dr6_pa6_f150
+nuis_220: [cal_dr6_pa4_f220, bandint_shift_dr6_pa4_f220]
+
+nuis_pa5:
+  - cal_dr6_pa5_f090
+  - cal_dr6_pa5_f150
+  - calE_dr6_pa5_f090
+  - calE_dr6_pa5_f150
+  - bandint_shift_dr6_pa5_f090
+  - bandint_shift_dr6_pa5_f150
+nuis_pa6:
+  - cal_dr6_pa6_f090
+  - cal_dr6_pa6_f150
+  - calE_dr6_pa6_f090
+  - calE_dr6_pa6_f150
+  - bandint_shift_dr6_pa6_f090
+  - bandint_shift_dr6_pa6_f150
+
+calibrations:
+  - calG_all
+  - cal_dr6_pa4_f220
+  - cal_dr6_pa5_f090
+  - cal_dr6_pa6_f090
+  - cal_dr6_pa5_f150
+  - cal_dr6_pa6_f150
+
+poleffs:
+  - calE_dr6_pa5_f090
+  - calE_dr6_pa6_f090
+  - calE_dr6_pa5_f150
+  - calE_dr6_pa6_f150
+
+bandshifts:
+  - bandint_shift_dr6_pa4_f220
+  - bandint_shift_dr6_pa5_f090
+  - bandint_shift_dr6_pa6_f090
+  - bandint_shift_dr6_pa5_f150
+  - bandint_shift_dr6_pa6_f150

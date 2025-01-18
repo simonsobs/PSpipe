@@ -67,6 +67,12 @@ setup the slurm batch allocation. Then, you can send the job by doing
 This will add the job to the slurm queue and you can monitor your job with the usual ``squeue``
 command.
 
+Another useful example of batch job is the possibility to run Monte Carlo Markov Chain with
+``cobaya``. The file `pipeline_mcmc.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_mcmc.yml>`_ shows how
+the likelihood is prepared with the ``sacc`` file produced by the pipeline and how the chains are
+setup for ``cobaya`` with ``mpi`` support.
+
 The next sections will be linked to their corresponding ``pipeline.yml`` file.
 
 Running the dr6 main analysis

@@ -314,12 +314,12 @@ def main(args=None):
 
             # Make sure we have enough time
             if minimal_time := params.get("minimal_needed_time"):
-                cmd = subprocess.run(
+                squeue_cmd = subprocess.run(
                     ["squeue", "-h", "-j", os.environ.get("SLURM_JOBID"), "-o", '"%L"'],
                     capture_output=True,
                     text=True,
                 )
-                remaining_time = cmd.stdout.replace("\n", "").replace('"', "")
+                remaining_time = squeue_cmd.stdout.replace("\n", "").replace('"', "")
                 if len(remaining_time.split(":")) < 3:
                     remaining_time = "00:" + remaining_time
                 if time_parser(remaining_time) < time_parser(minimal_time):

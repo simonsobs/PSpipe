@@ -1,7 +1,8 @@
 # This configuration file shows how to build a yaml file to submit MCMC jobs in batch mode.
 
-# Set directory where all pipeline products will be stored
-product_dir: products/mcmc
+# Use the same directory as DR6 pipeline to get the sacc file produced by the pipeline. MCMC
+# products will be stored within product_dir/mcmc directory
+product_dir: products/dr6
 
 # No config file is required for this special run
 config_file: false
@@ -19,19 +20,24 @@ slurm:
 
 # Monte Carlo markov chain
 pipeline:
-  # Install likelihoods and Boltzmann solver
-  mcmc/cobaya_install:
-    cmd: cobaya-install --just-data
-    kwargs: &kwargs -p packages __pspipe_root__/project/ACT_DR6/yaml/DR6base.yml
+  # Script to prepare cobaya run with reference to sacc file produced by DR6 pipeline. The script
+  # also installs other likelihood data via cobaya-install program (only data and no code since it
+  # will overload our camb+cosmorec installation)
+  mcmc/prepare_mcmc: null
 
-  # This step will be done automatically when ACT DR6 data file will be released and installed via
-  # the previous command
-  mcmc/install_sacc_file:
-    cmd: |
-      cp /global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/dr6_main/sacc/dr6_data_sacc_oct22.fits packages/data/ACTDR6MFLike/v0.1/.
+  # Test if everything looks ok
+  mcmc/cobaya_run:
+    cmd: cobaya-run --test
+    kwargs: &kwargs mcmc/DR6base.yaml
 
+  # Run cobaya sampler (force: true means the program can be rerun from the last sampled point)
   mcmc/cobaya_run:
     cmd: cobaya-run --resume
+    force: true
     slurm:
       ntasks: 4
     kwargs: *kwargs
+
+  mcmc/plot_mcmc:
+    force: true
+    kwargs: --getdist-yaml __pspipe_root__/project/ACT_DR6/python/mcmc/getdist.yml

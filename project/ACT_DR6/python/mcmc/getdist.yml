@@ -1,0 +1,68 @@
+burnin: 0.5
+show_gelman_rubin: false
+
+settings:
+  legend_colored_text: true
+  title_limit_fontsize: 15
+  axes_labelsize: 15
+  legend_fontsize: 16
+  linewidth: 2.6
+  linewidth_contour: 2.0
+  axes_fontsize: 13.5
+  figure_legend_frame: false
+  width_inch: 14
+
+parameters: !defaults default_parameters.yml
+
+# Which samples should we load
+samples:
+  act_dr6_baseline:
+    path: mcmc/DR6base
+    label: ACT
+    color: Dodgerblue
+
+  # Chains made by others and located somewhere can also be added
+  act_dr6_planck:
+    path: /global/cfs/cdirs/act/data/alaposta/DR6_chains/dr6v4_chains_camb_Oct22/lcdm/DR6base_P18
+    label: P-ACT
+    color: navy
+
+# What kind of plot (and table) should we produc
+plots:
+  cosmology:
+    kind: triangle_plot
+    samples: &samples
+      - act_dr6_baseline
+      - act_dr6_planck
+    params:
+      - ombh2
+      - omch2
+      - cosmomc_theta
+      - ns
+      - logA
+      - H0
+    filled: true
+    table: &table
+      ncol: 1
+      limit: 1
+
+  foregrounds:
+    kind: triangle_plot
+    samples: *samples
+    params:
+      - fg_tt
+      - fg_te
+      - fg_ee
+    filled: true
+    table: *table
+
+  nuisances:
+    kind: triangle_plot
+    samples: *samples
+    params:
+      - calG_all
+      - nuis_90
+      - nuis_150
+      - nuis_220
+    filled: true
+    table: *table

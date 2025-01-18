@@ -1,9 +1,7 @@
 
 .. raw:: html
 
-      <img src="https://github.com/thibautlouis/PSpipe/blob/master/wiki_plot/logo.png" height="400px">
-
-.. contents:: **Table of Contents**
+      <img src="https://github.com/simonsobs/PSpipe/blob/master/docs/logo.png" height="400px">
 
 
 The package
@@ -11,23 +9,22 @@ The package
 
 .. image:: https://img.shields.io/github/actions/workflow/status/simonsobs/pspipe/testing.yml?branch=master
    :target: https://github.com/simonsobs/pspipe/actions?query=workflow%3ATesting
+.. image:: https://img.shields.io/badge/license-BSD-yellow
+   :target: https://github.com/simonsobs/pspipe/blob/master/LICENSE
 
 ``PSpipe`` is a pipeline creator for the analysis of the high resolution maps of the large aperture
-telescope of the Simons Observatory. It contains tools for estimating power spectra and a
-multi-frequency likelihood interfaced with the ``cobaya`` MCMC sampler.
+telescope of the Simons Observatory. It contains tools for estimating power spectra and covariance
+matrices.
 
 The pipelines are mainly written in python and make use of three different codes,
 
-* ``pspy`` : python library for power spectrum estimation (https://github.com/simonsobs/pspy)
-* ``namaster`` : C library + python wrapper for power spectrum estimation (https://github.com/LSSTDESC/NaMaster)
-* ``mflike`` : mutlifrequency likelihood interfaced with ``cobaya`` (https://github.com/simonsobs/LAT_MFLike)
+* ``pspy`` : a python library for power spectrum estimation (https://github.com/simonsobs/pspy)
+* ``pspipe_utils`` : a python toolbox library to process and to deal with power spectrum computation
+  (https://github.com/simonsobs/pspipe_utils)
+* ``mflike`` : a mutlifrequency likelihood interfaced with ``cobaya``
+  (https://github.com/simonsobs/LAT_MFLike)
 
 The package is licensed under the BSD license.
-
-Requirements
-============
-
-* Python >= 3.8
 
 Installing
 ==========
@@ -35,91 +32,21 @@ Installing
 Using `python/pip`
 ------------------
 
-If the previous requirements are fulfilled, you can install the ``PSpipe`` package with its
-dependencies by doing
+You can install the ``PSpipe`` package with its dependencies by doing
 
 .. code:: shell
 
-   $ pip install --user git+https://github.com/simonsobs/PSpipe.git
+   pip install --user git+https://github.com/simonsobs/PSpipe.git
 
 If you plan to develop or want to use the different projects, it is better to checkout the latest
 version by doing
 
 .. code:: shell
 
-    $ git clone https://github.com/simonsobs/PSpipe.git /where/to/clone
+   git clone https://github.com/simonsobs/PSpipe.git /where/to/clone
 
 Then you can install the ``PSpipe`` library and its dependencies *via*
 
 .. code:: shell
 
-    $ pip install --user /where/to/clone
-
-
-Using ``docker``
-----------------
-
-Given the number of requirements, you can use a ``docker`` image already made with the needed
-libraries and everything compiled. You should first install `docker
-<https://docs.docker.com/install/>`_ for your operating system.
-
-
-Bash installation
-~~~~~~~~~~~~~~~~~~
-
-We have written a simple bash script to install the ``PSpipe`` docker and to clone the main ``PSpipe`` libraries.
-Just copy the script in a directory where you want to work with pspipe and run
-
-.. code:: shell
-
-   $ ./run_docker.sh
-
-
-
-This will open a new ``bash`` terminal with a full installation of ``PSpipe``, ``pixell``,
-``NaMaster``, ``pspy``... For instance, you can start the ``ipython`` interpreter and run the following
-``import`` command
-
-.. code:: shell
-
-   $ ipython
-   Python 3.6.9 (default, Nov  7 2019, 10:44:02)
-   Type 'copyright', 'credits' or 'license' for more information
-   IPython 7.11.1 -- An enhanced Interactive Python. Type '?' for help.
-
-   In [1]: import pixell, pymaster, pspy
-
-You can run the python scripts from the tutorials directory of ``PSpipe``.
-
-When you are done with the image, just type ``exit`` and you will go back to your local machine prompt.
-
-Running ``jupyter`` notebook from docker
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-It is also possible to start a ``jupyter`` server from the ``PSpipe`` image and run it into your web
-browser.  Inside the image terminal, you have to start the ``jupyter`` server by typing
-
-.. code:: shell
-
-   $ jupyter notebook --ip 0.0.0.0
-
-Finally open the ``http`` link (something like ``http://127.0.0.1:8888/?token...``) within your web
-browser and you should be able to run one of the ``python`` notebook.
-
-Sharing data between the ``docker`` container and the host
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Everything perfomed within the ``/home/pspipe/workspace`` directory will be reflected into
-the ``/where/to/work_with_pspipe`` on your host machine. You can then share configuration files, source codes, data
-files... between the running ``docker`` container and your local machine. Nothing will be lost after
-you exit from the ``docker`` container.
-
-Cryptic ``Killed`` message
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Docker for Mac limits the resource available to 2Gb of RAM by default, This might cause the code to crash unexpectedly with a cryptic ``Killed`` message. It can easily be modified, click on the docker logo (top right of your screen), go in Preferences/Resources and increase the RAM allocated to Docker.
-
-Youtube video
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You are not ready for it:  `youtube <https://www.youtube.com/watch?v=LtIuM3pxkng>`_
+   pip install --user /where/to/clone

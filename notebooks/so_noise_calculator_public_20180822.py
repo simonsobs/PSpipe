@@ -1,1 +1,0 @@
-../project/maps2params/python/so_noise_calculator_public_20180822.py

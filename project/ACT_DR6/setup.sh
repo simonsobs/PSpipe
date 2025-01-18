@@ -106,4 +106,5 @@ export SOFIND_SYSTEM=${SOFIND_SYSTEM:-perlmutter}
 export TENKI_PATH=${software_dir}/amaurea/tenki
 export PYTHONPATH=$PYTHONPATH:${software_dir}/amaurea
 
+export BASE_DIR=${base_dir}
 echo "Installation & loading of virtual env. done"

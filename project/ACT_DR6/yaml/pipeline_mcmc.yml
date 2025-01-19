@@ -26,7 +26,7 @@ pipeline:
   mcmc/prepare_mcmc: null
 
   # Test if everything looks ok
-  mcmc/cobaya_run:
+  mcmc/cobaya_test:
     cmd: cobaya-run --test
     kwargs: &kwargs mcmc/DR6base.yaml
 

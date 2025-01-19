@@ -26,29 +26,32 @@ freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_d
 freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
 
 
+cosmo_params = {"cosmomc_theta":0.0104056, "logA": 3.053, "ombh2": 0.02259, "omch2": 0.1238, "ns": 0.9666, "tau": 0.0562}
 
-cosmo_params = {"cosmomc_theta":0.0104056, "logA": 3.053, "ombh2": 0.02257, "omch2": 0.1238, "ns": 0.9678, "Alens": 1.0, "tau": 0.0566}
-accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
+accuracy_params = {"recombination_model":"CosmoRec", "lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 3.34, "alpha_tSZ":-0.52, "a_kSZ": 1.49, "a_p": 7.66, "beta_p": 1.864, "a_c": 3.69, "beta_c":  1.864, "a_s": 2.85, "a_gtt": 7.97,  "xi": 0.09, "T_d": 9.60, "a_gte": 0.419, "a_gtb": 0.012, "a_gee": 0.167,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.786, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
 
-bandpass_shift_dr6_pa4_f220  =  6.6
-bandpass_shift_dr6_pa5_f090  = -0.03
-bandpass_shift_dr6_pa5_f150  = -0.99
-bandpass_shift_dr6_pa6_f090  =  0.57
+
+fg_params = {"a_tSZ": 3.35, "alpha_tSZ":-0.53, "a_kSZ": 1.48, "a_p": 7.65, "beta_p": 1.87, "a_c": 3.69, "beta_c":  1.87, "a_s": 2.86, "beta_s":-2.78, "xi": 0.09, "a_gtt": 7.97, "a_gte": 0.42, "a_gtb": 0.01, "a_gee": 0.17, "a_gbb": 0.11, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "alpha_s":1.0, "T_d": 9.60, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+
+bandpass_shift_dr6_pa4_f220  =  6.5
+bandpass_shift_dr6_pa5_f090  = -0.05
+bandpass_shift_dr6_pa5_f150  = -1.0
+bandpass_shift_dr6_pa6_f090  =  0.56
 bandpass_shift_dr6_pa6_f150  = -0.35
 
-cal_like_dr6_pa4_f220 = 0.9810
-cal_like_dr6_pa5_f090 = 1.0002
+cal_like_dipole = 1.0002
+
+cal_like_dr6_pa4_f220 = 0.9807
+cal_like_dr6_pa5_f090 = 1.0003
 cal_like_dr6_pa5_f150 = 0.9992
 cal_like_dr6_pa6_f090 = 0.9999
 cal_like_dr6_pa6_f150 = 1.0015
 
-
 pol_eff_like_dr6_pa4_f220 = 1.
-pol_eff_like_dr6_pa5_f090 = 0.9876
-pol_eff_like_dr6_pa5_f150 = 0.9977
-pol_eff_like_dr6_pa6_f090 = 0.9979
-pol_eff_like_dr6_pa6_f150 = 0.9968
+pol_eff_like_dr6_pa5_f090 = 0.9877
+pol_eff_like_dr6_pa5_f150 = 0.9976
+pol_eff_like_dr6_pa6_f090 = 0.9978
+pol_eff_like_dr6_pa6_f150 = 0.9969

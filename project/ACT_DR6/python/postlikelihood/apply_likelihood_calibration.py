@@ -24,6 +24,8 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 
 pspy_utils.create_directory(cal_spec_dir)
+
+cal_dipole = d[f"cal_like_dipole"]
 cal, p_eff = {}, {}
 for array in arrays:
     cal[f"{survey}_{array}"] = d[f"cal_like_{survey}_{array}"]
@@ -37,7 +39,7 @@ for spec_name in spec_name_list:
     lb, ps = so_spectra.read_ps(f"{spec_dir}/{type}_{spec_name}_cross.dat", spectra=spectra)
     for spec in spectra:
         A, B = spec
-        cal_ps = cal[n1] * cal[n2]
+        cal_ps = cal[n1] * cal[n2] * cal_dipole ** 2
         if A in ["E", "B"]: cal_ps *= p_eff[n1]
         if B in ["E", "B"]: cal_ps *= p_eff[n2]
         print(spec_name, spec, cal_ps)

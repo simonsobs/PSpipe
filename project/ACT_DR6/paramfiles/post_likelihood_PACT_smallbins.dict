@@ -27,53 +27,14 @@ freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_
 
 
 
-cosmo_params = {"cosmomc_theta":0.0104073,
-                "logA": 3.056,
-                "ombh2": 0.02250,
-                "omch2": 0.1193,
-                "ns": 0.9709,
-                "tau": 0.0603}
+
+cosmo_params = {"cosmomc_theta":0.0104073, "logA": 3.056, "ombh2": 0.02250, "omch2": 0.1193, "ns": 0.9709, "tau": 0.0603}
                 
-accuracy_params = {"recombination_model":"CosmoRec",
-                  "lens_potential_accuracy": 8,
-                  "lens_margin": 2050,
-                  "AccuracyBoost": 2.0,
-                  "lSampleBoost": 2.0,
-                  "lAccuracyBoost": 2.0,
-                  "kmax": 10,
-                  "k_per_logint": 130,
-                  "nonlinear": True,
-                  "DoLateRadTruncation": False,
-                  "min_l_logl_sampling": 6000}
+accuracy_params = {"recombination_model":"CosmoRec", "lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 3.33,
-             "alpha_tSZ":-0.64,
-             "a_kSZ": 2.04,
-             "a_p": 7.65,
-             "beta_p": 1.872,
-             "a_c": 3.63,
-             "beta_c":  1.872,
-             "a_s": 2.81,
-             "beta_s":-2.803,
-             "xi": 0.094,
-             "a_gtt": 7.99,
-             "a_gte": 0.42,
-             "a_gtb": 0.012,
-             "a_gee": 0.168,
-             "a_gbb": 0.116,
-             "a_pste": 0,
-             "a_pstb": 0,
-             "a_psee": 0,
-             "a_psbb": 0,
-             "alpha_s":1.0,
-             "T_d": 9.60,
-             "T_effd":19.6,
-             "beta_d":1.5,
-             "alpha_dT":-0.6,
-             "alpha_dE":-0.4,
-             "alpha_p":1.}
+fg_params = {"a_tSZ": 3.33, "alpha_tSZ":-0.64, "a_kSZ": 2.04, "a_p": 7.65, "beta_p": 1.872, "a_c": 3.63, "beta_c":  1.872, "a_s": 2.81, "beta_s":-2.803, "xi": 0.094, "a_gtt": 7.99, "a_gte": 0.42, "a_gtb": 0.012, "a_gee": 0.168, "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "alpha_s":1.0, "T_d": 9.60, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
 
 bandpass_shift_dr6_pa4_f220  =  6.4
 bandpass_shift_dr6_pa5_f090  =  0.02

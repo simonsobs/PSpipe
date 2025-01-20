@@ -40,11 +40,16 @@ def main(args=None):
     # Getdist configuration if any
     config = yaml_load_file(args.getdist_yaml) if args.getdist_yaml else dict()
 
+    # Plot directory
+    plot_dir = os.path.realpath(config.get("plot_dir", "plots/mcmc"))
+    os.makedirs(plot_dir, exist_ok=True)
+    log.info(f"Figures/tables will be stored in '{plot_dir}'")
+
     # Build samples dict
     samples = {}
     for name, meta in config.get("samples", {}).items():
         log.info(f"Loading '{name}' samples...")
-        if not (path := meta.pop("path")):
+        if not (path := meta.get("path")):
             logging.error("Missing path to samples!")
             raise SystemExit()
         samples.setdefault(name, {}).update(
@@ -56,14 +61,21 @@ def main(args=None):
             **meta,
         )
 
-    if config.get("show_gelman_rubin", True):
+    if config.get("plot_progress", True):
+        from cobaya.samplers.mcmc import plot_progress
+
         info = "Gelman-Rubin values:"
         for name, meta in samples.items():
+            axes = plot_progress(meta.get("path"))
+            axes[0].get_figure().savefig(filename := os.path.join(plot_dir, f"{name}_progress.pdf"))
+            log.info(f"Progress status stored in '{filename}'")
             info += (
                 f"\n - {name} ({meta.get('label')}): R-1 = {meta.get('samples').getGelmanRubin()}"
             )
+
         log.info(info)
 
+    # Get default GetDist settings
     default_settings = get_plot_settings(config.get("settings"))
     log.debug(default_settings)
 
@@ -111,9 +123,6 @@ def main(args=None):
         # GetDist plot
         log.debug(plot)
         plot_function(_get("samples"), **plot)
-
-        plot_dir = os.path.realpath(config.get("plot_dir", "plots/mcmc"))
-        os.makedirs(plot_dir, exist_ok=True)
         gdplot.export(
             filename := plot.get("filename", os.path.join(plot_dir, f"{kind}_{name}.pdf"))
         )

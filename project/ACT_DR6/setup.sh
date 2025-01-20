@@ -86,6 +86,7 @@ if [ ! -d ${software_dir} ]; then
   install_local_module git@github.com:simonsobs/sofind.git
   install_local_module git@github.com:simonsobs/mnms.git
   install_local_module git@github.com:ACTCollaboration/act_dr6_mflike.git
+  install_local_module git@github.com:ACTCollaboration/dr6-cmbonly.git
 
   # After camb installation (see above), we recompile it with CosmoRec support
   install_cosmorec

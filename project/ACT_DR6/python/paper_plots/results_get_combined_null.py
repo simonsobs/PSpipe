@@ -140,6 +140,6 @@ for ispec, spectrum in enumerate(combined_spectra):
     a1.set_ylabel(r"$\Delta D^{%s}_{\ell}$" % spectrum, fontsize=30)
     plt.subplots_adjust(wspace=0, hspace=0)
 
-    plt.savefig(f"{paper_plot_dir}/null_{spectrum}.pdf", bbox_inches="tight")
+    plt.savefig(f"{paper_plot_dir}/null_{spectrum}{tag}.pdf", bbox_inches="tight")
     plt.clf()
     plt.close()

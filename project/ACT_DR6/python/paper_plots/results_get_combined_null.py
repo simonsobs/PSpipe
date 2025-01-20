@@ -11,7 +11,6 @@ import scipy.stats as ss
 from matplotlib import rcParams
 
 
-
 rcParams["font.family"] = "serif"
 rcParams["font.size"] = "20"
 rcParams["xtick.labelsize"] = 20
@@ -29,9 +28,9 @@ combined_spec_dir = f"combined_spectra{tag}"
 combined_sim_spec_dir = f"combined_sim_spectra_syst"
 bestfit_dir = f"best_fits{tag}"
 
-plot_dir = f"plots/combined_null_test/"
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
 
-pspy_utils.create_directory(plot_dir)
 
 binning_file = d["binning_file"]
 lmax = d["lmax"]
@@ -40,9 +39,6 @@ iStart = 0
 iStop =  1500
 print(iStart, iStop)
 freq_pairs = ["90x90", "150x150", "90x150"]
-
-
-
 
 lscale = {}
 lscale["TT"] = 2
@@ -76,11 +72,7 @@ color_list_null = ["blue", "steelblue", "purple"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 combined_spectra = ["TT", "TE", "TB", "EE", "EB", "BB"]
 
-
-
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
-
-
 
 for ispec, spectrum in enumerate(combined_spectra):
     f, (a0, a1) = plt.subplots(2, 1, height_ratios=[3, 1], figsize=(16, 12))
@@ -148,8 +140,6 @@ for ispec, spectrum in enumerate(combined_spectra):
     a1.set_ylabel(r"$\Delta D^{%s}_{\ell}$" % spectrum, fontsize=30)
     plt.subplots_adjust(wspace=0, hspace=0)
 
-    #plt.show()
-
-    plt.savefig(f"{plot_dir}/null_{spectrum}.png", bbox_inches="tight")
+    plt.savefig(f"{paper_plot_dir}/null_{spectrum}.pdf", bbox_inches="tight")
     plt.clf()
     plt.close()

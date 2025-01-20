@@ -5,7 +5,7 @@ to propagate beam and leakage uncertainties it then write them to the folder  si
 
 import matplotlib
 matplotlib.use("Agg")
-from pspy import pspy_utils, so_dict, so_spectra
+from pspy import pspy_utils, so_dict, so_spectra, so_mpi
 from pspipe_utils import pspipe_list, best_fits, log, leakage
 import numpy as np
 import pylab as plt
@@ -97,7 +97,10 @@ for spec_name in spec_name_list:
                                                          gamma_beta=gamma[name2],
                                                          binning_file=binning_file)
 
-for iii in range(iStart, iStop + 1):
+
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=iStart, imax=iStop)
+for iii in subtasks:
 
     log.info(f"applying syst model on sim {iii:05d}")
     

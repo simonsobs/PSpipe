@@ -3,7 +3,7 @@ This script combine the x-ar simulation spectra into x-freq and total (including
 Note that we subtract the best fit fg model in order for all spectra to have the same expected mean. we will use a spectra with systematic and covariance with S+N+beam+leakage beam for combining
 """
 
-from pspy import so_dict, pspy_utils
+from pspy import so_dict, pspy_utils, so_mpi
 from pspipe_utils import covariance, pspipe_list, log
 import numpy as np
 import pylab as plt
@@ -61,12 +61,10 @@ def get_P_mat(vec_size, lb_ml, bin_out_dict):
     return P_mat
     
 def combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, name):
-        
-    vec_ml = covariance.max_likelihood_spectra(cov_ml,
-                                               i_sub_cov,
-                                               P_mat,
-                                               sub_vec)
-
+    """
+    subtract foreground and do ML combination of sim spectra
+    """
+    
     sub_vec_fg_sub = sub_vec - sub_vec_fg_th
     vec_ml_fg_sub = covariance.max_likelihood_spectra(cov_ml,
                                                       i_sub_cov,
@@ -75,12 +73,14 @@ def combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_
     
     np.savetxt(f"{combined_spec_dir}/{type}_{name}_cmb_only.dat", np.transpose([lb_ml, vec_ml_fg_sub, np.sqrt(cov_ml.diagonal())]))
 
-def ml_helper(x_ar_cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict):
+def ml_helper(x_ar_cov, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict, combined_spec_dir, name):
+    """
+    pre-compute all needed product
+    """
 
     sub_cov = x_ar_cov[np.ix_(all_indices, all_indices)]
     i_sub_cov = np.linalg.inv(sub_cov)
         
-    sub_vec_th = vec_xar_th[all_indices]
     sub_vec_fg_th = vec_xar_fg_th[all_indices]
     
     lb_ml = get_ml_bins(bin_out_dict, bin_mean)
@@ -91,12 +91,10 @@ def ml_helper(x_ar_cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_ou
                                                force_sim = True,
                                                check_pos_def = False)
 
-    vec_th_ml = covariance.max_likelihood_spectra(cov_ml,
-                                                  i_sub_cov,
-                                                  P_mat,
-                                                  sub_vec_th)
+                                                  
+    np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
 
-    return lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th
+    return lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov, sub_vec_fg_th
 
 
 d = so_dict.so_dict()
@@ -126,12 +124,6 @@ x_ar_leakage_cov = np.load("covariances/x_ar_leakage_cov.npy")
 
 x_ar_cov += x_ar_beam_cov + x_ar_leakage_cov
 
-vec_xar_th = covariance.read_x_ar_theory_vec(bestfit_dir,
-                                             mcm_dir,
-                                             spec_name_list,
-                                             lmax,
-                                             spectra_order=spectra)
-
 vec_xar_fg_th = covariance.read_x_ar_theory_vec(bestfit_dir,
                                                 mcm_dir,
                                                 spec_name_list,
@@ -153,48 +145,7 @@ only_TT_map_set = ["dr6_pa4_f220"]
 ########################################################################################
 
 
-#### First start with the combination of all power spectra
-#### we skip TT because the fg make different frequency spectra incompatible
-
-print("")
-print("all")
-
-for spec_select in selected_spectra_list:
-    spectrum = spec_select[0]
-    name = f"all_{spectrum}"
-
-    bin_out_dict,  all_indices = covariance.get_indices(bin_low,
-                                                        bin_high,
-                                                        bin_mean,
-                                                        spec_name_list,
-                                                        spectra_cuts=spectra_cuts,
-                                                        spectra_order=spectra,
-                                                        selected_spectra=spec_select,
-                                                        excluded_map_set = None,
-                                                        only_TT_map_set=only_TT_map_set)
-
-    print("")
-    print(f"{spec_select}, {list(bin_out_dict.keys())}")
-    
-    lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov, sub_vec_fg_th = ml_helper(x_ar_cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
-    np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
-    np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
-
-    for iii in range(iStart, iStop + 1):
-        sim_name = name + f"_{iii:05d}"
-        print(sim_name)
-        vec_xar = covariance.read_x_ar_spectra_vec(sim_spec_dir,
-                                                   spec_name_list,
-                                                   f"cross_{iii:05d}",
-                                                   spectra_order=spectra,
-                                                   type=type)
-
-        sub_vec = vec_xar[all_indices]
-        combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, sim_name)
-
-
-
-#### Now do the auto-freq spectra combination
+####  auto-freq spectra combination
 
 auto_freq_pairs = ["150x150", "90x90", "220x220"]
 excluded_map_set = {}
@@ -202,52 +153,10 @@ excluded_map_set["150x150"] = ["dr6_pa5_f090", "dr6_pa6_f090", "dr6_pa4_f220"]
 excluded_map_set["90x90"] = ["dr6_pa5_f150", "dr6_pa6_f150", "dr6_pa4_f220"]
 excluded_map_set["220x220"] = ["dr6_pa5_f090", "dr6_pa6_f090", "dr6_pa5_f150", "dr6_pa6_f150"]
 
-
-print("")
-print("auto-freq")
-
-for spec_select in selected_spectra_list:
-    spectrum = spec_select[0]
-
-    for fp in auto_freq_pairs:
-        if (fp == "220x220") & (spectrum != "TT"): continue
-        
-        name = f"{fp}_{spectrum}"
-
-        bin_out_dict,  all_indices = covariance.get_indices(bin_low,
-                                                            bin_high,
-                                                            bin_mean,
-                                                            spec_name_list,
-                                                            spectra_cuts=spectra_cuts,
-                                                            spectra_order=spectra,
-                                                            selected_spectra=spec_select,
-                                                            excluded_map_set = excluded_map_set[fp],
-                                                            only_TT_map_set=only_TT_map_set)
-
-        print("")
-        print(f"{spec_select}, {fp}, {list(bin_out_dict.keys())}")
-        lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th = ml_helper(x_ar_cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
-        np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
-        np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
-
-        for iii in range(iStart, iStop + 1):
-            sim_name = name + f"_{iii:05d}"
-            print(sim_name)
-            vec_xar = covariance.read_x_ar_spectra_vec(sim_spec_dir,
-                                                       spec_name_list,
-                                                       f"cross_{iii:05d}",
-                                                       spectra_order=spectra,
-                                                       type=type)
-
-            sub_vec = vec_xar[all_indices]
-            combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, sim_name)
-
 #### Now do the cross-freq spectra combination
 
 cross_freq_pairs = ["90x220", "90x150", "150x220"]
-
 map_set_A, map_set_B = {}, {}
-
 map_set_A["90x150"] = ["dr6_pa5_f090", "dr6_pa6_f090"]
 map_set_A["90x220"] = ["dr6_pa5_f090", "dr6_pa6_f090"]
 map_set_A["150x220"] = ["dr6_pa5_f150", "dr6_pa6_f150"]
@@ -255,38 +164,78 @@ map_set_B["90x150"] = ["dr6_pa5_f150", "dr6_pa6_f150"]
 map_set_B["90x220"] = ["dr6_pa4_f220"]
 map_set_B["150x220"] = ["dr6_pa4_f220"]
 
-print("")
-print("x-freq")
+
+bin_out_dict,  all_indices, lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov, sub_vec_fg_th = {}, {}, {}, {}, {}, {}, {}, {}
+name_list = []
 for spec_select in selected_spectra_list:
+    # first do all spectrum
     spectrum = spec_select[0]
+    name = f"all_{spectrum}"
+
+    bin_out_dict[name],  all_indices[name] = covariance.get_indices(bin_low,  bin_high,  bin_mean, spec_name_list,
+                                                                    spectra_cuts=spectra_cuts,  spectra_order=spectra, selected_spectra=spec_select,
+                                                                    excluded_map_set = None,  only_TT_map_set=only_TT_map_set)
+    
+    lb_ml[name], P_mat[name], cov_ml[name], vec_th_ml[name], i_sub_cov[name], sub_vec_fg_th[name] = ml_helper(x_ar_cov,
+                                                                                                              vec_xar_fg_th,
+                                                                                                              bin_mean,
+                                                                                                              all_indices[name],
+                                                                                                              bin_out_dict[name],
+                                                                                                              combined_spec_dir,
+                                                                                                              name)
+    name_list += [name]
+    
+    for fp in auto_freq_pairs:
+        # then do auto spectrum
+        if (fp == "220x220") & (spectrum != "TT"): continue
+        
+        name = f"{fp}_{spectrum}"
+
+        bin_out_dict[name],  all_indices[name] = covariance.get_indices(bin_low,  bin_high, bin_mean, spec_name_list,
+                                                                        spectra_cuts=spectra_cuts, spectra_order=spectra, selected_spectra=spec_select,
+                                                                        excluded_map_set = excluded_map_set[fp], only_TT_map_set=only_TT_map_set)
+
+        lb_ml[name], P_mat[name], cov_ml[name], vec_th_ml[name], i_sub_cov[name], sub_vec_fg_th[name] = ml_helper(x_ar_cov,
+                                                                                                                  vec_xar_fg_th,
+                                                                                                                  bin_mean,
+                                                                                                                  all_indices[name],
+                                                                                                                  bin_out_dict[name],
+                                                                                                                  combined_spec_dir,
+                                                                                                                  name)
+        name_list += [name]
+        
     for fp in cross_freq_pairs:
+        # then do cross spectrum
         if ("220" in fp) & (spectrum != "TT"): continue
         name = f"{fp}_{spectrum}"
 
-        bin_out_dict,  all_indices = covariance.get_cross_indices(bin_low,
-                                                                  bin_high,
-                                                                  bin_mean,
-                                                                  spec_name_list,
-                                                                  map_set_A = map_set_A[fp],
-                                                                  map_set_B = map_set_B[fp],
-                                                                  spectra_cuts=spectra_cuts,
-                                                                  spectra_order=spectra,
-                                                                  selected_spectra=spec_select,
-                                                                  only_TT_map_set=only_TT_map_set)
+        bin_out_dict[name],  all_indices[name] = covariance.get_cross_indices(bin_low,  bin_high, bin_mean, spec_name_list,
+                                                                  map_set_A = map_set_A[fp], map_set_B = map_set_B[fp], spectra_cuts=spectra_cuts,
+                                                                  spectra_order=spectra, selected_spectra=spec_select, only_TT_map_set=only_TT_map_set)
 
-        lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov,  sub_vec_fg_th = ml_helper(x_ar_cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict)
-        np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
-        np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
-        for iii in range(iStart, iStop + 1):
-            sim_name = name + f"_{iii:05d}"
-            print(sim_name)
-            vec_xar = covariance.read_x_ar_spectra_vec(sim_spec_dir,
-                                                       spec_name_list,
-                                                       f"cross_{iii:05d}",
-                                                       spectra_order=spectra,
-                                                       type=type)
+        lb_ml[name], P_mat[name], cov_ml[name], vec_th_ml[name], i_sub_cov[name], sub_vec_fg_th[name] = ml_helper(x_ar_cov,
+                                                                                                                  vec_xar_fg_th,
+                                                                                                                  bin_mean,
+                                                                                                                  all_indices[name],
+                                                                                                                  bin_out_dict[name],
+                                                                                                                  combined_spec_dir,
+                                                                                                                  name)
+        name_list += [name]
 
-            sub_vec = vec_xar[all_indices]
-            combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, sim_name)
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=iStart, imax=iStop)
+for iii in subtasks:
+    log.info(f"combined spectra for sim {iii:05d}")
+
+    vec_xar = covariance.read_x_ar_spectra_vec(sim_spec_dir,
+                                               spec_name_list,
+                                               f"cross_{iii:05d}",
+                                               spectra_order=spectra,
+                                               type=type)
+                                               
+    for name in name_list:
+        sub_vec = vec_xar[all_indices[name]]
+        sim_name = name + f"_{iii:05d}"
+        combine_and_save_spectra(lb_ml[name], P_mat[name], cov_ml[name], i_sub_cov[name], sub_vec,  sub_vec_fg_th[name], sim_name)
 
         

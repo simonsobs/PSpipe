@@ -149,7 +149,10 @@ def main(args=None):
                 break
             d = d[key]
         if do_replace:
-            d[key] = val
+            try:
+                d[key] = eval(val)
+            except SyntaxError:
+                d[key] = val
     logging.debug(f"Configuration dict: {config_dict}")
 
     # Set production directory

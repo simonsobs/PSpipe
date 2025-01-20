@@ -2,8 +2,7 @@
 INSTALLING THE ACT POWER SPECTRUM PIPELINE AT NERSC
 ***************************************************
 
-Here we give instructions to install and to run the full thing on interactive nodes, you can of
-course also submit it to NERSC standard nodes
+Here we give instructions to install and to run the full thing on interactive nodes, you can also submit it to NERSC standard nodes
 
 Installation steps
 ------------------

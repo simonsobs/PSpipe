@@ -13,16 +13,10 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-include_syst = True
-if include_syst:
-    print(f"Use sim spectra with beam and leakage uncertainties")
-    add_str = "_syst"
-else:
-    add_str = ""
 
 bestfit_dir = f"best_fits"
-combined_spec_dir = f"combined_sim_spectra{add_str}"
-plot_dir = f"plots/combined_sim_spectra{add_str}/"
+combined_spec_dir = f"combined_sim_spectra_syst"
+plot_dir = f"plots/combined_sim_spectra_syst/"
 
 pspy_utils.create_directory(plot_dir)
 

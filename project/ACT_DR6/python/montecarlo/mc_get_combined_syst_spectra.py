@@ -1,8 +1,6 @@
 """
 This script combine the x-ar simulation spectra into x-freq and total (including all) spectra.
-Note that we subtract the best fit fg model in order for all spectra to have the same expected mean.
-if the name of the folder containing the simulation spectra contains the string "_syst", we will use a covariance
-with S+N+beam+leakage beam for combining, otherwise we use simply the S+N covariance.
+Note that we subtract the best fit fg model in order for all spectra to have the same expected mean. we will use a spectra with systematic and covariance with S+N+beam+leakage beam for combining
 """
 
 from pspy import so_dict, pspy_utils
@@ -105,25 +103,8 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-sim_spec_dir = d["sim_spec_dir"]
-
-if "_syst" in sim_spec_dir:
-    # so this is a bit dangerous but I need to know which covariance
-    # to use when computing the chi2
-    # usual sim don't include systematic and x_ar_final_cov_sim_gp.npy is appropriate
-    # for sim with syst generated with mc_apply_syst_model we need to include beam and leakage beam cov
-    # so I look for the string _syst in sim_spec_dir to know if systematic
-    #have been included or not
-    
-    log.info(f"{sim_spec_dir} contains the string _syst, we will use covariance with beam and leakage beam")
-    include_syst = True
-    add_str = "_syst"
-else:
-    log.info(f"{sim_spec_dir} does not contains the string _syst, we will use covariance with only S+N")
-    add_str = ""
-
-
-combined_spec_dir = f"combined_sim_spectra{add_str}"
+sim_spec_dir = "sim_spectra_syst"
+combined_spec_dir = f"combined_sim_spectra_syst"
 bestfit_dir = f"best_fits"
 mcm_dir = "mcms"
 
@@ -140,11 +121,10 @@ spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 bin_low, bin_high, bin_mean, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
 
 x_ar_cov = np.load("covariances/x_ar_final_cov_sim_gp.npy")
+x_ar_beam_cov = np.load("covariances/x_ar_beam_cov.npy")
+x_ar_leakage_cov = np.load("covariances/x_ar_leakage_cov.npy")
 
-if include_syst:
-    x_ar_beam_cov = np.load("covariances/x_ar_beam_cov.npy")
-    x_ar_leakage_cov = np.load("covariances/x_ar_leakage_cov.npy")
-    x_ar_cov += x_ar_beam_cov + x_ar_leakage_cov
+x_ar_cov += x_ar_beam_cov + x_ar_leakage_cov
 
 vec_xar_th = covariance.read_x_ar_theory_vec(bestfit_dir,
                                              mcm_dir,

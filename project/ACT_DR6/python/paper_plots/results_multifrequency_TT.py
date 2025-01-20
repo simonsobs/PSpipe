@@ -74,6 +74,6 @@ for color, case in zip(color_list, case_list):
     plt.errorbar(lb_ml[id], vec_th_ml[id], color=color, fmt="--", alpha=0.7)
 
 plt.legend(fontsize=24)
-plt.savefig(f"{paper_plot_dir}/multifrequency_spectra_TT.pdf", bbox_inches="tight")
+plt.savefig(f"{paper_plot_dir}/multifrequency_spectra_TT{tag}.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()

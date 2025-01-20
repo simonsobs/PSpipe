@@ -26,13 +26,8 @@ spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 remove_pa4_pol = True
 nspec = len(spec_name_list)
 
-
-noise_dir = "results_noise"
+noise_dir = "plots/results_noise"
 pspy_utils.create_directory(noise_dir)
-
-paper_plot_dir = f"plots/paper_plot/"
-pspy_utils.create_directory(paper_plot_dir)
-
 
 l_th, ps_th = so_spectra.read_ps("best_fits/cmb.dat", spectra=spectra)
 
@@ -83,12 +78,11 @@ for spec in ["TT", "TE", "TB", "EE", "EB"]:
     if spec in ["TT", "EE", "BB"]:
         plt.plot(lb[id], 1 / inv_Nb_mean[id], linestyle=linestyle, label= f"DR6 effective noise", color="black")
 
-
     np.savetxt(f"{noise_dir}/DR6_noise_combined_{spec}.dat", np.transpose([lb, 1 / inv_Nb_mean]))
     plt.ylim(yrange[spec])
     plt.xlim(0, 6000)
     ax.legend(fontsize=14, loc='center left', bbox_to_anchor=(1, 0.5))
     plt.tight_layout()
-    plt.savefig(f"{paper_plot_dir}/DR6_noise_{spec}.pdf")
+    plt.savefig(f"{noise_dir}/DR6_noise_{spec}.pdf")
     plt.clf()
     plt.close

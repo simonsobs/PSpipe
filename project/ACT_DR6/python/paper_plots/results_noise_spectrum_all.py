@@ -27,10 +27,8 @@ remove_pa4_pol = True
 nspec = len(spec_name_list)
 
 
-noise_dir = "results_noise"
-
-pspy_utils.create_directory(noise_dir)
-
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
 
 l_th, ps_th = so_spectra.read_ps("best_fits/cmb.dat", spectra=spectra)
 
@@ -105,6 +103,6 @@ for spec in ["TT","EE"]:
     count += 1
     
 plt.tight_layout()
-plt.savefig(f"{noise_dir}/DR6_noise.png", dpi=300)
+plt.savefig(f"{paper_plot_dir}/DR6_noise.pdf")
 plt.clf()
 plt.close

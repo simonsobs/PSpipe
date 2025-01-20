@@ -165,7 +165,7 @@ with mpl.rc_context(rc={"text.usetex": True}):
     kwargs = dict(size=15, ha="right")
     g.subplots[0, 0].text(1.2, 0.2,  table.tableTex().replace("\n", ""), **kwargs)
 
-plt.savefig(f"{paper_plot_dir}/pol_angles_chain_results_{cut}.pdf")
+plt.savefig(f"{paper_plot_dir}/pol_angles_chain_results_{cut}{tag}.pdf")
 plt.clf()
 plt.close()
 
@@ -200,7 +200,7 @@ plt.plot(bin, bin*0, "--", color="gray")
 plt.xticks(ticks=tick_loc_list, labels = name_list, rotation=90, fontsize=20)
 plt.legend(fontsize=18)
 plt.tight_layout()
-plt.savefig(f"{paper_plot_dir}/vec_EB_{cut}.pdf")
+plt.savefig(f"{paper_plot_dir}/vec_EB_{cut}{tag}.pdf")
 plt.clf()
 plt.close()
 
@@ -232,7 +232,7 @@ plt.plot(lb_ml, lb_ml*0)
 plt.errorbar(lb_ml, vec_ml_corr,  error_ml, fmt=".", label=f"p-value {PTE_ml:.3f}")
 plt.legend()
 plt.tight_layout()
-plt.savefig(f"{paper_plot_dir}/vec_ml_{cut}.pdf")
+plt.savefig(f"{paper_plot_dir}/vec_ml_{cut}{tag}.pdf")
 plt.clf()
 plt.close()
 

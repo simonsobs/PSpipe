@@ -26,6 +26,9 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+
+tag = d["best_fit_tag"]
+
 paper_plot_dir = f"plots/paper_plot/"
 pspy_utils.create_directory(paper_plot_dir)
 
@@ -131,7 +134,7 @@ ax.errorbar(l_th, tSZ_agora_interp/tSZ_agora_interp[l_norm - lmin],  label="Agor
 
 ax.legend(fontsize=28, loc="lower right")
 plt.tight_layout()
-plt.savefig(f"{paper_plot_dir}/tSZ_shape.pdf")
+plt.savefig(f"{paper_plot_dir}/tSZ_shape{tag}.pdf")
 #plt.show()
 plt.clf()
 plt.close()

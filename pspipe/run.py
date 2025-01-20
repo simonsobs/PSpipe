@@ -25,6 +25,8 @@ def yaml_concat(loader, node):
     return os.path.join(*loader.construct_sequence(node))
 
 
+# ast.literal_eval is too restrictive here. Use eval given the user knows what he is doing using
+# !eval tag in the yaml file
 def yaml_eval(loader, node):
     return eval(loader.construct_scalar(node))
 
@@ -151,7 +153,7 @@ def main(args=None):
         if do_replace:
             try:
                 d[key] = eval(val)
-            except SyntaxError:
+            except:
                 d[key] = val
     logging.debug(f"Configuration dict: {config_dict}")
 

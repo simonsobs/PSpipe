@@ -35,8 +35,8 @@ run_name["_paper_PACT"] = "PACT"
 run_name["_Planck"] = "Planck"
 run_name["_Planck_LB"] = "Planck LB"
 
-plot_dir = f"plots/combined_spectra{tag}/"
-pspy_utils.create_directory(plot_dir)
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
 
 type = d["type"]
 
@@ -164,7 +164,7 @@ for spec_select in selected_spectra_list:
     plt.yticks(ticks=y_ticks_res[s_name], labels=y_ticks_res[s_name])
     plt.legend(fontsize=16)
     plt.subplots_adjust(wspace=0, hspace=0)
-    plt.savefig(f"{plot_dir}/residal_vs_best_fit_cmb_{s_name}.png", bbox_inches="tight")
+    plt.savefig(f"{plot_dir}/residal_vs_best_fit_cmb_{s_name}{tag}.pdf", bbox_inches="tight")
     plt.clf()
     plt.close()
 

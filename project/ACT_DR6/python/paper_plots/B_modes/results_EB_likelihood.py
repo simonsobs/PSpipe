@@ -50,9 +50,15 @@ Rminus1_cl_stop = 0.02
 
 cov_dir = "covariances"
 spec_dir = "spectra_leak_corr_ab_corr"
-result_dir = "results_EB"
-bestfit_dir = "best_fits"
+tag = d["best_fit_tag"]
 
+bestfit_dir = f"best_fits{tag}"
+
+
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
+
+result_dir = f"plots/results_EB{tag}"
 pspy_utils.create_directory(result_dir)
 
 surveys = d["surveys"]
@@ -159,7 +165,7 @@ with mpl.rc_context(rc={"text.usetex": True}):
     kwargs = dict(size=15, ha="right")
     g.subplots[0, 0].text(1.2, 0.2,  table.tableTex().replace("\n", ""), **kwargs)
 
-plt.savefig(f"{result_dir}/pol_angles_chain_results_{cut}.pdf")
+plt.savefig(f"{paper_plot_dir}/pol_angles_chain_results_{cut}.pdf")
 plt.clf()
 plt.close()
 
@@ -194,7 +200,7 @@ plt.plot(bin, bin*0, "--", color="gray")
 plt.xticks(ticks=tick_loc_list, labels = name_list, rotation=90, fontsize=20)
 plt.legend(fontsize=18)
 plt.tight_layout()
-plt.savefig(f"{result_dir}/vec_EB_{cut}.png")
+plt.savefig(f"{paper_plot_dir}/vec_EB_{cut}.pdf")
 plt.clf()
 plt.close()
 
@@ -225,7 +231,8 @@ plt.xlabel(r"$\ell$", fontsize=22)
 plt.plot(lb_ml, lb_ml*0)
 plt.errorbar(lb_ml, vec_ml_corr,  error_ml, fmt=".", label=f"p-value {PTE_ml:.3f}")
 plt.legend()
-plt.savefig(f"{result_dir}/vec_ml_{cut}.png")
+plt.tight_layout()
+plt.savefig(f"{paper_plot_dir}/vec_ml_{cut}.pdf")
 plt.clf()
 plt.close()
 

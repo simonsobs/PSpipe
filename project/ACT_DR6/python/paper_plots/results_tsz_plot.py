@@ -26,11 +26,8 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-
-result_dir = "plots/tSZ_shape"
-pspy_utils.create_directory(result_dir)
-
-
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
 
 # first let's get a list of all frequency we plan to study
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -134,7 +131,7 @@ ax.errorbar(l_th, tSZ_agora_interp/tSZ_agora_interp[l_norm - lmin],  label="Agor
 
 ax.legend(fontsize=28, loc="lower right")
 plt.tight_layout()
-plt.savefig(f"{result_dir}/tSZ_shape.png")
+plt.savefig(f"{paper_plot_dir}/tSZ_shape.pdf")
 #plt.show()
 plt.clf()
 plt.close()

@@ -28,8 +28,9 @@ show_220 = False
 tag = d["best_fit_tag"]
 bestfit_dir = f"best_fits{tag}"
 combined_spec_dir = f"combined_spectra{tag}"
-plot_dir = f"plots/combined_spectra{tag}/"
-pspy_utils.create_directory(plot_dir)
+
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
 
 type = d["type"]
 
@@ -72,13 +73,7 @@ for color, case in zip(color_list, case_list):
     plt.errorbar(lb_ml, vec_ml, sigma_ml , fmt=".", color=color,  label=f"{fa} GHz x {fb} GHz")
     plt.errorbar(lb_ml[id], vec_th_ml[id], color=color, fmt="--", alpha=0.7)
 
-
-
 plt.legend(fontsize=24)
-plt.savefig(f"{plot_dir}/multifrequency_spectra_TT.png", bbox_inches="tight")
+plt.savefig(f"{paper_plot_dir}/multifrequency_spectra_TT.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()
-
-#plt.xticks([2,20,200,2000,3000,4000,5000])
-#plt.legend(fontsize=16)
-#plt.show()

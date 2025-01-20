@@ -2,17 +2,13 @@
 This script produce lot of different plots of the pol angles
 """
 
-from pspy import so_dict, pspy_utils, so_spectra, so_cov
-from pspipe_utils import covariance, pspipe_list, pol_angle
+from pspy import so_dict, pspy_utils
 import numpy as np
 import pylab as plt
 import sys, os
 import scipy.stats as ss
 from cobaya.run import run
-from getdist import plots, loadMCSamples, MCSamples
-import matplotlib as mpl
-from matplotlib import cm
-import scipy.stats as stats
+from getdist import loadMCSamples, MCSamples
 from matplotlib import rcParams
 import pickle
 
@@ -24,14 +20,19 @@ rcParams["axes.titlesize"] = 20
 
 def gaussian(mean, std):
     x = np.linspace(-1, 1, 1000)
-    gauss = stats.norm.pdf(x, mean, std)
+    gauss = ss.norm.pdf(x, mean, std)
     gauss /= np.max(gauss)
     return x, gauss
     
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-result_dir = "results_EB"
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
+
+tag = d["best_fit_tag"]
+
+result_dir = f"plots/results_EB{tag}"
 roots = ["mcmc"]
 params = ["alpha_pa5_f090", "alpha_pa5_f150", "alpha_pa6_f090", "alpha_pa6_f150"]
 
@@ -79,7 +80,7 @@ plt.xlim(-0.3, 0.8)
 plt.xlabel(r"$\alpha$", fontsize=25)
 plt.legend(fontsize=15)
 plt.tight_layout()
-plt.savefig(f"{result_dir}/alpha_ACT_{cut}.png")
+plt.savefig(f"{paper_plot_dir}/alpha_ACT_{cut}.png")
 plt.clf()
 plt.close()
     
@@ -159,7 +160,7 @@ plt.xlim(-0.3, 0.8)
 plt.legend(fontsize=15)
 plt.xlabel(r"$\beta$", fontsize=25)
 plt.tight_layout()
-plt.savefig(f"{result_dir}/beta_{cut}.png")
+plt.savefig(f"{paper_plot_dir}/beta_{cut}.png")
 plt.clf()
 plt.close()
 

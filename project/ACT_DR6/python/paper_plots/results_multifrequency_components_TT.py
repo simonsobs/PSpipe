@@ -34,9 +34,10 @@ bestfit_dir = f"best_fits{tag}"
 components_dir = f"{bestfit_dir}/components"
 cov_dir = "covariances"
 spec_dir = f"spectra_leak_corr_ab_corr_cal{tag}"
-result_dir = "plots/TT_components"
 
-pspy_utils.create_directory(result_dir)
+
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
 
 
 bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
@@ -167,7 +168,7 @@ for i in range(narrays):
     axes[i, 0].set_ylabel(r"$D_\ell$", fontsize=35)
 fig.legend(bbox_to_anchor=(0.94,1), fontsize=30)
 plt.tight_layout()
-plt.savefig(f"{result_dir}/TT_per_components.png")
+plt.savefig(f"{paper_plot_dir}/TT_per_components{tag}.pdf")
 plt.clf()
 plt.close()
 

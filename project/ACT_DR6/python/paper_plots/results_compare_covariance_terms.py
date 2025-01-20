@@ -39,7 +39,7 @@ def get_ml_bins(bin_out_dict, bin_mean):
     
     return ml_lb
 
-def get_P_mat(vec_size, lb_ml, bin_out_dict, fig_name):
+def get_P_mat(vec_size, lb_ml, bin_out_dict, fig_name=None):
 
     """
     Very naive "pointing" matrix for maximum likelihood combination of the spectra
@@ -64,15 +64,18 @@ def get_P_mat(vec_size, lb_ml, bin_out_dict, fig_name):
                 if ii == jj:
                     P_mat[index1, index2] = 1
             index1 += 1
+            
+    if fig_name is not None:
 
-    plt.figure(figsize=(12,8))
-    plt.imshow(P_mat, aspect="auto")
-    plt.yticks(y_ticks, y_name)
-    plt.xticks(np.arange(len(lb_ml))[::2], lb_ml[::2], rotation=90)
-    plt.tight_layout()
-    plt.savefig(f"{plot_dir}/P_mat_{name}.png")
-    plt.clf()
-    plt.close()
+        plt.figure(figsize=(12,8))
+        plt.imshow(P_mat, aspect="auto")
+        plt.yticks(y_ticks, y_name)
+        plt.xticks(np.arange(len(lb_ml))[::2], lb_ml[::2], rotation=90)
+        plt.tight_layout()
+        plt.savefig(f"{fig_name}")
+        plt.clf()
+        plt.close()
+        
     return P_mat
     
 
@@ -80,8 +83,8 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-plot_dir = f"plots/full_covariance/"
-pspy_utils.create_directory(plot_dir)
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
 
 binning_file = d["binning_file"]
 lmax = d["lmax"]
@@ -164,7 +167,7 @@ for spec_select in selected_spectra_list:
         
         i_sub_cov = np.linalg.inv(sub_cov)
     
-        P_mat = get_P_mat(sub_cov.shape[0], lb_ml, bin_out_dict, fig_name=name)
+        P_mat = get_P_mat(sub_cov.shape[0], lb_ml, bin_out_dict)
         cov_ml = covariance.get_max_likelihood_cov(P_mat,
                                                    i_sub_cov,
                                                    force_sim = True,
@@ -216,6 +219,6 @@ for spec_select in selected_spectra_list:
         count += 1
 
 plt.subplots_adjust(wspace=0, hspace=0)
-plt.savefig(f"{plot_dir}/relative_contribution_to_errors.png", bbox_inches='tight')
+plt.savefig(f"{paper_plot_dir}/relative_contribution_to_errors.pdf", bbox_inches='tight')
 plt.clf()
 plt.close()

@@ -60,9 +60,11 @@ cov_dir = "covariances"
 spec_dir = "spectra_leak_corr_ab_corr"
 tag = d["best_fit_tag"]
 
-BB_dir = f"results_BB{tag}"
-
+BB_dir = f"plots/results_BB{tag}"
 pspy_utils.create_directory(f"{BB_dir}/mcmc")
+
+paper_plot_dir = f"plots/paper_plot/"
+pspy_utils.create_directory(paper_plot_dir)
 
 surveys = d["surveys"]
 type = d["type"]
@@ -160,7 +162,7 @@ mean_dust, std_dust = fg_params["a_gbb"], 0.0084 #prior on data gal amplitude
 samples = mcmc(mean_dust, std_dust, Rminus1_stop=Rminus1_stop, Rminus1_cl_stop=Rminus1_cl_stop)
 gdplot = gdplt.get_subplot_plotter()
 gdplot.triangle_plot(samples, ["a_BB_cmb", "a_BB_dust"], filled=True, title_limit=1)
-plt.savefig(f"{BB_dir}/posterior_BB_{cut}.png", dpi=300, bbox_inches="tight")
+plt.savefig(f"{paper_plot_dir}/posterior_BB_{cut}{tag}.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()
     
@@ -218,7 +220,7 @@ ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.0e'))
 plt.ylabel(r"$\ell^{-1} D_{\ell}^{BB}$", fontsize=35)
 plt.xlabel(r"$\ell$", fontsize=35)
 plt.tight_layout()
-plt.savefig(f"{BB_dir}/combined_BB_ellfac{fac_ell}_{cut}.png", dpi=300, bbox_inches="tight")
+plt.savefig(f"{paper_plot_dir}/combined_BB_ellfac{fac_ell}_{cut}{tag}.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()
     

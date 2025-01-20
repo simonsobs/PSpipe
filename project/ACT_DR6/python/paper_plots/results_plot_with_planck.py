@@ -31,7 +31,10 @@ combined_spec_dir = f"combined_spectra{tag}"
 bestfit_dir = f"best_fits{tag}"
 
 plot_dir = f"plots/combined_spectra{tag}/"
+paper_plot_dir = f"plots/paper_plot/"
+
 pspy_utils.create_directory(plot_dir)
+pspy_utils.create_directory(paper_plot_dir)
 
 type = d["type"]
 
@@ -100,7 +103,7 @@ for spec_select in selected_spectra_list:
 plt.subplots_adjust(wspace=0, hspace=0)
 
 #plt.show()
-plt.savefig(f"{plot_dir}/all_spectra_with_planck.png", bbox_inches="tight")
+plt.savefig(f"{paper_plot_dir}/all_spectra_with_planck{tag}.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()
 

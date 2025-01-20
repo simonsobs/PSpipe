@@ -5,13 +5,9 @@ product_dir: products/dr6
 # parsing the yaml file by the location to the pspipe installation
 config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/global_dr6_v4.dict]
 
-# Set location of scripts: default to pspipe_root/project/data_analysis/python
+# Set location of scripts: default to pspipe_root/project/ACT_DR6/python
 script_base_dir: null
 
-# Set variable to override default from global.dict
-variables:
-  iStart: 0
-  iStop: 49
 
 pipeline:
   # Main pipeline
@@ -39,8 +35,8 @@ pipeline:
       cpus_per_task: 36
   get_covariance_blocks:
     slurm:
-      nodes: 2
-      ntasks: 8
+      nodes: 4
+      ntasks: 16
       cpus_per_task: 64
     minimal_needed_time: 02:00:00
   get_beam_covariance:
@@ -60,42 +56,25 @@ pipeline:
       cpus_per_task: 12
   leakage/get_leakage_covariance: null
 
-  # Monte-Carlo kspace filter transfer function
-  kspace/mc_get_kspace_tf_spectra:
-    slurm:
-      nodes: 4
-      ntasks: 32
-      cpus_per_task: 32
-    minimal_needed_time: 03:00:00
-  kspace/mc_kspace_tf_analysis: null
-
   # Monte Carlo correction to the covariance matrix
-  montecarlo/mc_mnms_get_nlms:
-    slurm:
-      nodes: 2
-      ntasks: 4
-      cpus_per_task: 128
-    minimal_needed_time: 03:30:00
-  montecarlo/mc_mnms_get_spectra_from_nlms:
-    slurm:
-      nodes: 4
-      ntasks: 16
-      cpus_per_task: 64
-    minimal_needed_time: 02:30:00
   montecarlo/mc_analysis: null
   montecarlo/mc_cov_analysis: null
   montecarlo/mc_plot_spectra: null
-  montecarlo/mc_plot_covariances: null
   montecarlo/mc_cov_analysis_for_gp: null
   montecarlo/get_mc_corrected_xarrays_covmat_gp: null
+  montecarlo/mc_apply_syst_model : 
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  montecarlo/mc_get_combined_syst_spectra:
+      force: true
+      slurm:
+        ntasks: 20
+        cpus_per_task: 12
+
+  montecarlo/mc_analyze_combined_syst_spectra: null
 
   # Aberration correction
-  aberration/mc_get_aberrated_spectra:
-    slurm:
-      nodes: 4
-      ntasks: 16
-      cpus_per_task: 64
-  aberration/mc_aberration_analysis: null
   aberration/get_aberration_corrected_spectra: null
 
   # Radio and tSZ trispectrum
@@ -105,15 +84,6 @@ pipeline:
 
   # Non gaussian lensing terms (need prerun of CLASS)
   lensing/lensing_combine_cov_mat: null
-  lensing/lensing_camb: null
-  lensing/lensing_mcm_and_gaussian_cov: null
-  lensing/lensing_sim:
-    slurm:
-      nodes: 4
-      ntasks: 16
-      cpus_per_task: 64
-    minimal_needed_time: 03:00:00
-  lensing/lensing_analysis: null
 
   # Array null test
   null_tests/compute_null_tests: null

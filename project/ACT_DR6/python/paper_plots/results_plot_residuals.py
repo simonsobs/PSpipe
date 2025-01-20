@@ -164,7 +164,7 @@ for spec_select in selected_spectra_list:
     plt.yticks(ticks=y_ticks_res[s_name], labels=y_ticks_res[s_name])
     plt.legend(fontsize=16)
     plt.subplots_adjust(wspace=0, hspace=0)
-    plt.savefig(f"{plot_dir}/residal_vs_best_fit_cmb_{s_name}{tag}.pdf", bbox_inches="tight")
+    plt.savefig(f"{paper_plot_dir}/residal_vs_best_fit_cmb_{s_name}{tag}.pdf", bbox_inches="tight")
     plt.clf()
     plt.close()
 

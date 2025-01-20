@@ -67,7 +67,6 @@ pipeline:
       ntasks: 20
       cpus_per_task: 12
   montecarlo/mc_get_combined_syst_spectra:
-      force: true
       slurm:
         ntasks: 20
         cpus_per_task: 12

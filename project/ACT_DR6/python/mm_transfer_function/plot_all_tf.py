@@ -11,7 +11,7 @@ planck_version = d["planck_version"]
 matplotlib.rcParams["font.family"] = "serif"
 matplotlib.rcParams["font.size"] = "18"
 
-plot_dir = f"plots/tf_{planck_version}"
+plot_dir = "paper_plot"
 pspy_utils.create_directory(plot_dir)
 
 combins = ["AxA_AxP", "AxP_PxP"]
@@ -35,8 +35,8 @@ for combin in combins:
     plt.ylabel(r"$T_{\ell} = C_{\ell, \rm %s}^{\rm TT} / C_{\ell, \rm %s}^{\rm TT}$" % (na, nb), fontsize=25)
     plt.xlabel(r"$\ell$", fontsize=25)
     plt.xlim(0, 1800)
-    plt.ylim(0.9,1.05)
+    plt.ylim(0.9, 1.05)
     plt.legend()
-    plt.savefig(f"{plot_dir}/{tf_dir}.png", bbox_inches="tight")
+    plt.savefig(f"{plot_dir}/{tf_dir}_{planck_version}.pdf", bbox_inches="tight")
     plt.clf()
     plt.close()

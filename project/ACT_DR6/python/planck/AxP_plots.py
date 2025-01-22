@@ -24,7 +24,7 @@ bestfit_dir = "best_fits"
 spec_dir = "spectra_leak_corr_planck_bias_corr"
 cov_dir = "covariances"
 
-plot_dir = "AxP_plots"
+plot_dir = "paper_plot"
 pspy_utils.create_directory(plot_dir)
 
 cov_dir_legacy = f"{legacy_dir}/{cov_dir}"
@@ -89,7 +89,7 @@ for ax, mode in zip(ax_list, ["EE", "TE"]):
     count+=1
 plt.subplots_adjust(wspace=0, hspace=0)
 
-plt.savefig(f"{plot_dir}/ACT_and_planck.png",bbox_inches='tight')
+plt.savefig(f"{plot_dir}/ACT_and_planck.pdf",bbox_inches='tight')
 plt.clf()
 plt.close()
 

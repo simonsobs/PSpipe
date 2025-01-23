@@ -1,16 +1,18 @@
 """
-This script illustrate the effect of alpha_tSZ on the tSZ power spectrum and compare it to Battaglia and Agora
+This script illustrate the effect of alpha_tSZ on the tSZ power spectrum and compare it to Battaglia
+and Agora based on two different bahamas sims
 """
 import matplotlib
 from scipy import interpolate
 from matplotlib import rcParams
 import matplotlib as mpl
 
-import sys
+import sys, os
 from copy import deepcopy
 import numpy as np
 import pylab as plt
 from pspipe_utils import best_fits, log, pspipe_list, external_data
+import pspipe_utils
 from pspy import pspy_utils, so_dict, so_spectra
 
 
@@ -70,9 +72,15 @@ l_th = np.arange(lmin,6000)
 
 ref_array = "dr6_pa5_f150" # can be any not important for this script
 
-l, tSZ_agora = external_data.get_agora_spectrum(f"{ref_array}x{ref_array}", "tsz", "tsz", spectrum="TT")
-f = interpolate.interp1d(l, tSZ_agora)
-tSZ_agora_interp = f(l_th)
+#l, tSZ_agora = external_data.get_agora_spectrum(f"{ref_array}x{ref_array}", "tsz", "tsz", spectrum="TT")
+#f = interpolate.interp1d(l, tSZ_agora)
+#tSZ_agora_interp = f(l_th)
+
+#bahamas_data_path = os.path.join(os.path.dirname(os.path.abspath(pspipe_utils.__file__)), "data/spectra/bahamas")
+
+l_agora, tSZ_agora_78 = external_data.get_bahamas_tSZ(AGN_heating="7,8")
+l_agora, tSZ_agora_80 = external_data.get_bahamas_tSZ(AGN_heating="8,0")
+id_agora = np.where(l_agora == 3000)
 
 
 #### Battaglia tSZ is the case with alpha_tSZ = 0
@@ -96,9 +104,6 @@ fg_dict = best_fits.get_foreground_dict(l_th,
                                         fg_norm,
                                         band_shift_dict=band_shift_dict)
 tsZ_dr6 = fg_dict["tt", "tSZ", ref_array, ref_array]
-
-
-
 
 
 n_lines = 100
@@ -128,13 +133,15 @@ for i, alpha in enumerate(alphas):
     
 ax.set_ylabel(r"$D^{\rm tSZ}_\ell/D^{\rm tSZ}_{3000}$", fontsize=35)
 ax.set_xlabel(r"$\ell$", fontsize=35)
-ax.errorbar(l_th, tsZ_dr6/tsZ_dr6[l_norm - lmin], color="gray", label=r"DR6 best fit ($\alpha_{tSZ}=-0.6$)", linestyle="-", linewidth=3)
-ax.errorbar(l_th, tsZ_battaglia/tsZ_battaglia[l_norm - lmin],  label=r"Battaglia (2012) ($\alpha_{tSZ}=0$)", linestyle="--", color="darkorange", linewidth=3)
-ax.errorbar(l_th, tSZ_agora_interp/tSZ_agora_interp[l_norm - lmin],  label="Agora (2022)", linestyle="--", color="darkgreen", linewidth=3)
+ax.errorbar(l_th, tsZ_dr6/tsZ_dr6[l_norm - lmin], color="black", label=r"DR6 best fit ($\alpha_{tSZ}=-0.6$)", linestyle="--", linewidth=3)
+ax.errorbar(l_th, tsZ_battaglia/tsZ_battaglia[l_norm - lmin],  label=r"Battaglia (2012) ($\alpha_{tSZ}=0$)", linestyle='dotted', color="darkorange", linewidth=3)
+ax.errorbar(l_agora, tSZ_agora_78/tSZ_agora_78[id_agora],  label=r"Agora (BAHAMAS $T^{\rm heating}_{\rm AGN} = 10^{7.8} $ K)", linestyle='dotted', color="forestgreen", linewidth=3)
+ax.errorbar(l_agora, tSZ_agora_80/tSZ_agora_80[id_agora],  label=r"Agora (BAHAMAS $T^{\rm heating}_{\rm AGN} = 10^{8.0} $ K)", linestyle='dotted', color="blue", linewidth=3)
+#ax.errorbar(l_th, tSZ_agora_interp/tSZ_agora_interp[l_norm - lmin],  label="Agora (2022)", linestyle="--", color="yellow", linewidth=3)
+ax.legend(fontsize=24, loc="lower right")
+ax.set_xlim(100, 6000)
 
-ax.legend(fontsize=28, loc="lower right")
-plt.tight_layout()
-plt.savefig(f"{paper_plot_dir}/tSZ_shape{tag}.pdf")
-#plt.show()
+#plt.tight_layout()
+plt.savefig(f"{paper_plot_dir}/tSZ_shape{tag}.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()

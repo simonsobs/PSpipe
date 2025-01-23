@@ -121,9 +121,9 @@ for spec_select in selected_spectra_list:
     sigma_p_rebin = np.sqrt(cov_rebin.diagonal())
 
 
-    print(f"{s_name}, ACT", pte)
-    print(f"{s_name}, Planck", pte_p) 
-    print(f"{s_name}, Planck (rebined)", pte_p_rebin)
+    print(f"{s_name}, ACT PTE", pte)
+    print(f"{s_name}, Planck PTE", pte_p)
+    print(f"{s_name}, Planck (rebined) PTE", pte_p_rebin)
 
     plt.figure(figsize=(20, 9))
     plt.subplot(2,1,1)

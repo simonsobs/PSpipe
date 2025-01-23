@@ -122,8 +122,8 @@ for spec_select in selected_spectra_list:
 
 
     print(f"{s_name}, ACT", pte)
-    print(f"{s_name}, Planck", pte_p) )
-    print(f"{s_name}, Planck (rebined)", pte_p_rebin) )
+    print(f"{s_name}, Planck", pte_p) 
+    print(f"{s_name}, Planck (rebined)", pte_p_rebin)
 
     plt.figure(figsize=(20, 9))
     plt.subplot(2,1,1)

@@ -35,8 +35,8 @@ pspy_utils.create_directory(paper_plot_dir)
 binning_file = d["binning_file"]
 lmax = d["lmax"]
 type = d["type"]
-iStart = d["iStart"]
-iStop = d["iStop"]
+iStart = 0
+iStop = 900
 print(iStart, iStop)
 freq_pairs = ["90x90", "150x150", "90x150"]
 

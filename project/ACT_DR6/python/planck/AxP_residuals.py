@@ -171,7 +171,7 @@ for spec in tested_spectra:
             count += 1
     
         plt.tight_layout()
-        plt.savefig(f"{plot_dir}/{spec}_{comb}_v2.pdf", bbox_inches='tight')
+        plt.savefig(f"{plot_dir}/{spec}_{comb}.pdf", bbox_inches='tight')
         plt.clf()
         plt.close()
 

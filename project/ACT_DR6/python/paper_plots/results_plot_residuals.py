@@ -48,27 +48,27 @@ selected_spectra_list = [["TT"], ["EE"], ["TE", "ET"]]
 
 ylim = {}
 ylim["TT"] = [10, 7000]
-ylim["TE"] = [-105000, 75000]
+ylim["TE"] = [-150,150]#None#[-105000, 75000]
 ylim["EE"] = [0, 45]
 
 ylim_res = {}
 ylim_res["TT"] =  [-120000, 120000]
-ylim_res["TE"] = [-15000, 15000]
+ylim_res["TE"] = None#[-15000, 15000]
 ylim_res["EE"] = [-4, 4]
 
 fac = {}
 fac["TT"] = 0
-fac["TE"] = 1
+fac["TE"] = 0
 fac["EE"] = 0
 res_fac = {}
 res_fac["TT"] = 1
-res_fac["TE"] = 1
+res_fac["TE"] = 0
 res_fac["EE"] = 0
 
 y_ticks_res = {}
 y_ticks_res["TT"] = [-100000, -50000, 0 , 50000, 100000]
 y_ticks_res["EE"] =  [-3, -2, -1, 0, 1, 2, 3]
-y_ticks_res["TE"] = [-10000, -5000, 0, 5000, 10000]
+y_ticks_res["TE"] = None#[-10000, -5000, 0, 5000, 10000]
 
     
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -84,7 +84,9 @@ l_b, ps_th_plank = external_data.bin_ala_planck_cmb_only(lth, Dlth)
 
 rebin_fac = 2
 
-for spec_select in selected_spectra_list:
+fig = plt.figure(figsize=(16, 22))
+
+for count, spec_select in enumerate(selected_spectra_list):
     s_name = spec_select[0]
     
     lb_ml, vec_ml, sigma_ml = np.loadtxt(f"{combined_spec_dir}/{type}_all_{s_name}_cmb_only.dat", unpack=True)
@@ -125,8 +127,7 @@ for spec_select in selected_spectra_list:
     print(f"{s_name}, Planck PTE", pte_p)
     print(f"{s_name}, Planck (rebined) PTE", pte_p_rebin)
 
-    plt.figure(figsize=(20, 9))
-    plt.subplot(2,1,1)
+    plt.subplot(6, 1, 1 + count * 2)
     if s_name == "TT": plt.semilogy()
     plt.ylim(ylim[s_name])
     plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt=".", color="royalblue", label="ACT")
@@ -134,25 +135,26 @@ for spec_select in selected_spectra_list:
     plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", alpha=1, label=r" %s $\Lambda$CDM" % run_name[tag])
 
     if fac[s_name] == 0:
-        plt.ylabel(r"$D^{%s}_{\ell}$" % s_name, fontsize=22)
+        plt.ylabel(r"$D^{%s}_{\ell} \  [\mu \rm K^{2}]$" % s_name, fontsize=22)
     if fac[s_name] == 1:
-        plt.ylabel(r"$\ell D^{%s}_{\ell}$" % s_name, fontsize=22)
+        plt.ylabel(r"$\ell D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % s_name, fontsize=22)
     if fac[s_name] > 1:
-        plt.ylabel(r"$\ell^{%s}D^{%s}_{\ell}$" % (fac[s_name], s_name), fontsize=22)
+        plt.ylabel(r"$\ell^{%s}D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % (fac[s_name], s_name), fontsize=22)
 
     plt.xlim(0,4000)
-    plt.legend(fontsize=16)
+    if count == 0:
+        plt.legend(fontsize=16)
     plt.xticks([])
 
-    plt.subplot(2,1,2)
+    plt.subplot(6, 1, 2 + count * 2)
     plt.xlabel(r"$\ell$", fontsize=22)
     
     if res_fac[s_name] == 0:
-        plt.ylabel(r"$(D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s}) $" % ( s_name, s_name, run_name[tag]), fontsize=22)
+        plt.ylabel(r"$(D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s}) \ [\mu \rm K^{2}] $" % ( s_name, s_name, run_name[tag]), fontsize=22)
     if res_fac[s_name] == 1:
-        plt.ylabel(r"$\ell (D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s}) $" % (s_name, s_name, run_name[tag]), fontsize=22)
+        plt.ylabel(r"$\ell (D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s}) \ [\mu \rm K^{2}] $" % (s_name, s_name, run_name[tag]), fontsize=22)
     if res_fac[s_name] > 1:
-        plt.ylabel(r"$\ell^{%s} (D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s}) $" % (res_fac[s_name], s_name, s_name, run_name[tag]), fontsize=22)
+        plt.ylabel(r"$\ell^{%s} (D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s} \ [\mu \rm K^{2}]) $" % (res_fac[s_name], s_name, s_name, run_name[tag]), fontsize=22)
 
 
     plt.errorbar(lb_ml, res  *  lb_ml ** res_fac[s_name], sigma_ml  *  lb_ml ** res_fac[s_name],
@@ -163,10 +165,17 @@ for spec_select in selected_spectra_list:
     plt.plot(lb_th, lb_th * 0, color="gray")
     plt.xlim(0,4000)
     plt.ylim(ylim_res[s_name])
+    if count != 2:
+        plt.xticks([])
+
+    
     plt.yticks(ticks=y_ticks_res[s_name], labels=y_ticks_res[s_name])
-    plt.legend(fontsize=16)
-    plt.subplots_adjust(wspace=0, hspace=0)
-    plt.savefig(f"{paper_plot_dir}/residal_vs_best_fit_cmb_{s_name}{tag}.pdf", bbox_inches="tight")
-    plt.clf()
-    plt.close()
+#plt.legend(fontsize=16)
+plt.subplots_adjust(wspace=0, hspace=0)
+#plt.show()
+fig.align_ylabels()
+
+plt.savefig(f"{paper_plot_dir}/residal_vs_best_fit_cmb{tag}.pdf", bbox_inches="tight")
+plt.clf()
+plt.close()
 

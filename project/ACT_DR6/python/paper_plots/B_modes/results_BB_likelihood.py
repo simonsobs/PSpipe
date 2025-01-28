@@ -222,7 +222,7 @@ for axis in ['left', 'bottom', 'right', 'top']:
 ax.legend(fontsize=22)
 ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1e'))
 
-plt.ylabel(r"$\ell^{-1} D_{\ell}^{BB}$", fontsize=35)
+plt.ylabel(r"$\ell^{-1} D_{\ell}^{BB} \ [\mu K^{2}]$", fontsize=35)
 plt.xlabel(r"$\ell$", fontsize=35)
 plt.tight_layout()
 plt.savefig(f"{paper_plot_dir}/combined_BB_ellfac{fac_ell}_{cut}{tag}.pdf", bbox_inches="tight")

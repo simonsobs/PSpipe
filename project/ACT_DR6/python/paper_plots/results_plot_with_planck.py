@@ -46,19 +46,23 @@ selected_spectra_list = [["TT"], ["EE"], ["TE", "ET"]]
 
 ylim = {}
 ylim["TT"] = [5, 6000]
-ylim["TE"] = [0, 60000]
-ylim["TE"] = [-105000, 75000]
+ylim["TE"] = [-10.5, 7.5]
 ylim["EE"] = [0, 45]
 fac = {}
 fac["TT"] = 0
 fac["TE"] = 1
 fac["EE"] = 0
 
+divider_power = {}
+divider_power["TT"] = 0
+divider_power["TE"] = 4
+divider_power["EE"] = 0
+
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 
-plt.figure(figsize=(40, 50))
+fig = plt.figure(figsize=(40, 50))
 count = 1
 for spec_select in selected_spectra_list:
     s_name = spec_select[0]
@@ -76,22 +80,29 @@ for spec_select in selected_spectra_list:
     ax = plt.subplot(3,1,count)
     for axis in ['left', 'bottom', 'right', 'top']:
         ax.spines[axis].set_linewidth(3.5)
+        
+    divider = 10 ** divider_power[s_name]
 
     if s_name == "TT": plt.semilogy()
 
     plt.xlim(0,4000)
     plt.ylim(ylim[s_name])
-    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt="o", color="royalblue", label="ACT", markersize=8, elinewidth=3)
-    plt.errorbar(lp, Dlp * lp ** fac[s_name], sigmap * lp ** fac[s_name], fmt="o", color="darkorange", alpha=1, label="Planck",markersize=8, elinewidth=3)
-    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", alpha=1)
+    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name] / divider, sigma_ml * lb_ml ** fac[s_name] / divider, fmt="o", color="royalblue", label="ACT", markersize=8, elinewidth=3)
+    plt.errorbar(lp, Dlp * lp ** fac[s_name] / divider, sigmap * lp ** fac[s_name] / divider, fmt="o", color="darkorange", alpha=1, label="Planck",markersize=8, elinewidth=3)
+    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name] / divider, color="gray", alpha=1)
     plt.xlabel(r"$\ell$", fontsize=70)
+    
+    if divider_power[s_name] == 0:
+        divider_str = ""
+    else:
+        divider_str = r"10^{%s}" % divider_power[s_name]
 
     if fac[s_name] == 0:
-        plt.ylabel(r"$D^{%s}_{\ell}$" % s_name, fontsize=70)
+        plt.ylabel(r"${%s} \ D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % (divider_str, s_name), fontsize=70)
     if fac[s_name] == 1:
-        plt.ylabel(r"$\ell D^{%s}_{\ell}$" % s_name, fontsize=70)
+        plt.ylabel(r"${%s} \ \ell D^{%s}_{\ell} \ [\mu \rm K^{2}] $" % (divider_str, s_name), fontsize=70)
     if fac[s_name] > 1:
-        plt.ylabel(r"$\ell^{%s}D^{%s}_{\ell}$" % (fac[s_name], s_name), fontsize=50)
+        plt.ylabel(r"${%s} \ \ell^{%s}D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % (divider_str, fac[s_name], s_name), fontsize=50)
 
     if count == 1:
         plt.legend(fontsize=80)
@@ -101,6 +112,7 @@ for spec_select in selected_spectra_list:
         plt.xticks([])
         
 plt.subplots_adjust(wspace=0, hspace=0)
+fig.align_ylabels()
 
 #plt.show()
 plt.savefig(f"{paper_plot_dir}/all_spectra_with_planck{tag}.pdf", bbox_inches="tight")

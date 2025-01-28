@@ -16,8 +16,8 @@ from matplotlib import rcParams
 import matplotlib.ticker as ticker
 import B_modes_utils
 
-rcParams["xtick.labelsize"] = 16
-rcParams["ytick.labelsize"] = 16
+rcParams["xtick.labelsize"] = 20
+rcParams["ytick.labelsize"] = 20
 rcParams["axes.labelsize"] = 20
 rcParams["axes.titlesize"] = 20
 
@@ -194,14 +194,16 @@ add_polarbear = True
 fac_ell = -1.
     
 fig, ax = plt.subplots( figsize=(14,8))
-ax.plot(l_th, ps_dict["BB"] * l_th ** fac_ell, color="gray")
+ax.plot(l_th, ps_dict["BB"] * l_th ** fac_ell, color="gray", linewidth=2)
+
+
 ax.set_xlim(30, 4000)
 if fac_ell == - 1:
     ax.set_ylim(-2*10**-5, 2.1*10**-4)
 if fac_ell == 0:
     ax.set_ylim(-0.05, 0.25)
 
-ax.errorbar(lb_ml_BB, vec_ml_BB * lb_ml_BB ** fac_ell, std_ml_BB * lb_ml_BB ** fac_ell, fmt="o", color="royalblue", label="ACT")
+ax.errorbar(lb_ml_BB, vec_ml_BB * lb_ml_BB ** fac_ell, std_ml_BB * lb_ml_BB ** fac_ell, fmt="o", color="royalblue", label="ACT", markersize='8', capsize=3, elinewidth=3)
 if add_BK:
     ax.semilogx()
     lb_bicep, Db_bicep, err_bicep = external_data.get_bicep_BB_spectrum()
@@ -214,8 +216,11 @@ if add_polarbear:
     ax.errorbar(lb_polarbear, Db_polarbear * lb_polarbear ** fac_ell, err_polarbear * lb_polarbear ** fac_ell, fmt="o", color="green", label="POLARBEAR (2017)")
 
 ax.plot(l_th, ps_dict["BB"] * 0, linestyle="--", color="black")
+for axis in ['left', 'bottom', 'right', 'top']:
+    ax.spines[axis].set_linewidth(1.5)
+
 ax.legend(fontsize=22)
-ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.0e'))
+ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1e'))
 
 plt.ylabel(r"$\ell^{-1} D_{\ell}^{BB}$", fontsize=35)
 plt.xlabel(r"$\ell$", fontsize=35)

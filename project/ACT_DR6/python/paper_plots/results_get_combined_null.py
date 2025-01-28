@@ -9,6 +9,7 @@ import pylab as plt
 import sys, os
 import scipy.stats as ss
 from matplotlib import rcParams
+import matplotlib.ticker as ticker
 
 
 rcParams["font.family"] = "serif"
@@ -53,15 +54,15 @@ ylim= {}
 ylim["TT"] = (-1.5*10**7, 1.8*10**9)
 ylim["TE"] =  (-1.2*10**8, 0.55*10**8)
 ylim["TB"] = (-10,10)
-ylim["EE"] =(-2*10**3,4.3*10**4)
+ylim["EE"] = (-2*10**3,4.3*10**4)
 ylim["EB"] = (-1.2,1.2)
 ylim["BB"] = (-1.2,1.2)
 
 ylim_res = {}
 ylim_res["TT"] = (-10,10)
-ylim_res["TE"] = (-3,3)
+ylim_res["TE"] = (-3,5)
 ylim_res["TB"] = (-3,3)
-ylim_res["EE"] = (-2,2)
+ylim_res["EE"] = (-2,3.5)
 ylim_res["EB"] = (-1,1)
 ylim_res["BB"] = (-1,1)
 
@@ -75,7 +76,7 @@ combined_spectra = ["TT", "TE", "TB", "EE", "EB", "BB"]
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 
 for ispec, spectrum in enumerate(combined_spectra):
-    f, (a0, a1) = plt.subplots(2, 1, height_ratios=[3, 1], figsize=(16, 12))
+    f, (a0, a1) = plt.subplots(2, 1, height_ratios=[1.5, 1], figsize=(20, 10))
 
 
     count=0
@@ -86,15 +87,18 @@ for ispec, spectrum in enumerate(combined_spectra):
 
         l, Dl_fg_sub, error = np.loadtxt(f"{combined_spec_dir}/Dl_{fp}_{spectrum}_cmb_only.dat", unpack=True)
         a0.errorbar(l + my_c*13 - 13, Dl_fg_sub * l ** lscale[spectrum], error * l ** lscale[spectrum], fmt=".", label=f"{fa} GHz x {fb} GHz", color=color_list[my_c])
-    a0.legend(fontsize=20)
+    a0.legend(fontsize=16)
     a0.set_xlim(500, 4500)
     a0.set_ylim(ylim[spectrum])
     a0.set_xticks([])
-    if lscale[spectrum] !=0:
-        a0.set_ylabel(r"$ \ell^{%s} D^{%s}_{\ell}$" % (lscale[spectrum], spectrum), fontsize=30)
+    
 
+    if lscale[spectrum] == 0:
+        a0.set_ylabel(r"$ D^{%s}_{\ell} \ [\mu K^{2}]$" % spectrum, fontsize=30)
+    elif lscale[spectrum] == 1:
+        a0.set_ylabel(r"$ \ell D^{%s}_{\ell} \ [\mu K^{2}]$" % (spectrum), fontsize=30)
     else:
-        a0.set_ylabel(r"$ D^{%s}_{\ell}$" % spectrum, fontsize=30)
+        a0.set_ylabel(r"$ \ell^{%s} D^{%s}_{\ell} \ [\mu K^{2}]$" % (lscale[spectrum], spectrum), fontsize=30)
 
     for fp1 in freq_pairs:
         for fp2 in freq_pairs:
@@ -121,7 +125,7 @@ for ispec, spectrum in enumerate(combined_spectra):
             corr = so_cov.cov2corr(cov, remove_diag=True)
             
             chi2 = diff @ np.linalg.inv(cov) @ diff
-            ndof = len(diff)
+            ndof = len(diff) - 1 # spectra are calibrated
             pte = 1 - ss.chi2(ndof).cdf(chi2)
 
             std = np.sqrt(cov.diagonal())
@@ -129,17 +133,17 @@ for ispec, spectrum in enumerate(combined_spectra):
             fa1, fb1 = fp1.split("x")
             fa2, fb2 = fp2.split("x")
 
-            a1.errorbar(l1 - 13 + 13*count, diff, std, fmt=".", label=f"{fa1} GHz x {fb1} GHz - {fa2} GHz x {fb2} GHz, PTE: {pte*100:0.2f} %", color=color_list_null[count])
+            a1.errorbar(l1 - 13 + 13*count, diff, std, fmt=".", label=f"{fa1} GHz x {fb1} GHz - {fa2} GHz x {fb2} GHz, PTE: {pte*100:0.0f} %", color=color_list_null[count])
             count += 1
             
     a1.plot(lth, lth*0, color="black", linestyle="--", alpha=0.5)
     a1.set_ylim(ylim_res[spectrum])
     a1.set_xlim(500, 4500)
-    a1.legend(fontsize=12)
+    a1.legend(fontsize=16)
     a1.set_xlabel(r"$\ell$", fontsize=30)
-    a1.set_ylabel(r"$\Delta D^{%s}_{\ell}$" % spectrum, fontsize=30)
+    a1.set_ylabel(r"$\Delta D^{%s}_{\ell} \ [\mu K^{2}]$" % spectrum, fontsize=30)
     plt.subplots_adjust(wspace=0, hspace=0)
-
+    f.align_ylabels()
     plt.savefig(f"{paper_plot_dir}/null_{spectrum}{tag}.pdf", bbox_inches="tight")
     plt.clf()
     plt.close()

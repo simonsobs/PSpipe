@@ -52,7 +52,7 @@ ylim["TE"] = [-150,150]#None#[-105000, 75000]
 ylim["EE"] = [0, 45]
 
 ylim_res = {}
-ylim_res["TT"] =  [-120000, 120000]
+ylim_res["TT"] =  [-12, 12]
 ylim_res["TE"] = None#[-15000, 15000]
 ylim_res["EE"] = [-4, 4]
 
@@ -66,9 +66,15 @@ res_fac["TE"] = 0
 res_fac["EE"] = 0
 
 y_ticks_res = {}
-y_ticks_res["TT"] = [-100000, -50000, 0 , 50000, 100000]
+y_ticks_res["TT"] = [-8, -4, 0 , 4, 8]
 y_ticks_res["EE"] =  [-3, -2, -1, 0, 1, 2, 3]
 y_ticks_res["TE"] = None#[-10000, -5000, 0, 5000, 10000]
+
+
+divider_power_res = {}
+divider_power_res["TT"] = 4
+divider_power_res["TE"] = 0
+divider_power_res["EE"] = 0
 
     
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -149,17 +155,25 @@ for count, spec_select in enumerate(selected_spectra_list):
     plt.subplot(6, 1, 2 + count * 2)
     plt.xlabel(r"$\ell$", fontsize=22)
     
+    divider = 10 ** divider_power_res[s_name]
+    
+    if divider_power_res[s_name] == 0:
+        divider_str = ""
+    else:
+        divider_str = r"10^{%s}" % divider_power_res[s_name]
+
+    
     if res_fac[s_name] == 0:
-        plt.ylabel(r"$(D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s}) \ [\mu \rm K^{2}] $" % ( s_name, s_name, run_name[tag]), fontsize=22)
+        plt.ylabel(r"${%s} \ \Delta D^{%s}_{\ell}  \ [\mu \rm K^{2}] $" %  (divider_str, s_name), fontsize=22)
     if res_fac[s_name] == 1:
-        plt.ylabel(r"$\ell (D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s}) \ [\mu \rm K^{2}] $" % (s_name, s_name, run_name[tag]), fontsize=22)
+        plt.ylabel(r"${%s} \ \ell \Delta D^{%s}_{\ell}  \ [\mu \rm K^{2}] $" %  (divider_str, s_name), fontsize=22)
     if res_fac[s_name] > 1:
-        plt.ylabel(r"$\ell^{%s} (D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s} \ [\mu \rm K^{2}]) $" % (res_fac[s_name], s_name, s_name, run_name[tag]), fontsize=22)
+        #plt.ylabel(r"$\ell^{%s} (D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s} \ [\mu \rm K^{2}]) $" % (res_fac[s_name], s_name, s_name, run_name[tag]), fontsize=22)
+        plt.ylabel(r"${%s} \ \ell^{%s} \Delta D^{%s}_{\ell}  \ [\mu \rm K^{2}] $" %  (divider_str, res_fac[s_name], s_name), fontsize=22)
 
-
-    plt.errorbar(lb_ml, res  *  lb_ml ** res_fac[s_name], sigma_ml  *  lb_ml ** res_fac[s_name],
+    plt.errorbar(lb_ml, res  *  lb_ml ** res_fac[s_name] / divider, sigma_ml  *  lb_ml ** res_fac[s_name] / divider,
                  label=r"ACT", fmt=".", color="royalblue", elinewidth=2)
-    plt.errorbar(l_p_rebin, res_p_rebin  *  l_p_rebin ** res_fac[s_name], sigma_p_rebin  *  l_p_rebin ** res_fac[s_name],
+    plt.errorbar(l_p_rebin, res_p_rebin  *  l_p_rebin ** res_fac[s_name] / divider, sigma_p_rebin  *  l_p_rebin ** res_fac[s_name] / divider,
                  label=r"Planck", alpha=0.6, fmt=".", color="darkorange", elinewidth=2)
     
     plt.plot(lb_th, lb_th * 0, color="gray")

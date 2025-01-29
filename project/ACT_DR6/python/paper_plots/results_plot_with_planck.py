@@ -98,11 +98,11 @@ for spec_select in selected_spectra_list:
         divider_str = r"10^{%s}" % divider_power[s_name]
 
     if fac[s_name] == 0:
-        plt.ylabel(r"${%s} \ D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % (divider_str, s_name), fontsize=70)
+        plt.ylabel(r"$ D^{%s}_{\ell} \ [{%s}\mu \rm K^{2}]$" % (s_name, divider_str), fontsize=70)
     if fac[s_name] == 1:
-        plt.ylabel(r"${%s} \ \ell D^{%s}_{\ell} \ [\mu \rm K^{2}] $" % (divider_str, s_name), fontsize=70)
+        plt.ylabel(r"$ \ell D^{%s}_{\ell} \ [{%s} \mu \rm K^{2}] $" % (s_name, divider_str), fontsize=70)
     if fac[s_name] > 1:
-        plt.ylabel(r"${%s} \ \ell^{%s}D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % (divider_str, fac[s_name], s_name), fontsize=50)
+        plt.ylabel(r"$ \ell^{%s}D^{%s}_{\ell} \ [{%s} \mu \rm K^{2}]$" % (fac[s_name], s_name, divider_str), fontsize=50)
 
     if count == 1:
         plt.legend(fontsize=80)

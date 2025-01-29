@@ -164,12 +164,12 @@ for count, spec_select in enumerate(selected_spectra_list):
 
     
     if res_fac[s_name] == 0:
-        plt.ylabel(r"${%s} \ \Delta D^{%s}_{\ell}  \ [\mu \rm K^{2}] $" %  (divider_str, s_name), fontsize=22)
+        plt.ylabel(r"$ \Delta D^{%s}_{\ell}  \ [{%s} \mu \rm K^{2}] $" %  (s_name, divider_str), fontsize=22)
     if res_fac[s_name] == 1:
-        plt.ylabel(r"${%s} \ \ell \Delta D^{%s}_{\ell}  \ [\mu \rm K^{2}] $" %  (divider_str, s_name), fontsize=22)
+        plt.ylabel(r"$ \ell \Delta D^{%s}_{\ell}  \ [{%s} \mu \rm K^{2}] $" %  (s_name, divider_str), fontsize=22)
     if res_fac[s_name] > 1:
         #plt.ylabel(r"$\ell^{%s} (D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s} \ [\mu \rm K^{2}]) $" % (res_fac[s_name], s_name, s_name, run_name[tag]), fontsize=22)
-        plt.ylabel(r"${%s} \ \ell^{%s} \Delta D^{%s}_{\ell}  \ [\mu \rm K^{2}] $" %  (divider_str, res_fac[s_name], s_name), fontsize=22)
+        plt.ylabel(r"$ \ell^{%s} \Delta D^{%s}_{\ell}  \ [{%s}  \mu \rm K^{2}] $" %  (res_fac[s_name], s_name, divider_str), fontsize=22)
 
     plt.errorbar(lb_ml, res  *  lb_ml ** res_fac[s_name] / divider, sigma_ml  *  lb_ml ** res_fac[s_name] / divider,
                  label=r"ACT", fmt=".", color="royalblue", elinewidth=2)

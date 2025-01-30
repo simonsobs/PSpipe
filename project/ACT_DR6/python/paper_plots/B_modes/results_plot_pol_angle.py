@@ -2,7 +2,8 @@
 This script produce lot of different plots of the pol angles
 """
 
-from pspy import so_dict, pspy_utils
+from pspy import so_dict, pspy_utils, so_spectra
+from pspipe_utils import pol_angle
 import numpy as np
 import pylab as plt
 import sys, os
@@ -32,12 +33,22 @@ pspy_utils.create_directory(paper_plot_dir)
 
 tag = d["best_fit_tag"]
 
+binning_file = d["binning_file"]
+lmax = d["lmax"]
+bestfit_dir = f"best_fits{tag}"
 result_dir = f"plots/results_EB{tag}"
+
 roots = ["mcmc"]
+
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 params = ["alpha_pa5_f090", "alpha_pa5_f150", "alpha_pa6_f090", "alpha_pa6_f150"]
 
 syst_error  = 0.1
-cut = "post_unblinding"
+cut = "pre_unblinding"
+
+print("*********")
+print(cut)
+
 burnin = 0.5
 samples = loadMCSamples(f"{result_dir}/chains_{cut}/{roots[0]}", settings={"ignore_rows": burnin})
 corr = samples.corr(params)
@@ -101,6 +112,16 @@ cov_150 = 1 / (1 / std["alpha_pa5_f150"] ** 2 + 1 / std["alpha_pa6_f150"] ** 2)
 mean_150 = cov_150 * (mean["alpha_pa5_f150"]  / std["alpha_pa5_f150"] ** 2 + mean["alpha_pa6_f150"]  / std["alpha_pa6_f150"] ** 2)
 std_150 =  np.sqrt(cov_150)
 
+cov_pa5 = 1 / (1 / std["alpha_pa5_f090"] ** 2 + 1 / std["alpha_pa5_f150"] ** 2)
+mean_pa5 = cov_pa5 * (mean["alpha_pa5_f090"]  / std["alpha_pa5_f090"] ** 2 + mean["alpha_pa5_f150"]  / std["alpha_pa5_f150"] ** 2)
+std_pa5 =  np.sqrt(cov_pa5)
+
+cov_pa6 = 1 / (1 / std["alpha_pa6_f090"] ** 2 + 1 / std["alpha_pa6_f150"] ** 2)
+mean_pa6 = cov_pa6 * (mean["alpha_pa6_f090"]  / std["alpha_pa6_f090"] ** 2 + mean["alpha_pa6_f150"]  / std["alpha_pa6_f150"] ** 2)
+std_pa6 =  np.sqrt(cov_pa6)
+
+
+
 
 all_angles["alpha_90", "mean"] = mean_90
 all_angles["alpha_90", "std"] = std_90
@@ -108,7 +129,12 @@ all_angles["alpha_90", "std"] = std_90
 all_angles["alpha_150", "mean"] = mean_150
 all_angles["alpha_150", "std"] = std_150
 
+print("alpha 150 GHz", mean_150, std_150)
+print("alpha 90 GHz", mean_90, std_90)
+print("alpha pa5 GHz", mean_pa5, std_pa5)
+print("alpha pa6 GHz", mean_pa6, std_pa6)
 
+print("alpha_all", mean_ml_alpha, std_ml_alpha)
 
     
 for c1, par_name1 in enumerate(params):
@@ -124,8 +150,10 @@ for det_waf in ["pa5", "pa6"]:
     cov_comb = 1 / (1 / std[f"alpha_{det_waf}_f090"] ** 2 + 1 / std[f"alpha_{det_waf}_f150"] ** 2 )
     mean_comb[det_waf] = cov_comb * ( mean[f"alpha_{det_waf}_f090"] / std[f"alpha_{det_waf}_f090"] ** 2 + mean[f"alpha_{det_waf}_f150"] / std[f"alpha_{det_waf}_f150"] ** 2)
     std_comb[det_waf] =  np.sqrt(cov_comb)
-    print(det_waf, mean_comb[det_waf], std_comb[det_waf])
     std_comb[det_waf] = np.sqrt(std_comb[det_waf] ** 2 + syst_error ** 2) # add sys error
+    print("beta", det_waf, mean_comb[det_waf], std_comb[det_waf])
+
+
     x, gauss = gaussian(mean_comb[det_waf], std_comb[det_waf] )
     
     plt.plot(x, gauss, label=f"${latex_par_name[f'beta_{det_waf}']}$ = {mean_comb[det_waf]:.3f} $\pm$ {std_comb[det_waf]:.3f}", linestyle="--", alpha=0.5)
@@ -134,10 +162,13 @@ for det_waf in ["pa5", "pa6"]:
     all_angles[f"beta_{det_waf}", "std"] = std_comb[det_waf]
 
 
+
     
 cov_ACT = 1 / ( 1 / std_comb["pa5"] ** 2 + 1 / std_comb["pa6"] ** 2 )
 mean_ACT = cov_ACT * (mean_comb["pa5"] / std_comb["pa5"] ** 2 + mean_comb["pa6"] / std_comb["pa6"] ** 2)
 std_ACT = np.sqrt(cov_ACT)
+
+print("beta_all", mean_ACT, std_ACT)
 
 
 x, gauss = gaussian(mean_ACT, std_ACT)
@@ -176,4 +207,54 @@ all_angles[f"beta_ACT+komatsu", "std"] = std_ACT_komatsu
 with open(f"{result_dir}/angle_{cut}.pkl", "wb") as fp:
     pickle.dump(all_angles, fp)
 
+
+
+
+
+def plot_spectrum(l, psth_rot, lb_dat, ps, error, cov, spectrum):
+
+
+    lb, ps_th_b = pspy_utils.naive_binning(l, psth_rot[spectrum], binning_file, lmax)
+    id = np.where(lb>=lb_dat[0])
+    lb, ps_th_b = lb[id], ps_th_b[id]
+    chi2 = (ps - ps_th_b) @ np.linalg.inv(cov) @ (ps - ps_th_b)
+    chi2_null = (ps) @ np.linalg.inv(cov) @ (ps)
+
+    print("delta chi2", chi2 - chi2_null)
+    pte = 1 - ss.chi2(len(lb)).cdf(chi2)
+    pte_null = 1 - ss.chi2(len(lb)).cdf(chi2_null)
+    plt.figure(figsize=(14,8))
+    plt.errorbar(l, psth_rot[spectrum] * 0, label=r"PTE ($\psi=0^{\circ}$):  %.5f" % (pte_null*100)  + "%", color="black", linestyle="--")
+    plt.errorbar(l, psth_rot[spectrum], label=r"PTE ($\psi=%.2f^{\circ}$):  %.1f" % (mean_ACT, pte*100)  + "%", color="gray")
+    plt.errorbar(lb_dat, ps, error, fmt="o", color="royalblue")
+    plt.xlabel(r"$\ell$", fontsize=35)
+    plt.ylabel(r"$D^{\rm %s}_{\ell} \ [\mu \rm K^{2}]$" % spectrum, fontsize=35)
+    plt.legend(fontsize=20)
+    if spectrum == "TB":
+        plt.ylim(-4, 6)
+    if spectrum == "EB":
+        plt.ylim(-0.3, 0.6)
+
+    plt.xlim(0,3500)
+    plt.tight_layout()
+    plt.savefig(f"{paper_plot_dir}/combined_{spectrum}_{cut}.pdf", bbox_inches="tight")
+    plt.clf()
+    plt.close()
+
+
+print("*********")
+
+l, ps_th = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
+l, psth_rot = pol_angle.rot_theory_spectrum(l, ps_th, mean_ACT, mean_ACT)
+lb_dat, ps, error = np.loadtxt(f"{result_dir}/combined_EB_{cut}.dat", unpack=True)
+cov = np.load(f"{result_dir}/combined_cov_EB_{cut}.npy")
+
+plot_spectrum(l, psth_rot, lb_dat, ps, error, cov, "EB")
+
+if cut == "post_unblinding": #For TB we have only the post_unblinding spectrum available
+    combined_spec_dir = f"combined_spectra{tag}"
+
+    lb_dat, ps, error = np.loadtxt(f"{combined_spec_dir}/Dl_all_TB_cmb_only.dat", unpack=True)
+    cov = np.load(f"{combined_spec_dir}/cov_all_TB.npy")
+    plot_spectrum(l, psth_rot, lb_dat, ps, error, cov, "TB")
 

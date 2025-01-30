@@ -206,33 +206,22 @@ plt.close()
 
 
 lb_ml = B_modes_utils.get_ml_bins(bin_out_dict, lb)
-P_mat = B_modes_utils.get_P_mat(len(vec_EB), lb_ml, bin_out_dict, fig_name=f"{result_dir}/P_mat_all_EB.png")
+P_mat = B_modes_utils.get_P_mat(len(vec_EB), lb_ml, bin_out_dict, fig_name=f"{result_dir}/P_mat_all_EB{cut}.png")
 
 cov_ml = covariance.get_max_likelihood_cov(P_mat,
                                            i_cov,
                                            force_sim = True,
                                            check_pos_def = True)
                                            
-vec_ml_corr = covariance.max_likelihood_spectra(cov_ml,
-                                                i_cov,
-                                                P_mat,
-                                                vec_EB_corr)
+vec_ml = covariance.max_likelihood_spectra(cov_ml,
+                                           i_cov,
+                                           P_mat,
+                                           vec_EB)
 
 
-i_cov_ml = np.linalg.inv(cov_ml)
 error_ml = np.sqrt(cov_ml.diagonal())
- 
-chi2_ml = vec_ml_corr @  i_cov_ml @ vec_ml_corr
-PTE_ml  = 1 - ss.chi2(len(lb_ml)).cdf(chi2_ml)
 
-plt.figure(figsize=(12,8))
-plt.ylabel(r"$D_{\ell}^{EB}$", fontsize=22)
-plt.xlabel(r"$\ell$", fontsize=22)
-plt.plot(lb_ml, lb_ml*0)
-plt.errorbar(lb_ml, vec_ml_corr,  error_ml, fmt=".", label=f"p-value {PTE_ml:.3f}")
-plt.legend()
-plt.tight_layout()
-plt.savefig(f"{paper_plot_dir}/vec_ml_{cut}{tag}.pdf")
-plt.clf()
-plt.close()
+np.savetxt(f"{result_dir}/combined_EB_{cut}.dat", np.transpose([lb_ml, vec_ml, error_ml]))
+np.save(f"{result_dir}/combined_cov_EB_{cut}.npy", cov_ml)
+
 

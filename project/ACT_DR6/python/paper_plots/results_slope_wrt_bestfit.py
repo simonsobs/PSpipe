@@ -1,5 +1,5 @@
 """
-This script plot the ratio of power spectra of ACT/SPT3G/Planck with respect to ACT/P-ACT and Planck best fit.
+This script plot the ratio of power spectra of ACT/Planck with respect to ACT/P-ACT and Planck best fit.
 Before running it you need to have run: get_best_fit_mflike, apply_likelihood_calibration, get_combined_spectra
 with post_likelihood, post_likelihood_Planck, post_likelihood_PACT
 
@@ -56,9 +56,6 @@ spec_list = ["TT", "EE"]
 ########################################################################################
 
 
-spt3G_ratio_path = os.path.join(os.path.dirname(os.path.abspath(pspipe_utils.__file__)), "data/spectra/spt3G")
-l_spt_EE, frac_spt_EE, sigma_spt_EE = np.loadtxt(f"{spt3G_ratio_path}/spt-3g_2024_Dl_EE_delensed_unblinded_theoryrel_digitized.txt", unpack=True)
-
 run_name = {}
 run_name["_paper"] = "ACT"
 run_name["_paper_PACT"] = "PACT"
@@ -102,8 +99,7 @@ for spec in spec_list:
         cl_th = Dl_th[spec] * 2 * np.pi / (lth * (lth + 1))
         lb_th_p, cb_th_p = pspy_utils.naive_binning(lth, cl_th, binning_planck, lmax)
         l_planck_spec = l_planck[spec]
-
-
+        
         id_planck = np.where( (lb_th_p >= l_planck_spec[0]) & (lb_th_p <= l_planck_spec[-1]))
         cb_th_p = cb_th_p[id_planck]
         ratio_Planck, sigma_ratio_Planck = ps_planck_b[spec]/cb_th_p, sigma_planck[spec]/cb_th_p
@@ -131,19 +127,11 @@ for spec in spec_list:
 
         sigma_ratio_Planck = np.sqrt(np.diagonal(cov_ratio_ML))
         
-        
         plt.subplot(3, 1, count+1)
-
         plt.ylabel(r"$D^{\rm data}_\ell$/$D^{\rm th}_{\ell, \rm %s} $" % name_list[count], fontsize=16)
-
-        
-
         plt.plot(lth, lth * 0 + 1, color="black", linestyle="--")
         plt.errorbar(lb_ml, ratio_ACT, sigma_ratio_ACT, fmt="-o", label="ACT")
-        plt.errorbar(l_planck_spec, ratio_Planck, sigma_ratio_Planck, fmt="-o", label="Planck", alpha=0.5)
-
-        if (spec == "EE") & (my_tag == "_Planck"):
-            plt.errorbar(l_spt_EE, frac_spt_EE, sigma_spt_EE, fmt="-o", label="SPT3G (pre-unblinding)")
+        plt.errorbar(l_planck_spec, ratio_Planck, sigma_ratio_Planck, fmt="-o", label="Planck", alpha=0.7)
 
         plt.ylim(y_ticks[spec][0], y_ticks[spec][-1])
             
@@ -151,8 +139,6 @@ for spec in spec_list:
         
         if count == 0:
             plt.legend(loc="upper left",bbox_to_anchor=(0.83, 1.62), fontsize=16, frameon=False)
-            if spec == "EE":
-                plt.legend(loc="upper left",bbox_to_anchor=(0.6, 1.88), fontsize=18, frameon=False)
         if count == 2:
             plt.xlabel(r"$\ell$", fontsize=22)
         if count != 2:

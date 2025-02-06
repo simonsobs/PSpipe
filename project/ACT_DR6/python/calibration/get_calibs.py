@@ -157,9 +157,9 @@ for test in tests:
                                                                    f"{chains_dir}/{name}")
 
 
-        results_dict[name] = {"multipole_range": multipole_range[map_set],
-                               "ref_map_set": ref_map_set,
-                               "calibs": [cal_mean, cal_std]}
+        results_dict[test, ar] = {"multipole_range": multipole_range[map_set],
+                                  "ref_map_set": ref_map_set,
+                                  "calibs": [cal_mean, cal_std]}
 
         calib_vec = np.array([cal_mean**2, cal_mean, 1])
         res_spectrum, res_cov = consistency.project_spectra_vec_and_cov(spec_vec, full_cov,
@@ -183,8 +183,7 @@ for i, ar in enumerate(d["arrays_dr6"]):
     print(f"calibration {map_set} with {ref_map_set}")
 
     for j, test in enumerate(tests):
-        name, _ = get_proj_pattern(test, map_set, ref_map_set)
-        cal, std = results_dict[name]["calibs"]
+        cal, std = results_dict[test, ar]["calibs"]
         print(f"{test}, cal: {cal}, sigma cal: {std}")
 
         plt.errorbar(i + 0.9 + j * 0.1, cal, std, label = test,

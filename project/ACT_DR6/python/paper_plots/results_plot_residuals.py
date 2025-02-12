@@ -38,6 +38,7 @@ run_name["_Planck_LB"] = "Planck LB"
 paper_plot_dir = f"plots/paper_plot/"
 pspy_utils.create_directory(paper_plot_dir)
 
+xmax = 3000
 type = d["type"]
 
 planck_data_path = os.path.join(os.path.dirname(os.path.abspath(pspipe_utils.__file__)), "data/spectra/planck")
@@ -136,8 +137,8 @@ for count, spec_select in enumerate(selected_spectra_list):
     plt.subplot(6, 1, 1 + count * 2)
     if s_name == "TT": plt.semilogy()
     plt.ylim(ylim[s_name])
-    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt=".", color="royalblue", label="ACT")
-    plt.errorbar(l_p_rebin, Dl_p_rebin * l_p_rebin ** fac[s_name], sigma_p_rebin * l_p_rebin ** fac[s_name], fmt=".", color="darkorange", alpha=0.6, label="Planck")
+    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt=".", color="royalblue", label="ACT", mfc='w', elinewidth=2)
+    plt.errorbar(l_p_rebin, Dl_p_rebin * l_p_rebin ** fac[s_name], sigma_p_rebin * l_p_rebin ** fac[s_name], fmt=".", color="darkorange", alpha=1, label="Planck", mfc='w', elinewidth=1)
     plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", alpha=1, label=r" %s $\Lambda$CDM" % run_name[tag])
 
     if fac[s_name] == 0:
@@ -147,7 +148,7 @@ for count, spec_select in enumerate(selected_spectra_list):
     if fac[s_name] > 1:
         plt.ylabel(r"$\ell^{%s}D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % (fac[s_name], s_name), fontsize=22)
 
-    plt.xlim(0,4000)
+    plt.xlim(0,xmax)
     if count == 0:
         plt.legend(fontsize=16)
     plt.xticks([])
@@ -172,12 +173,12 @@ for count, spec_select in enumerate(selected_spectra_list):
         plt.ylabel(r"$ \ell^{%s} \Delta D^{%s}_{\ell}  \ [{%s}  \mu \rm K^{2}] $" %  (res_fac[s_name], s_name, divider_str), fontsize=22)
 
     plt.errorbar(lb_ml, res  *  lb_ml ** res_fac[s_name] / divider, sigma_ml  *  lb_ml ** res_fac[s_name] / divider,
-                 label=r"ACT", fmt=".", color="royalblue", elinewidth=2)
+                 label=r"ACT", fmt=".", color="royalblue", elinewidth=1, mfc='w')
     plt.errorbar(l_p_rebin, res_p_rebin  *  l_p_rebin ** res_fac[s_name] / divider, sigma_p_rebin  *  l_p_rebin ** res_fac[s_name] / divider,
-                 label=r"Planck", alpha=0.6, fmt=".", color="darkorange", elinewidth=2)
+                 label=r"Planck", alpha=1, fmt=".", color="darkorange", elinewidth=1, mfc='w')
     
     plt.plot(lb_th, lb_th * 0, color="gray")
-    plt.xlim(0,4000)
+    plt.xlim(0, xmax)
     plt.ylim(ylim_res[s_name])
     if count != 2:
         plt.xticks([])

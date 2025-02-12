@@ -54,7 +54,7 @@ log = log.get_logger(**d)
 
 cut = "post_unblinding"
 Rminus1_stop = 0.01
-Rminus1_cl_stop = 0.02
+Rminus1_cl_stop = 0.01
 
 cov_dir = "covariances"
 spec_dir = "spectra_leak_corr_ab_corr"
@@ -166,9 +166,12 @@ plt.savefig(f"{paper_plot_dir}/posterior_BB_{cut}{tag}.pdf", bbox_inches="tight"
 plt.clf()
 plt.close()
     
+#min_chi2 = np.min(samples.getParams().chi2)
 chi2 = -2 * loglike(samples.mean("a_BB_cmb"), samples.mean("a_BB_dust"))
-ndof = len(vec_BB)
-print(f"chi2: {chi2}, ndof: {ndof}")
+
+ndof = len(vec_BB) - 1
+pte = 1 - ss.chi2(ndof).cdf(chi2)
+print(f"{samples.mean('a_BB_cmb')}, {samples.std('a_BB_cmb')}, chi2: {chi2}, pte: {pte}, ndof: {ndof}")
 
 lb_ml_BB, vec_ml_BB, cov_ml_BB = B_modes_utils.get_fg_sub_ML_solution_BB(lb,
                                                                          vec_BB,
@@ -228,6 +231,8 @@ plt.tight_layout()
 plt.savefig(f"{paper_plot_dir}/combined_BB_ellfac{fac_ell}_{cut}{tag}.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()
+
+np.savetxt(f"{BB_dir}/combined_BB.dat", np.transpose([lb_ml_BB, vec_ml_BB, std_ml_BB]))
     
 # also plot individual spectra for the data
 for my_spec in bin_out_dict.keys():

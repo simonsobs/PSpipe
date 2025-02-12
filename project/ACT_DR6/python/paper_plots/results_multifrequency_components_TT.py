@@ -6,7 +6,7 @@ import sys
 
 import numpy as np
 import pylab as plt
-from pspipe_utils import best_fits, log, pspipe_list, beam_chromaticity, covariance
+from pspipe_utils import best_fits, log, pspipe_list, covariance
 from pspy import pspy_utils, so_dict, so_spectra
 from matplotlib import rcParams
 
@@ -35,18 +35,11 @@ components_dir = f"{bestfit_dir}/components"
 cov_dir = "covariances"
 spec_dir = f"spectra_leak_corr_ab_corr_cal{tag}"
 
-
 paper_plot_dir = f"plots/paper_plot/"
 pspy_utils.create_directory(paper_plot_dir)
 
-
 bin_lo, bin_hi, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
-
-
-
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter = "_")
-
-
 
 ## Read the data and extract TT
 cov_xar = np.load(f"{cov_dir}/x_ar_final_cov_data.npy")
@@ -80,10 +73,6 @@ for spec_select in bin_out_dict.keys():
     ps_TT[my_spec] = vec_TT[my_id]
     sigma_TT[my_spec] = np.sqrt(cov_TT[np.ix_(my_id, my_id)].diagonal())
 
-# Done
-
-
-
 
 #### remove pa6 for clarity
 d["arrays_dr6"] = ["pa4_f220", "pa5_f090", "pa5_f150"]
@@ -93,11 +82,9 @@ narrays, _, _ = pspipe_list.get_arrays_list(d)
 
 l_th, ps_dict = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 
-
 fg_components["tt"].remove("tSZ_and_CIB")
 for comp in ["tSZ", "cibc", "tSZxCIB"]:
     fg_components["tt"].append(comp)
-
 
 
 spectra_list =  ["dr6_pa5_f090xdr6_pa5_f090", "dr6_pa5_f090xdr6_pa5_f150",  "dr6_pa4_f220xdr6_pa5_f090", "dr6_pa5_f150xdr6_pa5_f150",  "dr6_pa4_f220xdr6_pa5_f150", "dr6_pa4_f220xdr6_pa4_f220"]
@@ -125,13 +112,11 @@ for i, cross in enumerate(spectra_list):
         ax.plot(l_th, ps_dict["TT"], color="gray", linestyle="--", linewidth=2)
         ax.plot(l_th, ps_dict["TT"] + fg_all["TT"], color="gray", linewidth=2)
 
-
     for comp, col in zip(fg_components["tt"], comp_color):
         l_th, fg_comp = np.loadtxt(f"{components_dir}/tt_{comp}_{cross}.dat", unpack=True)
         if comp == "tSZxCIB":
             fg_comp = np.abs(fg_comp)
 
-        
         if i==0:
             if comp == "cibp":
                 label = "CIB-Poisson"
@@ -146,10 +131,11 @@ for i, cross in enumerate(spectra_list):
         else:
             ax.plot(l_th, fg_comp, linewidth=2, color=col)
 
-
     title_ax = cross.replace("dr6_", "")
-    title_ax = title_ax.replace("_", "-")
-    if "pa4-f220" in title_ax:
+    title_ax = title_ax.replace("_", " ")
+    title_ax = title_ax.replace("pa", "PA")
+
+    if "PA4 f220" in title_ax:
         a, b = title_ax.split("x")
         title_ax = f"{b}x{a}"
 
@@ -158,14 +144,14 @@ for i, cross in enumerate(spectra_list):
     ax.set_ylim(1, 1e4)
     ax.set_xlim(200, 7800)
 
-
 for idx in zip(*np.triu_indices(narrays, k=1)):
     ax = axes[idx]
     fig.delaxes(ax)
 
 for i in range(narrays):
     axes[-1, i].set_xlabel(r"$\ell$", fontsize=35)
-    axes[i, 0].set_ylabel(r"$D_\ell$", fontsize=35)
+    axes[i, 0].set_ylabel(r"$D_\ell \ [\mu K^{2}]$", fontsize=35)
+    
 fig.legend(bbox_to_anchor=(0.94,1), fontsize=30)
 plt.tight_layout()
 plt.savefig(f"{paper_plot_dir}/TT_per_components{tag}.pdf")

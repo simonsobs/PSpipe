@@ -30,7 +30,6 @@ cov_T_E_only = d["cov_T_E_only"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
-
 mcm_dir = "mcms"
 spec_dir = "spectra"
 alms_dir = "alms"
@@ -95,7 +94,7 @@ for task in subtasks:
 
     log.info(f"[{task}] Computing spectra for {sv1}_{ar1} x {sv2}_{ar2}")
 
-    xtra_pw1, xtra_pw2, mm_tf1, mm_tf2 = None, None, None, None
+    xtra_pw1, xtra_pw2 = None, None
     if deconvolve_pixwin:
         if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX":
             pixwin_l = hp.pixwin(d[f"pixwin_{sv1}"]["nside"])
@@ -103,12 +102,6 @@ for task in subtasks:
         if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX":
             pixwin_l = hp.pixwin(d[f"pixwin_{sv2}"]["nside"])
             lb, xtra_pw2 = pspy_utils.naive_binning(np.arange(len(pixwin_l)),  pixwin_l, binning_file, lmax)
-
-
-    if d[f"deconvolve_map_maker_tf_{sv1}"]:
-        mm_tf1 = so_spectra.read_ps(d[f"mm_tf_{sv1}_{ar1}.dat"], spectra=spectra)
-    if d[f"deconvolve_map_maker_tf_{sv2}"]:
-        mm_tf2 = so_spectra.read_ps(d[f"mm_tf_{sv2}_{ar2}.dat"], spectra=spectra)
 
 
     ps_dict = {}
@@ -154,14 +147,11 @@ for task in subtasks:
                                                                 spectra,
                                                                 xtra_corr=xtra_corr)
 
-
             lb, ps = transfer_function.deconvolve_xtra_tf(lb,
                                                           ps,
                                                           spectra,
                                                           xtra_pw1=xtra_pw1,
-                                                          xtra_pw2=xtra_pw2,
-                                                          mm_tf1=mm_tf1,
-                                                          mm_tf2=mm_tf2)
+                                                          xtra_pw2=xtra_pw2)
 
             if write_all_spectra:
                 so_spectra.write_ps(spec_dir + f"/{spec_name}.dat", lb, ps, type, spectra=spectra)

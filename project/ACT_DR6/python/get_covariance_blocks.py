@@ -12,7 +12,6 @@ d.read_from_file(sys.argv[1])
 
 log = log.get_logger(**d)
 
-windows_dir = "windows"
 mcms_dir = "mcms"
 spectra_dir = "spectra"
 noise_dir = "noise_model"

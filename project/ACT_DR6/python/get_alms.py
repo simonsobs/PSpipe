@@ -22,8 +22,6 @@ deconvolve_pixwin = d["deconvolve_pixwin"]
 niter = d["niter"]
 apply_kspace_filter = d["apply_kspace_filter"]
 
-
-window_dir = "windows"
 alms_dir = "alms"
 pspy_utils.create_directory(alms_dir)
 

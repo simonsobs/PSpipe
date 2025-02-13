@@ -20,8 +20,6 @@ surveys = d["surveys"]
 deconvolve_pixwin = d["deconvolve_pixwin"]
 apply_kspace_filter = d["apply_kspace_filter"]
 
-
-window_dir = "windows"
 plot_dir = "plots/maps/"
 
 pspy_utils.create_directory(plot_dir)

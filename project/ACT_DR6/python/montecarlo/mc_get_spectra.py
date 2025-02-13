@@ -30,7 +30,6 @@ apply_kspace_filter = d["apply_kspace_filter"]
 if sim_alm_dtype == "complex64": sim_alm_dtype = np.complex64
 elif sim_alm_dtype == "complex128": sim_alm_dtype = np.complex128
 
-window_dir = "windows"
 mcm_dir = "mcms"
 sim_spec_dir = "sim_spectra"
 bestfit_dir = "best_fits"

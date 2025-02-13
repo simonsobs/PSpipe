@@ -17,7 +17,7 @@ lmax = d["lmax"]
 binning_file = d["binning_file"]
 filter_dict = d[f"k_filter_dr6"]
 kspace_tf_path = d["kspace_tf_path"]
-window_dir = "windows"
+window_dir =  d["window_dir"]
 
 kspace_matrix = np.load(f"{kspace_tf_path}/kspace_matrix_dr6_pa6_f150xdr6_pa6_f150.npy")
 templates = so_map.read_map(f"{window_dir}/window_dr6_pa5_f150_baseline.fits")

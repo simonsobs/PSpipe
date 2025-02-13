@@ -28,7 +28,6 @@ if sim_alm_dtype in ["complex64", "complex128"]: sim_alm_dtype = getattr(np, sim
 else: raise ValueError(f"Unsupported sim_alm_dtype {sim_alm_dtype}")
 dtype = np.float32 if sim_alm_dtype == "complex64" else np.float64
 
-window_dir = "windows"
 mcm_dir = "mcms"
 spec_dir = "sim_spectra_planck_noise_and_syst"
 nlms_dir = "noise_alms"

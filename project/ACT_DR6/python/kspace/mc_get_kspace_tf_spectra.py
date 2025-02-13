@@ -29,7 +29,6 @@ if sim_alm_dtype == "complex64":
 elif sim_alm_dtype == "complex128":
     sim_alm_dtype = np.complex128
 
-window_dir = "windows"
 mcm_dir = "mcms"
 tf_dir = "sim_spectra_for_tf"
 bestfit_dir = "best_fits"

@@ -42,7 +42,7 @@ if d["cov_T_E_only"] == True:
 else:
     modes_for_xar_cov = spectra
 
-win_dir = "windows"
+win_dir = d["window_dir"]
 cov_dir = "covariances"
 plot_dir = "plots/trispectrum_poisson"
 

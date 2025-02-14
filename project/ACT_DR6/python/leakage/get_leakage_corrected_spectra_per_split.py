@@ -25,7 +25,6 @@ surveys = d["surveys"]
 lmax = d["lmax"]
 binning_file = d["binning_file"]
 type = d["type"]
-leakage_file_dir = d["leakage_file_dir"]
 
 bestfit_dir = "best_fits"
 spec_dir = "spectra"
@@ -58,8 +57,7 @@ for sv in surveys:
             log.info(f"Read leakage file for {sv} {ar} TE {i} : {leakage_file_TE}")
             log.info(f"Read leakage file for {sv} {ar} TB {i} : {leakage_file_TB}")
 
-            l, gamma[name, i]["TE"], err_m_TE, gamma[name, i]["TB"], err_m_TB = leakage.read_leakage_model(leakage_file_dir,
-                                                                                                           leakage_file_TE,
+            l, gamma[name, i]["TE"], err_m_TE, gamma[name, i]["TB"], err_m_TB = leakage.read_leakage_model(leakage_file_TE,
                                                                                                            leakage_file_TB,
                                                                                                            lmax,
                                                                                                            lmin=2,

@@ -23,7 +23,6 @@ surveys = d["surveys"]
 lmax = d["lmax"]
 binning_file = d["binning_file"]
 type = d["type"]
-leakage_file_dir = d["leakage_file_dir"]
 
 bestfit_dir = "best_fits"
 spec_dir = "spectra"
@@ -38,14 +37,14 @@ gamma, var = {}, {}
 
 plt.figure(figsize=(12, 8))
 for sv in surveys:
+
     arrays = d[f"arrays_{sv}"]
     for ar in arrays:
         name = f"{sv}_{ar}"
         pol_eff = d[f"pol_eff_{name}"]
 
         gamma[name], var[name] = {}, {}
-        l, gamma[name]["TE"], err_m_TE, gamma[name]["TB"], err_m_TB = leakage.read_leakage_model(leakage_file_dir,
-                                                                                                 d[f"leakage_beam_{name}_TE"][0],
+        l, gamma[name]["TE"], err_m_TE, gamma[name]["TB"], err_m_TB = leakage.read_leakage_model(d[f"leakage_beam_{name}_TE"][0],
                                                                                                  d[f"leakage_beam_{name}_TB"][0],
                                                                                                  lmax,
                                                                                                  lmin=2,

@@ -21,7 +21,6 @@ surveys = d["surveys"]
 lmax = d["lmax"]
 type = d["type"]
 binning_file = d["binning_file"]
-leakage_file_dir = d["leakage_file_dir"]
 n_sims = 10000
 
 bestfit_dir = "best_fits"

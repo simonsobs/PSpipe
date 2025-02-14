@@ -23,7 +23,16 @@ parser.add_argument("--iStart", type=int, default=None,
                     help="Correct using the cov that used only use these simulations")
 parser.add_argument("--iStop", type=int, default=None,
                     help="Correct using the cov that used only use these simulations")
+parser.add_argument("--plot-all", action='store_true', dest='plot_all',
+                    help="Make plots of the GP fits for both the main and block diagonals")
+parser.add_argument("--plot-diag", action='store_true', dest='plot_diag',
+                    help="Make plots of the GP fits for the main diagonals only")
 args = parser.parse_args()
+
+plot_all = args.plot_all
+plot_diag = args.plot_diag
+if plot_all and plot_diag:
+    raise ValueError('plot-all and plot-diag cannot be both True')
 
 d = so_dict.so_dict()
 d.read_from_file(args.paramfile)
@@ -33,8 +42,10 @@ log = log.get_logger(**d)
 covariances_dir = "covariances"
 plot_dir = "plots/x_ar_cov"
 
-pspy_utils.create_directory(plot_dir)
-pspy_utils.create_directory(plot_dir + '/off_diags')
+if plot_all or plot_diag:
+    pspy_utils.create_directory(plot_dir)
+    if not plot_diag:    
+        pspy_utils.create_directory(plot_dir + '/off_diags')
 
 binning_file = d["binning_file"]
 lmax = d["lmax"]
@@ -128,53 +139,60 @@ else:
     np.save(os.path.join(covariances_dir, "x_ar_final_cov_sim_gp.npy"), corrected_mc_cov)
 
 # make plots
-for i in range(len(keys)):
-    name_i, spec_i = keys[i]
-    for j in range(i, len(keys)):
-        name_j, spec_j = keys[j]
+if plot_all or plot_diag:
+    for i in range(len(keys)):
+        name_i, spec_i = keys[i]
 
-        if gprs[i, j] is not None:
-            kern = gprs[i, j].kernel_
+        if plot_diag:
+            js = [i]
         else:
-            kern = ''
-        print(name_i, spec_i, name_j, spec_j, kern)
+            js = range(i, len(keys))
 
-        sel = np.s_[i*n_bins:(i+1)*n_bins, j*n_bins:(j+1)*n_bins]
-        plt.errorbar(bin_mean, np.diag(mc_cov_anaflat[sel]), np.diag(var_mc_cov_anaflat[sel])**.5, zorder=0, label='MC')
-        plt.plot(bin_mean, np.diag(smoothed_mc_cov_anaflat[sel]), zorder=1, label='GP(MC)')
+        for j in js:
+            name_j, spec_j = keys[j]
 
-        # get idxs
-        idxs_i = idx_arrs_by_block[i]
-        idxs_j = idx_arrs_by_block[j]
-        if idxs_i is not None and idxs_j is not None:
-            idxs = np.intersect1d(idxs_i, idxs_j)
-        elif idxs_i is None:
-            idxs = idxs_j # idxs_i is "all idxs" so use idxs_j (which might also be "all idxs")
-        else:
-            idxs = idxs_i # idxs_j is "all idxs" so use idxs_i
-        if idxs is None:
-            idxs = np.arange(n_bins, dtype=int)
-
-        if len(idxs) > 0:
-            plt.axvline(bin_mean[idxs[0]], linestyle='--', color='k')
-            plt.axvline(bin_mean[idxs[-1]], linestyle='--', color='k')
-        if i == j:
-            plt.ylim(.5, 1.5)
-        else:
-            plt.ylim(-.1, .1)
-        plt.grid()
-        plt.xlabel("l")
-        plt.ylabel("ratio")
-        plt.legend()
-        plt.title(f"Cov({name_i}_{spec_i}, {name_j}_{spec_j})\n{kern}")
-        if args.iStart is not None:
-            if i == j:
-                plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
+            if gprs[i, j] is not None:
+                kern = gprs[i, j].kernel_
             else:
-                plt.savefig(os.path.join(plot_dir, 'off_diags', f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
-        else:
-            if i == j:
-                plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
+                kern = ''
+            print(name_i, spec_i, name_j, spec_j, kern)
+
+            sel = np.s_[i*n_bins:(i+1)*n_bins, j*n_bins:(j+1)*n_bins]
+            plt.errorbar(bin_mean, np.diag(mc_cov_anaflat[sel]), np.diag(var_mc_cov_anaflat[sel])**.5, zorder=0, label='MC')
+            plt.plot(bin_mean, np.diag(smoothed_mc_cov_anaflat[sel]), zorder=1, label='GP(MC)')
+
+            # get idxs
+            idxs_i = idx_arrs_by_block[i]
+            idxs_j = idx_arrs_by_block[j]
+            if idxs_i is not None and idxs_j is not None:
+                idxs = np.intersect1d(idxs_i, idxs_j)
+            elif idxs_i is None:
+                idxs = idxs_j # idxs_i is "all idxs" so use idxs_j (which might also be "all idxs")
             else:
-                plt.savefig(os.path.join(plot_dir, 'off_diags', f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
-        plt.close()
+                idxs = idxs_i # idxs_j is "all idxs" so use idxs_i
+            if idxs is None:
+                idxs = np.arange(n_bins, dtype=int)
+
+            if len(idxs) > 0:
+                plt.axvline(bin_mean[idxs[0]], linestyle='--', color='k')
+                plt.axvline(bin_mean[idxs[-1]], linestyle='--', color='k')
+            if i == j:
+                plt.ylim(.5, 1.5)
+            else:
+                plt.ylim(-.1, .1)
+            plt.grid()
+            plt.xlabel("l")
+            plt.ylabel("ratio")
+            plt.legend()
+            plt.title(f"Cov({name_i}_{spec_i}, {name_j}_{spec_j})\n{kern}")
+            if args.iStart is not None:
+                if i == j:
+                    plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
+                else:
+                    plt.savefig(os.path.join(plot_dir, 'off_diags', f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}_{iStart}_{iStop}.png"))
+            else:
+                if i == j:
+                    plt.savefig(os.path.join(plot_dir, f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
+                else:
+                    plt.savefig(os.path.join(plot_dir, 'off_diags', f"GP_MC_covmat_smooth_{name_i}_{spec_i}_{name_j}_{spec_j}.png"))
+            plt.close()

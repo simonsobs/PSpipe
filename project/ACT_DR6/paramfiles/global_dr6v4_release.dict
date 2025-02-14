@@ -92,7 +92,6 @@ beam_file_dir = release_dir + "beams/main_beams/nominal/"
 include_beam_chromaticity_effect_in_best_fit = False # Note that best fit and corresponding sims were generated without include_beam_chromaticity_effect
 include_beam_chromaticity_effect_in_sacc = True
 
-
 beam_T_dr6_pa4_f150 = beam_file_dir + "coadd_pa4_f150_night_beam_tform_jitter_cmb.txt"
 beam_T_dr6_pa4_f220 = beam_file_dir + "coadd_pa4_f220_night_beam_tform_jitter_cmb.txt"
 beam_T_dr6_pa5_f090 = beam_file_dir + "coadd_pa5_f090_night_beam_tform_jitter_cmb.txt"
@@ -114,22 +113,21 @@ beam_mono_dr6_pa5_f150 = beam_file_dir + 'coadd_pa5_f150_night_beam_tform_jitter
 beam_mono_dr6_pa6_f090 = beam_file_dir + 'coadd_pa6_f090_night_beam_tform_jitter_mono.txt'
 beam_mono_dr6_pa6_f150 = beam_file_dir + 'coadd_pa6_f150_night_beam_tform_jitter_mono.txt'
 
+leakage_file_dir = release_dir + "beams/leakage_beams/nominal/"
 
-leakage_file_dir = release_dir + "beams/main_beams/leakage_beams/nominal/"
+leakage_beam_dr6_pa4_f150_TE = [leakage_file_dir + "pa4_f150_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa4_f220_TE = [leakage_file_dir + "pa4_f220_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f090_TE = [leakage_file_dir + "pa5_f090_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f150_TE = [leakage_file_dir + "pa5_f150_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f090_TE = [leakage_file_dir + "pa6_f090_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f150_TE = [leakage_file_dir + "pa6_f150_gamma_t2e.txt" for i in range(4)]
 
-leakage_beam_dr6_pa4_f150_TE = ["pa4_f150_gamma_t2e.txt" for i in range(4)]
-leakage_beam_dr6_pa4_f220_TE = ["pa4_f220_gamma_t2e.txt" for i in range(4)]
-leakage_beam_dr6_pa5_f090_TE = ["pa5_f090_gamma_t2e.txt" for i in range(4)]
-leakage_beam_dr6_pa5_f150_TE = ["pa5_f150_gamma_t2e.txt" for i in range(4)]
-leakage_beam_dr6_pa6_f090_TE = ["pa6_f090_gamma_t2e.txt" for i in range(4)]
-leakage_beam_dr6_pa6_f150_TE = ["pa6_f150_gamma_t2e.txt" for i in range(4)]
-
-leakage_beam_dr6_pa4_f150_TB = ["pa4_f150_gamma_t2b.txt" for i in range(4)]
-leakage_beam_dr6_pa4_f220_TB = ["pa4_f220_gamma_t2b.txt" for i in range(4)]
-leakage_beam_dr6_pa5_f090_TB = ["pa5_f090_gamma_t2b.txt" for i in range(4)]
-leakage_beam_dr6_pa5_f150_TB = ["pa5_f150_gamma_t2b.txt" for i in range(4)]
-leakage_beam_dr6_pa6_f090_TB = ["pa6_f090_gamma_t2b.txt" for i in range(4)]
-leakage_beam_dr6_pa6_f150_TB = ["pa6_f150_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa4_f150_TB = [leakage_file_dir + "pa4_f150_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa4_f220_TB = [leakage_file_dir + "pa4_f220_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f090_TB = [leakage_file_dir + "pa5_f090_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f150_TB = [leakage_file_dir + "pa5_f150_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f090_TB = [leakage_file_dir + "pa6_f090_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir + "pa6_f150_gamma_t2b.txt" for i in range(4)]
 
 
 window_dir = release_dir + "spectra/windows/dr6/"
@@ -183,5 +181,3 @@ sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = "tile_cmbmask"
 noise_sim_type_pa5 = "tile_cmbmask"
 noise_sim_type_pa6 = "tile_cmbmask_ivfwhm2"
-
-

@@ -38,7 +38,6 @@ iStop = d["iStop"]
 lmax = d["lmax"]
 type = d["type"]
 binning_file = d["binning_file"]
-leakage_file_dir = d["leakage_file_dir"]
 
 bestfit_dir = "best_fits"
 in_sim_spec_dir = d["sim_spec_dir"]
@@ -55,11 +54,10 @@ for sv in surveys:
         log.info(f"reading leakage info {name}")
         gamma[name], err_m_gamma[name], var[name] = {}, {}, {}
 
-        l, gamma[name]["TE"], err_m_gamma[name]["TE"], gamma[name]["TB"], err_m_gamma[name]["TB"] = leakage.read_leakage_model(leakage_file_dir,
-                                                                                                    d[f"leakage_beam_{name}_TE"][0],
-                                                                                                    d[f"leakage_beam_{name}_TB"][0],
-                                                                                                    lmax,
-                                                                                                    lmin=2)
+        l, gamma[name]["TE"], err_m_gamma[name]["TE"], gamma[name]["TB"], err_m_gamma[name]["TB"] = leakage.read_leakage_model(d[f"leakage_beam_{name}_TE"][0],
+                                                                                                                               d[f"leakage_beam_{name}_TB"][0],
+                                                                                                                               lmax,
+                                                                                                                               lmin=2)
 
 
         cov = {}

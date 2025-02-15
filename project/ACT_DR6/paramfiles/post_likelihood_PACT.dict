@@ -3,12 +3,12 @@ type = "Dl"
 lmax = 8500
 
 arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
-data_dir = '/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/'
-binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
+release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
+binning_file = release_dir + "spectra/binning/binning_50"
 
 best_fit_tag = "_paper_PACT"
 include_beam_chromaticity_effect_in_best_fit = True
-beam_file_dir = data_dir + 'beams/20240404_beams/'
+beam_file_dir = release_dir + "beams/main_beams/nominal/"
 beam_mono_dr6_pa4_f150 = beam_file_dir + 'coadd_pa4_f150_night_beam_tform_jitter_mono.txt'
 beam_mono_dr6_pa4_f220 = beam_file_dir + 'coadd_pa4_f220_night_beam_tform_jitter_mono.txt'
 beam_mono_dr6_pa5_f090 = beam_file_dir + 'coadd_pa5_f090_night_beam_tform_jitter_mono.txt'
@@ -16,7 +16,7 @@ beam_mono_dr6_pa5_f150 = beam_file_dir + 'coadd_pa5_f150_night_beam_tform_jitter
 beam_mono_dr6_pa6_f090 = beam_file_dir + 'coadd_pa6_f090_night_beam_tform_jitter_mono.txt'
 beam_mono_dr6_pa6_f150 = beam_file_dir + 'coadd_pa6_f150_night_beam_tform_jitter_mono.txt'
 
-passband_dir = data_dir + "passbands/"
+passband_dir = release_dir + "passbands/processed/"
 do_bandpass_integration = True
 freq_info_dr6_pa4_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa4_f150.dat"}
 freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir + "passband_dr6_pa4_f220.dat"}

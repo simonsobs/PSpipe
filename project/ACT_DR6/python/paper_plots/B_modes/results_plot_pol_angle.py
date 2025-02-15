@@ -44,7 +44,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 params = ["alpha_pa5_f090", "alpha_pa5_f150", "alpha_pa6_f090", "alpha_pa6_f150"]
 
 syst_error  = 0.1
-cut = "pre_unblinding"
+cut = "post_unblinding"
 
 print("*********")
 print(cut)

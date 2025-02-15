@@ -3,18 +3,13 @@ product_dir: products/dr6
 
 # Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
 # parsing the yaml file by the location to the pspipe installation
-config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/global_dr6_v4.dict]
+config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/global_dr6v4_release.dict]
 
 # Set location of scripts: default to pspipe_root/project/ACT_DR6/python
 script_base_dir: null
 
 
 pipeline:
-  # Main pipeline
-  get_window_dr6:
-    slurm:
-      ntasks: 5
-      cpus_per_task: 48
   get_mcm_and_bbl:
     slurm:
       ntasks: 5
@@ -67,6 +62,7 @@ pipeline:
       ntasks: 20
       cpus_per_task: 12
   montecarlo/mc_get_combined_syst_spectra:
+      force: true
       slurm:
         ntasks: 20
         cpus_per_task: 12

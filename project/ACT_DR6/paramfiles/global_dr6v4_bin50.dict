@@ -132,32 +132,32 @@ leakage_beam_dr6_pa5_f150_TB = [leakage_file_dir + "pa5_f150_gamma_t2b.txt" for 
 leakage_beam_dr6_pa6_f090_TB = [leakage_file_dir + "pa6_f090_gamma_t2b.txt" for i in range(4)]
 leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir + "pa6_f150_gamma_t2b.txt" for i in range(4)]
 
-
 window_dir = release_dir + "spectra/windows/dr6/"
 
-window_kspace_dr6_pa4_f150 =  window_dir + "kspace_mask_dr6_pa4_f150.fits"
+window_kspace_dr6_pa4_f150 =  window_dir + "window_dr6_pa4_f150_kspace.fits"
 window_T_dr6_pa4_f150 =  window_dir + "window_dr6_pa4_f150_baseline.fits"
 window_pol_dr6_pa4_f150 =  window_dir + "window_dr6_pa4_f150_baseline.fits"
 
-window_kspace_dr6_pa4_f220 = window_dir + "kspace_mask_dr6_pa4_f220.fits"
+window_kspace_dr6_pa4_f220 = window_dir + "window_dr6_pa4_f220_kspace.fits"
 window_T_dr6_pa4_f220 =  window_dir +"window_dr6_pa4_f220_baseline.fits"
 window_pol_dr6_pa4_f220 =  window_dir +"window_dr6_pa4_f220_baseline.fits"
 
-window_kspace_dr6_pa5_f090 = window_dir + "kspace_mask_dr6_pa5_f090.fits"
+window_kspace_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_kspace.fits"
 window_T_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
 window_pol_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
 
-window_kspace_dr6_pa5_f150 = window_dir +  "kspace_mask_dr6_pa5_f150.fits"
+window_kspace_dr6_pa5_f150 = window_dir +  "window_dr6_pa5_f150_kspace.fits"
 window_T_dr6_pa5_f150 = window_dir + "window_dr6_pa5_f150_baseline.fits"
 window_pol_dr6_pa5_f150 = window_dir +"window_dr6_pa5_f150_baseline.fits"
 
-window_kspace_dr6_pa6_f090 = window_dir + "kspace_mask_dr6_pa6_f090.fits"
+window_kspace_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_kspace.fits"
 window_T_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
 window_pol_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
 
-window_kspace_dr6_pa6_f150 = window_dir + "kspace_mask_dr6_pa6_f150.fits"
+window_kspace_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_kspace.fits"
 window_T_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
 window_pol_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
+
 
 
 # best fit params (only used for sim generation and covariances computation)

@@ -138,27 +138,27 @@ leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir + "pa6_f150_gamma_t2b.txt" for 
 
 window_dir = release_dir + "spectra/windows/dr6/"
 
-window_kspace_dr6_pa4_f150 =  window_dir + "kspace_mask_dr6_pa4_f150.fits"
+window_kspace_dr6_pa4_f150 =  window_dir + "window_dr6_pa4_f150_kspace.fits"
 window_T_dr6_pa4_f150 =  window_dir + "window_dr6_pa4_f150_baseline.fits"
 window_pol_dr6_pa4_f150 =  window_dir + "window_dr6_pa4_f150_baseline.fits"
 
-window_kspace_dr6_pa4_f220 = window_dir + "kspace_mask_dr6_pa4_f220.fits"
+window_kspace_dr6_pa4_f220 = window_dir + "window_dr6_pa4_f220_kspace.fits"
 window_T_dr6_pa4_f220 =  window_dir +"window_dr6_pa4_f220_baseline.fits"
 window_pol_dr6_pa4_f220 =  window_dir +"window_dr6_pa4_f220_baseline.fits"
 
-window_kspace_dr6_pa5_f090 = window_dir + "kspace_mask_dr6_pa5_f090.fits"
+window_kspace_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_kspace.fits"
 window_T_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
 window_pol_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
 
-window_kspace_dr6_pa5_f150 = window_dir +  "kspace_mask_dr6_pa5_f150.fits"
+window_kspace_dr6_pa5_f150 = window_dir +  "window_dr6_pa5_f150_kspace.fits"
 window_T_dr6_pa5_f150 = window_dir + "window_dr6_pa5_f150_baseline.fits"
 window_pol_dr6_pa5_f150 = window_dir +"window_dr6_pa5_f150_baseline.fits"
 
-window_kspace_dr6_pa6_f090 = window_dir + "kspace_mask_dr6_pa6_f090.fits"
+window_kspace_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_kspace.fits"
 window_T_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
 window_pol_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
 
-window_kspace_dr6_pa6_f150 = window_dir + "kspace_mask_dr6_pa6_f150.fits"
+window_kspace_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_kspace.fits"
 window_T_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
 window_pol_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
 

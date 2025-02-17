@@ -7,7 +7,7 @@ dory_path=${TENKI_PATH}/point_sources
 
 # Path to npipe maps & beams
 map_path=planck_projected
-beam_path=beams/npipe_DR6_AxB
+beam_path=/global/cfs/cdirs/act/data/act_dr6v4/spectra/for_planck/beams/beams_for_source_sub
 
 # Path to the input point source catalog
 ps_catalog_path=catalogs/cat_skn_090_20220526_nightonly_ordered.txt
@@ -38,7 +38,7 @@ for freq in ${freqs[@]}; do
   for split in ${splits[@]}; do
     map_file=${map_path}/npipe6v20${split}_f${freq}_map.fits
     ivar_file=${map_path}/npipe6v20${split}_f${freq}_ivar.fits
-    beam_file=${beam_path}/bl_T_npipe_DR6_AxB_${freq}Ax${freq}B.dat
+    beam_file=${beam_path}/bl_T_npipe_${freq}_coadd.dat
 
     out_map_file=${map_path}/npipe6v20${split}_f${freq}_map_srcfree.fits
     out_map_model_file=${map_path}/npipe6v20${split}_f${freq}_map_model.fits

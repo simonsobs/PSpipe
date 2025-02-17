@@ -30,7 +30,7 @@ sigma_sub=2
 
 # Splits and frequencies
 splits=("A" "B")
-freqs=("100" "143" "217", "353")
+freqs=("100" "143" "217" "353")
 
 # Using 256 cpus, this should run in ~10mins per map
 # and produce srcfree and model maps

@@ -7,7 +7,7 @@ dory_path=${TENKI_PATH}/point_sources
 
 # Path to npipe maps & beams
 map_path=planck_projected
-beam_path=/global/cfs/cdirs/act/data/act_dr6v4/spectra/for_planck/beams/beams_for_source_sub
+beam_path=beams/npipe
 
 # Path to the input point source catalog
 ps_catalog_path=catalogs/cat_skn_090_20220526_nightonly_ordered.txt
@@ -30,7 +30,7 @@ sigma_sub=2
 
 # Splits and frequencies
 splits=("A" "B")
-freqs=("100" "143" "217")
+freqs=("100" "143" "217", "353")
 
 # Using 256 cpus, this should run in ~10mins per map
 # and produce srcfree and model maps

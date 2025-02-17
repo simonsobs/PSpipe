@@ -37,7 +37,6 @@ for release in releases:
                 print(f"use full sky beam for {freq} GHz")
                 Wl = fits.open(f"{planck_fits_beam_path}/quickpol/Wl_npipe6v20_{freq}{s1}x{freq}{s2}.fits")
 
-            
         if release == "legacy":
             s1, s2 = "hm1", "hm2"
             if freq != 353:
@@ -112,6 +111,21 @@ for release in releases:
         np.savetxt(f"{beam_dir}/gamma_mean_{release}_{freq}{s1}{s2}_t2e.dat", np.transpose([l, gamma_mean_TE,  zeros, zeros,  zeros]))
         np.savetxt(f"{beam_dir}/gamma_mean_{release}_{freq}{s1}{s2}_t2b.dat", np.transpose([l, gamma_mean_TB,  zeros, zeros,  zeros]))
 
+# these beams will be used for source-sub, they have high ell max
 
+release = "npipe"
+beam_dir = f"beams/{release}"
+pspy_utils.create_directory(beam_dir)
 
+for freq in freqs:
 
+    Wl_AA = fits.open(f"{planck_fits_beam_path}/quickpol/Wl_npipe6v20_{freq}Ax{freq}A.fits")
+    Wl_BB = fits.open(f"{planck_fits_beam_path}/quickpol/Wl_npipe6v20_{freq}Bx{freq}B.fits")
+
+    bl_T_A = np.sqrt(Wl_AA[1].data["TT_2_TT"][0, :])
+    bl_T_B = np.sqrt(Wl_BB[1].data["TT_2_TT"][0, :])
+    
+    bl_T_coadd = (bl_T_A + bl_T_B) / 2
+
+    l = np.arange(len(bl_T_A))
+    np.savetxt(f"{beam_dir}/bl_T_{release}_{freq}_coadd.dat", np.transpose([l, bl_T_coadd]))

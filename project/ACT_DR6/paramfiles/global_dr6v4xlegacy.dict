@@ -90,11 +90,11 @@ beam_T_dr6_pa5_f150 = beam_file_dir_dr6 + "coadd_pa5_f150_night_beam_tform_jitte
 beam_T_dr6_pa6_f090 = beam_file_dir_dr6 + "coadd_pa6_f090_night_beam_tform_jitter_cmb.txt"
 beam_T_dr6_pa6_f150 = beam_file_dir_dr6 + "coadd_pa6_f150_night_beam_tform_jitter_cmb.txt"
 
-beam_pol_dr6_pa4_f220 = beam_dir_dr6 + "coadd_pa4_f220_night_beam_tform_jitter_cmb.txt"
-beam_pol_dr6_pa5_f090 = beam_dir_dr6 + "coadd_pa5_f090_night_beam_tform_jitter_cmb.txt"
-beam_pol_dr6_pa5_f150 = beam_dir_dr6 + "coadd_pa5_f150_night_beam_tform_jitter_cmb.txt"
-beam_pol_dr6_pa6_f090 = beam_dir_dr6 + "coadd_pa6_f090_night_beam_tform_jitter_cmb.txt"
-beam_pol_dr6_pa6_f150 = beam_dir_dr6 + "coadd_pa6_f150_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa4_f220 = beam_file_dir_dr6 + "coadd_pa4_f220_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa5_f090 = beam_file_dir_dr6 + "coadd_pa5_f090_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa5_f150 = beam_file_dir_dr6 + "coadd_pa5_f150_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa6_f090 = beam_file_dir_dr6 + "coadd_pa6_f090_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa6_f150 = beam_file_dir_dr6 + "coadd_pa6_f150_night_beam_tform_jitter_cmb.txt"
 
 planck_fits_beam_path = release_dir + "spectra/for_planck/beams/"
 

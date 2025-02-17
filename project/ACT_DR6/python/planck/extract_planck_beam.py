@@ -23,6 +23,7 @@ lmax_for_plot = 2000
 releases = ["legacy", "npipe_DR6_AxB"]
 
 for release in releases:
+
     beam_dir = f"beams/{release}"
     pspy_utils.create_directory(beam_dir)
 
@@ -30,8 +31,13 @@ for release in releases:
         
         if release == "npipe_DR6_AxB":
             s1, s2 = "A", "B"
-            Wl = fits.open(f"{planck_fits_beam_path}/QP_dr6_pa6_f150/Wl_npipe6v20_{freq}{s1}x{freq}{s2}.fits")
+            if freq != 353:
+                Wl = fits.open(f"{planck_fits_beam_path}/QP_dr6_pa6_f150/Wl_npipe6v20_{freq}{s1}x{freq}{s2}.fits")
+            else:
+                print(f"use full sky beam for {freq} GHz")
+                Wl = fits.open(f"{planck_fits_beam_path}/quickpol/Wl_npipe6v20_{freq}{s1}x{freq}{s2}.fits")
 
+            
         if release == "legacy":
             s1, s2 = "hm1", "hm2"
             if freq != 353:

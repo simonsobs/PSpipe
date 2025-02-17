@@ -9,19 +9,19 @@ The first step is the projection Planck NPIPE/legacy maps publicly available at 
 .. code:: shell
 
     salloc -N 1 -C cpu -q interactive -t 02:00:00
-    OMP_NUM_THREADS=32 srun -n 8 -c 32 --cpu_bind=cores python project_planck_maps.py
+    OMP_NUM_THREADS=32 srun -n 8 -c 32 --cpu_bind=cores python project_planck_maps.py global_dr6v4xlegacy.dict
 
 Once projected we might want to use them to compute power spectra or to get source subtracted maps. It requires to get data products such as beams which can be written to disk with
 
 .. code:: shell
 
-    python extract_planck_beam.py
+    python extract_planck_beam.py global_dr6v4xlegacy.dict
 
 To perform source subtraction using `dory`, one needs to get a single frequency source catalog by running ``reformat_source_catalog.py`` that produces three catalogs from the ACT DR6 multi-frequency catalog
 
 .. code:: shell
 
-    python reformat_source_catalog.py
+    python reformat_source_catalog.py global_dr6v4xlegacy.dict
 
 The source subtraction can then be performed at ``NERSC`` using the following instructions for npipe or legacy maps. You will have to update the `dory_path` field to point to your local `tenki` library.
 

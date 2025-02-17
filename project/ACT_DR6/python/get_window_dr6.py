@@ -1,6 +1,7 @@
 """
 This script create the window functions used in the PS computation
-They consist of a point source mask, a galactic mask,  a mask based on the amount of cross linking in the data, and a coordinate mask, note that
+They consist of a point source mask, a galactic mask,  a mask based on the amount of cross linking in the data,
+and a mask based on pathological pixels (identified during the map based simulation analysis), note that
 we also produce a window that include the pixel weighting.
 The different masks are apodized.
 We also produce a kspace-mask that will later be used for the kspace filtering operation, in order to remove the edges of the survey and avoid nasty pixels.
@@ -19,7 +20,7 @@ def create_crosslink_mask(xlink_map, cross_link_threshold):
     Create a mask to remove pixels with a small amount of x-linking
     We compute this using product from the map maker which assess the amount
     of scan direction that hits each pixels in the map
-    the product have 3 component and we compute sqrt(Q **2 + U ** 2) / I by analogy with the polarisation fraction
+    the product have 3 component and we compute sqrt(Q ** 2 + U ** 2) / I by analogy with the polarisation fraction
     A high value of this quantity means low level of xlinking, we mask all pixels above a given threshold
     note that the mask is designed on a downgraded version of the maps, this is to avoid small scale structure in the mask
     Parameters
@@ -152,7 +153,7 @@ for task in subtasks:
     
     my_masks["kspace"] = so_window.create_apodization(my_masks["kspace"], "C1", 1 * rescale, use_rmax=True)
     my_masks["kspace"].data = my_masks["kspace"].data.astype(np.float32)
-    my_masks["kspace"].write_map(f"{window_dir}/kspace_mask_{sv}_{ar}.fits")
+    my_masks["kspace"].write_map(f"{window_dir}/window_{sv}_{ar}_kspace.fits")
 
     # compare to the kspace mask we will skip for the nominal mask
     # an additional 2 degrees to avoid ringing from the filter
@@ -217,10 +218,10 @@ for task in subtasks:
         my_masks[mask_type_w].data[:] *= ivar_all.data[:]
 
         my_masks[mask_type_w].data = my_masks[mask_type_w].data.astype(np.float32)
-        my_masks[mask_type_w].write_map(f"{window_dir}/window_w_{sv}_{ar}_{mask_type}.fits")
+        my_masks[mask_type_w].write_map(f"{window_dir}/window_{sv}_{ar}_{mask_type_w}.fits")
 
     for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
-
         mask = mask.downgrade(4)
-        mask.plot(file_name=f"{window_dir}/{mask_type}_mask_{sv}_{ar}")
+        mask.plot(file_name=f"{window_dir}/window_{sv}_{ar}_{mask_type}")
+

@@ -42,7 +42,7 @@ for freq in ${freqs[@]}; do
 
     map_file=${map_path}/HFI_SkyMap_2048_R3.01_halfmission-${split}_f${freq}_map.fits
     ivar_file=${map_path}/HFI_SkyMap_2048_R3.01_halfmission-${split}_f${freq}_ivar.fits
-    beam_file=${beam_path}/bl_T_legacy_${freq}_coadd.dat
+    beam_file=${beam_path}/bl_T_legacy_${freq}hm1x${freq}hm2.dat
     out_map_file=${map_path}/HFI_SkyMap_2048_R3.01_halfmission-${split}_f${freq}_map_srcfree.fits
     out_map_model_file=${map_path}/HFI_SkyMap_2048_R3.01_halfmission-${split}_f${freq}_map_model.fits
 

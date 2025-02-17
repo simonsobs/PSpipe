@@ -3,7 +3,7 @@ product_dir: products/dr6
 
 # Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
 # parsing the yaml file by the location to the pspipe installation
-config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/global_dr6v4_release.dict]
+config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/global_dr6v4_bin50.dict]
 
 # Set location of scripts: default to pspipe_root/project/ACT_DR6/python
 script_base_dir: null

@@ -123,7 +123,6 @@ leakage_beam_dr6_pa5_f150_TB = [leakage_file_dir_dr6 + "pa5_f150_gamma_t2b.txt" 
 leakage_beam_dr6_pa6_f090_TB = [leakage_file_dir_dr6 + "pa6_f090_gamma_t2b.txt" for i in range(4)]
 leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir_dr6 + "pa6_f150_gamma_t2b.txt" for i in range(4)]
 
-leakage_file_dir_planck = release_dir + "beams/leakage_beams/nominal/"
 
 leakage_beam_Planck_f100_TE = ["beams/legacy/gamma_legacy_100%s_t2e.dat" % split for split in ["hm1", "hm2"]]
 leakage_beam_Planck_f143_TE = ["beams/legacy/gamma_legacy_143%s_t2e.dat" % split for split in ["hm1", "hm2"]]

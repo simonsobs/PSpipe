@@ -28,6 +28,10 @@ cov_T_E_only = False
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
 
+
+n_splits_dr6 = 4
+n_splits_Planck = 2
+
 # maps
 src_free_maps_dr6 = True
 src_free_maps_Planck = True

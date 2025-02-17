@@ -14,7 +14,11 @@ from pixell import reproject
 
 
 
-log = log.get_logger()
+
+d = so_dict.so_dict()
+d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
+
 
 out_dir = "planck_projected"
 pspy_utils.create_directory(out_dir)
@@ -22,7 +26,7 @@ pspy_utils.create_directory(out_dir)
 # Planck frequencies
 planck_freqs = ["100", "143", "217", "353"]
 
-template_name = "/global/cfs/cdirs/act/data/tlouis/dr6v4/maps/cmb_night_pa6_f150_3pass_4way_set3_map.fits"
+template_name = d["maps_dr6_pa4_f220"][0]
 template = so_map.read_map(template_name)
 shape, wcs = template.data.geometry
 

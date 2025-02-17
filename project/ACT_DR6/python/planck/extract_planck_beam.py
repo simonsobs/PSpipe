@@ -9,7 +9,7 @@ import numpy as np
 import pylab as plt
 from astropy.io import fits
 from pspy import pspy_utils, so_dict
-
+from pspipe_utils import log
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])

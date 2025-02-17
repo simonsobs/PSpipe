@@ -11,7 +11,7 @@ k_filter_dr6 = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50],
 k_filter_Planck = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
 kspace_tf_path  = release_dir + "spectra/kspace_tf/dr6xplanck_binning_50/"
 sim_spec_dir = release_dir + f"spectra/sim_spectra/dr6xplanck/{planck_version}/"
-planck_mc_correction = data_dir + f"/planck_mc_correction/{planck_version}_spectra_correction/15mJy_mask/"
+planck_mc_correction = release_dir + f"spectra/for_planck/mc_correction/{planck_version}"
 source_catalog = release_dir + "spectra/sim_spectra/cat_skn_multifreq_20220526_nightonly.txt"
 
 deconvolve_pixwin = True
@@ -25,7 +25,6 @@ lmax = 3000
 type = 'Dl'
 write_splits_spectra = True
 cov_T_E_only = False
-multistep_path = data_dir
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
 
@@ -248,4 +247,4 @@ range_TE = [-150, 150]
 range_ET = [-150, 150]
 range_EE = [-20, 50]
 
-planck_data_dir = data_dir + "planck_data/"
+

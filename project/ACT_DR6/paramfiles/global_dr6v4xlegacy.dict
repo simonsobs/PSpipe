@@ -111,17 +111,17 @@ include_beam_chromaticity_effect_in_best_fit = False
 
 leakage_file_dir_dr6 = release_dir + "beams/leakage_beams/nominal/"
 
-leakage_beam_dr6_pa4_f220_TE = [leakage_file_dir + "pa4_f220_gamma_t2e.txt" for i in range(4)]
-leakage_beam_dr6_pa5_f090_TE = [leakage_file_dir + "pa5_f090_gamma_t2e.txt" for i in range(4)]
-leakage_beam_dr6_pa5_f150_TE = [leakage_file_dir + "pa5_f150_gamma_t2e.txt" for i in range(4)]
-leakage_beam_dr6_pa6_f090_TE = [leakage_file_dir + "pa6_f090_gamma_t2e.txt" for i in range(4)]
-leakage_beam_dr6_pa6_f150_TE = [leakage_file_dir + "pa6_f150_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa4_f220_TE = [leakage_file_dir_dr6 + "pa4_f220_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f090_TE = [leakage_file_dir_dr6 + "pa5_f090_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f150_TE = [leakage_file_dir_dr6 + "pa5_f150_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f090_TE = [leakage_file_dir_dr6 + "pa6_f090_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f150_TE = [leakage_file_dir_dr6 + "pa6_f150_gamma_t2e.txt" for i in range(4)]
 
-leakage_beam_dr6_pa4_f220_TB = [leakage_file_dir + "pa4_f220_gamma_t2b.txt" for i in range(4)]
-leakage_beam_dr6_pa5_f090_TB = [leakage_file_dir + "pa5_f090_gamma_t2b.txt" for i in range(4)]
-leakage_beam_dr6_pa5_f150_TB = [leakage_file_dir + "pa5_f150_gamma_t2b.txt" for i in range(4)]
-leakage_beam_dr6_pa6_f090_TB = [leakage_file_dir + "pa6_f090_gamma_t2b.txt" for i in range(4)]
-leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir + "pa6_f150_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa4_f220_TB = [leakage_file_dir_dr6 + "pa4_f220_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f090_TB = [leakage_file_dir_dr6 + "pa5_f090_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f150_TB = [leakage_file_dir_dr6 + "pa5_f150_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f090_TB = [leakage_file_dir_dr6 + "pa6_f090_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir_dr6 + "pa6_f150_gamma_t2b.txt" for i in range(4)]
 
 leakage_file_dir_planck = release_dir + "beams/leakage_beams/nominal/"
 

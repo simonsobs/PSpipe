@@ -12,7 +12,7 @@ k_filter_Planck = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 5
 kspace_tf_path  = release_dir + "spectra/kspace_tf/dr6xplanck_binning_50/"
 sim_spec_dir = release_dir + f"spectra/sim_spectra/dr6xplanck/{planck_version}/"
 planck_mc_correction = release_dir + f"spectra/for_planck/mc_correction/{planck_version}"
-source_catalog = release_dir + "spectra/sim_spectra/cat_skn_multifreq_20220526_nightonly.txt"
+source_catalog = release_dir + "spectra/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": "CAR", "order": 0}
@@ -28,9 +28,7 @@ cov_T_E_only = False
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
 
-
 # maps
-
 src_free_maps_dr6 = True
 src_free_maps_Planck = True
 
@@ -150,9 +148,9 @@ gal_mask_dr6_pa5_f090 = mask_dir + "gal_mask_070_apo0.fits"
 gal_mask_dr6_pa5_f150 = mask_dir + "gal_mask_070_apo0.fits"
 gal_mask_dr6_pa6_f090 = mask_dir + "gal_mask_070_apo0.fits"
 gal_mask_dr6_pa6_f150 = mask_dir + "gal_mask_070_apo0.fits"
-gal_mask_Planck_f100 = mask_dir + "gal_mask_070_apo0.fits"
-gal_mask_Planck_f143 = mask_dir + "gal_mask_070_apo0.fits"
-gal_mask_Planck_f217 = mask_dir + "gal_mask_070_apo0.fits"
+gal_mask_Planck_f100 = mask_dir +  "gal_mask_070_apo0.fits"
+gal_mask_Planck_f143 = mask_dir +  "gal_mask_070_apo0.fits"
+gal_mask_Planck_f217 = mask_dir +  "gal_mask_070_apo0.fits"
 
 
 extra_mask_dr6_pa4_f220 = mask_dir + "act_xtra_mask_dr6_pa4_f220.fits"

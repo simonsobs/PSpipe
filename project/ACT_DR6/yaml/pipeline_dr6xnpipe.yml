@@ -1,0 +1,93 @@
+# Set directory where all pipeline products will be stored
+product_dir: products/dr6xnpipe
+
+# Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
+# parsing the yaml file by the location to the pspipe installation
+config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/global_dr6v4xnpipe.dict]
+
+variables:
+  maps_Planck_f100:
+    - planck_projected/npipe6v20A_f100_map_srcfree.fits
+    - planck_projected/npipe6v20B_f100_map_srcfree.fits
+  maps_Planck_f143:
+    - planck_projected/npipe6v20A_f143_map_srcfree.fits
+    - planck_projected/npipe6v20B_f143_map_srcfree.fits
+  maps_Planck_f217:
+    - planck_projected/npipe6v20A_f217_map_srcfree.fits
+    - planck_projected/npipe6v20B_f217_map_srcfree.fits
+  beam_T_Planck_f100 : beams/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_100Ax100B.dat
+  beam_T_Planck_f143 : beams/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_143Ax143B.dat
+  beam_T_Planck_f217 : beams/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_217Ax217B.dat
+  beam_pol_Planck_f100 : beams/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_100Ax100B.dat
+  beam_pol_Planck_f143 : beams/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_143Ax143B.dat 
+  beam_pol_Planck_f217 : beams/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_217Ax217B.dat
+
+pipeline:
+  # Planck maps pre-processing
+  planck/project_planck_maps:
+    slurm:
+      ntasks: 8
+      cpus_per_task: 32
+      
+  planck/extract_planck_beam: null
+  planck/reformat_source_catalog: null
+  planck/source_npipe_subtraction:
+    script_file: planck/run_npipe_src_subtraction.sh
+    # Mandatory here since the script already use `srun` commands
+    slurm: false
+  planck/check_src_subtraction:
+    slurm:
+      ntasks: 16
+
+  # ACT/Planck cross correlation
+  get_mcm_and_bbl:
+    slurm:
+      ntasks: 12
+      cpus_per_task: 20
+  get_alms:
+    slurm:
+      ntasks: 8
+      cpus_per_task: 32
+  get_spectra_from_alms:
+    slurm:
+      ntasks: 8
+      cpus_per_task: 32
+  get_best_fit_mflike: null
+  get_noise_model: null
+  get_sq_windows_alms:
+    slurm:
+      ntasks: 7
+      cpus_per_task: 36
+  get_covariance_blocks:
+    slurm:
+      nodes: 2
+      ntasks: 8
+      cpus_per_task: 64
+    minimal_needed_time: 02:00:00
+
+  # Leakage correction/covariance
+  leakage/get_leakage_corrected_spectra_per_split:
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  leakage/get_leakage_sim:
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  leakage/get_leakage_covariance: null
+
+  planck/get_corrected_planck_spectra: null
+  # Calibration and polarisation efficiency
+  calibration/get_calibs: null
+  calibration/get_polar_eff_LCDM: null
+
+  montecarlo/mc_analysis: null
+  montecarlo/mc_cov_analysis: null
+#  montecarlo/mc_plot_spectra: null
+#  montecarlo/mc_plot_covariances: null
+
+  # Computation of the Transfer Function
+  mm_transfer_function/compute_tf: null
+  mm_transfer_function/plot_all_tf: null
+
+  # Comparison of ACT and Planck

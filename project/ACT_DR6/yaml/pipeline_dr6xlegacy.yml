@@ -5,13 +5,32 @@ product_dir: products/dr6xlegacy
 # parsing the yaml file by the location to the pspipe installation
 config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/global_dr6v4xlegacy.dict]
 
+variables:
+  maps_Planck_f100:
+    - planck_projected/HFI_SkyMap_2048_R3.01_halfmission-1_f100_map_srcfree.fits
+    - planck_projected/HFI_SkyMap_2048_R3.01_halfmission-2_f100_map_srcfree.fits
+  maps_Planck_f143:
+    - planck_projected/HFI_SkyMap_2048_R3.01_halfmission-1_f143_map_srcfree.fits
+    - planck_projected/HFI_SkyMap_2048_R3.01_halfmission-2_f143_map_srcfree.fits
+  maps_Planck_f217:
+    - planck_projected/HFI_SkyMap_2048_R3.01_halfmission-1_f217_map_srcfree.fits
+    - planck_projected/HFI_SkyMap_2048_R3.01_halfmission-2_f217_map_srcfree.fits
+  beam_T_Planck_f100 : beams/legacy/bl_T_legacy_100hm1x100hm2.dat
+  beam_T_Planck_f143 : beams/legacy/bl_T_legacy_143hm1x143hm2.dat 
+  beam_T_Planck_f217 : beams/legacy/bl_T_legacy_217hm1x217hm2.dat
+  beam_pol_Planck_f100 : beams/legacy/bl_pol_legacy_100hm1x100hm2.dat
+  beam_pol_Planck_f143 : beams/legacy/bl_pol_legacy_143hm1x143hm2.dat
+  beam_pol_Planck_f217 : beams/legacy/bl_pol_legacy_217hm1x217hm2.dat
+
 
 pipeline:
   # Planck maps pre-processing
+
   planck/project_planck_maps:
     slurm:
       ntasks: 8
       cpus_per_task: 32
+      
   planck/extract_planck_beam: null
   planck/reformat_source_catalog: null
   planck/source_legacy_subtraction:
@@ -23,10 +42,6 @@ pipeline:
       ntasks: 16
 
   # ACT/Planck cross correlation
-  get_window_dr6:
-    slurm:
-      ntasks: 5
-      cpus_per_task: 48
   get_mcm_and_bbl:
     slurm:
       ntasks: 12
@@ -63,44 +78,20 @@ pipeline:
       cpus_per_task: 12
   leakage/get_leakage_covariance: null
 
-  # End-to-end sim correction
-  planck/get_planck_spectra_correction_from_nlms:
-    slurm:
-      nodes: 4
-      ntasks: 32
-      cpus_per_task: 32
-    minimal_needed_time: 03:00:00
-  montecarlo/mc_analysis: null
   planck/get_corrected_planck_spectra: null
-
   # Calibration and polarisation efficiency
   calibration/get_calibs: null
   calibration/get_polar_eff_LCDM: null
 
-  # Simulations
-  montecarlo/mc_mnms_get_nlms:
-    slurm:
-      nodes: 2
-      ntasks: 4
-      cpus_per_task: 128
-    minimal_needed_time: 03:30:00
-  planck/get_planck_sim_nlms:
-    slurm:
-      ntasks: 64
-      cpus_per_task: 4
-  montecarlo/mc_mnms_get_spectra_from_nlms:
-    slurm:
-      nodes: 4
-      ntasks: 16
-      cpus_per_task: 64
-
   montecarlo/mc_analysis: null
   montecarlo/mc_cov_analysis: null
-  montecarlo/mc_plot_spectra: null
-  montecarlo/mc_plot_covariances: null
+#  montecarlo/mc_plot_spectra: null
+#  montecarlo/mc_plot_covariances: null
 
   # Computation of the Transfer Function
   mm_transfer_function/compute_tf: null
-  mm_transfer_function/plot_all_tf: null
+  mm_transfer_function/plot_all_tf:
+    force: true
 
-  # Comparison of ACT and Planck
+  
+

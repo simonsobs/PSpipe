@@ -67,9 +67,10 @@ cal_Planck_f100 = 1.0
 cal_Planck_f143 = 1.0
 cal_Planck_f217 = 1.0
 
-pol_eff_Planck_f100 = 1.0
-pol_eff_Planck_f143 = 1.0
-pol_eff_Planck_f217 = 1.0
+pol_eff_Planck_f100 = 1.0134
+pol_eff_Planck_f143 = 1.0281
+pol_eff_Planck_f217 = 0.9817
+
 
 do_bandpass_integration = True
 

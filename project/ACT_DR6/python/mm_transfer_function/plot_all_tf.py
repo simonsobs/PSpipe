@@ -27,7 +27,9 @@ for combin in combins:
     count = 0
     for col, ar in zip(colors, arrays):
         lb, tf, tferr = np.loadtxt(f"{tf_dir}/tf_estimator_dr6_{ar}.dat", unpack=True)
-        plt.errorbar(lb-10 +count*5, tf, tferr, fmt="o", color=col, label=ar)
+        pa, freq = ar.split("_")
+        
+        plt.errorbar(lb-10 +count*5, tf, tferr, fmt="o", color=col, label=f"{pa.upper} {freq}")
         plt.plot(lb, lb*0+1, "--", color="black", alpha=0.5)
         count += 1
     

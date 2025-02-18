@@ -11,7 +11,7 @@ planck_version = d["planck_version"]
 matplotlib.rcParams["font.family"] = "serif"
 matplotlib.rcParams["font.size"] = "18"
 
-plot_dir = "paper_plot"
+plot_dir = "plots/paper_plot"
 pspy_utils.create_directory(plot_dir)
 
 combins = ["AxA_AxP", "AxP_PxP"]

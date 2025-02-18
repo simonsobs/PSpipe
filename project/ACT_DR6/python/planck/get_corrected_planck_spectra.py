@@ -24,6 +24,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
 
+planck_version = d["planck_version"]
 mc_corr_dir = d["planck_mc_correction"]
 type = d["type"]
 n_sims = d["iStop"] - d["iStart"] + 1
@@ -79,6 +80,6 @@ for spec in spectra:
     plt.legend()
     plt.ylabel(r"$D_{\ell}^{%s}$" % spec, fontsize=16)
     plt.xlabel(r"$\ell$", fontsize=16)
-    plt.savefig(f"{plot_dir}/npipe_correction_{spec}.png", bbox_inches="tight")
+    plt.savefig(f"{plot_dir}/{planck_version}_correction_{spec}.png", bbox_inches="tight")
     plt.clf()
     plt.close()

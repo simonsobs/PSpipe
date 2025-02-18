@@ -1,20 +1,23 @@
 surveys = ["dr6", "Planck"]
-arrays_dr6 = [ "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 arrays_Planck = ["f100", "f143", "f217"]
 planck_version = "npipe"
 
-data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/"
-sim_spec_dir = f"{data_dir}/all_sim_spectra/sim_spectra_npipe_final/"
+release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
 
-planck_mc_correction = data_dir + "planck_mc_correction/npipe_spectra_correction/15mJy_mask/"
-
-source_catalog = "/global/cfs/cdirs/act/data/tlouis/dr6v4/catalogs/cat_skn_multifreq_20220526_nightonly.txt"
+binning_file = release_dir + "spectra/binning/binning_50"
+apply_kspace_filter  = True
+k_filter_dr6 = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
+k_filter_Planck = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
+kspace_tf_path  = release_dir + "spectra/kspace_tf/dr6xplanck_binning_50/"
+sim_spec_dir = release_dir + f"spectra/sim_spectra/dr6xplanck/{planck_version}/"
+planck_mc_correction = release_dir + f"spectra/for_planck/mc_correction/{planck_version}"
+source_catalog = release_dir + "spectra/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": "CAR", "order": 0}
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
 
-binning_file = data_dir + "binning/BIN_ACTPOL_50_4_SC_large_bin_at_low_ell"
 niter = 0
 remove_mean = False
 binned_mcm = False
@@ -22,172 +25,151 @@ lmax = 3000
 type = 'Dl'
 write_splits_spectra = True
 cov_T_E_only = False
-multistep_path = data_dir
-
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
 
-# kspace filter parameters
-apply_kspace_filter  = True
-kspace_tf_path  = "/global/cfs/cdirs/act/data/tlouis/dr6v4/final_products/kspace_tf_AxP/"
-k_filter_dr6 = {"type": "binary_cross", "vk_mask": [-90, 90], "hk_mask": [-50, 50], "weighted": False}
-k_filter_Planck = {"type":"binary_cross","vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted": False}
-
-deconvolve_map_maker_tf_dr6 = False
-deconvolve_map_maker_tf_Planck = False
-
-
-mm_tf_dr6_pa4_f220 = data_dir + "transfer_fcns/tf_unity.dat"
-mm_tf_dr6_pa5_f090 = data_dir + "transfer_fcns/tf_unity.dat"
-mm_tf_dr6_pa5_f150 = data_dir + "transfer_fcns/tf_unity.dat"
-mm_tf_dr6_pa6_f090 = data_dir + "transfer_fcns/tf_unity.dat"
-mm_tf_dr6_pa6_f150 = data_dir + "transfer_fcns/tf_unity.dat"
-
-mm_tf_Planck_f100 = data_dir + "transfer_fcns/tf_unity.dat"
-mm_tf_Planck_f143 = data_dir + "transfer_fcns/tf_unity.dat"
-mm_tf_Planck_f217 = data_dir + "transfer_fcns/tf_unity.dat"
-
-
-# maps
-
-src_free_maps_dr6 = True
-src_free_maps_Planck = True
 
 n_splits_dr6 = 4
 n_splits_Planck = 2
 
-maps_dr6_pa4_f150 = [data_dir + 'maps/dr6/cmb_night_pa4_f150_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa4_f220 = [data_dir + 'maps/dr6/cmb_night_pa4_f220_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa5_f090 = [data_dir + 'maps/dr6/cmb_night_pa5_f090_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa5_f150 = [data_dir + 'maps/dr6/cmb_night_pa5_f150_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa6_f090 = [data_dir + 'maps/dr6/cmb_night_pa6_f090_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
-maps_dr6_pa6_f150 = [data_dir + 'maps/dr6/cmb_night_pa6_f150_4pass_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+# maps
+src_free_maps_dr6 = True
+src_free_maps_Planck = True
 
+maps_dr6_pa4_f220 = [release_dir + "maps/published/act_dr6.02_std_AA_night_pa4_f220_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
+maps_dr6_pa5_f090 = [release_dir + "maps/published/act_dr6.02_std_AA_night_pa5_f090_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
+maps_dr6_pa5_f150 = [release_dir + "maps/published/act_dr6.02_std_AA_night_pa5_f150_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
+maps_dr6_pa6_f090 = [release_dir + "maps/published/act_dr6.02_std_AA_night_pa6_f090_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
+maps_dr6_pa6_f150 = [release_dir + "maps/published/act_dr6.02_std_AA_night_pa6_f150_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
 
-maps_Planck_f100 = [data_dir + 'maps/planck/npipe6v20%s_f100_map_srcfree.fits' % split for split in ["A", "B"]]
-maps_Planck_f143 = [data_dir + 'maps/planck/npipe6v20%s_f143_map_srcfree.fits' % split for split in ["A", "B"]]
-maps_Planck_f217 = [data_dir + 'maps/planck/npipe6v20%s_f217_map_srcfree.fits' % split for split in ["A", "B"]]
+# These are produced by the pipeline
+maps_Planck_f100 = ["planck_projected/npipe6v20%s_f100_map_srcfree.fits" % split for split in ["A", "B"]]
+maps_Planck_f143 = ["planck_projected/npipe6v20%s_f143_map_srcfree.fits" % split for split in ["A", "B"]]
+maps_Planck_f217 = ["planck_projected/npipe6v20%s_f217_map_srcfree.fits" % split for split in ["A", "B"]]
 
 
 cal_dr6_pa4_f150 = 1.0
-cal_dr6_pa4_f220 = 1.0339444470694514 
-cal_dr6_pa5_f090 = 1.009695917051417
-cal_dr6_pa5_f150 = 0.9846636274525404
-cal_dr6_pa6_f090 = 1.0071536615122945
-cal_dr6_pa6_f150 = 0.9688174262915844
+cal_dr6_pa4_f220 = 1.0
+cal_dr6_pa5_f090 = 1.0
+cal_dr6_pa5_f150 = 1.0
+cal_dr6_pa6_f090 = 1.0
+cal_dr6_pa6_f150 = 1.0
 
 
-pol_eff_dr6_pa4_f150 = 1.
-pol_eff_dr6_pa4_f220 = 0.8991505230543068
-pol_eff_dr6_pa5_f090 = 0.9521594760220351
-pol_eff_dr6_pa5_f150 = 0.9530645245061796
-pol_eff_dr6_pa6_f090 = 0.9700637418838393
-pol_eff_dr6_pa6_f150 = 0.9665476589272467
+pol_eff_dr6_pa4_f150 = 1.0
+pol_eff_dr6_pa4_f220 = 1.0
+pol_eff_dr6_pa5_f090 = 1.0
+pol_eff_dr6_pa5_f150 = 1.0
+pol_eff_dr6_pa6_f090 = 1.0
+pol_eff_dr6_pa6_f150 = 1.0
 
-cal_Planck_f100 = 1.
-cal_Planck_f143 = 1.
-cal_Planck_f217 = 1.
+cal_Planck_f100 = 1.0
+cal_Planck_f143 = 1.0
+cal_Planck_f217 = 1.0
 
-pol_eff_Planck_f100 = 1.0201836874023804
-pol_eff_Planck_f143 = 1.0213844061712527
-pol_eff_Planck_f217 = 0.9678386499431164
+pol_eff_Planck_f100 = 1.0202
+pol_eff_Planck_f143 = 1.0214
+pol_eff_Planck_f217 = 0.9678
+
 
 do_bandpass_integration = True
-passband_dir = data_dir + "passbands/"
-freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir + "passband_dr6_pa4_f220.dat"}
-freq_info_dr6_pa5_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa5_f090.dat"}
-freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa5_f150.dat"}
-freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa6_f090.dat"}
-freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
 
-freq_info_Planck_f100 = {"freq_tag": 100, "passband": passband_dir + "passband_npipe_f100.dat"}
-freq_info_Planck_f143 = {"freq_tag": 143, "passband": passband_dir + "passband_npipe_f143.dat"}
-freq_info_Planck_f217 = {"freq_tag": 217, "passband": passband_dir + "passband_npipe_f217.dat"}
+passband_dir_dr6 = release_dir + "passbands/processed/"
+freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir_dr6 + "passband_dr6_pa4_f220.dat"}
+freq_info_dr6_pa5_f090 = {"freq_tag": 90, "passband": passband_dir_dr6 + "passband_dr6_pa5_f090.dat"}
+freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir_dr6 + "passband_dr6_pa5_f150.dat"}
+freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir_dr6 + "passband_dr6_pa6_f090.dat"}
+freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir_dr6 + "passband_dr6_pa6_f150.dat"}
 
-beam_dir_dr6 = f'{data_dir}/beams/20240404_beams/'
-beam_dir_Planck = f'{data_dir}/beams/npipe_DR6/'
+passband_dir_planck = release_dir + "spectra/for_planck/passbands/"
+freq_info_Planck_f100 = {"freq_tag": 100, "passband": passband_dir_planck + "passband_npipe_f100.dat"}
+freq_info_Planck_f143 = {"freq_tag": 143, "passband": passband_dir_planck + "passband_npipe_f143.dat"}
+freq_info_Planck_f217 = {"freq_tag": 217, "passband": passband_dir_planck + "passband_npipe_f217.dat"}
 
-beam_T_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
-beam_T_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
-beam_T_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
-beam_T_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
-beam_T_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+beam_file_dir_dr6 = release_dir + "beams/main_beams/nominal/"
+beam_T_dr6_pa4_f220 = beam_file_dir_dr6 + "coadd_pa4_f220_night_beam_tform_jitter_cmb.txt"
+beam_T_dr6_pa5_f090 = beam_file_dir_dr6 + "coadd_pa5_f090_night_beam_tform_jitter_cmb.txt"
+beam_T_dr6_pa5_f150 = beam_file_dir_dr6 + "coadd_pa5_f150_night_beam_tform_jitter_cmb.txt"
+beam_T_dr6_pa6_f090 = beam_file_dir_dr6 + "coadd_pa6_f090_night_beam_tform_jitter_cmb.txt"
+beam_T_dr6_pa6_f150 = beam_file_dir_dr6 + "coadd_pa6_f150_night_beam_tform_jitter_cmb.txt"
 
-beam_T_Planck_f100 = beam_dir_Planck + 'bl_T_npipe_DR6_100Ax100B.dat'
-beam_T_Planck_f143 = beam_dir_Planck + 'bl_T_npipe_DR6_143Ax143B.dat'
-beam_T_Planck_f217 = beam_dir_Planck + 'bl_T_npipe_DR6_217Ax217B.dat'
+beam_pol_dr6_pa4_f220 = beam_file_dir_dr6 + "coadd_pa4_f220_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa5_f090 = beam_file_dir_dr6 + "coadd_pa5_f090_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa5_f150 = beam_file_dir_dr6 + "coadd_pa5_f150_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa6_f090 = beam_file_dir_dr6 + "coadd_pa6_f090_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa6_f150 = beam_file_dir_dr6 + "coadd_pa6_f150_night_beam_tform_jitter_cmb.txt"
 
-beam_pol_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
-beam_pol_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
-beam_pol_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
-beam_pol_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
-beam_pol_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+planck_fits_beam_path = release_dir + "spectra/for_planck/beams/"
 
-beam_pol_Planck_f100 = beam_dir_Planck + 'bl_pol_npipe_DR6_100Ax100B.dat'
-beam_pol_Planck_f143 = beam_dir_Planck + 'bl_pol_npipe_DR6_143Ax143B.dat'
-beam_pol_Planck_f217 = beam_dir_Planck + 'bl_pol_npipe_DR6_217Ax217B.dat'
+# These are produced by the pipeline
+beam_T_Planck_f100 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_100Ax100B.dat"
+beam_T_Planck_f143 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_143Ax143B.dat"
+beam_T_Planck_f217 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_217Ax217B.dat"
+
+beam_pol_Planck_f100 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_100Ax100B.dat"
+beam_pol_Planck_f143 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_143Ax143B.dat"
+beam_pol_Planck_f217 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_217Ax217B.dat"
 
 include_beam_chromaticity_effect_in_best_fit = False
 
+leakage_file_dir_dr6 = release_dir + "beams/leakage_beams/nominal/"
 
-leakage_file_dir = data_dir + 'beams/20240916_gamma/'
+leakage_beam_dr6_pa4_f220_TE = [leakage_file_dir_dr6 + "pa4_f220_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f090_TE = [leakage_file_dir_dr6 + "pa5_f090_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f150_TE = [leakage_file_dir_dr6 + "pa5_f150_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f090_TE = [leakage_file_dir_dr6 + "pa6_f090_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f150_TE = [leakage_file_dir_dr6 + "pa6_f150_gamma_t2e.txt" for i in range(4)]
 
-leakage_beam_dr6_pa4_f150_TE = ['pa4_f150_gamma_t2e.txt' for i in range(4)]
-leakage_beam_dr6_pa4_f220_TE = ['pa4_f220_gamma_t2e.txt' for i in range(4)]
-leakage_beam_dr6_pa5_f090_TE = ['pa5_f090_gamma_t2e.txt' for i in range(4)]
-leakage_beam_dr6_pa5_f150_TE = ['pa5_f150_gamma_t2e.txt' for i in range(4)]
-leakage_beam_dr6_pa6_f090_TE = ['pa6_f090_gamma_t2e.txt' for i in range(4)]
-leakage_beam_dr6_pa6_f150_TE = ['pa6_f150_gamma_t2e.txt' for i in range(4)]
-
-leakage_beam_dr6_pa4_f150_TB = ['pa4_f150_gamma_t2b.txt' for i in range(4)]
-leakage_beam_dr6_pa4_f220_TB = ['pa4_f220_gamma_t2b.txt' for i in range(4)]
-leakage_beam_dr6_pa5_f090_TB = ['pa5_f090_gamma_t2b.txt' for i in range(4)]
-leakage_beam_dr6_pa5_f150_TB = ['pa5_f150_gamma_t2b.txt' for i in range(4)]
-leakage_beam_dr6_pa6_f090_TB = ['pa6_f090_gamma_t2b.txt' for i in range(4)]
-leakage_beam_dr6_pa6_f150_TB = ['pa6_f150_gamma_t2b.txt' for i in range(4)]
+leakage_beam_dr6_pa4_f220_TB = [leakage_file_dir_dr6 + "pa4_f220_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f090_TB = [leakage_file_dir_dr6 + "pa5_f090_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f150_TB = [leakage_file_dir_dr6 + "pa5_f150_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f090_TB = [leakage_file_dir_dr6 + "pa6_f090_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir_dr6 + "pa6_f150_gamma_t2b.txt" for i in range(4)]
 
 
-leakage_beam_Planck_f100_TE = ['gamma_npipe_DR6_AxB_100%s_t2e.dat' % split for split in ["A", "B"]]
-leakage_beam_Planck_f143_TE = ['gamma_npipe_DR6_AxB_143%s_t2e.dat' % split for split in ["A", "B"]]
-leakage_beam_Planck_f217_TE = ['gamma_npipe_DR6_AxB_217%s_t2e.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f100_TE = ['beams/npipe_DR6_AxB/gamma_npipe_DR6_AxB_100%s_t2e.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f143_TE = ['beams/npipe_DR6_AxB/gamma_npipe_DR6_AxB_143%s_t2e.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f217_TE = ['beams/npipe_DR6_AxB/gamma_npipe_DR6_AxB_217%s_t2e.dat' % split for split in ["A", "B"]]
 
-leakage_beam_Planck_f100_TB = ['gamma_npipe_DR6_AxB_100%s_t2b.dat' % split for split in ["A", "B"]]
-leakage_beam_Planck_f143_TB = ['gamma_npipe_DR6_AxB_143%s_t2b.dat' % split for split in ["A", "B"]]
-leakage_beam_Planck_f217_TB = ['gamma_npipe_DR6_AxB_217%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f100_TB = ['beams/npipe_DR6_AxB/gamma_npipe_DR6_AxB_100%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f143_TB = ['beams/npipe_DR6_AxB/gamma_npipe_DR6_AxB_143%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f217_TB = ['beams/npipe_DR6_AxB/gamma_npipe_DR6_AxB_217%s_t2b.dat' % split for split in ["A", "B"]]
 
 
 
+mask_dir = release_dir + "spectra/masks/"
 
-ps_mask_dr6_pa4_f220 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust_paper.fits'
-ps_mask_dr6_pa5_f090 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust_paper.fits'
-ps_mask_dr6_pa5_f150 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust_paper.fits'
-ps_mask_dr6_pa6_f090 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust_paper.fits'
-ps_mask_dr6_pa6_f150 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust_paper.fits'
+ps_mask_dr6_pa4_f220 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
+ps_mask_dr6_pa5_f090 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
+ps_mask_dr6_pa5_f150 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
+ps_mask_dr6_pa6_f090 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
+ps_mask_dr6_pa6_f150 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
+ps_mask_Planck_f100 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
+ps_mask_Planck_f143 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
+ps_mask_Planck_f217 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
 
-ps_mask_Planck_f100 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust_paper.fits'
-ps_mask_Planck_f143 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust_paper.fits'
-ps_mask_Planck_f217 = f'{data_dir}/masks/act_pts_mask_fluxcut_15.0mJy_at150Ghz_rad_12.0_monster_dust_paper.fits'
+
+gal_mask_dr6_pa4_f220 = mask_dir + "gal_mask_070_apo0.fits"
+gal_mask_dr6_pa5_f090 = mask_dir + "gal_mask_070_apo0.fits"
+gal_mask_dr6_pa5_f150 = mask_dir + "gal_mask_070_apo0.fits"
+gal_mask_dr6_pa6_f090 = mask_dir + "gal_mask_070_apo0.fits"
+gal_mask_dr6_pa6_f150 = mask_dir + "gal_mask_070_apo0.fits"
+gal_mask_Planck_f100 = mask_dir +  "gal_mask_070_apo0.fits"
+gal_mask_Planck_f143 = mask_dir +  "gal_mask_070_apo0.fits"
+gal_mask_Planck_f217 = mask_dir +  "gal_mask_070_apo0.fits"
 
 
-gal_mask_dr6_pa4_f220 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
-gal_mask_dr6_pa5_f090 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
-gal_mask_dr6_pa5_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
-gal_mask_dr6_pa6_f090 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
-gal_mask_dr6_pa6_f150 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
+extra_mask_dr6_pa4_f220 = mask_dir + "act_xtra_mask_dr6_pa4_f220.fits"
+extra_mask_dr6_pa5_f090 = mask_dir + "act_xtra_mask_dr6_pa5_f090.fits"
+extra_mask_dr6_pa5_f150 = mask_dir + "act_xtra_mask_dr6_pa5_f150.fits"
+extra_mask_dr6_pa6_f090 = mask_dir + "act_xtra_mask_dr6_pa6_f090.fits"
+extra_mask_dr6_pa6_f150 = mask_dir + "act_xtra_mask_dr6_pa6_f150.fits"
+extra_mask_Planck_f100 = mask_dir + "act_xtra_mask_dr6_pa6_f090.fits"
+extra_mask_Planck_f143 = mask_dir + "act_xtra_mask_dr6_pa6_f150.fits"
+extra_mask_Planck_f217 = mask_dir + "act_xtra_mask_dr6_pa4_f220.fits"
 
-gal_mask_Planck_f100 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
-gal_mask_Planck_f143 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
-gal_mask_Planck_f217 = data_dir + "masks/mask_galactic_equatorial_car_gal070_apo0.fits"
 
-extra_mask_dr6_pa4_f220 = data_dir + "masks/act_xtra_mask_dr6_pa4_f220.fits"
-extra_mask_dr6_pa5_f090 = data_dir + "masks/act_xtra_mask_dr6_pa5_f090.fits"
-extra_mask_dr6_pa5_f150 = data_dir + "masks/act_xtra_mask_dr6_pa5_f150.fits"
-extra_mask_dr6_pa6_f090 = data_dir + "masks/act_xtra_mask_dr6_pa6_f090.fits"
-extra_mask_dr6_pa6_f150 = data_dir + "masks/act_xtra_mask_dr6_pa6_f150.fits"
 
-extra_mask_Planck_f100 = data_dir + "masks/act_xtra_mask_dr6_pa6_f090.fits"
-extra_mask_Planck_f143 = data_dir + "masks/act_xtra_mask_dr6_pa6_f150.fits"
-extra_mask_Planck_f217 = data_dir + "masks/act_xtra_mask_dr6_pa4_f220.fits"
 
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
@@ -195,39 +177,41 @@ edge_skip_rescale = 1
 cross_link_threshold = 0.97
 n_med_ivar = 3
 
-win_dir = "windows/"
 
-window_kspace_dr6_pa4_f220 = win_dir + "kspace_mask_dr6_pa4_f220.fits"
-window_T_dr6_pa4_f220 = win_dir + "window_dr6_pa4_f220_baseline.fits"
-window_pol_dr6_pa4_f220 = win_dir + "window_dr6_pa4_f220_baseline.fits"
+window_dir = release_dir + "spectra/windows/dr6xplanck/"
 
-window_kspace_dr6_pa5_f090 = win_dir + "kspace_mask_dr6_pa5_f090.fits"
-window_T_dr6_pa5_f090 = win_dir + "window_dr6_pa5_f090_baseline.fits"
-window_pol_dr6_pa5_f090 = win_dir + "window_dr6_pa5_f090_baseline.fits"
+window_kspace_dr6_pa4_f220 = window_dir + "window_dr6_pa4_f220_kspace.fits"
+window_T_dr6_pa4_f220 =  window_dir +"window_dr6_pa4_f220_baseline.fits"
+window_pol_dr6_pa4_f220 =  window_dir +"window_dr6_pa4_f220_baseline.fits"
 
-window_kspace_dr6_pa5_f150 = win_dir + "kspace_mask_dr6_pa5_f150.fits"
-window_T_dr6_pa5_f150 = win_dir + "window_dr6_pa5_f150_baseline.fits"
-window_pol_dr6_pa5_f150 = win_dir + "window_dr6_pa5_f150_baseline.fits"
+window_kspace_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_kspace.fits"
+window_T_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
+window_pol_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
 
-window_kspace_dr6_pa6_f090 = win_dir + "kspace_mask_dr6_pa6_f090.fits"
-window_T_dr6_pa6_f090 = win_dir + "window_dr6_pa6_f090_baseline.fits"
-window_pol_dr6_pa6_f090 = win_dir + "window_dr6_pa6_f090_baseline.fits"
+window_kspace_dr6_pa5_f150 = window_dir +  "window_dr6_pa5_f150_kspace.fits"
+window_T_dr6_pa5_f150 = window_dir + "window_dr6_pa5_f150_baseline.fits"
+window_pol_dr6_pa5_f150 = window_dir +"window_dr6_pa5_f150_baseline.fits"
 
-window_kspace_dr6_pa6_f150 = win_dir + "kspace_mask_dr6_pa6_f150.fits"
-window_T_dr6_pa6_f150 = win_dir + "window_dr6_pa6_f150_baseline.fits"
-window_pol_dr6_pa6_f150 = win_dir + "window_dr6_pa6_f150_baseline.fits"
+window_kspace_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_kspace.fits"
+window_T_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
+window_pol_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
 
-window_kspace_Planck_f100 = win_dir + "kspace_mask_dr6_pa6_f090.fits"
-window_T_Planck_f100 = win_dir + "window_dr6_pa6_f090_baseline.fits"
-window_pol_Planck_f100 = win_dir + "window_dr6_pa6_f090_baseline.fits"
+window_kspace_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_kspace.fits"
+window_T_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
+window_pol_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
 
-window_kspace_Planck_f143 = win_dir + "kspace_mask_dr6_pa6_f150.fits"
-window_T_Planck_f143 = win_dir + "window_dr6_pa6_f150_baseline.fits"
-window_pol_Planck_f143 = win_dir + "window_dr6_pa6_f150_baseline.fits"
 
-window_kspace_Planck_f217 = win_dir + "kspace_mask_dr6_pa4_f220.fits"
-window_T_Planck_f217 = win_dir + "window_dr6_pa4_f220_baseline.fits"
-window_pol_Planck_f217 = win_dir + "window_dr6_pa4_f220_baseline.fits"
+window_kspace_Planck_f100 = window_dir + "window_dr6_pa6_f090_kspace.fits"
+window_T_Planck_f100 = window_dir + "window_dr6_pa6_f090_baseline.fits"
+window_pol_Planck_f100 = window_dir + "window_dr6_pa6_f090_baseline.fits"
+
+window_kspace_Planck_f143 = window_dir + "window_dr6_pa6_f150_kspace.fits"
+window_T_Planck_f143 = window_dir + "window_dr6_pa6_f150_baseline.fits"
+window_pol_Planck_f143 = window_dir + "window_dr6_pa6_f150_baseline.fits"
+
+window_kspace_Planck_f217 = window_dir + "window_dr6_pa4_f220_kspace.fits"
+window_T_Planck_f217 = window_dir + "window_dr6_pa4_f220_baseline.fits"
+window_pol_Planck_f217 = window_dir + "window_dr6_pa4_f220_baseline.fits"
 
 
 
@@ -251,13 +235,10 @@ bandpass_shift_Planck_f143  = 0.
 bandpass_shift_Planck_f217  = 0.
 
 
-
-
-
 #sim
 seed_sims = False
 iStart = 0
-iStop = 499
+iStop = 299
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'
@@ -269,4 +250,4 @@ range_TE = [-150, 150]
 range_ET = [-150, 150]
 range_EE = [-20, 50]
 
-planck_data_dir = data_dir + "planck_data/"
+

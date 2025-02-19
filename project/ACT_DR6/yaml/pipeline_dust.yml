@@ -5,7 +5,37 @@ product_dir: products/dust
 # parsing the yaml file by the location to the pspipe installation
 config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/global_dust.dict]
 
+variables:
+  maps_Planck_f143:
+    - planck_projected/npipe6v20A_f143_map_srcfree.fits
+    - planck_projected/npipe6v20B_f143_map_srcfree.fits
+  maps_Planck_f353:
+    - planck_projected/npipe6v20A_f353_map_srcfree.fits
+    - planck_projected/npipe6v20B_f353_map_srcfree.fits
+  beam_T_Planck_f143 : beams/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_143Ax143B.dat
+  beam_T_Planck_f353 : beams/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_353Ax353B.dat
+  beam_pol_Planck_f143 : beams/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_143Ax143B.dat
+  beam_pol_Planck_f353 : beams/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_353Ax353B.dat
+
+
+
 pipeline:
+  # Planck maps pre-processing
+  planck/project_planck_maps:
+    slurm:
+      ntasks: 8
+      cpus_per_task: 32
+      
+  planck/extract_planck_beam: null
+  planck/reformat_source_catalog: null
+  planck/source_npipe_subtraction:
+    script_file: planck/run_npipe_src_subtraction.sh
+    # Mandatory here since the script already use `srun` commands
+    slurm: false
+  planck/check_src_subtraction:
+    slurm:
+      ntasks: 16
+
   get_mcm_and_bbl:
     slurm:
       ntasks: 3

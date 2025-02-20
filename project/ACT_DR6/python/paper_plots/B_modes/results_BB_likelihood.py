@@ -16,10 +16,9 @@ from matplotlib import rcParams
 import matplotlib.ticker as ticker
 import B_modes_utils
 
-rcParams["xtick.labelsize"] = 20
-rcParams["ytick.labelsize"] = 20
-rcParams["axes.labelsize"] = 20
-rcParams["axes.titlesize"] = 20
+labelsize = 14 
+fontsize = 20
+divider_pow = -4
 
 def loglike(a_BB_cmb, a_BB_dust):
     """ compute the loglike according to the parameters """
@@ -195,38 +194,39 @@ add_BK = True
 add_sptpol = True
 add_polarbear = True
 fac_ell = -1.
+divider = 10**divider_pow
     
-fig, ax = plt.subplots( figsize=(14,8))
-ax.plot(l_th, ps_dict["BB"] * l_th ** fac_ell, color="gray", linewidth=2)
+fig, ax = plt.subplots( figsize=(9, 5.5), dpi=100)
+ax.plot(l_th, ps_dict["BB"] * l_th ** fac_ell / divider, color="gray")
 
 
 ax.set_xlim(30, 4000)
 if fac_ell == - 1:
-    ax.set_ylim(-2*10**-5, 2.1*10**-4)
+    ax.set_ylim(-2*10**-1, 2.1)
 if fac_ell == 0:
     ax.set_ylim(-0.05, 0.25)
 
-ax.errorbar(lb_ml_BB, vec_ml_BB * lb_ml_BB ** fac_ell, std_ml_BB * lb_ml_BB ** fac_ell, fmt="o", color="royalblue", label="ACT", markersize='8', capsize=3, elinewidth=3)
+ax.errorbar(lb_ml_BB, vec_ml_BB * lb_ml_BB ** fac_ell / divider, std_ml_BB * lb_ml_BB ** fac_ell / divider, fmt="o", color="royalblue", label="ACT", markersize=6, capsize=4, elinewidth=2)
 if add_BK:
     ax.semilogx()
     lb_bicep, Db_bicep, err_bicep = external_data.get_bicep_BB_spectrum()
-    ax.errorbar(lb_bicep, Db_bicep * lb_bicep ** fac_ell, err_bicep * lb_bicep ** fac_ell, fmt="o", color="red", label="BICEP/Keck (2021)")
+    ax.errorbar(lb_bicep, Db_bicep * lb_bicep ** fac_ell / divider, err_bicep * lb_bicep ** fac_ell / divider, fmt="o", color="red", label="BICEP/Keck (2021)", markersize=3, elinewidth=1)
 if add_sptpol:
     lb_sptpol, Db_sptpol, err_sptpol = external_data.get_sptpol_BB_spectrum()
-    ax.errorbar(lb_sptpol, Db_sptpol * lb_sptpol ** fac_ell, err_sptpol * lb_sptpol ** fac_ell, fmt="o", color="orange", label="SPTpol (2020)")
+    ax.errorbar(lb_sptpol, Db_sptpol * lb_sptpol ** fac_ell / divider, err_sptpol * lb_sptpol ** fac_ell / divider, fmt="o", color="orange", label="SPTpol (2020)", markersize=3, elinewidth=1)
 if add_polarbear:
     lb_polarbear, Db_polarbear, err_polarbear = external_data.get_polarbear_BB_spectrum()
-    ax.errorbar(lb_polarbear, Db_polarbear * lb_polarbear ** fac_ell, err_polarbear * lb_polarbear ** fac_ell, fmt="o", color="green", label="POLARBEAR (2017)")
+    ax.errorbar(lb_polarbear, Db_polarbear * lb_polarbear ** fac_ell / divider, err_polarbear * lb_polarbear ** fac_ell / divider, fmt="o", color="green", label="POLARBEAR (2017)", markersize=3, elinewidth=1)
 
 ax.plot(l_th, ps_dict["BB"] * 0, linestyle="--", color="black")
-for axis in ['left', 'bottom', 'right', 'top']:
-    ax.spines[axis].set_linewidth(1.5)
 
-ax.legend(fontsize=22)
-ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1e'))
+ax.legend(fontsize=labelsize)
+ax.tick_params(labelsize=labelsize)
 
-plt.ylabel(r"$\ell^{-1} D_{\ell}^{BB} \ [\mu K^{2}]$", fontsize=35)
-plt.xlabel(r"$\ell$", fontsize=35)
+divider_str = r"10^{%s}" % divider_pow
+
+plt.ylabel(r"$\ell^{-1} D_{\ell}^{BB} \ [{%s} \mu \rm K^{2}]$" % divider_str, fontsize=fontsize)
+plt.xlabel(r"$\ell$", fontsize=fontsize)
 plt.tight_layout()
 plt.savefig(f"{paper_plot_dir}/combined_BB_ellfac{fac_ell}_{cut}{tag}.pdf", bbox_inches="tight")
 plt.clf()

@@ -5,18 +5,14 @@ This script plot the residuals with respect to the LCDM model specified in the d
 from pspy import so_dict, so_spectra, pspy_utils
 from pspipe_utils import  log, best_fits, external_data, covariance
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 import sys, os
 from matplotlib import rcParams
 import pspipe_utils
 import scipy.stats as ss
 
-rcParams["font.family"] = "serif"
-rcParams["font.size"] = "18"
-rcParams["xtick.labelsize"] = 18
-rcParams["ytick.labelsize"] = 18
-rcParams["axes.labelsize"] = 18
-rcParams["axes.titlesize"] = 18
+labelsize = 14
+fontsize = 20
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -31,7 +27,7 @@ bestfit_dir = f"best_fits{tag}"
 
 run_name = {}
 run_name["_paper"] = "ACT"
-run_name["_paper_PACT"] = "PACT"
+run_name["_paper_PACT"] = "P-ACT"
 run_name["_Planck"] = "Planck"
 run_name["_Planck_LB"] = "Planck LB"
 
@@ -91,7 +87,7 @@ l_b, ps_th_plank = external_data.bin_ala_planck_cmb_only(lth, Dlth)
 
 rebin_fac = 2
 
-fig = plt.figure(figsize=(16, 22))
+fig = plt.figure(figsize=(12, 17), dpi=100)
 
 for count, spec_select in enumerate(selected_spectra_list):
     s_name = spec_select[0]
@@ -137,24 +133,32 @@ for count, spec_select in enumerate(selected_spectra_list):
     plt.subplot(6, 1, 1 + count * 2)
     if s_name == "TT": plt.semilogy()
     plt.ylim(ylim[s_name])
-    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt=".", color="royalblue", label="ACT", mfc='w', elinewidth=2)
-    plt.errorbar(l_p_rebin, Dl_p_rebin * l_p_rebin ** fac[s_name], sigma_p_rebin * l_p_rebin ** fac[s_name], fmt=".", color="darkorange", alpha=1, label="Planck", mfc='w', elinewidth=1)
-    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", alpha=1, label=r" %s $\Lambda$CDM" % run_name[tag])
+
+    # put planck TT dots on top of ACT dots, else ACT TE, EE on top
+    if count == 0:
+        act_zorder, planck_zorder = 1, 2
+    else:
+        act_zorder, planck_zorder = 2, 1
+
+    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name], sigma_ml * lb_ml ** fac[s_name] , fmt="o", color="royalblue", label="ACT", mfc='w', markersize=3, elinewidth=1, zorder=act_zorder)
+    plt.errorbar(l_p_rebin, Dl_p_rebin * l_p_rebin ** fac[s_name], sigma_p_rebin * l_p_rebin ** fac[s_name], fmt="o", color="darkorange", alpha=1, label="Planck", mfc='w', markersize=3, elinewidth=1, zorder=planck_zorder)
+    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name], color="gray", linewidth=0.7, label=r" %s $\Lambda$CDM" % run_name[tag], zorder=0)
 
     if fac[s_name] == 0:
-        plt.ylabel(r"$D^{%s}_{\ell} \  [\mu \rm K^{2}]$" % s_name, fontsize=22)
+        plt.ylabel(r"$D^{%s}_{\ell} \  [\mu \rm K^{2}]$" % s_name, fontsize=fontsize)
     if fac[s_name] == 1:
-        plt.ylabel(r"$\ell D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % s_name, fontsize=22)
+        plt.ylabel(r"$\ell D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % s_name, fontsize=fontsize)
     if fac[s_name] > 1:
-        plt.ylabel(r"$\ell^{%s}D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % (fac[s_name], s_name), fontsize=22)
+        plt.ylabel(r"$\ell^{%s}D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % (fac[s_name], s_name), fontsize=fontsize)
 
     plt.xlim(0,xmax)
     if count == 0:
-        plt.legend(fontsize=16)
-    plt.xticks([])
+        plt.legend(fontsize=fontsize)
+    plt.tick_params(axis='x', direction='in', labelbottom=False)
+    plt.tick_params(labelsize=labelsize)
 
     plt.subplot(6, 1, 2 + count * 2)
-    plt.xlabel(r"$\ell$", fontsize=22)
+    plt.xlabel(r"$\ell$", fontsize=fontsize)
     
     divider = 10 ** divider_power_res[s_name]
     
@@ -165,29 +169,27 @@ for count, spec_select in enumerate(selected_spectra_list):
 
     
     if res_fac[s_name] == 0:
-        plt.ylabel(r"$ \Delta D^{%s}_{\ell}  \ [{%s} \mu \rm K^{2}] $" %  (s_name, divider_str), fontsize=22)
+        plt.ylabel(r"$ \Delta D^{%s}_{\ell}  \ [{%s} \mu \rm K^{2}] $" %  (s_name, divider_str), fontsize=fontsize)
     if res_fac[s_name] == 1:
-        plt.ylabel(r"$ \ell \Delta D^{%s}_{\ell}  \ [{%s} \mu \rm K^{2}] $" %  (s_name, divider_str), fontsize=22)
+        plt.ylabel(r"$ \ell \Delta D^{%s}_{\ell}  \ [{%s} \mu \rm K^{2}] $" %  (s_name, divider_str), fontsize=fontsize)
     if res_fac[s_name] > 1:
-        #plt.ylabel(r"$\ell^{%s} (D^{%s}_{\ell} - D^{%s, th}_{\ell, \rm %s} \ [\mu \rm K^{2}]) $" % (res_fac[s_name], s_name, s_name, run_name[tag]), fontsize=22)
-        plt.ylabel(r"$ \ell^{%s} \Delta D^{%s}_{\ell}  \ [{%s}  \mu \rm K^{2}] $" %  (res_fac[s_name], s_name, divider_str), fontsize=22)
+        plt.ylabel(r"$ \ell^{%s} \Delta D^{%s}_{\ell}  \ [{%s}  \mu \rm K^{2}] $" %  (res_fac[s_name], s_name, divider_str), fontsize=fontsize)
 
     plt.errorbar(lb_ml, res  *  lb_ml ** res_fac[s_name] / divider, sigma_ml  *  lb_ml ** res_fac[s_name] / divider,
-                 label=r"ACT", fmt=".", color="royalblue", elinewidth=1, mfc='w')
+                 label=r"ACT", fmt="o", color="royalblue", markersize=3, elinewidth=1, mfc='w', zorder=act_zorder)
     plt.errorbar(l_p_rebin, res_p_rebin  *  l_p_rebin ** res_fac[s_name] / divider, sigma_p_rebin  *  l_p_rebin ** res_fac[s_name] / divider,
-                 label=r"Planck", alpha=1, fmt=".", color="darkorange", elinewidth=1, mfc='w')
-    
-    plt.plot(lb_th, lb_th * 0, color="gray")
+                 label=r"Planck", fmt="o", color="darkorange", markersize=3, elinewidth=1, mfc='w', zorder=planck_zorder)
+    plt.plot(lb_th, lb_th * 0, linewidth=0.7, color="gray", zorder=0)
+
     plt.xlim(0, xmax)
     plt.ylim(ylim_res[s_name])
     if count != 2:
-        plt.xticks([])
-
+        plt.tick_params(axis='x', direction='in', labelbottom=False)
+    plt.tick_params(labelsize=labelsize)
     
     plt.yticks(ticks=y_ticks_res[s_name], labels=y_ticks_res[s_name])
-#plt.legend(fontsize=16)
+
 plt.subplots_adjust(wspace=0, hspace=0)
-#plt.show()
 fig.align_ylabels()
 
 plt.savefig(f"{paper_plot_dir}/residal_vs_best_fit_cmb{tag}.pdf", bbox_inches="tight")

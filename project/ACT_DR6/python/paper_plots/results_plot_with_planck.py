@@ -5,18 +5,14 @@ This script plot the combined dr6 spectra together with planck
 from pspy import so_dict, so_spectra, pspy_utils
 from pspipe_utils import  log, best_fits
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 import sys, os
 from matplotlib import rcParams
 import pspipe_utils
 import scipy.stats as ss
 
-rcParams["font.family"] = "serif"
-rcParams["font.size"] = "40"
-rcParams["xtick.labelsize"] = 40
-rcParams["ytick.labelsize"] = 40
-rcParams["axes.labelsize"] = 40
-rcParams["axes.titlesize"] = 40
+labelsize = 14
+fontsize = 20
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -48,6 +44,12 @@ ylim = {}
 ylim["TT"] = [5, 6000]
 ylim["TE"] = [-10.5, 7.5]
 ylim["EE"] = [0, 45]
+
+yticklabels = {}
+yticklabels['TT'] = [10, 100, 1000]
+yticklabels['TE'] = np.arange(-10, 7.5, 2.5)
+yticklabels['EE'] = np.arange(0, 50, 10)
+
 fac = {}
 fac["TT"] = 0
 fac["TE"] = 1
@@ -62,7 +64,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 
-fig = plt.figure(figsize=(40, 50))
+fig = plt.figure(figsize=(12, 15), dpi=100)
 count = 1
 for spec_select in selected_spectra_list:
     s_name = spec_select[0]
@@ -75,22 +77,32 @@ for spec_select in selected_spectra_list:
     else:
         lp, Dlp, sigmap, _, _ = np.loadtxt(f"{planck_data_path}/COM_PowerSpect_CMB-{s_name}-binned_R3.02.txt", unpack=True)
 
-  #  if s_name == "TT": plt.semilogy()
     
     ax = plt.subplot(3,1,count)
-    for axis in ['left', 'bottom', 'right', 'top']:
-        ax.spines[axis].set_linewidth(3.5)
-        
+
     divider = 10 ** divider_power[s_name]
 
-    if s_name == "TT": plt.semilogy()
+    if s_name == "TT":
+        plt.semilogy()
 
     plt.xlim(0,4000)
     plt.ylim(ylim[s_name])
-    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name] / divider, sigma_ml * lb_ml ** fac[s_name] / divider, fmt="o", color="royalblue", label="ACT", markersize=8, elinewidth=3)
-    plt.errorbar(lp, Dlp * lp ** fac[s_name] / divider, sigmap * lp ** fac[s_name] / divider, fmt="o", color="darkorange", alpha=1, label="Planck",markersize=8, elinewidth=3)
-    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name] / divider, color="gray", alpha=1)
-    plt.xlabel(r"$\ell$", fontsize=70)
+
+    # put planck TT dots on top of ACT dots, else ACT TE, EE on top
+    if s_name == 'TT':
+        act_zorder, planck_zorder = 1, 2
+    else:
+        act_zorder, planck_zorder = 2, 1
+
+    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name] / divider, sigma_ml * lb_ml ** fac[s_name] / divider, fmt="o", color="royalblue", label="ACT", markersize=3, elinewidth=1, zorder=act_zorder)
+    plt.errorbar(lp, Dlp * lp ** fac[s_name] / divider, sigmap * lp ** fac[s_name] / divider, fmt="o", color="darkorange", alpha=1, label="Planck", markersize=3, elinewidth=1, zorder=planck_zorder)
+    plt.plot(lth, Dlth[s_name] * lth ** fac[s_name] / divider, color="gray", linewidth=0.7, zorder=0)
+
+    plt.xlabel(r"$\ell$", fontsize=fontsize)
+    plt.yticks(ticks=yticklabels[s_name])
+    plt.tick_params(labelsize=labelsize)
+    if count < 3:
+        plt.tick_params(axis='x', direction='in', labelbottom=False)
     
     if divider_power[s_name] == 0:
         divider_str = ""
@@ -98,18 +110,18 @@ for spec_select in selected_spectra_list:
         divider_str = r"10^{%s}" % divider_power[s_name]
 
     if fac[s_name] == 0:
-        plt.ylabel(r"$ D^{%s}_{\ell} \ [{%s}\mu \rm K^{2}]$" % (s_name, divider_str), fontsize=70)
+        plt.ylabel(r"$ D^{%s}_{\ell} \ [{%s}\mu \rm K^{2}]$" % (s_name, divider_str), fontsize=fontsize)
     if fac[s_name] == 1:
-        plt.ylabel(r"$ \ell D^{%s}_{\ell} \ [{%s} \mu \rm K^{2}] $" % (s_name, divider_str), fontsize=70)
+        plt.ylabel(r"$ \ell D^{%s}_{\ell} \ [{%s} \mu \rm K^{2}] $" % (s_name, divider_str), fontsize=fontsize)
     if fac[s_name] > 1:
-        plt.ylabel(r"$ \ell^{%s}D^{%s}_{\ell} \ [{%s} \mu \rm K^{2}]$" % (fac[s_name], s_name, divider_str), fontsize=50)
+        plt.ylabel(r"$ \ell^{%s}D^{%s}_{\ell} \ [{%s} \mu \rm K^{2}]$" % (fac[s_name], s_name, divider_str), fontsize=fontsize)
 
     if count == 1:
-        plt.legend(fontsize=80)
+        plt.legend(fontsize=fontsize)
     count += 1
     if count < 4:
         print("ok")
-        plt.xticks([])
+        # plt.xticks([])
         
 plt.subplots_adjust(wspace=0, hspace=0)
 fig.align_ylabels()

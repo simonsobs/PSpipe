@@ -5,19 +5,15 @@ This script compute combined null test
 from pspy import so_dict, pspy_utils, so_spectra, so_cov
 from pspipe_utils import log
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 import sys, os
 import scipy.stats as ss
 from matplotlib import rcParams
 import matplotlib.ticker as ticker
 
 
-rcParams["font.family"] = "serif"
-rcParams["font.size"] = "20"
-rcParams["xtick.labelsize"] = 20
-rcParams["ytick.labelsize"] = 20
-rcParams["axes.labelsize"] = 20
-rcParams["axes.titlesize"] = 20
+labelsize = 14
+fontsize = 20
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -52,17 +48,17 @@ lscale["BB"] = 0
 
 ylim= {}
 ylim["TT"] = (-1.5*10**7, 1.8*10**9)
-ylim["TE"] =  (-1.2*10**8, 0.55*10**8)
+ylim["TE"] =  (-1.2, 0.55)
 ylim["TB"] = (-10,10)
-ylim["EE"] = (2*10**3, 4.3*10**4)
+ylim["EE"] = (.2, 4.3)
 ylim["EB"] = (-1.2,1.2)
 ylim["BB"] = (-1.2,1.2)
 
 ylim_res = {}
 ylim_res["TT"] = (-10,10)
-ylim_res["TE"] = (-3,5)
+ylim_res["TE"] = (-3,9)
 ylim_res["TB"] = (-3,3)
-ylim_res["EE"] = (-2,3.5)
+ylim_res["EE"] = (-1.5,5)
 ylim_res["EB"] = (-1,1)
 ylim_res["BB"] = (-1,1)
 
@@ -72,7 +68,7 @@ color_list_null = ["blue", "steelblue", "purple"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 combined_spectra = ["TT", "TE", "TB", "EE", "EB", "BB"]
-combined_spectra = ["TE", "EE"]
+combined_spectra = ["EE", "TE"]
 
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 
@@ -81,32 +77,42 @@ shift_dict["150x150"] = 0
 shift_dict["90x150"] = -8
 shift_dict["90x90"] = 8
 
+divider_power = {}
+divider_power["EE"] = 4
+divider_power["TE"] = 8
 
+f, axes = plt.subplots(4, 1, figsize=(12, 13), sharex=True, height_ratios=[1, .75, 1, .75], dpi=100)
 
 for ispec, spectrum in enumerate(combined_spectra):
-    f, (a0, a1) = plt.subplots(2, 1, height_ratios=[1.5, 1], figsize=(20, 10))
-
+    a0, a1 = axes[ispec*2:(ispec+1)*2]
+    divider = 10 ** divider_power[spectrum]
 
     count=0
     
-    a0.plot(lth, Dlth[spectrum] * lth ** lscale[spectrum], color="gray", linestyle="--", alpha=0.6)
+    a0.plot(lth, Dlth[spectrum] * lth ** lscale[spectrum] / divider, color="gray", linestyle="--", alpha=0.6)
     for my_c, fp in enumerate(freq_pairs[:]):
         fa, fb = fp.split("x")
 
         l, Dl_fg_sub, error = np.loadtxt(f"{combined_spec_dir}/Dl_{fp}_{spectrum}_cmb_only.dat", unpack=True)
-        a0.errorbar(l + shift_dict[fp], Dl_fg_sub * l ** lscale[spectrum], error * l ** lscale[spectrum], fmt=".", label=f"{fa} GHz x {fb} GHz", color=color_list[my_c], mfc='w', markersize=8)
-    a0.legend(fontsize=16)
+        a0.errorbar(l + shift_dict[fp], Dl_fg_sub * l ** lscale[spectrum] / divider, error * l ** lscale[spectrum] / divider, fmt="o", label=f"{fa} GHz x {fb} GHz", color=color_list[my_c],
+                    markersize=3, elinewidth=1, mfc='w')
+    a0.legend(fontsize=labelsize)
     a0.set_xlim(500, 3000)
     a0.set_ylim(ylim[spectrum])
-    a0.set_xticks([])
-    
+    a0.tick_params(axis='x', direction='in', labelbottom=False)
+
+    if divider_power[spectrum] == 0:
+        divider_str = ""
+    else:
+        divider_str = r"10^{%s}" % divider_power[spectrum]
 
     if lscale[spectrum] == 0:
-        a0.set_ylabel(r"$ D^{%s}_{\ell} \ [\mu K^{2}]$" % spectrum, fontsize=30)
+        a0.set_ylabel(r"$ D^{%s}_{\ell} \ [{%s} \mu \rm K^{2}]$" % (spectrum, divider_str), fontsize=fontsize)
     elif lscale[spectrum] == 1:
-        a0.set_ylabel(r"$ \ell D^{%s}_{\ell} \ [\mu K^{2}]$" % (spectrum), fontsize=30)
+        a0.set_ylabel(r"$ \ell D^{%s}_{\ell} \ [{%s} \mu \rm K^{2}]$" % (spectrum, divider_str), fontsize=fontsize)
     else:
-        a0.set_ylabel(r"$ \ell^{%s} D^{%s}_{\ell} \ [\mu K^{2}]$" % (lscale[spectrum], spectrum), fontsize=30)
+        a0.set_ylabel(r"$ \ell^{%s} D^{%s}_{\ell} \ [{%s} \mu \rm K^{2}]$" % (lscale[spectrum], spectrum, divider_str), fontsize=fontsize)
+    a0.tick_params(labelsize=labelsize)
 
     for fp1 in freq_pairs:
         for fp2 in freq_pairs:
@@ -141,18 +147,24 @@ for ispec, spectrum in enumerate(combined_spectra):
             fa1, fb1 = fp1.split("x")
             fa2, fb2 = fp2.split("x")
 
-            a1.errorbar(l1 - 8 + 8*count, diff, std, fmt="o", label=f"{fa1} GHz x {fb1} GHz - {fa2} GHz x {fb2} GHz, PTE: {pte*100:0.0f} %", color=color_list_null[count], mfc='w')
+            a1.errorbar(l1 - 8 + 8*count, diff, std, fmt="o", label=f"{fa1} GHz x {fb1} GHz - {fa2} GHz x {fb2} GHz, PTE: {pte*100:0.0f} %",
+                        color=color_list_null[count], markersize=3, elinewidth=1, mfc='w')
             count += 1
             
     a1.plot(lth, lth*0, color="black", linestyle="--", alpha=0.5)
     a1.set_ylim(ylim_res[spectrum])
     a1.set_xlim(500, 3000)
-    a1.legend(fontsize=16)
-    a1.set_xlabel(r"$\ell$", fontsize=30)
-    a1.set_ylabel(r"$\Delta D^{%s}_{\ell} \ [\mu K^{2}]$" % spectrum, fontsize=30)
-    plt.subplots_adjust(wspace=0, hspace=0)
-    f.align_ylabels()
-   # plt.show()
-    plt.savefig(f"{paper_plot_dir}/null_{spectrum}{tag}.pdf", bbox_inches="tight")
-    plt.clf()
-    plt.close()
+    a1.legend(fontsize=labelsize)
+    a1.set_xlabel(r"$\ell$", fontsize=fontsize)
+    a1.set_ylabel(r"$\Delta D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % spectrum, fontsize=fontsize)
+    a1.tick_params(labelsize=labelsize)
+
+    if ispec == 0:
+        a1.tick_params(axis='x', direction='in', labelbottom=False)
+
+plt.subplots_adjust(wspace=0, hspace=0)
+f.align_ylabels()
+# plt.show()
+plt.savefig(f"{paper_plot_dir}/null_{spectrum}{tag}.pdf", bbox_inches="tight")
+plt.clf()
+plt.close()

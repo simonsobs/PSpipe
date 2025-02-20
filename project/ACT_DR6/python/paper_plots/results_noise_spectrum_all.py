@@ -125,7 +125,6 @@ for spec in ["TT","EE"]:
 
 plt.gcf().legend(fontsize=labelsize, loc='upper center', bbox_to_anchor=(0.5, 0), ncol=3)
     
-plt.tight_layout()
-plt.savefig(f"{paper_plot_dir}/DR6_noise.pdf")
+plt.savefig(f"{paper_plot_dir}/DR6_noise.pdf", bbox_inches="tight")
 plt.clf()
 plt.close

@@ -5,16 +5,12 @@ This script compare the magnitude of the different covariance contributions
 from pspy import so_dict, pspy_utils
 from pspipe_utils import covariance, pspipe_list, log
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 import sys, os
 from matplotlib import rcParams
 
-rcParams["font.family"] = "serif"
-rcParams["font.size"] = "18"
-rcParams["xtick.labelsize"] = 16
-rcParams["ytick.labelsize"] = 16
-rcParams["axes.labelsize"] = 25
-rcParams["axes.titlesize"] = 25
+labelsize = 14
+fontsize = 20
 
 def get_ml_bins(bin_out_dict, bin_mean):
 
@@ -99,7 +95,7 @@ cov_term = {}
 cov_term["tSZ"] = np.load("covariances/x_ar_non_gaussian_cov_tSZ.npy")
 cov_term["radio"] = np.load("covariances/x_ar_non_gaussian_cov_radio.npy")
 cov_term["lensing"] = np.load("covariances/x_ar_non_gaussian_cov_lensing.npy")
-cov_term["T->P leakage"] = np.load("covariances/x_ar_leakage_cov.npy")
+cov_term[r"T$\rightarrow$P leakage"] = np.load("covariances/x_ar_leakage_cov.npy")
 cov_term["beam"] = np.load("covariances/x_ar_beam_cov.npy")
 cov_term["CIB"] = np.load("covariances/x_ar_non_gaussian_cov_CIB.npy")
 
@@ -136,8 +132,8 @@ for mode in ["TT", "TE", "EE"]:
     yticks_name[mode] = ["1%", "10%", "100%"]
 
 
-plt.figure(figsize=(12,8))
-plt.suptitle("Non-Gaussian and Systematic Error Budget", fontsize=20, y=0.93)
+plt.figure(figsize=(10, 8), dpi=100)
+plt.suptitle("Non-Gaussian and Systematic Error Budget", fontsize=fontsize, y=0.93)
 
 count = 1
 for spec_select in selected_spectra_list:
@@ -183,12 +179,12 @@ for spec_select in selected_spectra_list:
         if count % 2 == 0:
             plt.yticks([])
         else:
-           plt.yticks(yticks_loc[spectrum], yticks_name[spectrum])
+            plt.yticks(yticks_loc[spectrum], yticks_name[spectrum])
 
         plt.ylim(ylim[spectrum])
        
         fa, fb = fp.split("x")
-        plt.title(f"{spectrum} {fa} GHz x {fb} GHz", x=0.6, y=0.8, fontsize=18)
+        plt.title(f"{spectrum} {fa} GHz x {fb} GHz", x=0.6, y=0.8, fontsize=labelsize)
         for term in cov_term.keys():
             my_cov = cov_sim.copy()
             my_cov += cov_term[term]
@@ -204,18 +200,19 @@ for spec_select in selected_spectra_list:
             plt.plot(lb_ml, (sigma_ml/sigma_ml_SN - 1) * 100, label=term)
         
         if count > 4:
-            plt.xlabel(r"$\ell$", fontsize=22)
+            plt.xlabel(r"$\ell$", fontsize=fontsize)
             my_ticks = [1000, 2000,3000, 4000, 5000]
             plt.xticks(my_ticks, my_ticks)
         else:
             plt.xticks([])
         if count == 2:
-            legend = plt.legend(bbox_to_anchor=(1.02, 0), fontsize=16, title=r"$X:$")
+            legend = plt.legend(bbox_to_anchor=(1.02, 0), fontsize=labelsize, title=r"$\bf{X}:$", title_fontsize=labelsize)
             legend._legend_box.align = "left"
         if count == 3:
-            plt.ylabel(r"$\left(\sigma^{(\rm CV + noise + X)}/\sigma^{(\rm CV + noise)} - 1 \right) $", fontsize=25)
+            plt.ylabel(r"$\left(\sigma^{(\rm CV + noise + \bf{X})}/\sigma^{(\rm CV + noise)} - 1 \right) $", fontsize=fontsize)
 
-        plt.xlim(0,6000)
+        plt.xlim(0, 6000)
+        plt.tick_params(labelsize=labelsize)
         count += 1
 
 plt.subplots_adjust(wspace=0, hspace=0)

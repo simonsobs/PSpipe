@@ -94,8 +94,8 @@ for spec_select in selected_spectra_list:
     else:
         act_zorder, planck_zorder = 2, 1
 
-    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name] / divider, sigma_ml * lb_ml ** fac[s_name] / divider, fmt="o", color="royalblue", label="ACT", markersize=2.2, elinewidth=1, zorder=act_zorder)
-    plt.errorbar(lp, Dlp * lp ** fac[s_name] / divider, sigmap * lp ** fac[s_name] / divider, fmt="o", color="darkorange", alpha=1, label="Planck", markersize=2.2, elinewidth=1, zorder=planck_zorder)
+    plt.errorbar(lb_ml, vec_ml *  lb_ml ** fac[s_name] / divider, sigma_ml * lb_ml ** fac[s_name] / divider, fmt="o", color="royalblue", label="ACT", markersize=2., elinewidth=1, zorder=act_zorder)
+    plt.errorbar(lp, Dlp * lp ** fac[s_name] / divider, sigmap * lp ** fac[s_name] / divider, fmt="o", color="darkorange", alpha=1, label="Planck", markersize=2., elinewidth=1, zorder=planck_zorder)
     plt.plot(lth, Dlth[s_name] * lth ** fac[s_name] / divider, color="gray", linewidth=0.7, zorder=0)
 
     plt.xlabel(r"$\ell$", fontsize=fontsize)

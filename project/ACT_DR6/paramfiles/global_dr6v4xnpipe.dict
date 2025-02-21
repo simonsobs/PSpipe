@@ -238,7 +238,7 @@ bandpass_shift_Planck_f217  = 0.
 #sim
 seed_sims = False
 iStart = 0
-iStop = 299
+iStop = 499
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = 'tile_cmbmask'
 noise_sim_type_pa5 = 'tile_cmbmask'

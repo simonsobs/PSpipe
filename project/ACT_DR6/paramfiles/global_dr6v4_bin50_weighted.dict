@@ -9,8 +9,6 @@ kspace_tf_path  = release_dir + "spectra/kspace_tf/dr6_weighted_binning_50/"
 aberration_correction = release_dir + "spectra/aberration_correction/dr6_binning_50"
 sim_spec_dir = release_dir + "spectra/sim_spectra/dr6_weighted_binning_50"
 
-
-
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": 'CAR', 'order': 0}
 niter = 0
@@ -54,7 +52,6 @@ apod_survey_degree = 2
 edge_skip_rescale = 1
 cross_link_threshold = 0.97
 n_med_ivar = 3
-
 
 # maps
 n_splits_dr6 = 4
@@ -131,7 +128,6 @@ leakage_beam_dr6_pa5_f150_TB = [leakage_file_dir + "pa5_f150_gamma_t2b.txt" for 
 leakage_beam_dr6_pa6_f090_TB = [leakage_file_dir + "pa6_f090_gamma_t2b.txt" for i in range(4)]
 leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir + "pa6_f150_gamma_t2b.txt" for i in range(4)]
 
-
 window_dir = release_dir + "spectra/windows/dr6/"
 
 window_kspace_dr6_pa4_f150 =  window_dir + "window_dr6_pa4_f150_kspace.fits"
@@ -159,7 +155,6 @@ window_T_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline_ivar.fits"
 window_pol_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline_ivar.fits"
 
 
-
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
 accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
@@ -178,7 +173,7 @@ bandpass_shift_dr6_pa6_f150  = -0.19
 
 #sim
 iStart = 0
-iStop = 1639
+iStop = 959
 sim_alm_dtype = "complex64"
 noise_sim_type_pa4 = "tile_cmbmask"
 noise_sim_type_pa5 = "tile_cmbmask"

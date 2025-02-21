@@ -24,6 +24,8 @@ pipeline:
     force: true
   paper_plots/results_get_combined_null:
     force: true
+  paper_plots/results_get_combined_null_TEEE:
+    force: true
   paper_plots/results_multifrequency_components_TT: 
     force: true
   paper_plots/results_multifrequency_TT: 

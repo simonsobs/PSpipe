@@ -6,7 +6,7 @@ arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
 binning_file = release_dir + "spectra/binning/binning_50"
 
-best_fit_tag = "_paper_PACT_bin50"
+best_fit_tag = "_paper_PACT"
 include_beam_chromaticity_effect_in_best_fit = True
 beam_file_dir = release_dir + "beams/main_beams/nominal/"
 beam_mono_dr6_pa4_f150 = beam_file_dir + 'coadd_pa4_f150_night_beam_tform_jitter_mono.txt'

@@ -1,4 +1,4 @@
-release_dir = "release_dir/"
+release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
 
 # Template mask
 template = release_dir + "maps/published/act_dr6.02_std_AA_night_pa4_f220_4way_set0_map_srcfree.fits"

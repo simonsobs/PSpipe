@@ -1,10 +1,10 @@
-data_dir = "/global/cfs/cdirs/act/data/tlouis/dr6v4/"
+release_dir = "release_dir/"
 
 # Template mask
-template = data_dir + "maps/cmb_night_pa4_f150_3pass_4way_set0_map_srcfree.fits"
+template = release_dir + "maps/published/act_dr6.02_std_AA_night_pa4_f220_4way_set0_map_srcfree.fits"
 
 # Point sources config
-point_source_file = data_dir + "catalogs/cat_skn_multifreq_20220526_nightonly.txt"
+point_source_file =  release_dir + "spectra/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
 # # Only keep the nth brightest sources
 # point_source_only_keep_nth_brighest = 100
 # Point source flux cut (default: 15 mJy @ 150 GHz)
@@ -15,28 +15,27 @@ point_source_SNR = 5
 point_source_radius = 5.0
 
 freq = 150
-cal_90 = 0.9793
+cal_90 = 0.9793 # these are old calibration factor corresponding to the old maps used for the catalog
 cal_150 = 0.9902
 cal_220 = 1.0614
 
-
 # Point source with variable radius size
-monster_source_file = data_dir + "catalogs/monster_catalog.csv"
+monster_source_file = release_dir + "spectra/source_catalog/xtra_sources.csv"
 
 # Dust
-dust_file = data_dir + "masks/mask_dust.fits"
+dust_file = release_dir + "spectra/masks/mask_dust.fits"
 
 # Galatic mask from Planck
-planck_galactic_masks = data_dir + "masks/HFI_Mask_GalPlane-apo0_2048_R2.00.fits"
+planck_galactic_masks = release_dir + "spectra/masks/HFI_Mask_GalPlane-apo0_2048_R2.00.fits"
 
 # Patch masks
-nbr_patches = 5
+#nbr_patches = 5
 
 # dec-ra coordinates for the selection box
-patch_0 = [[+23, 180], [-5, 100]]
-patch_1 = [[+23, 105], [-26, -75]]
-patch_2 = [[-38, 120], [-62, -94]]
-patch_3 = [[+23, -83], [5, -180]]
-patch_4 = [[-23, 104], [-42, -85]]
+#patch_0 = [[+23, 180], [-5, 100]]
+#patch_1 = [[+23, 105], [-26, -75]]
+#patch_2 = [[-38, 120], [-62, -94]]
+#patch_3 = [[+23, -83], [5, -180]]
+#patch_4 = [[-23, 104], [-42, -85]]
 
-patch_output_dir = data_dir + "masks"
+#patch_output_dir = data_dir + "masks"

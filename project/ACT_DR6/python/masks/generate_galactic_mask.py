@@ -42,7 +42,7 @@ for mask_name in data.names:
         1, nside, coordinate=d.get("galatic_mask_coordinate", "gal")
     )
     healpix_map.data = (
-        hp.reorder(data.field(mask_name), n2r=True)
+        hp.reorder(np.float64(data.field(mask_name)), n2r=True)
         if d.get("galactic_mask_nest_ordering", True)
         else data.field(mask_name)
     )

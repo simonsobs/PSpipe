@@ -11,12 +11,8 @@ from pspy import pspy_utils, so_dict, so_spectra
 from matplotlib import rcParams
 
 
-rcParams["font.family"] = "serif"
-rcParams["font.size"] = "12"
-rcParams["xtick.labelsize"] = 24
-rcParams["ytick.labelsize"] = 24
-rcParams["axes.labelsize"] = 20
-rcParams["axes.titlesize"] = 12
+labelsize = 14
+fontsize = 20
 
 
 d = so_dict.so_dict()
@@ -82,15 +78,12 @@ narrays, _, _ = pspipe_list.get_arrays_list(d)
 
 l_th, ps_dict = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 
-fg_components["tt"].remove("tSZ_and_CIB")
-for comp in ["tSZ", "cibc", "tSZxCIB"]:
-    fg_components["tt"].append(comp)
-
+# explicitly list components in the order we want them in
+fg_components = ['cibp', 'cibc', 'tSZxCIB', 'tSZ', 'kSZ', 'radio', 'dust']
+comp_color = ["darkorange", "darkmagenta", "magenta", "brown", "green", "red", "blue"]
 
 spectra_list =  ["dr6_pa5_f090xdr6_pa5_f090", "dr6_pa5_f090xdr6_pa5_f150",  "dr6_pa4_f220xdr6_pa5_f090", "dr6_pa5_f150xdr6_pa5_f150",  "dr6_pa4_f220xdr6_pa5_f150", "dr6_pa4_f220xdr6_pa4_f220"]
-
-comp_color = ["darkorange", "green", "red", "blue", "brown", "darkmagenta", "magenta"]
-fig, axes = plt.subplots(narrays, narrays, sharex=True, sharey=True, figsize=(24, 18))
+fig, axes = plt.subplots(narrays, narrays, sharex=True, sharey=True, figsize=(12, 9), dpi=100)
 axes = np.atleast_2d(axes)
 indices = np.triu_indices(narrays)[::-1]
 for i, cross in enumerate(spectra_list):
@@ -99,20 +92,20 @@ for i, cross in enumerate(spectra_list):
     ax = axes[idx]
 
     if i == 0:
-        ax.errorbar(lb_dict[cross], ps_TT[cross], sigma_TT[cross], fmt=".", label="data", markersize=12)
+        ax.errorbar(lb_dict[cross], ps_TT[cross], sigma_TT[cross], fmt=".", label="data", markersize=6)
     else:
-        ax.errorbar(lb_dict[cross], ps_TT[cross], sigma_TT[cross], fmt=".", markersize=12)
+        ax.errorbar(lb_dict[cross], ps_TT[cross], sigma_TT[cross], fmt=".", markersize=6)
         
     l_th, fg_all = so_spectra.read_ps(f"{bestfit_dir}/fg_{cross}.dat", spectra=spectra)
         
     if i==0:
-        ax.plot(l_th, ps_dict["TT"], color="gray", linestyle="--", label="CMB", linewidth=2)
-        ax.plot(l_th, ps_dict["TT"] + fg_all["TT"], color="gray", label="CMB + fg", linewidth=2)
+        ax.plot(l_th, ps_dict["TT"], color="gray", linestyle="--", label="CMB", linewidth=1)
+        ax.plot(l_th, ps_dict["TT"] + fg_all["TT"], color="gray", label="CMB + fg", linewidth=1)
     else:
-        ax.plot(l_th, ps_dict["TT"], color="gray", linestyle="--", linewidth=2)
-        ax.plot(l_th, ps_dict["TT"] + fg_all["TT"], color="gray", linewidth=2)
+        ax.plot(l_th, ps_dict["TT"], color="gray", linestyle="--", linewidth=1)
+        ax.plot(l_th, ps_dict["TT"] + fg_all["TT"], color="gray", linewidth=1)
 
-    for comp, col in zip(fg_components["tt"], comp_color):
+    for comp, col in zip(fg_components, comp_color):
         l_th, fg_comp = np.loadtxt(f"{components_dir}/tt_{comp}_{cross}.dat", unpack=True)
         if comp == "tSZxCIB":
             fg_comp = np.abs(fg_comp)
@@ -124,12 +117,14 @@ for i, cross in enumerate(spectra_list):
                 label = "CIB-Clustered"
             elif comp == "tSZxCIB":
                 label = "|tSZxCIB|"
+            elif comp == "dust":
+                label = "Galactic dust"
             else:
                 label=comp
             
-            ax.plot(l_th, fg_comp, label=label, linewidth=2, color=col)
+            ax.plot(l_th, fg_comp, label=label, linewidth=1, color=col)
         else:
-            ax.plot(l_th, fg_comp, linewidth=2, color=col)
+            ax.plot(l_th, fg_comp, linewidth=1, color=col)
 
     title_ax = cross.replace("dr6_", "")
     title_ax = title_ax.replace("_", " ")
@@ -139,20 +134,21 @@ for i, cross in enumerate(spectra_list):
         a, b = title_ax.split("x")
         title_ax = f"{b}x{a}"
 
-    ax.set_title(title_ax, fontsize=30)
+    ax.set_title(title_ax, fontsize=labelsize)
     ax.set_yscale("log")
     ax.set_ylim(1, 1e4)
     ax.set_xlim(200, 7800)
+    ax.tick_params(labelsize=labelsize)
 
 for idx in zip(*np.triu_indices(narrays, k=1)):
     ax = axes[idx]
     fig.delaxes(ax)
 
 for i in range(narrays):
-    axes[-1, i].set_xlabel(r"$\ell$", fontsize=35)
-    axes[i, 0].set_ylabel(r"$D_\ell \ [\mu K^{2}]$", fontsize=35)
+    axes[-1, i].set_xlabel(r"$\ell$", fontsize=fontsize)
+    axes[i, 0].set_ylabel(r"$D_\ell \ [\mu K^{2}]$", fontsize=fontsize)
     
-fig.legend(bbox_to_anchor=(0.94,1), fontsize=30)
+fig.legend(bbox_to_anchor=(0.94,1), fontsize=labelsize)
 plt.tight_layout()
 plt.savefig(f"{paper_plot_dir}/TT_per_components{tag}.pdf")
 plt.clf()

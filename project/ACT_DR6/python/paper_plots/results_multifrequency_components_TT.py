@@ -5,7 +5,7 @@ import matplotlib
 import sys
 
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 from pspipe_utils import best_fits, log, pspipe_list, covariance
 from pspy import pspy_utils, so_dict, so_spectra
 from matplotlib import rcParams

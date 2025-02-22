@@ -2,7 +2,7 @@
 This script combined the spectra together
 """
 
-from pspy import so_dict, pspy_utils
+from pspy import so_dict, pspy_utils, so_spectra
 from pspipe_utils import covariance, pspipe_list, log
 import numpy as np
 import pylab as plt
@@ -134,6 +134,12 @@ type = d["type"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 bin_low, bin_high, bin_mean, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
+
+
+# Check the binning
+lb_, _  = so_spectra.read_ps(f"{spec_dir}/Dl_{spec_name_list[0]}_cross.dat")
+assert (lb_ == bin_mean).all(), "binning file should be consistent with the one used to compute the spectra"
+
 
 cov = np.load("covariances/x_ar_final_cov_data.npy")
 

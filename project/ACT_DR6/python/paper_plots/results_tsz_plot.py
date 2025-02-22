@@ -110,7 +110,7 @@ fig, (ax, cbar_ax) = plt.subplots(ncols=2, figsize=(6, 3.5), gridspec_kw={"width
 cmap = plt.cm.cividis
 norm = plt.Normalize(vmin=np.min(alphas), vmax=np.max(alphas))
 cb1 = mpl.colorbar.ColorbarBase(cbar_ax, cmap=cmap, norm=norm, orientation="vertical", ticks=[alphas[0], alphas[-1]])
-cb1.set_label(r"$\alpha_{\rm tSZ}$", fontsize=fontsize, rotation=270, labelpad=-5)
+cbar_ax.text(1.3, -.61, r"$\alpha_{\rm tSZ}$", fontsize=fontsize)
 cb1.ax.tick_params(labelsize=labelsize)
 
 for i, alpha in enumerate(alphas):

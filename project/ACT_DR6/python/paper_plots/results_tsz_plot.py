@@ -10,18 +10,14 @@ import matplotlib as mpl
 import sys, os
 from copy import deepcopy
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 from pspipe_utils import best_fits, log, pspipe_list, external_data
 import pspipe_utils
 from pspy import pspy_utils, so_dict, so_spectra
 
 
-rcParams["font.family"] = "serif"
-rcParams["font.size"] = "18"
-rcParams["xtick.labelsize"] = 25
-rcParams["ytick.labelsize"] = 25
-rcParams["axes.labelsize"] = 25
-rcParams["axes.titlesize"] = 25
+labelsize = 14
+fontsize = 20
 
 
 d = so_dict.so_dict()
@@ -110,11 +106,12 @@ n_lines = 100
 l_norm = 3000
 alphas = np.linspace(-0.8,-0.4, n_lines)
 
-fig, (ax, cbar_ax) = plt.subplots(ncols=2, figsize=(14, 8), gridspec_kw={"width_ratios": [20, 1]})
+fig, (ax, cbar_ax) = plt.subplots(ncols=2, figsize=(6, 3.5), gridspec_kw={"width_ratios": [20, 1]}, dpi=100)
 cmap = plt.cm.cividis
 norm = plt.Normalize(vmin=np.min(alphas), vmax=np.max(alphas))
-cb1 = mpl.colorbar.ColorbarBase(cbar_ax, cmap=cmap, norm=norm, orientation="vertical")
-cb1.set_label(r"$\alpha_{\rm tSZ}$",fontsize=35)
+cb1 = mpl.colorbar.ColorbarBase(cbar_ax, cmap=cmap, norm=norm, orientation="vertical", ticks=[alphas[0], alphas[-1]])
+cb1.set_label(r"$\alpha_{\rm tSZ}$", fontsize=fontsize, rotation=270, labelpad=-5)
+cb1.ax.tick_params(labelsize=labelsize)
 
 for i, alpha in enumerate(alphas):
 
@@ -129,19 +126,21 @@ for i, alpha in enumerate(alphas):
                                             band_shift_dict=band_shift_dict)
                                             
     tsZ_DR6 = fg_dict["tt", "tSZ", "dr6_pa5_f150", "dr6_pa5_f150"]
-    ax.plot(l_th, tsZ_DR6 / tsZ_DR6[l_norm - lmin], color=cmap(norm(alpha)), alpha=0.3) #we normalise all template at l=3000
+    ax.plot(l_th, tsZ_DR6 / tsZ_DR6[l_norm - lmin], color=cmap(norm(alpha)), alpha=0.3, linewidth=1) #we normalise all template at l=3000
     
-ax.set_ylabel(r"$D^{\rm tSZ}_\ell/D^{\rm tSZ}_{3000}$", fontsize=35)
-ax.set_xlabel(r"$\ell$", fontsize=35)
-ax.errorbar(l_th, tsZ_dr6/tsZ_dr6[l_norm - lmin], color="black", label=r"DR6 best fit ($\alpha_{tSZ}=-0.6$)", linestyle="--", linewidth=3)
-ax.errorbar(l_th, tsZ_battaglia/tsZ_battaglia[l_norm - lmin],  label=r"Battaglia (2012) ($\alpha_{tSZ}=0$)", linestyle='dotted', color="darkorange", linewidth=3)
-ax.errorbar(l_agora, tSZ_agora_78/tSZ_agora_78[id_agora],  label=r"Agora (BAHAMAS $T^{\rm heating}_{\rm AGN} = 10^{7.8} $ K)", linestyle='dotted', color="forestgreen", linewidth=3)
-ax.errorbar(l_agora, tSZ_agora_80/tSZ_agora_80[id_agora],  label=r"Agora (BAHAMAS $T^{\rm heating}_{\rm AGN} = 10^{8.0} $ K)", linestyle='dotted', color="blue", linewidth=3)
+ax.set_ylabel(r"$D^{\rm tSZ}_\ell/D^{\rm tSZ}_{3000}$", fontsize=fontsize)
+ax.set_xlabel(r"$\ell$", fontsize=fontsize)
+ax.errorbar(l_th, tsZ_dr6/tsZ_dr6[l_norm - lmin], color="black", label=r"DR6 best fit ($\alpha_{tSZ}=-0.6$)", linestyle="--", linewidth=1)
+ax.errorbar(l_th, tsZ_battaglia/tsZ_battaglia[l_norm - lmin],  label=r"Battaglia (2012) ($\alpha_{tSZ}=0$)", linestyle='dotted', color="darkorange", linewidth=1)
+ax.errorbar(l_agora, tSZ_agora_78/tSZ_agora_78[id_agora],  label=r"Agora (BAHAMAS $T^{\rm heating}_{\rm AGN} = 10^{7.8} $ K)", linestyle='dotted', color="forestgreen", linewidth=1)
+ax.errorbar(l_agora, tSZ_agora_80/tSZ_agora_80[id_agora],  label=r"Agora (BAHAMAS $T^{\rm heating}_{\rm AGN} = 10^{8.0} $ K)", linestyle='dotted', color="blue", linewidth=1)
 #ax.errorbar(l_th, tSZ_agora_interp/tSZ_agora_interp[l_norm - lmin],  label="Agora (2022)", linestyle="--", color="yellow", linewidth=3)
-ax.legend(fontsize=24, loc="lower right")
+ax.set_xticks(range(1000, 6000, 1000))
+ax.tick_params(labelsize=labelsize)
 ax.set_xlim(100, 6000)
 
-#plt.tight_layout()
+plt.gcf().legend(fontsize=labelsize, loc='upper center', bbox_to_anchor=(0.5, 0.02))
+plt.tight_layout()
 plt.savefig(f"{paper_plot_dir}/tSZ_shape{tag}.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()

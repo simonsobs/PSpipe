@@ -1,0 +1,48 @@
+# Set directory where all pipeline products will be stored
+product_dir: products/dr6
+
+# Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
+# parsing the yaml file by the location to the pspipe installation
+config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/post_likelihood_bin50.dict]
+
+# Set location of scripts: default to pspipe_root/project/ACT_DR6/python
+script_base_dir: null
+
+
+pipeline:
+  get_best_fit_mflike: 
+    force: true
+  postlikelihood/apply_likelihood_calibration:
+    force: true
+  postlikelihood/get_combined_spectra: 
+    force: true
+  paper_plots/results_plot_combined_spectra: 
+    force: true
+  paper_plots/results_plot_with_planck: 
+    force: true
+  paper_plots/results_plot_residuals: 
+    force: true
+  paper_plots/results_get_combined_null:
+    force: true
+  paper_plots/results_get_combined_null_TEEE:
+    force: true
+  paper_plots/results_multifrequency_components_TT: 
+    force: true
+  paper_plots/results_multifrequency_TT: 
+    force: true
+  paper_plots/results_tsz_plot: 
+    force: true
+  paper_plots/results_compare_covariance_terms:
+    force: true
+  paper_plots/results_noise_spectrum: 
+    force: true
+  paper_plots/results_noise_spectrum_all:
+    force: true
+  paper_plots/results_noise_spectrum_correlation: 
+    force: true
+  paper_plots/B_modes/results_BB_likelihood: 
+    force: true
+  paper_plots/B_modes/results_EB_likelihood: 
+    force: true
+  paper_plots/B_modes/results_plot_pol_angle: 
+    force: true

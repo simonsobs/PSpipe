@@ -5,7 +5,7 @@ release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
 
 binning_file = release_dir + "spectra/binning/binning_50"
 apply_kspace_filter  = True
-k_filter_dr6 = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
+k_filter_Planck = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
 kspace_tf_path  = release_dir + "spectra/kspace_tf/dust_binning_50/"
 sim_spec_dir = release_dir + "spectra/sim_spectra/dust_binning_50/"
 source_catalog = release_dir + "spectra/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"

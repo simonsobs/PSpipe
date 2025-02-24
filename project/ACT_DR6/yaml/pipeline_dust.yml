@@ -58,6 +58,12 @@ pipeline:
     slurm:
       ntasks: 6
       cpus_per_task: 42
+
+
+  montecarlo/mc_analysis: null
+  montecarlo/mc_cov_analysis: null
+  montecarlo/mc_plot_spectra: null
+      
   fit_dust_amplitude.{mode}:
     script_file: dust/fit_dust_amplitude
     matrix:

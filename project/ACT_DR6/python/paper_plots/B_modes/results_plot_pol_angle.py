@@ -237,7 +237,7 @@ def plot_spectrum(l, psth_rot, lb_dat, ps, error, cov, spectrum):
 
     plt.xlim(0,3500)
     plt.tight_layout()
-    plt.savefig(f"{paper_plot_dir}/combined_{spectrum}_{cut}.pdf", bbox_inches="tight")
+    plt.savefig(f"{paper_plot_dir}/combined_{spectrum}_{cut}{tag}.pdf", bbox_inches="tight")
     plt.clf()
     plt.close()
 

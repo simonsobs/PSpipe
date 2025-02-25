@@ -25,23 +25,23 @@ with open(f"dr6xlegacy/{cal_folder}/calibs_dict.pkl", "rb") as f:
 with open(f"dr6xnpipe/{cal_folder}/calibs_dict.pkl", "rb") as f:
     cal_npipe = pickle.load(f)
 
-# These are the numbers applied to the release maps
+# These are the numbers applied to the released maps
 map_cal = {}
-map_cal["pa5_f090"] = 1.011
-map_cal["pa6_f090"] = 1.009
-map_cal["pa5_f150"] = 0.986
-map_cal["pa6_f150"] = 0.970
-map_cal["pa4_f220"] = 1.043
+map_cal["pa5_f090"] = 1.0111
+map_cal["pa6_f090"] = 1.0086
+map_cal["pa5_f150"] = 0.9861
+map_cal["pa6_f150"] = 0.9702
+map_cal["pa4_f220"] = 1.0435
 
 for ar in arrays:
     str = ""
     for method in methods:
         cal, sigma = cal_legacy[method, ar]["calibs"]
-        cal *= d_legacy[f"cal_dr6_{ar}"]
+        cal *= d_legacy[f"cal_dr6_{ar}"] * map_cal[ar]
         str += f"& {cal:.4f} $\pm$ {sigma:.4f} "
     for method in methods:
         cal, sigma = cal_npipe[method, ar]["calibs"]
-        cal *= d_npipe[f"cal_dr6_{ar}"]
+        cal *= d_npipe[f"cal_dr6_{ar}"] * map_cal[ar]
         str += f"& {cal:.4f} $\pm$ {sigma:.4f} "
         
     waf, f = ar.split("_")

@@ -48,7 +48,7 @@ for freq in ${freqs[@]}; do
 
     out_cat_path=${map_path}/catalogs/cats_${freq}${split}
 
-    time srun -n 64 -c 4 --cpu_bind=cores python "${dory_path}/dory.py" fit "${map_file}" "${ivar_file}" "${ps_catalog_path}" "${out_cat_path}" -R "tile:${tile_size}" -f "${freq}" -b "${beam_file}" --ncomp 3 --hack ${hack} -P ${prior} -m "${mask_path}" -s ${sigma_cat}
+    time srun -n 64 -c 4 --cpu_bind=cores python "${dory_path}/dory.py" fit "${map_file}" "${ivar_file}" "${ps_catalog_path}" "${out_cat_path}" -R "tile:${tile_size}" -f "${freq}" -b "${beam_file}" --ncomp 3 --hack ${hack} -P ${prior} -m "${mask_path}" -s ${sigma_cat} --maxcorrlen 1000
     time srun -n 1 -c 256 --cpu_bind=cores python "${dory_path}/dory.py" subtract "${map_file}" "${out_cat_path}/cat.fits" "${out_map_file}" "${out_map_model_file}" -R "tile:${tile_size}" -f "${freq}" -b "${beam_file}" --ncomp 3 -s ${sigma_sub}
   done
 done

@@ -38,7 +38,7 @@ for freq in ${freqs[@]}; do
   for split in ${splits[@]}; do
     map_file=${map_path}/npipe6v20${split}_f${freq}_map.fits
     ivar_file=${map_path}/npipe6v20${split}_f${freq}_ivar.fits
-    beam_file=${beam_path}/bl_T_npipe_${freq}_coadd.dat
+    beam_file=${beam_path}/bl_T_npipe_${freq}_coadd_pixwin.dat
 
     out_map_file=${map_path}/npipe6v20${split}_f${freq}_map_srcfree.fits
     out_map_model_file=${map_path}/npipe6v20${split}_f${freq}_map_model.fits

@@ -7,6 +7,7 @@ import sys
 
 import numpy as np
 import pylab as plt
+import healpy as hp
 from astropy.io import fits
 from pspy import pspy_utils, so_dict
 from pspipe_utils import log
@@ -117,6 +118,9 @@ release = "npipe"
 beam_dir = f"beams/{release}"
 pspy_utils.create_directory(beam_dir)
 
+
+pl = hp.pixwin(2048)
+
 for freq in freqs:
 
     Wl_AA = fits.open(f"{planck_fits_beam_path}/quickpol/Wl_npipe6v20_{freq}Ax{freq}A.fits")
@@ -127,5 +131,13 @@ for freq in freqs:
     
     bl_T_coadd = (bl_T_A + bl_T_B) / 2
 
-    l = np.arange(len(bl_T_A))
+    bl_T_coadd = bl_T_coadd[:len(pl)]
+    bl_T_coadd_pixwin = bl_T_coadd * pl
+    
+    l = np.arange(len(bl_T_coadd))
+    
+
     np.savetxt(f"{beam_dir}/bl_T_{release}_{freq}_coadd.dat", np.transpose([l, bl_T_coadd]))
+    np.savetxt(f"{beam_dir}/bl_T_{release}_{freq}_coadd_pixwin.dat", np.transpose([l, bl_T_coadd_pixwin]))
+
+

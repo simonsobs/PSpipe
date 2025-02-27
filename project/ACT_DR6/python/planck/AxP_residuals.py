@@ -10,13 +10,13 @@ import numpy as np
 import sys
 import AxP_utils
 import matplotlib
+import pickle
+
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 remove_first_bin = True
-matplotlib.rcParams["font.family"] = "serif"
-matplotlib.rcParams["font.size"] = "20"
 
 plot_dir = "paper_plot"
 pspy_utils.create_directory(plot_dir)
@@ -83,8 +83,14 @@ l_fg, fg_dict = best_fits.fg_dict_from_files(fg_file_name, map_set_list, d["lmax
 
 multipole_range, l_pows, y_lims = AxP_utils.get_plot_params()
 
+
+pte_dict = {}
+
 for spec in tested_spectra:
     for comb in combination:
+        pte_dict[spec, comb, "legacy"] = {}
+        pte_dict[spec, comb, "NPIPE"] = {}
+
     
         plt.figure(figsize=(20, 25))
 
@@ -145,11 +151,18 @@ for spec in tested_spectra:
 
                 ndof = len(lb[lrange]) - 1
                 pte = 1 - ss.chi2(ndof).cdf(chi2)
+                
+                print(f"{spec} {plot_title}, {run}   p= {100*pte:.0f} %")
+
+                
+                pte_dict[spec, comb, run][f"{ms1}x{ms2} - {ms3}x{ms4}"] = pte
+
+                
 
                 plt.errorbar(lb - 8 + r_count*16, -(res_ps - res_fg_b) * lb ** l_pow,
                             yerr=np.sqrt(r_cov.diagonal()) * lb ** l_pow,
                             ls="None", marker = ".",
-                            label=f"{run}   p= {pte:.3f}", color=col)
+                            label=f"{run}   p= {100*pte:.0f} %", color=col)
                      
             plt.legend(fontsize=15, loc="lower right")
             plt.xlabel(r"$\ell$", fontsize=25)
@@ -167,7 +180,6 @@ for spec in tested_spectra:
             else:
                 plt.ylabel(r"$\Delta D_\ell^\mathrm{%s}$" % (mode), fontsize=25)
 
-            print(f"{spec} {ms3}x{ms4} - {ms1}x{ms2}, {run}   p= {pte:.3f}")
             count += 1
     
         plt.tight_layout()
@@ -176,6 +188,6 @@ for spec in tested_spectra:
         plt.close()
 
 
-
+pickle.dump(pte_dict, open(f"{plot_dir}/pte_dict.pkl", "wb"))
 
 

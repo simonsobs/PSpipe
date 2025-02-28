@@ -12,6 +12,7 @@ import AxP_utils
 import matplotlib
 import pickle
 
+labelsize = 14
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -108,7 +109,9 @@ for spec in tested_spectra:
             plot_title = f"{ms3}x{ms4} - {ms1}x{ms2}" # we revert the null for plot clarity
             plot_title = plot_title.replace("dr6_", "")
             plot_title = plot_title.replace("-"," vs ")
-            plot_title = plot_title.replace("_", "-")
+            plot_title = plot_title.replace("_", " ")
+            plot_title = plot_title.replace("pa", "PA")
+
             plt.title(plot_title, fontsize=20)
             plt.plot(lb_fg, lb_fg * 0, linestyle="--", color="black")
 
@@ -176,12 +179,15 @@ for spec in tested_spectra:
                 plt.ylim(*ylims)
                 
             if l_pow != 0:
-                plt.ylabel(r"$\ell^{%d} \Delta D_\ell^\mathrm{%s}$" % (l_pow, mode), fontsize=25)
+                plt.ylabel(r"$\ell^{%d} \Delta D_\ell^\mathrm{%s} \ [\mu K^{2}]$" % (l_pow, mode), fontsize=25)
             else:
-                plt.ylabel(r"$\Delta D_\ell^\mathrm{%s}$" % (mode), fontsize=25)
+                plt.ylabel(r"$\Delta D_\ell^\mathrm{%s} \ [\mu K^{2}] $" % (mode), fontsize=25)
+
+
+            plt.tick_params(labelsize=labelsize)
 
             count += 1
-    
+            
         plt.tight_layout()
         plt.savefig(f"{plot_dir}/{spec}_{comb}.pdf", bbox_inches='tight')
         plt.clf()

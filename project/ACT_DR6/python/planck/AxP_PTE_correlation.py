@@ -21,7 +21,7 @@ matplotlib.rcParams["font.size"] = "20"
 n_sims = 300
 
 legacy_dir = "dr6xlegacy/"
-sim_spec_dir = f"{legacy_dir}/sim_spectra_legacy_final"
+sim_spec_dir = f"{legacy_dir}/sim_spectra_legacy"
 cov_dir = f"{legacy_dir}/covariances"
 spec_dir = f"{legacy_dir}/spectra_leak_corr_planck_bias_corr"
 bf_dir = f"{legacy_dir}/best_fits"
@@ -102,8 +102,9 @@ for test_id, test in enumerate(tested_spectra):
         
         null_name = f"{ms1} - {ms3}"
         null_name = null_name.replace("dr6_", "")
-        null_name = null_name.replace("Planck_f", "P-")
-        null_name = null_name.replace("_", "-")
+        null_name = null_name.replace("pa", "PA")
+        null_name = null_name.replace("Planck_f", "Planck f")
+        null_name = null_name.replace("_", " ")
         null_name_list += [null_name]
             
         res_fg = fg_dict[ms1, ms2][mode] - fg_dict[ms3, ms4][mode]

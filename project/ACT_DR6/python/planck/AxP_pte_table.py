@@ -36,9 +36,11 @@ for spec, comb in zip(spectra, combination):
             
             for run in runs:
                 pte = pte_dict[spec, comb, run][test]
-                my_str += f" & {pte:.2f}"
+                my_str += f" & {pte * 100:.0f} \% "
         
         my_str +=  "\\"
+        my_str +=  "\\"
+
         print(my_str)
     if spec == "EE":
         print("\hline")

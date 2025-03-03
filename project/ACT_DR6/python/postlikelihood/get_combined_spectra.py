@@ -7,6 +7,7 @@ from pspipe_utils import covariance, pspipe_list, log
 import numpy as np
 import pylab as plt
 import sys, os
+import pickle
 
 def get_ml_bins(bin_out_dict, bin_mean):
 
@@ -179,6 +180,7 @@ only_TT_map_set = ["dr6_pa4_f220"]
 
 print("")
 print("all")
+dataset_trace = {}
 
 for spec_select in selected_spectra_list:
     spectrum = spec_select[0]
@@ -194,8 +196,12 @@ for spec_select in selected_spectra_list:
                                                         excluded_map_set = None,
                                                         only_TT_map_set=only_TT_map_set)
 
+
+    dataset_trace[spectrum, "combined"] = list(bin_out_dict.keys())
+    
     print("")
-    print(f"{spec_select}, {list(bin_out_dict.keys())}")
+    print(f"{spec_select}, {dataset_trace[spectrum, 'combined']}")
+    
     lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov, sub_vec_fg_th = ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict, name)
     np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
     np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
@@ -230,8 +236,10 @@ for spec_select in selected_spectra_list:
                                                             excluded_map_set = excluded_map_set[fp],
                                                             only_TT_map_set=only_TT_map_set)
 
+        dataset_trace[spectrum, fp] = list(bin_out_dict.keys())
+
         print("")
-        print(f"{spec_select}, {fp}, {list(bin_out_dict.keys())}")
+        print(f"{spec_select}, {fp}, {dataset_trace[spectrum, fp]}")
 
         lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov, sub_vec_fg_th = ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict, name)
         np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
@@ -272,10 +280,15 @@ for spec_select in selected_spectra_list:
                                                                   selected_spectra=spec_select,
                                                                   only_TT_map_set=only_TT_map_set)
 
+        dataset_trace[spectrum, fp] = list(bin_out_dict.keys())
         print("")
-        print(f"{spec_select}, {fp}, {list(bin_out_dict.keys())}")
+        print(f"{spec_select}, {fp}, {dataset_trace[spectrum, fp]}")
+
         lb_ml, P_mat, cov_ml, vec_th_ml, i_sub_cov, sub_vec_fg_th = ml_helper(cov, vec_xar_th, vec_xar_fg_th, bin_mean, all_indices, bin_out_dict, name)
         np.savetxt(f"{combined_spec_dir}/bestfit_{name}.dat", np.transpose([lb_ml, vec_th_ml]))
         np.save(f"{combined_spec_dir}/cov_{name}.npy", cov_ml)
         sub_vec = vec_xar[all_indices]
         combine_and_save_spectra(lb_ml, P_mat, cov_ml, i_sub_cov, sub_vec,  sub_vec_fg_th, name)
+
+
+pickle.dump(dataset_trace, open(f"{combined_spec_dir}/dataset_trace.pkl", "wb"))

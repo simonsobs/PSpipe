@@ -34,7 +34,7 @@ fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
 
 
-fg_params = {"a_tSZ": 3.501142770e+00, "alpha_tSZ":-4.597721879e-01, "a_kSZ": 9.866046820e-01, "a_p": 7.647742104e+00, "beta_p": 1.864907550e+00, "a_c": 3.805341822e+00, "beta_c":  1.864907550e+00, "a_s": 2.886594272e+00, "beta_s":-2.756778400e+00, "xi": 6.424293336e-02, "a_gtt": 7.974213801e+00, "a_gte": 4.184588365e-01, "a_gtb": 0.01, "a_gee": 1.676466062e-01, "a_gbb": 0.11, "a_pste": -2.500092711e-02, "a_pstb": 0, "a_psee": 3.755819497e-03, "a_psbb": 0, "alpha_s":1.0, "T_d": 9.60, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+fg_params = {"a_tSZ": 3.501142770e+00, "alpha_tSZ":-4.597721879e-01, "a_kSZ": 9.866046820e-01, "a_p": 7.647742104e+00, "beta_p": 1.864907550e+00, "a_c": 3.805341822e+00, "beta_c":  1.864907550e+00, "a_s": 2.886594272e+00, "beta_s":-2.756778400e+00, "xi": 6.424293336e-02, "a_gtt": 7.974213801e+00, "a_gte": 4.184588365e-01, "a_gtb": 0., "a_gee": 1.676466062e-01, "a_gbb": 0.11, "a_pste": -2.500092711e-02, "a_pstb": 0, "a_psee": 3.755819497e-03, "a_psbb": 0, "alpha_s":1.0, "T_d": 9.60, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
 
 bandpass_shift_dr6_pa4_f220  =  6.399328024e+00
 bandpass_shift_dr6_pa5_f090  = -2.911716302e-01

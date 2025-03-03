@@ -34,7 +34,7 @@ accuracy_params = {"recombination_model":"CosmoRec", "lens_potential_accuracy": 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
 
-fg_params = {"a_tSZ": 3.352350745e+00, "alpha_tSZ":-6.501443802e-01, "a_kSZ": 2.016949764e+00, "a_p": 7.594274444e+00, "beta_p": 1.902934700e+00, "a_c": 3.684264620e+00, "beta_c":  1.902934700e+00, "a_s": 2.810617983e+00, "beta_s":-2.810871948e+00, "xi": 7.733078253e-02, "a_gtt": 7.954307627e+00, "a_gte": 4.190788929e-01, "a_gtb": 0.012, "a_gee": 1.686089309e-01, "a_gbb": 0.116, "a_pste": -2.597454946e-02, "a_pstb": 0, "a_psee": 1.356848002e-02, "a_psbb": 0, "alpha_s":1.0, "T_d": 9.60, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+fg_params = {"a_tSZ": 3.352350745e+00, "alpha_tSZ":-6.501443802e-01, "a_kSZ": 2.016949764e+00, "a_p": 7.594274444e+00, "beta_p": 1.902934700e+00, "a_c": 3.684264620e+00, "beta_c":  1.902934700e+00, "a_s": 2.810617983e+00, "beta_s":-2.810871948e+00, "xi": 7.733078253e-02, "a_gtt": 7.954307627e+00, "a_gte": 4.190788929e-01, "a_gtb": 0., "a_gee": 1.686089309e-01, "a_gbb": 0.116, "a_pste": -2.597454946e-02, "a_pstb": 0, "a_psee": 1.356848002e-02, "a_psbb": 0, "alpha_s":1.0, "T_d": 9.60, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
 
 bandpass_shift_dr6_pa4_f220  =  5.544125003e+00
 bandpass_shift_dr6_pa5_f090  =  1.592497071e-01

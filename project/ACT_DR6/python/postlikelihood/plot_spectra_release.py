@@ -92,7 +92,7 @@ for my_spectrum in my_spectra:
 
     plt.savefig(f"{plot_dir}/combined/fg_subtracted_{my_spectrum}.pdf", bbox_inches="tight")
     plt.clf()
-    plt.close
+    plt.close()
 
     for xf in x_freq:
         if ("220" in xf) & (my_spectrum != "TT"): continue
@@ -125,7 +125,7 @@ for my_spectrum in my_spectra:
 
         plt.savefig(f"{plot_dir}/x_freqs/{xf}_{my_spectrum}.pdf", bbox_inches="tight")
         plt.clf()
-        plt.close
+        plt.close()
 
 
     all_spectra = dataset_trace[my_spectrum, "combined"]
@@ -159,6 +159,6 @@ for my_spectrum in my_spectra:
 
         plt.savefig(f"{plot_dir}/x_array_bands/{s_name}_{my_spectrum}.pdf", bbox_inches="tight")
         plt.clf()
-        plt.close
+        plt.close()
 
 

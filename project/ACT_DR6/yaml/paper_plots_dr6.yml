@@ -16,6 +16,10 @@ pipeline:
     force: true
   postlikelihood/get_combined_spectra: 
     force: true
+  postlikelihood/spectra_release:
+    force: true
+  postlikelihood/plot_spectra_release:
+    force: true
   paper_plots/results_plot_combined_spectra: 
     force: true
   paper_plots/results_plot_with_planck: 

@@ -72,7 +72,6 @@ color_list_null = ["blue", "steelblue", "purple"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 combined_spectra = ["TT", "TE", "TB", "EE", "EB", "BB"]
-combined_spectra = ["TE", "EE"]
 
 lth, Dlth = so_spectra.read_ps(f"{bestfit_dir}/cmb.dat", spectra=spectra)
 

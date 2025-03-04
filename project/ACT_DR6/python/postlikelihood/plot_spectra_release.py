@@ -21,8 +21,8 @@ spec_dir = f"spectra_leak_corr_ab_corr_cal{tag}"
 release_spec_dir = f"release_spectra{tag}"
 plot_dir = f"plots/release_spectra{tag}/"
 
-pspy_utils.create_directory(f"{plot_dir}/x_array_bands/")
-pspy_utils.create_directory(f"{plot_dir}/x_freqs/")
+pspy_utils.create_directory(f"{plot_dir}/array_bands/")
+pspy_utils.create_directory(f"{plot_dir}/freqs/")
 pspy_utils.create_directory(f"{plot_dir}/combined/")
 
 file = open(f"{release_spec_dir}/dataset_trace.pkl", 'rb')
@@ -96,8 +96,8 @@ for my_spectrum in my_spectra:
 
     for  xf in x_freq:
         if ("220" in xf) & (my_spectrum != "TT"): continue
-        lb, Db, std, Db_fg_sub = np.loadtxt(f"{release_spec_dir}/x_freqs/{xf}_{my_spectrum}.dat", unpack=True)
-        cov =  np.load(f"{release_spec_dir}/x_freqs/cov_{xf}_{my_spectrum}.npy")
+        lb, Db, std, Db_fg_sub = np.loadtxt(f"{release_spec_dir}/freqs/{xf}_{my_spectrum}.dat", unpack=True)
+        cov =  np.load(f"{release_spec_dir}/freqs/cov_{xf}_{my_spectrum}.npy")
 
         ax1.errorbar(lb + loc_shift[count], Db_fg_sub, std, fmt=".", label = f"{xf} {my_spectrum}")
         ax = fig.add_subplot(gs[2, count])
@@ -124,8 +124,8 @@ for my_spectrum in my_spectra:
     for xf in x_freq:
         if ("220" in xf) & (my_spectrum != "TT"): continue
 
-        lb, Db, std, Db_fg_sub = np.loadtxt(f"{release_spec_dir}/x_freqs/{xf}_{my_spectrum}.dat", unpack=True)
-        cov =  np.load(f"{release_spec_dir}/x_freqs/cov_{xf}_{my_spectrum}.npy")
+        lb, Db, std, Db_fg_sub = np.loadtxt(f"{release_spec_dir}/freqs/{xf}_{my_spectrum}.dat", unpack=True)
+        cov =  np.load(f"{release_spec_dir}/freqs/cov_{xf}_{my_spectrum}.npy")
 
         all_spectra = dataset_trace[my_spectrum, xf]
         
@@ -156,8 +156,8 @@ for my_spectrum in my_spectra:
             
             name = s_name.replace("dr6_", "")
 
-            lb, Db, std, Db_th, Db_fg_th = np.loadtxt(f"{release_spec_dir}/x_array_bands/{s_name}_{spectrum}.dat", unpack=True)
-            cov =  np.load(f"{release_spec_dir}/x_array_bands/cov_{s_name}_{spectrum}.npy")
+            lb, Db, std, Db_th, Db_fg_th = np.loadtxt(f"{release_spec_dir}/array_bands/{s_name}_{spectrum}.dat", unpack=True)
+            cov =  np.load(f"{release_spec_dir}/array_bands/cov_{s_name}_{spectrum}.npy")
 
             ax1.errorbar(lb + loc_shift[count], Db, std, fmt = ".", label= f"{name}")
             ax = fig.add_subplot(gs[2, count])
@@ -175,14 +175,14 @@ for my_spectrum in my_spectra:
         ax1.set_ylabel(r"$ D^{%s}_{\ell} \ [\mu \rm K^{2}]$" % (my_spectrum), fontsize=fontsize)
         ax1.tick_params(labelsize=labelsize)
 
-        plt.savefig(f"{plot_dir}/x_freqs/{xf}_{my_spectrum}.pdf", bbox_inches="tight")
+        plt.savefig(f"{plot_dir}/freqs/{xf}_{my_spectrum}.pdf", bbox_inches="tight")
         plt.clf()
         plt.close()
 
     all_spectra = dataset_trace[my_spectrum, "combined"]
     for my_spec in all_spectra:
         s_name, spectrum = my_spec
-        lb, Db, std, Db_th, Db_fg_th = np.loadtxt(f"{release_spec_dir}/x_array_bands/{s_name}_{spectrum}.dat", unpack=True)
+        lb, Db, std, Db_th, Db_fg_th = np.loadtxt(f"{release_spec_dir}/array_bands/{s_name}_{spectrum}.dat", unpack=True)
 
         plt.figure(figsize=(18,8))
         plt.suptitle(f"{s_name} {spectrum}", fontsize=fontsize)
@@ -208,7 +208,7 @@ for my_spectrum in my_spectra:
         plt.ylabel(r"$ \Delta D^{%s}_{\ell} \ [\rm K^{2}]$" % (my_spectrum), fontsize=fontsize)
         plt.tick_params(labelsize=labelsize)
 
-        plt.savefig(f"{plot_dir}/x_array_bands/{s_name}_{my_spectrum}.pdf", bbox_inches="tight")
+        plt.savefig(f"{plot_dir}/array_bands/{s_name}_{my_spectrum}.pdf", bbox_inches="tight")
         plt.clf()
         plt.close()
 

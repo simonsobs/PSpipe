@@ -2,12 +2,12 @@ surveys = ["dr6"]
 arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
 
-binning_file = release_dir + "spectra/binning/binning_50"
+binning_file = release_dir + "pspipe/binning/binning_50"
 apply_kspace_filter  = True
 k_filter_dr6 = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
-kspace_tf_path  = release_dir + "spectra/kspace_tf/dr6_binning_50/"
-aberration_correction = release_dir + "spectra/aberration_correction/dr6_binning_50"
-sim_spec_dir = release_dir + "spectra/sim_spectra/dr6_binning_50"
+kspace_tf_path  = release_dir + "pspipe/kspace_tf/dr6_binning_50/"
+aberration_correction = release_dir + "pspipe/aberration_correction/dr6_binning_50"
+sim_spec_dir = release_dir + "pspipe/sim_spectra/dr6_binning_50"
 
 
 
@@ -26,7 +26,7 @@ use_beam_covariance = True
 seed_sims = False
 use_gaussian_smoothing = True
 
-mask_dir = release_dir + "spectra/masks/"
+mask_dir = release_dir + "pspipe/masks/"
 
 ps_mask_dr6_pa4_f150 = mask_dir + "source_mask_15mJy_and_dust_rad5.fits"
 ps_mask_dr6_pa4_f220 = mask_dir + "source_mask_15mJy_and_dust_rad5.fits"
@@ -132,7 +132,7 @@ leakage_beam_dr6_pa5_f150_TB = [leakage_file_dir + "pa5_f150_gamma_t2b.txt" for 
 leakage_beam_dr6_pa6_f090_TB = [leakage_file_dir + "pa6_f090_gamma_t2b.txt" for i in range(4)]
 leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir + "pa6_f150_gamma_t2b.txt" for i in range(4)]
 
-window_dir = release_dir + "spectra/windows/dr6/"
+window_dir = release_dir + "pspipe/windows/dr6/"
 
 window_kspace_dr6_pa4_f150 =  window_dir + "window_dr6_pa4_f150_kspace.fits"
 window_T_dr6_pa4_f150 =  window_dir + "window_dr6_pa4_f150_baseline.fits"

@@ -5,14 +5,14 @@ planck_version = "legacy"
 
 release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
 
-binning_file = release_dir + "spectra/binning/binning_50"
+binning_file = release_dir + "pspipe/binning/binning_50"
 apply_kspace_filter  = True
 k_filter_dr6 = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
 k_filter_Planck = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
-kspace_tf_path  = release_dir + "spectra/kspace_tf/dr6xplanck_binning_50/"
-sim_spec_dir = release_dir + f"spectra/sim_spectra/dr6xplanck/{planck_version}/"
-planck_mc_correction = release_dir + f"spectra/for_planck/mc_correction/{planck_version}"
-source_catalog = release_dir + "spectra/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
+kspace_tf_path  = release_dir + "pspipe/kspace_tf/dr6xplanck_binning_50/"
+sim_spec_dir = release_dir + f"pspipe/sim_spectra/dr6xplanck/{planck_version}/"
+planck_mc_correction = release_dir + f"pspipe/for_planck/mc_correction/{planck_version}"
+source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
 
 deconvolve_pixwin = True
 pixwin_dr6 = {"pix": "CAR", "order": 0}
@@ -81,7 +81,7 @@ freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir_dr6 + "passb
 freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir_dr6 + "passband_dr6_pa6_f090.dat"}
 freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir_dr6 + "passband_dr6_pa6_f150.dat"}
 
-passband_dir_planck = release_dir + "spectra/for_planck/passbands/"
+passband_dir_planck = release_dir + "pspipe/for_planck/passbands/"
 freq_info_Planck_f100 = {"freq_tag": 100, "passband": passband_dir_planck + "passband_npipe_f100.dat"}
 freq_info_Planck_f143 = {"freq_tag": 143, "passband": passband_dir_planck + "passband_npipe_f143.dat"}
 freq_info_Planck_f217 = {"freq_tag": 217, "passband": passband_dir_planck + "passband_npipe_f217.dat"}
@@ -99,7 +99,7 @@ beam_pol_dr6_pa5_f150 = beam_file_dir_dr6 + "coadd_pa5_f150_night_beam_tform_jit
 beam_pol_dr6_pa6_f090 = beam_file_dir_dr6 + "coadd_pa6_f090_night_beam_tform_jitter_cmb.txt"
 beam_pol_dr6_pa6_f150 = beam_file_dir_dr6 + "coadd_pa6_f150_night_beam_tform_jitter_cmb.txt"
 
-planck_fits_beam_path = release_dir + "spectra/for_planck/beams/"
+planck_fits_beam_path = release_dir + "pspipe/for_planck/beams/"
 
 # These are produced by the pipeline
 beam_T_Planck_f100 = "beams/legacy/bl_T_legacy_100hm1x100hm2.dat"
@@ -136,7 +136,7 @@ leakage_beam_Planck_f143_TB = ["beams/legacy/gamma_legacy_143%s_t2b.dat" % split
 leakage_beam_Planck_f217_TB = ["beams/legacy/gamma_legacy_217%s_t2b.dat" % split for split in ["hm1", "hm2"]]
 
 
-mask_dir = release_dir + "spectra/masks/"
+mask_dir = release_dir + "pspipe/masks/"
 
 ps_mask_dr6_pa4_f220 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
 ps_mask_dr6_pa5_f090 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
@@ -177,7 +177,7 @@ cross_link_threshold = 0.97
 n_med_ivar = 3
 
 
-window_dir = release_dir + "spectra/windows/dr6xplanck/"
+window_dir = release_dir + "pspipe/windows/dr6xplanck/"
 
 window_kspace_dr6_pa4_f220 = window_dir + "window_dr6_pa4_f220_kspace.fits"
 window_T_dr6_pa4_f220 =  window_dir +"window_dr6_pa4_f220_baseline.fits"

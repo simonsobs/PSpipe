@@ -4,7 +4,7 @@ lmax = 8500
 
 arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
-binning_file = release_dir + "spectra/binning/binning_20"
+binning_file = release_dir + "pspipe/binning/binning_20"
 
 best_fit_tag = "_paper"
 include_beam_chromaticity_effect_in_best_fit = True

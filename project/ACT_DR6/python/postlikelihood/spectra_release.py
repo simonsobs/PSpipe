@@ -19,8 +19,8 @@ mcm_dir = "mcms"
 release_spec_dir = f"release_spectra{tag}"
 combined_spec_dir = f"combined_spectra{tag}"
 
-pspy_utils.create_directory(f"{release_spec_dir}/x_array_bands")
-pspy_utils.create_directory(f"{release_spec_dir}/x_freqs")
+pspy_utils.create_directory(f"{release_spec_dir}/array_bands")
+pspy_utils.create_directory(f"{release_spec_dir}/freqs")
 pspy_utils.create_directory(f"{release_spec_dir}/combined")
 
 binning_file = d["binning_file"]
@@ -111,8 +111,8 @@ for my_spec in bin_out_dict.keys():
     comments = f"### \t ACT DR6 {my_str} array-band x-spectrum ### \n"
     header = "# bin_center,   Dl(data),     sigma(Dl(data)), Dl(best fit), Dl(best fit foreground)"
     
-    np.savetxt(f"{release_spec_dir}/x_array_bands/{na}x{nb}_{spectrum}.dat", np.transpose([lb, sub_vec, std, sub_vec_th, sub_vec_fg_th]), fmt="%.8e", header=header, comments=comments)
-    np.save(f"{release_spec_dir}/x_array_bands/cov_{na}x{nb}_{spectrum}.npy", sub_cov)
+    np.savetxt(f"{release_spec_dir}/array_bands/{na}x{nb}_{spectrum}.dat", np.transpose([lb, sub_vec, std, sub_vec_th, sub_vec_fg_th]), fmt="%.8e", header=header, comments=comments)
+    np.save(f"{release_spec_dir}/array_bands/cov_{na}x{nb}_{spectrum}.npy", sub_cov)
 
 x_freq = ["90x90", "90x150", "150x150", "90x220", "150x220", "220x220"]
 for xf in x_freq:
@@ -125,8 +125,8 @@ for xf in x_freq:
         comments = f"### \t ACT DR6 x-frequency spectrum ### \n"
         header = "# bin_center,   Dl(data),     sigma(Dl(data)), Dl(data, fg sub)"
 
-        np.savetxt(f"{release_spec_dir}/x_freqs/{xf}_{spectrum}.dat", np.transpose([lb, Db, sigma_b, Db_cmb_only]), fmt="%.8e", header=header, comments=comments)
-        np.save(f"{release_spec_dir}/x_freqs/cov_{xf}_{spectrum}.npy", cov)
+        np.savetxt(f"{release_spec_dir}/freqs/{xf}_{spectrum}.dat", np.transpose([lb, Db, sigma_b, Db_cmb_only]), fmt="%.8e", header=header, comments=comments)
+        np.save(f"{release_spec_dir}/freqs/cov_{xf}_{spectrum}.npy", cov)
 
 for spectrum in my_spectra:
     lb, Db, sigma_b = np.loadtxt(f"{combined_spec_dir}/Dl_all_{spectrum}_cmb_only.dat", unpack=True)

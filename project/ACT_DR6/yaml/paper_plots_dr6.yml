@@ -40,7 +40,7 @@ pipeline:
     force: true
   paper_plots/results_compare_covariance_terms:
     force: true
-  paper_plots/results_compare_ACT_Planck_errors.py:
+  paper_plots/results_compare_ACT_Planck_errors:
     force: true
   paper_plots/results_noise_spectrum: 
     force: true

@@ -1,0 +1,56 @@
+# This one is not a fit, it's simply the post_likelihood PACT dict but replacing the PACT cosmology with the Planck cosmology
+# Use case is to see how well/bad our data fit the Planck best fit model
+surveys = ["dr6"]
+type = "Dl"
+lmax = 8500
+
+arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
+binning_file = release_dir + "pspipe/binning/binning_50"
+
+best_fit_tag = "_Planck"
+include_beam_chromaticity_effect_in_best_fit = True
+beam_file_dir = release_dir + "beams/main_beams/nominal/"
+beam_mono_dr6_pa4_f150 = beam_file_dir + 'coadd_pa4_f150_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa4_f220 = beam_file_dir + 'coadd_pa4_f220_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa5_f090 = beam_file_dir + 'coadd_pa5_f090_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa5_f150 = beam_file_dir + 'coadd_pa5_f150_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa6_f090 = beam_file_dir + 'coadd_pa6_f090_night_beam_tform_jitter_mono.txt'
+beam_mono_dr6_pa6_f150 = beam_file_dir + 'coadd_pa6_f150_night_beam_tform_jitter_mono.txt'
+
+passband_dir = release_dir + "passbands/processed/"
+do_bandpass_integration = True
+freq_info_dr6_pa4_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa4_f150.dat"}
+freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir + "passband_dr6_pa4_f220.dat"}
+freq_info_dr6_pa5_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa5_f090.dat"}
+freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa5_f150.dat"}
+freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir + "passband_dr6_pa6_f090.dat"}
+freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir + "passband_dr6_pa6_f150.dat"}
+
+# from https://arxiv.org/pdf/1807.06209, Table 2 TT+TE,EE+lowE
+cosmo_params = {"cosmomc_theta":0.0104090, "logA":  3.045, "ombh2":  0.02236, "omch2":  0.1202, "ns": 0.9649, "Alens": 1.0, "tau": 0.0544}
+accuracy_params = {"recombination_model":"CosmoRec", "lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
+
+fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
+fg_params = {"a_tSZ": 3.501142770e+00, "alpha_tSZ":-4.597721879e-01, "a_kSZ": 9.866046820e-01, "a_p": 7.647742104e+00, "beta_p": 1.864907550e+00, "a_c": 3.805341822e+00, "beta_c":  1.864907550e+00, "a_s": 2.886594272e+00, "beta_s":-2.756778400e+00, "xi": 6.424293336e-02, "a_gtt": 7.974213801e+00, "a_gte": 4.184588365e-01, "a_gtb": 0., "a_gee": 1.676466062e-01, "a_gbb": 0.11, "a_pste": -2.500092711e-02, "a_pstb": 0, "a_psee": 3.755819497e-03, "a_psbb": 0, "alpha_s":1.0, "T_d": 9.60, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+
+bandpass_shift_dr6_pa4_f220  =  6.399328024e+00
+bandpass_shift_dr6_pa5_f090  = -2.911716302e-01
+bandpass_shift_dr6_pa5_f150  =  -1.056426408e+00
+bandpass_shift_dr6_pa6_f090  =  3.121747872e-01
+bandpass_shift_dr6_pa6_f150  =  -4.252785128e-01
+
+cal_like_dipole = 1.001567048e+00
+
+cal_like_dr6_pa4_f220 = 9.808084654e-01
+cal_like_dr6_pa5_f090 = 1.000098497e+00
+cal_like_dr6_pa5_f150 = 9.991342522e-01
+cal_like_dr6_pa6_f090 = 9.998031382e-01
+cal_like_dr6_pa6_f150 = 1.001407626e+00
+
+pol_eff_like_dr6_pa4_f220 = 1.
+pol_eff_like_dr6_pa5_f090 = 9.874026803e-01
+pol_eff_like_dr6_pa5_f150 = 9.975776488e-01
+pol_eff_like_dr6_pa6_f090 = 9.975750142e-01
+pol_eff_like_dr6_pa6_f150 = 9.968551529e-01

@@ -109,8 +109,10 @@ plt.close()
 
 lb_act_co, sigma_act_co = {}, {}
 
+
+sacc_cmb_only = d["sacc_cmb_only"]
 # Read the cmb only sacc file
-s = sacc.Sacc.load_fits("dr6_data_cmb_sacc_oct22_cmbonly.fits")
+s = sacc.Sacc.load_fits(sacc_cmb_only)
 lb_act_co["TT"], _, act_cov_co, _ = s.get_ell_cl("cl_00", "dr6_cmb_s0", "dr6_cmb_s0", return_cov = True, return_ind = True)
 sigma_act_co["TT"] = np.sqrt(act_cov_co.diagonal())
 

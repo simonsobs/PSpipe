@@ -47,7 +47,7 @@ freq_pairs_planck_name = ["f100xf100", "f143xf143", "f217xf217", "not_published"
 
 
 bin_low_act, bin_high_act, bin_mean_act, bin_size_act = pspy_utils.read_binning_file(binning_file, lmax)
-bin_low_p, bin_high_p, bin_mean_p, bin_size_p = pspy_utils.read_binning_file(f"{planck_data_path}/bin_planck.dat", lmax)
+bin_low_p, bin_high_p, bin_mean_p, bin_size_p = pspy_utils.read_binning_file(f"{planck_data_path}/../../binning_files/bin_planck.dat", lmax)
 
 colors=["blue", "green", "brown", "darkcyan", "purple", "darkorange", "gray"]
 show_planck_xfreq = True
@@ -132,7 +132,7 @@ ps_b_Planck = {}
 
 for spec in spectra:
     lb, ps_b_ACT[spec] = pspy_utils.naive_binning(l_th, ps_th[spec], binning_file, lmax)
-    lb, ps_b_Planck[spec] = pspy_utils.naive_binning(l_th, ps_th[spec], f"{planck_data_path}/bin_planck.dat", lmax)
+    lb, ps_b_Planck[spec] = pspy_utils.naive_binning(l_th, ps_th[spec], f"{planck_data_path}/../../binning_files/bin_planck.dat", lmax)
 
 
 plt.figure(figsize=(12,8))

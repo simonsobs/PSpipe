@@ -66,8 +66,10 @@ binning_planck = f"{planck_data_path}/bin_planck.dat"
 
 
 y_ticks={}
-y_ticks["TT"] = np.linspace(0.95, 1.1, 7)
-y_ticks["EE"] = np.linspace(0.90, 1.2, 7)
+#y_ticks["TT"] = np.linspace(0.95, 1.1, 7)
+
+y_ticks["TT"] = np.linspace(0.94, 1.1, 5)
+y_ticks["EE"] = np.linspace(0.94, 1.1, 5)
 print(y_ticks["TT"])
 
 fig, axs = plt.subplots(6, 1, figsize=(12, 12), dpi=100)
@@ -148,7 +150,10 @@ for i, my_tag in enumerate(my_tag_list):
         ax.set_ylim(y_ticks[spec][0], y_ticks[spec][-1])
         ax.tick_params(labelsize=14)
 
-        ax.set_xlim(30, 4000)
+
+
+
+        ax.set_xlim(30, 3000)
 
         ax.text(0.03, 0.8, spec, fontsize=16, transform=ax.transAxes)
 
@@ -162,10 +167,14 @@ for i, my_tag in enumerate(my_tag_list):
         if ax_idx != 5:
             ax.set_xticks([])
         ax.set_yticks(y_ticks[spec][1:-1])
-    
+        
+        if spec == "TT":
+            ax.fill_between(lth[1955:], 0.9, 1.1, alpha=0.3, color="gray")
+            ax.text(0.7, 0.6, "foreground dominated", fontsize=16, transform=ax.transAxes)
+            
 plt.subplots_adjust(wspace=0, hspace=0)
 fig.suptitle("Ratio (data / best fit)", y=0.93, fontsize=20)
-
-plt.savefig(f"{plot_dir}/ratio_{spec}{extra_str}.pdf", bbox_inches="tight")
+#plt.show()
+plt.savefig(f"{plot_dir}/ratio_to_bestfit{extra_str}.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()

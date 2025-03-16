@@ -9,6 +9,37 @@ import matplotlib.pyplot as plt
 import sys, os
 from matplotlib import rcParams
 
+def get_combined_noise_corr(map_set, my_spec, lb):
+
+    """
+    This function compute the combined noise power spectrum including array-band correlation
+    """
+
+    n_map_set = len(map_set[my_spec])
+    combined_noise = np.zeros(len(lb))
+
+    Nl_dict = {}
+    for ms1 in map_set[my_spec]:
+        for ms2 in map_set[my_spec]:
+            try:
+                lb, noise = so_spectra.read_ps(f"spectra/Dl_{ms1}x{ms2}_noise.dat", spectra=spectra)
+            except:
+                lb, noise = so_spectra.read_ps(f"spectra/Dl_{ms2}x{ms1}_noise.dat", spectra=spectra)
+            Nl_dict[ms1, ms2] = noise[my_spec]
+            
+    for k in range(len(lb)):
+        noise_mat = np.zeros((n_map_set, n_map_set))
+        for i, ms1 in enumerate(map_set[my_spec]):
+            for j, ms2 in enumerate(map_set[my_spec]):
+            
+                noise_mat[i, j] = Nl_dict[ms1, ms2][k]
+                
+        inv_noise_mat = np.linalg.inv(noise_mat)
+        combined_noise[k] = 1 / np.sum(inv_noise_mat)
+
+    return lb, combined_noise
+
+
 labelsize = 14
 fontsize = 20
 
@@ -16,8 +47,18 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+binning_file = d["binning_file"]
+lmax = d["lmax"]
+bin_low, bin_high, lb, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
+
+
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
+
+map_set = {}
+map_set["TT"] = ["dr6_pa4_f220", "dr6_pa5_f090", "dr6_pa5_f150", "dr6_pa6_f090", "dr6_pa6_f150"]
+map_set["EE"] = ["dr6_pa5_f090", "dr6_pa5_f150", "dr6_pa6_f090", "dr6_pa6_f150"]
+
 
 remove_pa4_pol = True
 nspec = len(spec_name_list)
@@ -73,8 +114,9 @@ for spec in ["TT","EE"]:
         if na == nb:
             inv_Nb_list += [ 1 / Nb[spec]]
 
-    # plot inv_Nb_mean
-    inv_Nb_mean = np.sum(inv_Nb_list, axis=0)
+    Nb_mean = 1 / np.sum(inv_Nb_list, axis=0) # inverse variance combination ignoring corr
+    lb, Nb_mean_corr = get_combined_noise_corr(map_set, spec, lb) # inverse variance combination including corr
+    
     if spec in ["TT", "EE", "BB"]:
         if na == nb:
             linestyle="-"
@@ -83,9 +125,12 @@ for spec in ["TT","EE"]:
 
         id = np.where(lb > 300)
         if count == 1:
-            plt.plot(lb[id], 1 / inv_Nb_mean[id], linestyle=linestyle, label= f"DR6 effective noise", color="black")
+        #    plt.plot(lb[id], Nb_mean[id], linestyle=linestyle, label= f"DR6 effective noise", color="gray")
+            plt.plot(lb[id], Nb_mean_corr[id], linestyle=linestyle, label= f"DR6 effective noise", color="black")
+
         else:
-            plt.plot(lb[id], 1 / inv_Nb_mean[id], linestyle=linestyle, color="black")
+        #    plt.plot(lb[id], Nb_mean[id], linestyle=linestyle, color="gray")
+            plt.plot(lb[id], Nb_mean_corr[id], linestyle=linestyle, color="black")
 
     # finally plot individual spectra
     for spec_name in spec_name_list:

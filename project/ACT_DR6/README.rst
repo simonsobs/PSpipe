@@ -85,8 +85,8 @@ Detailed instructions for what the pipeline does are in `dr6
 
 Running the dr6xPlanck pipeline
 -------------------------------
-You can  run the whole pipeline with the  `pipeline_dr6xplanck.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dr6xplanck.yml>`_ file.
+You can  run the whole pipeline of ACT DR6 x legacy with the  `pipeline_dr6xlegacy.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dr6xlegacy.yml>`_ file.
 Detailed instructions for what the pipeline does are in `dr6xplanck
 <https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6xplanck.rst>`_.
 

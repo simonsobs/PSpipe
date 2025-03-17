@@ -12,7 +12,7 @@ The package
 .. image:: https://img.shields.io/badge/license-BSD-yellow
    :target: https://github.com/simonsobs/pspipe/blob/master/LICENSE
 
-``PSpipe`` is a pipeline creator for the analysis of the high resolution maps of the large aperture
+``PSpipe`` is a pipeline creator for the analysis of the high resolution maps of ACT and of the large aperture
 telescope of the Simons Observatory. It contains tools for estimating power spectra and covariance
 matrices.
 

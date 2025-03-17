@@ -4,7 +4,7 @@ Computing DR6 spectra
 
 Here are some specific instructions to compute spectra for DR6 at NERSC.
 Since it is a lot of spectra computation, we are going to make full use of MPI capacities.
-The current dictionnary is called ``global_dr6_v4.dict`` and is given in the ``paramfiles`` folder.
+The current dictionnary is called ``global_dr6v4_bin50.dict`` and is given in the ``paramfiles`` folder.
 Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
 Here we give instructions to install and to run the full thing on interactive nodes, you can of
 course also submit it to NERSC standard nodes
@@ -17,7 +17,7 @@ First we need to create all the window functions. In the following we will assum
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
-    OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_window_dr6.py global_dr6_v4.dict
+    OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_window_dr6.py global_dr6v4_bin50.dict
     # real	10m2.348s
 
 The next step is to precompute the mode coupling matrices associated with these window functions, we have N window functions corresponding to each (array) data set, we will have to compute all the cross power spectra of the form
@@ -26,7 +26,7 @@ The next step is to precompute the mode coupling matrices associated with these 
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
-    OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_mcm_and_bbl.py global_dr6_v4.dict
+    OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_mcm_and_bbl.py global_dr6v4_bin50.dict
     # real 23m10.708s
 
 Now we can compute all the power spectra, the mpi loop is done on all the different arrays.
@@ -35,18 +35,18 @@ If you consider five detector arrays, we first compute the alms using mpi, and t
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
-    OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_alms.py global_dr6_v4.dict
+    OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_alms.py global_dr6v4_bin50.dict
     # real	3m47.856s
-    OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_spectra_from_alms.py global_dr6_v4.dict
+    OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_spectra_from_alms.py global_dr6v4_bin50.dict
     # real	7m6.917s
 
 Finally, we need to compute the associated covariances of all these spectra, for this we need a model for the signal and noise power spectra
 
 .. code:: shell
 
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_best_fit_mflike.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_best_fit_mflike.py global_dr6v4_bin50.dict
     # real	0m42.667s
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_noise_model.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_noise_model.py global_dr6v4_bin50.dict
     # real	0m40.229s
 
 The computation of the covariance matrices is then divided into two steps, first compute all (window1 x window2) alms needed for the covariance computation, then the actual computation, note that there is Ns x (Ns + 1) / 2 = 120 covariance matrix block to compute, this is enormous and is therefore the bottleneck of the spectra computation.
@@ -54,10 +54,10 @@ The computation of the covariance matrices is then divided into two steps, first
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 00:30:00 --constraint cpu
-    OMP_NUM_THREADS=36 srun -n 7 -c 36 --cpu-bind=cores python get_sq_windows_alms.py global_dr6_v4.dict
+    OMP_NUM_THREADS=36 srun -n 7 -c 36 --cpu-bind=cores python get_sq_windows_alms.py global_dr6v4_bin50.dict
     # real 0m31.524s
     salloc --nodes 4 --qos interactive --time 03:00:00 --constraint cpu
-    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu-bind=cores python get_covariance_blocks.py global_dr6_v4.dict
+    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu-bind=cores python get_covariance_blocks.py global_dr6v4_bin50.dict
     # real	89m7.793s
     
 The beams have associated uncertainties that need to be propagated in the pipeline, in order to do produce all associated beam covariance matrices run
@@ -65,7 +65,7 @@ The beams have associated uncertainties that need to be propagated in the pipeli
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 00:30:00 --constraint cpu
-    OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python get_beam_covariance.py global_dr6_v4.dict
+    OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python get_beam_covariance.py global_dr6v4_bin50.dict
     # real 3m56.972s
 
 Now you might want to combine the different covariance matrix blocks together to form a cross array covariance matrix
@@ -73,7 +73,7 @@ Now you might want to combine the different covariance matrix blocks together to
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 00:30:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_xarrays_covmat.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_xarrays_covmat.py global_dr6v4_bin50.dict
     # real 1m20.820s
 
 
@@ -88,11 +88,11 @@ The spectra are contaminated by leakage, in order to correct for leakage you sho
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 00:30:00 --constraint cpu
-    OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python get_leakage_corrected_spectra_per_split.py global_dr6_v4.dict
+    OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python get_leakage_corrected_spectra_per_split.py global_dr6v4_bin50.dict
     # real 1m4.582s
-    OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python get_leakage_sim.py global_dr6_v4.dict
+    OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python get_leakage_sim.py global_dr6v4_bin50.dict
     # real 15m50.472s
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_leakage_covariance.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_leakage_covariance.py global_dr6v4_bin50.dict
     # real 6m38.858s
     
 
@@ -104,10 +104,10 @@ To compute the monte-carlo transfer function that encodes the kspace filter effe
 .. code:: shell
 
     salloc --nodes 4 --qos interactive --time 3:00:00 --constraint cpu
-    OMP_NUM_THREADS=32 srun -n 32 -c 32 --cpu-bind=cores python mc_get_kspace_tf_spectra.py global_dr6_v4.dict
+    OMP_NUM_THREADS=32 srun -n 32 -c 32 --cpu-bind=cores python mc_get_kspace_tf_spectra.py global_dr6v4_bin50.dict
 
     salloc --nodes 1 --qos interactive --time 1:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_kspace_tf_analysis.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_kspace_tf_analysis.py global_dr6v4_bin50.dict
 
     
     
@@ -120,11 +120,11 @@ To generate a set of simulated spectra using the `mnms` noise simulation code yo
 .. code:: shell
 
     salloc --nodes 2 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=128 srun -n 4 -c 128 --cpu_bind=cores python mc_mnms_get_nlms.py global_dr6_v4.dict
+    OMP_NUM_THREADS=128 srun -n 4 -c 128 --cpu_bind=cores python mc_mnms_get_nlms.py global_dr6v4_bin50.dict
     # real time ~ 4h (for 80 sims)
 
     salloc --nodes 4 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_dr6_v4.dict
+    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_dr6v4_bin50.dict
     # real time ~ 1100s for each sim
     
 You can analyse and plot the sim results using
@@ -132,18 +132,18 @@ You can analyse and plot the sim results using
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_analysis.py global_dr6_v4.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_cov_analysis.py global_dr6_v4.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_spectra.py global_dr6_v4.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_covariances.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_analysis.py global_dr6v4_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_cov_analysis.py global_dr6v4_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_spectra.py global_dr6v4_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_covariances.py global_dr6v4_bin50.dict
 
 In addition if you wish to create a covariance matrix corrected from simulations using gaussian processes run
 
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_cov_analysis_for_gp.py global_dr6_v4.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_mc_corrected_xarrays_covmat_gp.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_cov_analysis_for_gp.py global_dr6v4_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python get_mc_corrected_xarrays_covmat_gp.py global_dr6v4_bin50.dict
 
 
 
@@ -157,13 +157,13 @@ grab the code in the aberration folder and run
 .. code:: shell
 
     salloc --nodes 4 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_get_aberrated_spectra.py global_dr6_v4.dict
+    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_get_aberrated_spectra.py global_dr6v4_bin50.dict
     # real time 94m56.700s for 100 sims
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python mc_aberration_analysis.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python mc_aberration_analysis.py global_dr6v4_bin50.dict
     # real    2m31.819s
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_aberration_corrected_spectra.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_aberration_corrected_spectra.py global_dr6v4_bin50.dict
     # real    1m53.833s
 
 
@@ -175,9 +175,9 @@ To include the non gaussian contribution to the covariance matrix coming from th
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_radio.py global_dr6_v4.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_tSZ.py global_dr6_v4.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_CIB.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_radio.py global_dr6v4_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_tSZ.py global_dr6v4_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_connected_trispectrum_CIB.py global_dr6v4_bin50.dict
     # real 3m4.125s
     
 Non gaussian lensing terms
@@ -190,7 +190,7 @@ Once you have ran amanda code, run
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 1:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_combine_cov_mat.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_combine_cov_mat.py global_dr6v4_bin50.dict
 
 this will create all the blocks associated to the non lensing covariance term and a x_ar covariance matrix
 
@@ -201,14 +201,14 @@ We can check the analytic computation using PSpipe simulation code
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_camb.py global_dr6_v4.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_gaussian_cov.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_camb.py global_dr6v4_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_gaussian_cov.py global_dr6v4_bin50.dict
 
     salloc --nodes 4 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python lensing_sim.py global_dr6_v4.dict
+    OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python lensing_sim.py global_dr6v4_bin50.dict
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_analysis.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python lensing_analysis.py global_dr6v4_bin50.dict
 
 
 Array null test
@@ -219,7 +219,7 @@ To perform the array null test, grab the code in null_tests and run
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python compute_null_tests.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python compute_null_tests.py global_dr6v4_bin50.dict
 
 
 Combine cov mat and write data in a SACC file
@@ -230,8 +230,8 @@ To finally combine all covariance matrices together and write the final data int
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_cov_mats.py global_dr6_v4.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python port2sacc.py global_dr6_v4.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_cov_mats.py global_dr6v4_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python port2sacc.py global_dr6v4_bin50.dict
 
 Post-likelihood analysis
 -------------------------------------------------------
@@ -242,7 +242,7 @@ In order to do plots for the paper it is useful to apply them to the spectra (an
 .. code:: shell
 
     salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_best_fit_mflike.py post_likelihood.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python apply_likelihood_calibration.py post_likelihood.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_spectra.py post_likelihood.dict
-    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python results_plot_combined_spectra.py post_likelihood.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_best_fit_mflike.py post_likelihood_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python apply_likelihood_calibration.py post_likelihood_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_spectra.py post_likelihood_bin50.dict
+    OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python results_plot_combined_spectra.py post_likelihood_bin50.dict

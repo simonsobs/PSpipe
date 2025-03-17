@@ -77,32 +77,24 @@ The next sections will be linked to their corresponding ``pipeline.yml`` file.
 Running the dr6 main analysis
 -----------------------------
 
-To run the main dr6 analysis follow the detailed instructions in `dr6
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6.rst>`_. You can also run
-the whole pipeline (with a limited set of 50 simulations) with the `pipeline_dr6.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dr6.yml>`_
-file.
+You can  run the whole pipeline with the `pipeline_dr6.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dr6.yml>`_ file.
+Detailed instructions for what the pipeline does are in `dr6
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6.rst>`_.
+
 
 Running the dr6xPlanck pipeline
 -------------------------------
+You can  run the whole pipeline with the  `pipeline_dr6xplanck.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dr6xplanck.yml>`_ file.
+Detailed instructions for what the pipeline does are in `dr6xplanck
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6xplanck.rst>`_.
 
-To run the dr6xPlanck analysis follow the instructions in `dr6xplanck
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6xplanck.rst>`_. The
-corresponding pipeline file is `pipeline_dr6xplanck.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dr6xplanck.yml>`_.
 
 Estimation of the dust
 ----------------------
+You can  run the whole pipeline with the `pipeline_dust.yml
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dust.yml>`_ file.
+Detailed instructions for what the pipeline does are in `dust
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dust.rst/>`
 
-To estimate the dust in the dr6 patch we use Planck 353 GHz maps, follow the instructions in `dust
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dust.rst/>`_ and run the
-pipeline with the `pipeline_dust.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dust.yml>`_.
-
-Running our reproduction of the Planck pipeline
------------------------------------------------
-
-To run a reproduction of the Planck official result follow the instructions in `planck
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/planck.rst>`_ (same as before
-with the `pipeline_planck.yml
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_planck.yml>`_).

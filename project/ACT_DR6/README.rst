@@ -96,5 +96,5 @@ Estimation of the dust
 You can  run the whole pipeline with the `pipeline_dust.yml
 <https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dust.yml>`_ file.
 Detailed instructions for what the pipeline does are in `dust
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dust.rst/>`
+<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dust.rst/>`_.
 

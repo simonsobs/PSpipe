@@ -184,8 +184,8 @@ Non gaussian lensing terms
 -------------------------------------------------------
 
 To include the non gaussian contribution to the covariance matrix coming from the connected four point function due to lensing we rely on external codes (from Amanda MacInnis)
-see the dedicated `README <https://github.com/simonsobs/PSpipe/tree/master/project/data_analysis/lensing.rst/>`_ for how these terms are computed
-Once you have ran amanda code, run
+see the dedicated `README <https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/lensing.rst/>`_ for how these terms are computed.
+Once you have ran amanda codes, run
 
 .. code:: shell
 

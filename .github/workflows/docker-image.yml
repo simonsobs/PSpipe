@@ -35,5 +35,5 @@ jobs:
         with:
           context: project/ACT_DR6
           push: true
-          tags: pspipe/dr6
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

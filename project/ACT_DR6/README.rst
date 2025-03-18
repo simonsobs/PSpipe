@@ -81,8 +81,9 @@ You can  run the whole pipeline with the `pipeline_dr6.yml
 <https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/yaml/pipeline_dr6.yml>`_ file.
 Detailed instructions for what the pipeline does are in `dr6
 <https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6.rst>`_.
-Once the pipeline has been ran, and the best fit cosmology has been obtained, you can reproduce the paper figures following the instructions in
-<https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6_paper_plot.rst>`_ .
+Once the pipeline has been ran, and the best fit cosmology has been obtained, you can reproduce the paper figures
+with the `paper_plots_dr6.yml <https://github.com/simonsobs/PSpipe/blob/master/project/ACT_DR6/yaml/paper_plots_dr6.yml>`_ file, or following the instructions in
+`paper_plots <https://github.com/simonsobs/PSpipe/tree/master/project/ACT_DR6/dr6_paper_plot.rst>`_.
 
 
 Running the dr6xPlanck pipeline

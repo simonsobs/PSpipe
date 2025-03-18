@@ -38,15 +38,15 @@ To plot the residuals with respect to a LCDM model use either
     python results_plot_residuals.py post_likelihood_PACT_bin50.dict
 
 
-PACT is for the bestfit model of ACT + Planck.
+The first line will produce residual with respect to ACT and the second with respect to PACT, which is  the bestfit model for ACT + Planck.
 
-To plot the x-array TT power spectra together with their best fit model use
+To plot the x-array TT power spectra together with each components of their best-fit models (CIB/dust/tSZ/etc)
 
 .. code:: shell
 
     python results_multifrequency_components_TT.py post_likelihood_bin50.dict
 
-To plot the x-freq TT power spectra
+To plot the x-freq TT power spectra on a linear scale use
 
 .. code:: shell
 
@@ -59,31 +59,31 @@ To plot the x-freq EE and TE power spectra together with their null residuals
     python results_get_combined_null.py post_likelihood_bin50.dict
     python results_get_combined_null_TEEE.py post_likelihood_bin50.dict
 
-To redo the plot showing how the tSZ power spectrum depends on alpha_tSZ
+To redo the plot showing how the tSZ power spectrum depends on alpha_tSZ and compare with Agora simulations
 
 .. code:: shell
 
     python results_tsz_plot.py post_likelihood_bin50.dict
     
-To redo the plot showing the dust contamination
+To redo the plot showing the dust contamination in the ACT DR6 patch of observation
 
 .. code:: shell
     python results_plot_dust.py post_likelihood_bin50.dict
     
-To redo the plot showing the relative contribution of each covariance term
+To redo the plot showing the relative contribution of each covariance term (leakage/beam/non gaussian components) with respect to the total error:
 
 .. code:: shell
     python results_compare_covariance_terms.py post_likelihood_bin50.dict
 
-To redo the plot showing the comparison of error for ACT and Planck
+To redo the plot showing the error comparison between  ACT and Planck
 
 .. code:: shell
     python results_compare_ACT_Planck_errors.py post_likelihood_bin50.dict
 
-To redo the plot of the B modes power spectrum and estimation of its amplitude grab the code in "paper_plots/B_modes" and run
+To redo the plot of the BB  power spectrum and the estimation of its amplitude, grab the code in "paper_plots/B_modes" and run
 
 .. code:: shell
-    python results_BB_likelihood.py post_likelihood_bin50.dict
+    python results_BB_likelihood.py post_likelihood_PACT_bin50.dict
 
 Then you can redo the fit for polarisation angle with
 
@@ -91,7 +91,7 @@ Then you can redo the fit for polarisation angle with
     python results_EB_likelihood.py post_likelihood_bin50.dict
     python results_plot_pol_angle.py post_likelihood_bin50.dict
 
-You can plot various noise properties with
+You can plot various ACT DR6 noise properties with
 
 .. code:: shell
     python results_noise_spectrum.py post_likelihood_bin50.dict

@@ -11,8 +11,8 @@ RUN <<EOF
         libgsl-dev        \
         python3-dev       \
         python3-pip       \
-        python-is-python3 \
         python3-venv      \
+        python-is-python3 \
         wget
     apt-get clean all
 EOF

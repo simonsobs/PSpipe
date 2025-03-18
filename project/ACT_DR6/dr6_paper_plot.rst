@@ -5,7 +5,7 @@ Figures for the paper
 After running the dr6 pipeline, and after the bestfit cosmology has been obtained, you can run the scripts producing the different figures of the paper.
 They are located in the  "postlikelihood" and "paper_plots" folders.
 
-First we calibrate the data and combine the different spectra together
+First we recompute the best fit spectra from the best fits parameters, we calibrate the data and we combine the different spectra together
 
 .. code:: shell
 
@@ -14,7 +14,6 @@ First we calibrate the data and combine the different spectra together
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python apply_likelihood_calibration.py post_likelihood_bin50.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_combined_spectra.py post_likelihood_bin50.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python results_plot_combined_spectra.py post_likelihood_bin50.dict
-
 
 You can also produce the files we have released on lambda by running:
 

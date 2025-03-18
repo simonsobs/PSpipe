@@ -1,7 +1,7 @@
 surveys = ["Planck"]
 arrays_Planck = ["f143", "f353"]
 planck_version = "npipe"
-release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
+release_dir = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/"
 
 binning_file = release_dir + "pspipe/binning/binning_50"
 apply_kspace_filter  = True

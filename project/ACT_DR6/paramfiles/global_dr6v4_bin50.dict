@@ -1,6 +1,6 @@
 surveys = ["dr6"]
 arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
-release_dir = "/global/cfs/cdirs/act/data/act_dr6v4/"
+release_dir = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/"
 
 binning_file = release_dir + "pspipe/binning/binning_50"
 apply_kspace_filter  = True

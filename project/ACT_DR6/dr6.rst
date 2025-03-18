@@ -1,18 +1,22 @@
 **************************
-Computing DR6 spectra
+Computing DR6 power spectra spectra
 **************************
 
 Here are some specific instructions to compute spectra for DR6 at NERSC.
-Since it is a lot of spectra computation, we are going to make full use of MPI capacities.
-The current dictionnary is called ``global_dr6v4_bin50.dict`` and is given in the ``paramfiles`` folder.
+Since it involves a large amount of spectrum computation, we are going to make full use of MPI capacities.
+The current dictionary is called ``global_dr6v4_bin50.dict`` and is located in the ``paramfiles`` folder.
 Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
-Here we give instructions to install and to run the full thing on interactive nodes, you can of
-course also submit it to NERSC standard nodes
+Here, we provide instructions to install and run the full process on interactive nodes;
+ you can, of course, also submit it to NERSC standard nodes.
+
+
 
 Running the main pipeline
 -------------------------------------------------------
 
-First we need to create all the window functions. In the following we will assume that the window functions  used in temperature and in polarisation are the same, we will create the windows based on a the edges of the survey, a galactic mask, a pt source mask and a threshold on the amount of crosslinking in the patch of observation.
+First, we need to create all the window functions. In the following, we will assume that the window functions used in temperature and polarization are the same. We will create the windows based on the edges of the survey, a galactic mask, a point source mask, and a threshold on the amount of crosslinking in the observed patch.
+
+
 
 .. code:: shell
 
@@ -20,7 +24,7 @@ First we need to create all the window functions. In the following we will assum
     OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_window_dr6.py global_dr6v4_bin50.dict
     # real	10m2.348s
 
-The next step is to precompute the mode coupling matrices associated with these window functions, we have N window functions corresponding to each (array) data set, we will have to compute all the cross power spectra of the form
+The next step is to precompute the mode coupling matrices associated with these window functions, we have N window functions corresponding to each (array-bands) dataset, we will have to compute all the cross power spectra of the form
 (array 1)  x (array 2) there are therefore Ns = N x (N + 1) / 2 = 15 independent set of spectra (TT - TE - TB - ET - BT - EE - EB - BE - BB) to compute, note that for array 1 = array 2, TE = ET, TB = BT, EB = BE
 
 .. code:: shell
@@ -29,8 +33,8 @@ The next step is to precompute the mode coupling matrices associated with these 
     OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_mcm_and_bbl.py global_dr6v4_bin50.dict
     # real 23m10.708s
 
-Now we can compute all the power spectra, the mpi loop is done on all the different arrays.
-If you consider five detector arrays, we first compute the alms using mpi, and then have a simple code to combine them into power spectra
+Now we can compute all the power spectra. The MPI loop runs over all the different arrays.
+If you consider five detector arrays, we first compute the alms  using MPI and then use a simple code to combine them into power spectra.
 
 .. code:: shell
 
@@ -40,7 +44,8 @@ If you consider five detector arrays, we first compute the alms using mpi, and t
     OMP_NUM_THREADS=48 srun -n 5 -c 48 --cpu-bind=cores python get_spectra_from_alms.py global_dr6v4_bin50.dict
     # real	7m6.917s
 
-Finally, we need to compute the associated covariances of all these spectra, for this we need a model for the signal and noise power spectra
+Finally, we need to compute the associated covariances of all these spectra. For this, we need a model for the signal and noise power spectra.
+
 
 .. code:: shell
 
@@ -49,7 +54,8 @@ Finally, we need to compute the associated covariances of all these spectra, for
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python get_noise_model.py global_dr6v4_bin50.dict
     # real	0m40.229s
 
-The computation of the covariance matrices is then divided into two steps, first compute all (window1 x window2) alms needed for the covariance computation, then the actual computation, note that there is Ns x (Ns + 1) / 2 = 120 covariance matrix block to compute, this is enormous and is therefore the bottleneck of the spectra computation.
+
+The computation of the covariance matrices is then divided into two steps: first, compute all (window1 x window2) alms  needed for the covariance computation, then perform the actual computation. Note that there are Ns x (Ns + 1) / 2 = 120 covariance matrix blocks to compute. This is enormous and therefore represents the bottleneck of the spectra computation.
 
 .. code:: shell
 
@@ -60,7 +66,7 @@ The computation of the covariance matrices is then divided into two steps, first
     OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu-bind=cores python get_covariance_blocks.py global_dr6v4_bin50.dict
     # real	89m7.793s
     
-The beams have associated uncertainties that need to be propagated in the pipeline, in order to do produce all associated beam covariance matrices run
+The beams have associated uncertainties that need to be propagated in the pipeline. To produce all associated beam covariance matrices, run:
 
 .. code:: shell
 
@@ -68,7 +74,7 @@ The beams have associated uncertainties that need to be propagated in the pipeli
     OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python get_beam_covariance.py global_dr6v4_bin50.dict
     # real 3m56.972s
 
-Now you might want to combine the different covariance matrix blocks together to form a cross array covariance matrix
+Now, you might want to combine the different covariance matrix blocks to form a cross-array covariance matrix.
 
 .. code:: shell
 
@@ -77,13 +83,13 @@ Now you might want to combine the different covariance matrix blocks together to
     # real 1m20.820s
 
 
-so this produces all of the main products, spectra and covariances, now we need to take into account some extra physical effect and systematics.
+So, this produces all of the main products: spectra and covariances. Now, we need to take into account some extra physical effects and systematics.
 
 
 Leakage correction and leakage covariance
 -------------------------------------------------------
 
-The spectra are contaminated by leakage, in order to correct for leakage you should grab the code in the leakage folder and run
+The spectra are contaminated by leakage. In order to correct for leakage, you should grab the code in the leakage folder and run:
 
 .. code:: shell
 
@@ -99,7 +105,8 @@ The spectra are contaminated by leakage, in order to correct for leakage you sho
 Monte-Carlo kspace filter transfer function
 -------------------------------------------------------
 
-To compute the monte-carlo transfer function that encodes the kspace filter effect you will grab the code in the kspace folder
+To compute the Monte Carlo transfer function that encodes the k-space filter effect, you will grab the code in the kspace folder.
+
 
 .. code:: shell
 
@@ -115,8 +122,7 @@ To compute the monte-carlo transfer function that encodes the kspace filter effe
 Monte Carlo correction to the covariance matrix
 -------------------------------------------------------
 
-To generate a set of simulated spectra using the `mnms` noise simulation code you first have to generate the noise `alms` for each split and wafer and store them to disk. Then you have to run a standard simulation routine that reads the precomputed noise `alms`. Remember to delete the noise `alms` when you are done with your simulations. For a set of 80 simulations, grab the code in the montecarlo folder.
-
+To generate a set of simulated spectra using the `mnms` noise simulation code you first have to generate the noise `alms` for each split and wafer and store them to disk. Then, you need to run a standard simulation routine that reads the precomputed noise `alms`. Remember to delete the noise `alms` when you are done with your simulations. For a set of 80 simulations, grab the code in the montecarlo folder.
 .. code:: shell
 
     salloc --nodes 2 --qos interactive --time 4:00:00 --constraint cpu
@@ -127,7 +133,7 @@ To generate a set of simulated spectra using the `mnms` noise simulation code yo
     OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python mc_mnms_get_spectra_from_nlms.py global_dr6v4_bin50.dict
     # real time ~ 1100s for each sim
     
-You can analyse and plot the sim results using
+You can analyze and plot the simulation results using:
 
 .. code:: shell
 
@@ -137,7 +143,8 @@ You can analyse and plot the sim results using
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_spectra.py global_dr6v4_bin50.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_covariances.py global_dr6v4_bin50.dict
 
-In addition if you wish to create a covariance matrix corrected from simulations using gaussian processes run
+In addition, if you wish to create a covariance matrix corrected from simulations using Gaussian processes, run:
+
 
 .. code:: shell
 
@@ -150,9 +157,8 @@ In addition if you wish to create a covariance matrix corrected from simulations
 
 Aberration correction
 -------------------------------------------------------
-
-The spectra are aberrated and we need to correct for it, to do so we generate sims with aberration and compare them with sims without aberration, we then correct the effect on the data power spectra,
-grab the code in the aberration folder and run
+The spectra are aberrated, and we need to correct for it. To do so, we generate simulations with aberration and compare them with simulations without aberration. We then correct the effect on the data power spectra.
+Grab the code in the aberration folder and run:
 
 .. code:: shell
 
@@ -170,7 +176,7 @@ grab the code in the aberration folder and run
 Radio and tSZ trispectrum
 -------------------------------------------------------
 
-To include the non gaussian contribution to the covariance matrix coming from the connected four point function of the Radio sources, CIB, and tSZ (assumed to be Poisson distributed), grab the code in the non_gaussian_fg folder and run
+To include the non-Gaussian contribution to the covariance matrix coming from the connected four-point function of the Radio sources, CIB, and tSZ (assumed to be Poisson distributed), grab the code in the non_gaussian_fg folder and run:
 
 .. code:: shell
 
@@ -214,7 +220,8 @@ We can check the analytic computation using PSpipe simulation code
 Array null test
 -------------------------------------------------------
 
-To perform the array null test, grab the code in null_tests and run
+To perform the array null test, grab the code in the null_tests folder and run:
+
 
 .. code:: shell
 
@@ -225,7 +232,8 @@ To perform the array null test, grab the code in null_tests and run
 Combine cov mat and write data in a SACC file
 -------------------------------------------------------
 
-To finally combine all covariance matrices together and write the final data into a SACC file run
+To finally combine all covariance matrices together and write the final data into a SACC file, run:
+
 
 .. code:: shell
 

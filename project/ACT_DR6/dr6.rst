@@ -6,8 +6,7 @@ Here are some specific instructions to compute spectra for DR6 at NERSC.
 Since it involves a large amount of spectrum computation, we are going to make full use of MPI capacities.
 The current dictionary is called ``global_dr6v4_bin50.dict`` and is located in the ``paramfiles`` folder.
 Then, we can use the codes in the ``python`` folder to run the pipeline sequentially.
-Here, we provide instructions to install and run the full process on interactive nodes;
- you can, of course, also submit it to NERSC standard nodes.
+Here, we provide instructions to install and run the full process on interactive nodes. You can, of course, also submit it to NERSC standard nodes.
 
 
 

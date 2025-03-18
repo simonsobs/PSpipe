@@ -2,7 +2,9 @@
 Estimating the dust using Planck 353 GHZ
 **************************
 
-for this you would need the window to be pre-computed, use the ones computed during the AxP run, so that they contain at 12 arcmin source mask.
+For this, you would need the window to be pre-computed. Use the ones computed during the AxP run, so that they contain a 12 arcminute source mask.
+
+
 
 .. code:: shell
 
@@ -21,8 +23,9 @@ for this you would need the window to be pre-computed, use the ones computed dur
     OMP_NUM_THREADS=42 srun -n 6 -c 42 --cpu-bind=cores python get_covariance_blocks.py global_dust.dict
     # real   0m58.895s
 
-you can run simulations for 353 GHz and 143 GHz using the code in the planck : get_planck_sim_nlms.py, and the one in the montecarlo folder: mc_mnms_get_spectra_from_nlms.py.
-You can analyse and plot the simulation results using
+You can run simulations for 353 GHz and 143 GHz using the code in the planck folder: get_planck_sim_nlms.py, and the one in the montecarlo folder: mc_mnms_get_spectra_from_nlms.py.
+You can analyze and plot the simulation results using:
+
 
 .. code:: shell
 
@@ -32,7 +35,7 @@ You can analyse and plot the simulation results using
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_spectra.py global_dr6_v4.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python mc_plot_covariances.py global_dr6_v4.dict
 
-You can then fit the dust amplitude using
+You can then fit the dust amplitude using:
 
 .. code:: shell
 

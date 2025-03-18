@@ -23,7 +23,7 @@ installation path by exporting the ``BASE_DIR`` before running the ``source`` co
 Every time you log to NERSC machines, you **need to source this file** with ``source setup.sh`` to
 get into the virtual environment and use the proper software suite.
 
-Running the DR6 pipelines
+Running the dr6 pipelines
 -------------------------
 
 When installing ``pspipe``, you will get a ``pspipe-run`` binary that can be used to sequentially

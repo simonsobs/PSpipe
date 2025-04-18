@@ -39,7 +39,7 @@ arrays_alias = {
 
 # Load the noise models
 noise_models = {
-    wafer_name: nm.BaseNoiseModel.from_config("act_dr6v4", d[f"noise_sim_type_{wafer_name}"], *arrays_alias[wafer_name].keys())
+    wafer_name: nm.BaseNoiseModel.from_config("act_dr6.02_noise", d[f"noise_sim_type_{wafer_name}"], *arrays_alias[wafer_name].keys())
     for sv in surveys for wafer_name in sorted({ar.split("_")[0] for ar in d[f"arrays_{sv}"]})
 }
 

@@ -74,9 +74,17 @@ ref_array = "dr6_pa5_f150" # can be any not important for this script
 
 #bahamas_data_path = os.path.join(os.path.dirname(os.path.abspath(pspipe_utils.__file__)), "data/spectra/bahamas")
 
-l_agora, tSZ_agora_78 = external_data.get_bahamas_tSZ(AGN_heating="7,8")
-l_agora, tSZ_agora_80 = external_data.get_bahamas_tSZ(AGN_heating="8,0")
-id_agora = np.where(l_agora == 3000)
+use_agora = False
+if use_agora:
+    l_hydrosim, tSZ_hydrosim_low = external_data.get_agora_bahamas_tSZ(AGN_heating="7,8")
+    l_hydrosim, tSZ_hydrosim_high = external_data.get_agora_bahamas_tSZ(AGN_heating="8,0")
+    id_hydrosim = np.where(l_hydrosim == 3000)
+    hydro_sim_legend = [r"Agora ($T^{\rm heating}_{\rm AGN} = 10^{7.8} $ K)", r"Agora ($T^{\rm heating}_{\rm AGN} = 10^{8.0} $ K)"]
+else:
+    l_hydrosim, tSZ_hydrosim_low = external_data.get_bahamas_tSZ(high_AGN=False)
+    l_hydrosim, tSZ_hydrosim_high = external_data.get_bahamas_tSZ(high_AGN=True)
+    id_hydrosim = np.where(l_hydrosim == 3000)
+    hydro_sim_legend = [r"BAHAMAS AGN low", r"BAHAMAS AGN high"]
 
 
 #### Battaglia tSZ is the case with alpha_tSZ = 0
@@ -132,8 +140,8 @@ ax.set_ylabel(r"$D^{\rm tSZ}_\ell/D^{\rm tSZ}_{3000}$", fontsize=fontsize)
 ax.set_xlabel(r"$\ell$", fontsize=fontsize)
 ax.errorbar(l_th, tsZ_dr6/tsZ_dr6[l_norm - lmin], color="black", label=r"DR6 best fit ($\alpha_{tSZ}=-0.6$)", linestyle="--", linewidth=1)
 ax.errorbar(l_th, tsZ_battaglia/tsZ_battaglia[l_norm - lmin],  label=r"Battaglia (2012) ($\alpha_{tSZ}=0$)", linestyle='dotted', color="darkorange", linewidth=1)
-ax.errorbar(l_agora, tSZ_agora_78/tSZ_agora_78[id_agora],  label=r"Agora (BAHAMAS $T^{\rm heating}_{\rm AGN} = 10^{7.8} $ K)", linestyle='dotted', color="forestgreen", linewidth=1)
-ax.errorbar(l_agora, tSZ_agora_80/tSZ_agora_80[id_agora],  label=r"Agora (BAHAMAS $T^{\rm heating}_{\rm AGN} = 10^{8.0} $ K)", linestyle='dotted', color="blue", linewidth=1)
+ax.errorbar(l_hydrosim, tSZ_hydrosim_low/tSZ_hydrosim_low[id_agora],  label=hydro_sim_legend[0], linestyle='dotted', color="forestgreen", linewidth=1)
+ax.errorbar(l_hydrosim, tSZ_hydrosim_high/tSZ_hydrosim_high[id_agora],  label=hydro_sim_legend[1], linestyle='dotted', color="blue", linewidth=1)
 #ax.errorbar(l_th, tSZ_agora_interp/tSZ_agora_interp[l_norm - lmin],  label="Agora (2022)", linestyle="--", color="yellow", linewidth=3)
 ax.set_xticks(range(1000, 6000, 1000))
 ax.tick_params(labelsize=labelsize)

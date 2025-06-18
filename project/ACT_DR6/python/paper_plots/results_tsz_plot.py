@@ -84,7 +84,7 @@ else:
     l_hydrosim, tSZ_hydrosim_low = external_data.get_bahamas_tSZ(high_AGN=False)
     l_hydrosim, tSZ_hydrosim_high = external_data.get_bahamas_tSZ(high_AGN=True)
     id_hydrosim = np.where(l_hydrosim == 3000)
-    hydro_sim_legend = [r"BAHAMAS AGN low", r"BAHAMAS AGN high"]
+    hydro_sim_legend = [r"BAHAMAS AGN fiducial", r"BAHAMAS AGN high"]
 
 
 #### Battaglia tSZ is the case with alpha_tSZ = 0

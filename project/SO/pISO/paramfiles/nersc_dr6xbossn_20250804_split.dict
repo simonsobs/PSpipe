@@ -1,0 +1,362 @@
+data_dir = '/pscratch/sd/m/merrydup/piso/nersc_dr6xbossn_20250804_split/'
+
+# define paths for scripts in advance. this is the most flexible way for now
+# to (a) allow products to be reused across different paramfiles 
+alms_dir = data_dir + 'alms'
+mcm_dir = data_dir + 'mcms'
+spec_dir = data_dir + 'spectra'
+
+surveys = ["dr6", "so"]
+arrays_dr6 = ["pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
+arrays_so = ["i1_f090", "i1_f150", "i3_f090", "i4_f090", "i4_f150", "i6_f090"]
+
+# Using /global/cfs/cdirs/cmb/data/act_dr6/dr6.02/pspipe/binning/binning_50
+binning_file = data_dir + "binning/binning_50_dr6.dat"
+apply_kspace_filter = True
+single_mask = False
+
+k_filter_dr6 = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
+k_filter_planck = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
+k_filter_so = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
+
+kspace_tf_path = 'analytical'
+#sim_spec_dir = data_dir + f"pspipe/sim_spectra/dr6xplanck/{planck_version}/"
+#planck_mc_correction = data_dir + f"pspipe/for_planck/mc_correction/{planck_version}"
+#source_catalog = data_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
+
+deconvolve_pixwin = True
+pixwin_dr6 = {"pix": "CAR", "order": 0}
+pixwin_planck = {"pix": 'HEALPIX', "nside": 2048}
+pixwin_so = {"pix": "CAR", "order": 0}
+
+niter = 0
+remove_mean = False
+binned_mcm = True # because mask too small
+lmax = 8000
+type = 'Dl'
+write_splits_spectra = True
+cov_T_E_only = False
+use_toeplitz_mcm  = False
+use_toeplitz_cov  = True
+
+# Used in get_covariance_blocks.py
+n_splits_dr6 = 4
+n_splits_planck = 2
+n_splits_so = 4
+
+# maps
+src_free_maps_dr6 = True
+src_free_maps_planck = True
+src_free_maps_so = False
+
+act_maps_path = '/pscratch/sd/m/merrydup/PSpipe_SO/'
+maps_dr6_pa4_f220 = [act_maps_path + "act_projected/bossn/act_dr6.02_std_AA_night_pa4_f220_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
+maps_dr6_pa5_f090 = [act_maps_path + "act_projected/bossn/act_dr6.02_std_AA_night_pa5_f090_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
+maps_dr6_pa5_f150 = [act_maps_path + "act_projected/bossn/act_dr6.02_std_AA_night_pa5_f150_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
+maps_dr6_pa6_f090 = [act_maps_path + "act_projected/bossn/act_dr6.02_std_AA_night_pa6_f090_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
+maps_dr6_pa6_f150 = [act_maps_path + "act_projected/bossn/act_dr6.02_std_AA_night_pa6_f150_4way_set%d_map_srcfree.fits" % (i) for i in range(4)]
+
+# These are produced by the pipeline
+# maps_planck_f100 = ["planck_projected/HFI_SkyMap_2048_R3.01_halfmission-%d_f100_map_srcfree.fits" % i for i in [1,2]]
+# maps_planck_f143 = ["planck_projected/HFI_SkyMap_2048_R3.01_halfmission-%d_f143_map_srcfree.fits" % i for i in [1,2]]
+# maps_planck_f217 = ["planck_projected/HFI_SkyMap_2048_R3.01_halfmission-%d_f217_map_srcfree.fits" % i for i in [1,2]]
+
+so_maps_path = '/global/cfs/cdirs/sobs/users/chervias/LAT/maps/boss-n/'
+maps_so_i1_f090 = [so_maps_path + f'sky_map_i1_f090_bundle{i}_20250801.fits'for i in range(4)] 
+maps_so_i1_f150 = [so_maps_path + f'sky_map_i1_f150_bundle{i}_20250801.fits'for i in range(4)]
+maps_so_i3_f090 = [so_maps_path + f'sky_map_i3_f090_bundle{i}_20250801.fits'for i in range(4)] 
+maps_so_i4_f090 = [so_maps_path + f'sky_map_i4_f090_bundle{i}_20250801.fits'for i in range(4)]
+maps_so_i4_f150 = [so_maps_path + f'sky_map_i4_f150_bundle{i}_20250801.fits'for i in range(4)]
+maps_so_i6_f090 = [so_maps_path + f'sky_map_i6_f090_bundle{i}_20250801.fits'for i in range(4)] 
+
+# cal, pol_eff : used in get_alms.py with so_map.calibrate()
+cal_dr6_pa4_f150 = 1.0
+cal_dr6_pa4_f220 = 1.0
+cal_dr6_pa5_f090 = 1.0
+cal_dr6_pa5_f150 = 1.0
+cal_dr6_pa6_f090 = 1.0
+cal_dr6_pa6_f150 = 1.0
+
+pol_eff_dr6_pa4_f150 = 1.0
+pol_eff_dr6_pa4_f220 = 1.0
+pol_eff_dr6_pa5_f090 = 1.0
+pol_eff_dr6_pa5_f150 = 1.0
+pol_eff_dr6_pa6_f090 = 1.0
+pol_eff_dr6_pa6_f150 = 1.0
+
+cal_planck_f100 = 1.0
+cal_planck_f143 = 1.0
+cal_planck_f217 = 1.0
+
+pol_eff_planck_f100 = 1.0134
+pol_eff_planck_f143 = 1.0281
+pol_eff_planck_f217 = 0.9817
+
+cal_so_i1_f090 = 1e6
+cal_so_i1_f150 = 1e6
+cal_so_i3_f090 = 1e6
+cal_so_i4_f090 = 1e6
+cal_so_i4_f150 = 1e6
+cal_so_i6_f090 = 1e6
+cal_so_i6_f150 = 1e6
+
+pol_eff_so_i1_f090 = 1.
+pol_eff_so_i1_f150 = 1.
+pol_eff_so_i3_f090 = 1.
+pol_eff_so_i4_f090 = 1.
+pol_eff_so_i4_f150 = 1.
+pol_eff_so_i6_f090 = 1.
+pol_eff_so_i6_f150 = 1.
+
+do_bandpass_integration = False
+
+passband_dir_dr6 = data_dir + "passbands/processed/"
+freq_info_dr6_pa4_f220 = {"freq_tag": 220, "passband": passband_dir_dr6 + "passband_dr6_pa4_f220.dat"}
+freq_info_dr6_pa5_f090 = {"freq_tag": 90, "passband": passband_dir_dr6 + "passband_dr6_pa5_f090.dat"}
+freq_info_dr6_pa5_f150 = {"freq_tag": 150, "passband": passband_dir_dr6 + "passband_dr6_pa5_f150.dat"}
+freq_info_dr6_pa6_f090 = {"freq_tag": 90, "passband": passband_dir_dr6 + "passband_dr6_pa6_f090.dat"}
+freq_info_dr6_pa6_f150 = {"freq_tag": 150, "passband": passband_dir_dr6 + "passband_dr6_pa6_f150.dat"}
+
+passband_dir_planck = data_dir + "pspipe/for_planck/passbands/"
+freq_info_planck_f100 = {"freq_tag": 100, "passband": passband_dir_planck + "passband_npipe_f100.dat"}
+freq_info_planck_f143 = {"freq_tag": 143, "passband": passband_dir_planck + "passband_npipe_f143.dat"}
+freq_info_planck_f217 = {"freq_tag": 217, "passband": passband_dir_planck + "passband_npipe_f217.dat"}
+
+freq_info_so_i1_f090 = {"freq_tag": 90, "passband": "/pscratch/sd/m/merrydup/pipe0004_BN/passbands/bandpass_mean_f090.dat"}
+freq_info_so_i1_f150 = {"freq_tag": 150, "passband": "/pscratch/sd/m/merrydup/pipe0004_BN/passbands/bandpass_mean_f150.dat"}
+freq_info_so_i3_f090 = {"freq_tag": 90, "passband": "/pscratch/sd/m/merrydup/pipe0004_BN/passbands/bandpass_mean_f090.dat"}
+freq_info_so_i4_f090 = {"freq_tag": 90, "passband": "/pscratch/sd/m/merrydup/pipe0004_BN/passbands/bandpass_mean_f090.dat"}
+freq_info_so_i4_f150 = {"freq_tag": 150, "passband": "/pscratch/sd/m/merrydup/pipe0004_BN/passbands/bandpass_mean_f150.dat"}
+freq_info_so_i6_f090 = {"freq_tag": 90, "passband": "/pscratch/sd/m/merrydup/pipe0004_BN/passbands/bandpass_mean_f090.dat"}
+freq_info_so_i6_f150 = {"freq_tag": 150, "passband": "/pscratch/sd/m/merrydup/pipe0004_BN/passbands/bandpass_mean_f150.dat"}
+
+
+beam_dir = data_dir + "beams/"
+beam_T_dr6_pa4_f220 = beam_dir + "act/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt"
+beam_T_dr6_pa5_f090 = beam_dir + "act/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt"
+beam_T_dr6_pa5_f150 = beam_dir + "act/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt"
+beam_T_dr6_pa6_f090 = beam_dir + "act/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt"
+beam_T_dr6_pa6_f150 = beam_dir + "act/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt"
+
+beam_pol_dr6_pa4_f220 = beam_dir + "act/coadd_pa4_f220_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa5_f090 = beam_dir + "act/coadd_pa5_f090_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa5_f150 = beam_dir + "act/coadd_pa5_f150_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa6_f090 = beam_dir + "act/coadd_pa6_f090_night_beam_tform_jitter_cmb.txt"
+beam_pol_dr6_pa6_f150 = beam_dir + "act/coadd_pa6_f150_night_beam_tform_jitter_cmb.txt"
+
+planck_fits_beam_path = data_dir + "/beams/legacy"
+
+# These are produced by the pipeline
+beam_T_planck_f100 = "beams/legacy/bl_T_legacy_100hm1x100hm2.dat"
+beam_T_planck_f143 = "beams/legacy/bl_T_legacy_143hm1x143hm2.dat"
+beam_T_planck_f217 = "beams/legacy/bl_T_legacy_217hm1x217hm2.dat"
+
+beam_pol_planck_f100 = "beams/legacy/bl_pol_legacy_100hm1x100hm2.dat"
+beam_pol_planck_f143 = "beams/legacy/bl_pol_legacy_143hm1x143hm2.dat"
+beam_pol_planck_f217 = "beams/legacy/bl_pol_legacy_217hm1x217hm2.dat"
+
+beam_T_so_i1_f090 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f090_i1_ext_wing.txt'
+beam_T_so_i1_f150 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f150_i1_ext_wing.txt'
+beam_T_so_i3_f090 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f090_i1_ext_wing.txt'
+beam_T_so_i4_f090 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f090_i1_ext_wing.txt'
+beam_T_so_i4_f150 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f150_i1_ext_wing.txt'
+beam_T_so_i6_f090 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f090_i1_ext_wing.txt'
+
+beam_pol_so_i1_f090 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f090_i1_ext_wing.txt'
+beam_pol_so_i1_f150 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f150_i1_ext_wing.txt'
+beam_pol_so_i3_f090 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f090_i1_ext_wing.txt'
+beam_pol_so_i4_f090 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f090_i1_ext_wing.txt'
+beam_pol_so_i4_f150 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f150_i1_ext_wing.txt'
+beam_pol_so_i6_f090 = beam_dir + 'so/zatkins/bl_stack_beam_profile_f090_i1_ext_wing.txt'
+
+include_beam_chromaticity_effect_in_best_fit = False
+
+leakage_file_dir_dr6 = data_dir + "beams/leakage_beams/nominal/"
+
+leakage_beam_dr6_pa4_f220_TE = [leakage_file_dir_dr6 + "pa4_f220_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f090_TE = [leakage_file_dir_dr6 + "pa5_f090_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f150_TE = [leakage_file_dir_dr6 + "pa5_f150_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f090_TE = [leakage_file_dir_dr6 + "pa6_f090_gamma_t2e.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f150_TE = [leakage_file_dir_dr6 + "pa6_f150_gamma_t2e.txt" for i in range(4)]
+
+leakage_beam_dr6_pa4_f220_TB = [leakage_file_dir_dr6 + "pa4_f220_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f090_TB = [leakage_file_dir_dr6 + "pa5_f090_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa5_f150_TB = [leakage_file_dir_dr6 + "pa5_f150_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f090_TB = [leakage_file_dir_dr6 + "pa6_f090_gamma_t2b.txt" for i in range(4)]
+leakage_beam_dr6_pa6_f150_TB = [leakage_file_dir_dr6 + "pa6_f150_gamma_t2b.txt" for i in range(4)]
+
+
+leakage_beam_planck_f100_TE = ["beams/legacy/gamma_legacy_100%s_t2e.dat" % split for split in ["hm1", "hm2"]]
+leakage_beam_planck_f143_TE = ["beams/legacy/gamma_legacy_143%s_t2e.dat" % split for split in ["hm1", "hm2"]]
+leakage_beam_planck_f217_TE = ["beams/legacy/gamma_legacy_217%s_t2e.dat" % split for split in ["hm1", "hm2"]]
+
+leakage_beam_planck_f100_TB = ["beams/legacy/gamma_legacy_100%s_t2b.dat" % split for split in ["hm1", "hm2"]]
+leakage_beam_planck_f143_TB = ["beams/legacy/gamma_legacy_143%s_t2b.dat" % split for split in ["hm1", "hm2"]]
+leakage_beam_planck_f217_TB = ["beams/legacy/gamma_legacy_217%s_t2b.dat" % split for split in ["hm1", "hm2"]]
+
+leakage_beam_so_i1_f090_TE = [data_dir + "beams/so/leakage_beam/fake/fake_leakage_model.dat"]
+leakage_beam_so_i1_f150_TE = [data_dir + "beams/so/leakage_beam/fake/fake_leakage_model.dat"]
+leakage_beam_so_c1_f220_TE = [data_dir + "beams/so/leakage_beam/fake/fake_leakage_model.dat"]
+
+leakage_beam_so_i1_f090_TB = [data_dir + "beams/so/leakage_beam/fake/fake_leakage_model.dat"]
+leakage_beam_so_i1_f150_TB = [data_dir + "beams/so/leakage_beam/fake/fake_leakage_model.dat"]
+leakage_beam_so_c1_f220_TB = [data_dir + "beams/so/leakage_beam/fake/fake_leakage_model.dat"]
+
+mask_dir = data_dir + "masks/"
+
+ps_mask_path = '/global/cfs/projectdirs/sobs/users/merrydup/ps_masks/source_mask_15mJy_and_dust_rad12_proj_bossn.fits'
+ps_mask_dr6_pa4_f220 = ps_mask_path
+ps_mask_dr6_pa5_f090 = ps_mask_path
+ps_mask_dr6_pa5_f150 = ps_mask_path
+ps_mask_dr6_pa6_f090 = ps_mask_path
+ps_mask_dr6_pa6_f150 = ps_mask_path
+ps_mask_planck_f100 = ps_mask_path
+ps_mask_planck_f143 = ps_mask_path
+ps_mask_planck_f217 = ps_mask_path
+ps_mask_so_i1_f090 = ps_mask_path
+ps_mask_so_i1_f150 = ps_mask_path
+ps_mask_so_i3_f090 = ps_mask_path
+ps_mask_so_i4_f090 = ps_mask_path
+ps_mask_so_i4_f150 = ps_mask_path
+ps_mask_so_i6_f090 = ps_mask_path
+ps_mask_so_i6_f150 = ps_mask_path
+
+gal_mask_path = '/global/cfs/projectdirs/sobs/users/merrydup/ps_masks/gal_mask_070_apo0_bossn.fits'
+gal_mask_dr6_pa4_f220 = gal_mask_path
+gal_mask_dr6_pa5_f090 = gal_mask_path
+gal_mask_dr6_pa5_f150 = gal_mask_path
+gal_mask_dr6_pa6_f090 = gal_mask_path
+gal_mask_dr6_pa6_f150 = gal_mask_path
+gal_mask_planck_f100 = gal_mask_path
+gal_mask_planck_f143 = gal_mask_path
+gal_mask_planck_f217 = gal_mask_path
+gal_mask_so_i1_f090 = gal_mask_path
+gal_mask_so_i1_f150 = gal_mask_path
+gal_mask_so_i3_f090 = gal_mask_path
+gal_mask_so_i4_f090 = gal_mask_path
+gal_mask_so_i4_f150 = gal_mask_path
+gal_mask_so_i6_f090 = gal_mask_path
+gal_mask_so_i6_f150 = gal_mask_path
+
+
+# union of so masks because distance_from does not detect footprint edges
+extra_mask_dr6_pa4_f220 = mask_dir + "xtra_mask_union_20250801.fits"
+extra_mask_dr6_pa5_f090 = mask_dir + "xtra_mask_union_20250801.fits"
+extra_mask_dr6_pa5_f150 = mask_dir + "xtra_mask_union_20250801.fits"
+extra_mask_dr6_pa6_f090 = mask_dir + "xtra_mask_union_20250801.fits"
+extra_mask_dr6_pa6_f150 = mask_dir + "xtra_mask_union_20250801.fits"
+extra_mask_planck_f100  = mask_dir + "xtra_mask_union_20250801.fits"
+extra_mask_planck_f143  = mask_dir + "xtra_mask_union_20250801.fits"
+extra_mask_planck_f217  = mask_dir + "xtra_mask_union_20250801.fits"
+extra_mask_so_i1_f090 = mask_dir + "xtra_mask_i1_f090_20250801.fits"
+extra_mask_so_i1_f150 = mask_dir + "xtra_mask_i1_f150_20250801.fits"
+extra_mask_so_i3_f090 = mask_dir + "xtra_mask_i3_f090_20250801.fits"
+extra_mask_so_i4_f090 = mask_dir + "xtra_mask_i4_f090_20250801.fits"
+extra_mask_so_i4_f150 = mask_dir + "xtra_mask_i4_f150_20250801.fits"
+extra_mask_so_i6_f090 = mask_dir + "xtra_mask_i6_f090_20250801.fits"
+
+apod_pts_source_degree = 0.3
+apod_survey_degree = 2
+edge_skip_rescale = 1
+cross_link_threshold = 0.97
+n_med_ivar = 3
+
+# Plot maps+win during get_windows.py
+plot_windowed_maps = [] # ['SO_i1_f090', 'SO_i1_f150', 'SO_i3_f090', 'SO_i4_f090', 'SO_i4_f150','SO_i6_f090', 'SO_i6_f150']
+
+window_dir = data_dir + 'windows/'
+
+window_kspace_dr6_pa4_f220 = window_dir + "window_dr6_pa4_f220_kspace.fits"
+window_T_dr6_pa4_f220 =  window_dir + "window_dr6_pa4_f220_baseline.fits"
+window_pol_dr6_pa4_f220 =  window_dir + "window_dr6_pa4_f220_baseline.fits"
+
+window_kspace_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_kspace.fits"
+window_T_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
+window_pol_dr6_pa5_f090 = window_dir + "window_dr6_pa5_f090_baseline.fits"
+
+window_kspace_dr6_pa5_f150 = window_dir + "window_dr6_pa5_f150_kspace.fits"
+window_T_dr6_pa5_f150 = window_dir + "window_dr6_pa5_f150_baseline.fits"
+window_pol_dr6_pa5_f150 = window_dir + "window_dr6_pa5_f150_baseline.fits"
+
+window_kspace_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_kspace.fits"
+window_T_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
+window_pol_dr6_pa6_f090 = window_dir + "window_dr6_pa6_f090_baseline.fits"
+
+window_kspace_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_kspace.fits"
+window_T_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
+window_pol_dr6_pa6_f150 = window_dir + "window_dr6_pa6_f150_baseline.fits"
+
+window_kspace_planck_f100 = window_dir + "window_dr6_pa5_f090_kspace.fits"
+window_T_planck_f100 = window_dir + "window_dr6_pa5_f090_baseline.fits"
+window_pol_planck_f100 = window_dir + "window_dr6_pa5_f090_baseline.fits"
+
+window_kspace_planck_f143 = window_dir + "window_dr6_pa5_f150_kspace.fits"
+window_T_planck_f143 = window_dir + "window_dr6_pa5_f150_baseline.fits"
+window_pol_planck_f143 = window_dir + "window_dr6_pa5_f150_baseline.fits"
+
+window_kspace_planck_f217 = window_dir + "window_dr6_pa4_f220_kspace.fits"
+window_T_planck_f217 = window_dir + "window_dr6_pa4_f220_baseline.fits"
+window_pol_planck_f217 = window_dir + "window_dr6_pa4_f220_baseline.fits"
+
+window_kspace_so_i1_f090 = window_dir + "window_so_i1_f090_kspace.fits"
+window_T_so_i1_f090 = window_dir + "window_so_i1_f090_baseline.fits"
+window_pol_so_i1_f090 = window_dir + "window_so_i1_f090_baseline.fits"
+
+window_kspace_so_i1_f150 = window_dir + "window_so_i1_f150_kspace.fits"
+window_T_so_i1_f150 = window_dir + "window_so_i1_f150_baseline.fits"
+window_pol_so_i1_f150 = window_dir + "window_so_i1_f150_baseline.fits"
+
+window_kspace_so_i3_f090 = window_dir + "window_so_i3_f090_kspace.fits"
+window_T_so_i3_f090 = window_dir + "window_so_i3_f090_baseline.fits"
+window_pol_so_i3_f090 = window_dir + "window_so_i3_f090_baseline.fits"
+
+window_kspace_so_i4_f090 = window_dir + "window_so_i4_f090_kspace.fits"
+window_T_so_i4_f090 = window_dir + "window_so_i4_f090_baseline.fits"
+window_pol_so_i4_f090 = window_dir + "window_so_i4_f090_baseline.fits"
+
+window_kspace_so_i4_f150 = window_dir + "window_so_i4_f150_kspace.fits"
+window_T_so_i4_f150 = window_dir + "window_so_i4_f150_baseline.fits"
+window_pol_so_i4_f150 = window_dir + "window_so_i4_f150_baseline.fits"
+
+window_kspace_so_i6_f090 = window_dir + "window_so_i6_f090_kspace.fits"
+window_T_so_i6_f090 = window_dir + "window_so_i6_f090_baseline.fits"
+window_pol_so_i6_f090 = window_dir + "window_so_i6_f090_baseline.fits"
+
+# best fit params (only used for sim generation and covariances computation)
+cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
+accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
+
+fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
+
+fg_params = {"a_tSZ": 3.69, "alpha_tSZ":-0.44, "a_kSZ": 1, "a_p": 8.08, "beta_p": 1.823, "a_c": 3.35, "beta_c": 1.823, "a_s": 2.66, "a_gtt": 8.02,  "xi": 0.075, "T_d": 9.60, "a_gte": 0.419, "a_gtb": 0.012, "a_gee": 0.167,  "a_gbb": 0.116, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.795, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+
+bandpass_shift_dr6_pa4_f220  =  7.5
+bandpass_shift_dr6_pa5_f090  = -0.06
+bandpass_shift_dr6_pa5_f150  = -0.92
+bandpass_shift_dr6_pa6_f090  =  0.5
+bandpass_shift_dr6_pa6_f150  = -0.19
+
+bandpass_shift_planck_f100  = 0.
+bandpass_shift_planck_f143  = 0.
+bandpass_shift_planck_f217  = 0.
+
+bandpass_shift_so_i1_f090  = 0.
+bandpass_shift_so_i1_f150  = 0.
+bandpass_shift_so_c1_f220  = 0.
+
+#sim
+seed_sims = False
+iStart = 0
+iStop = 299
+sim_alm_dtype = "complex64"
+noise_sim_type_pa4 = 'tile_cmbmask'
+noise_sim_type_pa5 = 'tile_cmbmask'
+noise_sim_type_pa6 = 'tile_cmbmask_ivfwhm2'
+
+#plot
+range_TT = [10, 8000]
+range_TE = [-150, 150]
+range_ET = [-150, 150]
+range_EE = [-20, 50]
+

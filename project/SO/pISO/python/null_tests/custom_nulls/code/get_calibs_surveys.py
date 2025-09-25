@@ -77,27 +77,9 @@ except:
     pass
     
 results_dict = {}
-ref_map_sets = {}
 for sv in surveys:
 
-    # Define the multipole range used to obtain
-    # the calibration amplitudes
-    multipole_range = {f"{sv}_pa4_f150": [1250, 1800],
-                       f"{sv}_pa4_f220": [1250, 2000],
-                       f"{sv}_pa5_f090": [1000, 2000],
-                       f"{sv}_pa5_f150": [800, 2000],
-                       f"{sv}_pa6_f090": [1000, 2000],
-                       f"{sv}_pa6_f150": [600, 2000]}
 
-    # Define the reference arrays
-    ref_map_sets[f"{sv}_pa4_f150"] = "Planck_f143"
-    ref_map_sets[f"{sv}_pa4_f220"] = "Planck_f217"
-    ref_map_sets[f"{sv}_pa5_f090"] = "Planck_f143"
-    ref_map_sets[f"{sv}_pa5_f150"] = "Planck_f143"
-    ref_map_sets[f"{sv}_pa6_f090"] = "Planck_f143"
-    ref_map_sets[f"{sv}_pa6_f150"] = "Planck_f143"
-
-    y_lims = {"TT": (-100000, 75000),}
 
     tests = ["AxA-AxP", "AxA-PxP", "PxP-AxP"]
 
@@ -105,7 +87,7 @@ for sv in surveys:
         for ar in d[f"arrays_{sv}"]:
     
             map_set = f"{sv}_{ar}"
-            ref_map_set = ref_map_sets[map_set]
+            ref_map_set = d[f"ref_map_set_survey_{map_set}"]
 
             name, proj_pattern = get_proj_pattern(test, map_set, ref_map_set)
         
@@ -143,11 +125,11 @@ for sv in surveys:
             np.savetxt(f"{residual_output_dir}/residual_{name}_before.dat", np.array([lb, res_spectrum]).T)
             np.savetxt(f"{residual_output_dir}/residual_cov_{name}.dat", res_cov)
 
-            lmin, lmax = multipole_range[map_set]
+            lmin, lmax = d[f"ell_range_survey_{map_set}"]
             id = np.where((lb >= lmin) & (lb <= lmax))[0]
             consistency.plot_residual(lb, res_spectrum, {"analytical": res_cov}, "TT", f"{map_set} {test}",
                                     f"{plot_output_dir}/residual_{name}_before",
-                                    lrange=id, l_pow=1, ylims=y_lims["TT"])
+                                    lrange=id, l_pow=1, ylims=d["y_lims_TT_survey"])
 
             # Calibrate the spectra
             cal_mean, cal_std = consistency.get_calibration_amplitudes(spec_vec, full_cov,
@@ -155,7 +137,7 @@ for sv in surveys:
                                                                     f"{chains_dir}/{name}")
 
 
-            results_dict[name] = {"multipole_range": multipole_range[map_set],
+            results_dict[name] = {"multipole_range": d[f"ell_range_survey_{map_set}"],
                                 "ref_map_set": ref_map_set,
                                 "calibs": [cal_mean, cal_std]}
 
@@ -167,7 +149,7 @@ for sv in surveys:
             np.savetxt(f"{residual_output_dir}/residual_{name}_after.dat", np.array([lb, res_spectrum]).T)
             consistency.plot_residual(lb, res_spectrum, {"analytical": res_cov}, "TT", f"{map_set} {test}",
                                     f"{plot_output_dir}/residual_{name}_after",
-                                    lrange=id, l_pow=1, ylims=y_lims["TT"])
+                                    lrange=id, l_pow=1, ylims=d["y_lims_TT_survey"])
 
 
 
@@ -180,7 +162,7 @@ for sv in surveys:
 
     for i, ar in enumerate(d[f"arrays_{sv}"]):
         map_set = f"{sv}_{ar}"
-        ref_map_set = ref_map_sets[map_set]
+        ref_map_set = d[f"ref_map_set_survey_{map_set}"]
         print(f"**************")
         print(f"calibration {map_set} with {ref_map_set}")
 

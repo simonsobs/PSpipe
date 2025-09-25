@@ -12,15 +12,15 @@ def get_proj_pattern(test, map_set, ref_map_set):
 
     if test == "AxA-AxB":
         proj_pattern = np.array([1, -1, 0])
-        #    [1, -1, 0]]  x [ AxA, AxP, PxP].T    =  AxA - AxP
+        #    [1, -1, 0]]  x [ AxA, AxB, BxB].T    =  AxA - AxB
         name = f"{map_set}x{map_set}-{map_set}x{ref_map_set}"
     elif test == "AxA-BxB":
         proj_pattern = np.array([1, 0, -1])
-         #    [1, 0, -1]]  x [ AxA, AxP, PxP].T    =   AxA - PxP
+         #    [1, 0, -1]]  x [ AxA, AxB, BxB].T    =   AxA - BxB
         name = f"{map_set}x{map_set}-{ref_map_set}x{ref_map_set}"
     elif test == "BxB-AxB":
         proj_pattern = np.array([0, -1, 1])
-        #    [[0, -1, 1]]   x [ AxA, AxP, PxP].T    =    PxP - AxP
+        #    [[0, -1, 1]]   x [ AxA, AxB, BxB].T    =    BxB - AxB
         name = f"{ref_map_set}x{ref_map_set}-{map_set}x{ref_map_set}"
 
     return  name, proj_pattern

@@ -1,5 +1,5 @@
 """
-Goes from LAT_MF_bands.csv to tube-wide bandpasses by averaging over the UFMs. The bandpasses measurements are from JackOS in #lat-analysis.
+Goes from LAT_MF_bands.csv to tube-wide bandpsses by averaging over the UFMs.
 """
 import numpy as np
 import pandas as pd
@@ -7,10 +7,9 @@ from matplotlib import pyplot as plt
 
 cut_LF_noise = False
 cut_edges = True
+save_path = 'passbands/'
 
-save_path = "passbands"
-
-df_MF = pd.read_csv('passbands/LAT_MF_bands.csv')
+df_MF = pd.read_csv('/global/cfs/cdirs/sobs/users/merrydup/protoISO_bossn/passbands/LAT_MF_bands.csv')
 frequency = df_MF['frequency']
 # df_UHF = pd.read_csv('/pscratch/sd/m/merrydup/pipe0004_BN/bandpasses/LAT_UHF_bands.csv')
 
@@ -61,3 +60,52 @@ ax.set_xlabel('Frequency (GHz)', fontsize=15)
 plt.savefig(f'{save_path}/bandpasses_ufm_average.png')
 plt.close()
 
+
+### Same but for UHF
+df_UF = pd.read_csv('/global/cfs/cdirs/sobs/users/merrydup/protoISO_bossn/passbands/LAT_UHF_bands.csv')
+frequency = df_UF['frequency']
+# df_UHF = pd.read_csv('/pscratch/sd/m/merrydup/pipe0004_BN/bandpasses/LAT_UHF_bands.csv')
+
+# https://simonsobs.atlassian.net/wiki/spaces/PRO/pages/210894849/Instrument+Diagrams+for+Data+Reduction
+UFMs_mapping = {
+    'c1': ['uv38', 'uv39', 'uv46'],
+}
+all_ufms = ['uv38', 'uv39', 'uv46']
+
+BANDS = ['220', '280']
+band_edges = {
+    '220': [170, 280],
+    '280': [240, 340]
+}
+
+bandpasses = {}
+bandpasses_mean = {}
+
+for band in BANDS:
+    for tube, ufms in UFMs_mapping.items():
+        bandpasses[f'{tube}_f{band}'] = np.mean([df_UF[f'{ufm}_f{band}'] for ufm in ufms], axis=0)
+        if cut_LF_noise:
+            bandpasses[f'{tube}_f{band}'][:50] *= 0.
+            bandpasses[f'{tube}_f{band}'][bandpasses[f'{tube}_f{band}'] < 0.015] *= 0.
+        if cut_edges:
+            band_mask = (frequency > band_edges[band][0]) & (frequency < band_edges[band][1])
+            bandpasses[f'{tube}_f{band}'][~band_mask] *= 0.
+            
+    bandpasses_mean[f'mean_f{band}'] = np.mean([df_UF[f'{ufm}_f{band}'] for ufm in all_ufms], axis=0)
+    if cut_edges:
+        band_mask = (frequency > band_edges[band][0]) & (frequency < band_edges[band][1])
+        bandpasses_mean[f'mean_f{band}'][~band_mask] *= 0.
+
+
+
+fig, ax = plt.subplots()
+for name, bp in bandpasses.items():
+    np.savetxt(f'{save_path}/bandpass_{name}_ufm_average.dat', np.array([frequency, bp]).T, header="nu_ghz                   passband")
+    ax.plot(frequency, bp, label=name)
+for name, bp in bandpasses_mean.items():
+    np.savetxt(f'{save_path}/bandpass_{name}.dat', np.array([frequency, bp]).T, header="nu_ghz                   passband")
+    ax.plot(frequency, bp, label=name, color='black', linewidth=1.8, alpha=0.7)
+ax.legend()
+ax.set_xlabel('Frequency (GHz)', fontsize=15)
+plt.savefig(f'{save_path}/bandpasses_UHF_ufm_average.png')
+plt.close()

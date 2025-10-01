@@ -1,0 +1,48 @@
+name: test_1
+
+spectra_dir: /global/cfs/cdirs/sobs/users/merrydup/deep56/spectra_0925
+cov_dir: /pscratch/sd/m/merrydup/PSpipe_SO/covariances_d56_0925_gaussbeam_fullact_c1
+
+null_test_dir: null_test
+plot_dir: plots/array_nulls
+
+pte_threshold: 0.01
+remove_first_bin: True
+
+skip_pa4_pol: True
+skip_diff_freq_TT: True
+skip_EB: False
+fudge: False
+
+multipole_range:
+  SO_i1_f090:
+    T: [200, 7000]
+    E: [200, 7000]
+    B: [200, 7000]
+  SO_i1_f150:
+    T: [200, 7000]
+    E: [200, 7000]
+    B: [200, 7000]
+
+# Options
+l_pows:
+  TT: 1
+  TE: 0
+  TB: 0
+  ET: 0
+  BT: 0
+  EE: -1
+  EB: -1
+  BE: -1
+  BB: -1
+
+y_lims:
+  TT: [-100000, 75000]
+  TE: [-30, 30]
+  TB: [-30, 30]
+  ET: [-30, 30]
+  BT: [-30, 30]
+  EE: [-0.01, 0.01]
+  EB: [-0.01, 0.01]
+  BE: [-0.01, 0.01]
+  BB: [-0.01, 0.01]

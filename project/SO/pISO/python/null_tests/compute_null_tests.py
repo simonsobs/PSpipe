@@ -9,7 +9,7 @@ import scipy.stats as ss
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-from null_infos import *
+import yaml
 
 def get_lmin_lmax(null, multipole_range):
     """
@@ -46,7 +46,7 @@ def pte_histo(pte_list, file_name, n_bins):
     plt.savefig(f"{file_name}", dpi=300, bbox_inches='tight')
     plt.clf()
     plt.close()
-    
+
 def check_freq_pair(f1, f2, f3, f4):
     count = 0
     if (f1 == f3) & (f2 == f4):
@@ -61,15 +61,21 @@ def check_freq_pair(f1, f2, f3, f4):
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-pte_threshold = 0.01
-remove_first_bin = True
+with open(f'null_infos.yaml', "r") as f:
+    null_infos: dict = yaml.safe_load(f)
 
-skip_pa4_pol = True
-skip_diff_freq_TT = True
-skip_EB = False
-fudge = False
+pte_threshold = null_infos['pte_threshold']
+remove_first_bin = null_infos['remove_first_bin']
 
-plot_dir = "plots/array_nulls"
+skip_pa4_pol = null_infos['skip_pa4_pol']
+skip_diff_freq_TT = null_infos['skip_diff_freq_TT']
+skip_EB = null_infos['skip_EB']
+fudge = null_infos['fudge']
+
+multipole_range = null_infos['multipole_range']     # This was previously in null_info.py
+y_lims = null_infos['y_lims']
+l_pows = null_infos['l_pows']
+
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 hist_label = ""
 if skip_pa4_pol == True:
@@ -81,20 +87,22 @@ if skip_EB == True:
 if skip_diff_freq_TT == True:
     hist_label += "_skip_TT_diff_freq"
 
+# Where the data is
+spectra_dir = null_infos["spectra_dir"]
+cov_dir = null_infos["cov_dir"]
 
-
-cov_dir = "covariances"
-null_test_dir = "null_test"
+# Created by the code
+null_test_dir = null_infos["null_test_dir"]
+plot_dir = null_infos["plot_dir"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 pspy_utils.create_directory(null_test_dir)
 pspy_utils.create_directory(plot_dir)
 
-test_list = [{"name":  "spectra_corrected+mc_cov+beam_cov+leakage_cov",
-              "spec_dir": "spectra_leak_corr",
-              "cov_correction": ["mc_cov", "beam_cov","leakage_cov"]}]
-               
+test_list = [{"name":  "test_1",
+              "spec_dir": spectra_dir,
+              "cov_correction": []}]
 
 spec_dir_list = []
 cov_type_list = ["analytic_cov"]
@@ -110,7 +118,7 @@ map_set_list = pspipe_list.get_map_set_list(d)
 
 
 all_cov = {}
-_ps_temp = "spectra" + "/Dl_{}x{}_cross.dat"
+_ps_temp = spectra_dir + "/Dl_{}x{}_cross.dat"
 for cov in cov_type_list:
     cov_template = f"{cov_dir}/{cov}" + "_{}x{}_{}x{}.npy"
     _, all_cov[cov] =  consistency.get_ps_and_cov_dict(map_set_list, _ps_temp, cov_template, spectra_order=spectra)
@@ -211,7 +219,7 @@ for null in null_list:
         np.save(f"{null_test_dir}/ps_{label}_{fname}.npy", res_cov_dict[label] )
         np.savetxt(f"{null_test_dir}/cov_{label}_{fname}.npy", np.transpose([lb, res_ps_dict[label], sigma]))
 
-    
+
     # Plot residual and get chi2
     lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
     plot_title = f"{ms1}x{ms2} - {ms3}x{ms4}"

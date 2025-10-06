@@ -1,0 +1,36 @@
+get_calib.py:
+  surveys_to_calib:
+    - SO
+
+  ref_map_set_SO_i1_f090: "dr6_pa5_f090"
+  ref_map_set_SO_i1_f150: "dr6_pa5_f150"
+  ref_map_sets:
+    SO_i1_f090: "dr6_pa5_f090"
+    SO_i1_f150: "dr6_pa5_f150"
+
+  ell_range_cal_SO_i1_f090: [600, 1200]
+  ell_range_cal_SO_i1_f150: [600, 1200]
+  y_lims_TT: [-300000, 500000]
+
+  spec_dir: spectra
+  cov_dir: covariances
+  output_dir: calibs_resuts
+
+get_polar_eff_LCDM.py:
+  lmin_cal: 500
+  lmax_cal_dr6_pa4_f220: 2000
+  lmax_cal_dr6_pa5_f090: 1200
+  lmax_cal_dr6_pa5_f150: 2000
+  lmax_cal_dr6_pa6_f090: 1200
+  lmax_cal_dr6_pa6_f150: 2000
+  lmax_cal_Planck_f100: 1200
+  lmax_cal_Planck_f143: 2000
+  lmax_cal_Planck_f217: 2000
+
+get_polar_eff.py:
+  surveys_to_calib:  
+    - SO
+  ref_map_set_SO_i1_f090: "dr6_pa5_f090"
+  ref_map_set_SO_i1_f150: "dr6_pa5_f150"
+  ell_range_cal_SO_i1_f090: [600, 1200]
+  ell_range_cal_SO_i1_f150: [600, 1200]

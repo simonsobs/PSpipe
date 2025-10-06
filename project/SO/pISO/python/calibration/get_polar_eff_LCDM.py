@@ -15,17 +15,17 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 # Set up directories
-ps_dir = "spectra_leak_corr"
-planck_corr = False
-
-if planck_corr:
-    ps_dir = "spectra_leak_corr_planck_bias_corr"
-
-
-
-cov_dir = "covariances"
+spec_dir = "/global/cfs/cdirs/sobs/users/merrydup/deep56/spectra_0925"
+cov_dir = "/pscratch/sd/m/merrydup/PSpipe_SO/covariances_d56_0925_i1"
 bestfit_dir = "best_fits"
 mcm_dir = "mcms"
+planck_corr = False
+use_leakage_cov = False
+
+if planck_corr:
+    spec_dir = "spectra_leak_corr_planck_bias_corr"
+
+
 output_dir = "pol_eff_results"
 pspy_utils.create_directory(output_dir)
 
@@ -78,15 +78,6 @@ fg_dict = best_fits.get_foreground_dict(l_th, passbands, fg_components, fg_param
 # computed in ACT DR6 windows
 
 
-
-
-
-# These should already exist in paramfile ?
-arrays_dr6 = [ "pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
-arrays_Planck = ["f100", "f143", "f217"]
-
-
-
 # Define useful functions
 def get_model(cmb_th, fg_th, Bbl, dust_amp, pol_eff, mode):
     ps_theory = (cmb_th + dust_amp * fg_th) * pol_eff ** mode.count("E")
@@ -101,11 +92,11 @@ for sv in surveys:
 
             # Load ps and cov
             spec_name = f"{sv}_{ar}x{sv}_{ar}"
-            lb, ps = so_spectra.read_ps(f"{ps_dir}/Dl_{spec_name}_cross.dat", spectra=spectra)
+            lb, ps = so_spectra.read_ps(f"{spec_dir}/Dl_{spec_name}_cross.dat", spectra=spectra)
             cov = np.load(f"{cov_dir}/analytic_cov_{spec_name}_{spec_name}.npy")
-            leakage_cov = np.load(f"{cov_dir}/leakage_cov_{spec_name}_{spec_name}.npy")
-
-            cov += leakage_cov
+            if use_leakage_cov:
+                leakage_cov = np.load(f"{cov_dir}/leakage_cov_{spec_name}_{spec_name}.npy")
+                cov += leakage_cov
             # Select the spectrum
             ps = ps[spectrum]
             n_bins = len(lb)

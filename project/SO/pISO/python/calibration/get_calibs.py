@@ -34,15 +34,9 @@ subtract_bf_fg = False
 
 
 spec_dir = "/global/cfs/cdirs/sobs/users/merrydup/deep56/spectra_0925"
-bestfir_dir = "best_fits"
 cov_dir = "/pscratch/sd/m/merrydup/PSpipe_SO/covariances_d56_0925_i1"
+bestfit_dir = "best_fits"
 
-# if planck_corr:
-#     spec_dir = "spectra_leak_corr_planck_bias_corr"
-#     output_dir += "_planck_bias_corrected"
-
-# if subtract_bf_fg:
-#     output_dir += "_fg_sub"
 
 _, _, lb, _ = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
 n_bins = len(lb)
@@ -60,6 +54,13 @@ output_dir = "calibration_results"
 residual_output_dir = f"{output_dir}/residuals"
 plot_output_dir = f"{output_dir}/plots"
 chains_dir = f"{output_dir}/chains"
+
+if planck_corr:
+    spec_dir = "spectra_leak_corr_planck_bias_corr"
+    output_dir += "_planck_bias_corrected"
+
+if subtract_bf_fg:
+    output_dir += "_fg_sub"
 
 pspy_utils.create_directory(output_dir)
 pspy_utils.create_directory(residual_output_dir)
@@ -106,7 +107,7 @@ for test in tests:
                 
                 if (m1 == "TT") & (subtract_bf_fg):
                     log.info(f"remove fg {m1}  {ms1} x {ms2}")
-                    l_fg, bf_fg = so_spectra.read_ps(f"{bestfir_dir}/fg_{ms1}x{ms2}.dat", spectra=spectra)
+                    l_fg, bf_fg = so_spectra.read_ps(f"{bestfit_dir}/fg_{ms1}x{ms2}.dat", spectra=spectra)
                     _, bf_fg_TT_binned = pspy_utils.naive_binning(l_fg, bf_fg["TT"], d["binning_file"], d["lmax"])
                     ps_dict[ms1, ms2, m1] -= bf_fg_TT_binned
 
@@ -157,7 +158,7 @@ for test in tests:
 # plot the cal factors
 color_list =  ["blue", "red", "green"]
 
-for sv in d['surveys']:
+for sv in d['surveys_to_calib']:
     for i, ar in enumerate(d[f"arrays_{sv}"]):
         map_set = f"{sv}_{ar}"
         ref_map_set = d[f"ref_map_set_{map_set}"]

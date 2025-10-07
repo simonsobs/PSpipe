@@ -1,4 +1,4 @@
-# LINES TO APPEND TO AN EXISTING DICT FILE FOR NEW get_calibs.py
+# LINES TO APPEND TO AN EXISTING DICT FILE FOR NEW fit_tf.py
 
 ref_map_set_dr6_pa4_f150 = "Planck_f143"
 ref_map_set_dr6_pa4_f220 = "Planck_f217"

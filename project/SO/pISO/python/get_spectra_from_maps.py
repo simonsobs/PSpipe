@@ -438,12 +438,6 @@ for iii in mapset_iterator:
                 # ps_dict is a nested dict: (sv1, m1, snk1), (sv2, m2, snk2) -> XY -> data,
                 # where XY is some pol cross
                 ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)] = get_ps(snk1, snk2)
-
-        if which == 'data':
-            spec_name_all = f"{type}_all_sn_cross_data"
-        else:
-            spec_name_all = f"{type}_all_sn_cross_{iii:05d}"
-        np.save(f"{spec_dir}/{spec_name_all}.npy", ps_dict_all)
         
         mbb_inv = None
         Bbl = None
@@ -451,16 +445,17 @@ for iii in mapset_iterator:
 
         # then we get "derived" spectra: the mean cross, auto and noise spectrum
         # NOTE: the noise spectrum is defined as the noise in a map which is the
-        # simple average over split maps. we only do this for the data, and save
-        # it in the non-dict txt formats
+        # simple average over split maps. for the data, we do all of this, and 
+        # save in a "explicit" format for backwards compatibility. for sims, we
+        # just save crosses in a new format
+        splits_auto_iterator = pspipe_list.get_splits_auto_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
+        splits_cross_iterator = pspipe_list.get_splits_auto_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
+
+        exists_auto = len(splits_auto_iterator) > 0
+        exists_cross = len(splits_cross_iterator) > 0
+        exists_noise = (len(splits_auto_iterator) > 0) and (len(splits_cross_iterator) > 0)
+
         if which == 'data':
-            splits_auto_iterator = pspipe_list.get_splits_auto_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
-            splits_cross_iterator = pspipe_list.get_splits_auto_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
-
-            exists_auto = len(splits_auto_iterator) > 0
-            exists_cross = len(splits_cross_iterator) > 0
-            exists_noise = (len(splits_auto_iterator) > 0) and (len(splits_cross_iterator) > 0)
-
             if exists_auto:
                 ps_dict_auto_mean = {spec: 0 for spec in spectra}
                 for spec in spectra:
@@ -471,18 +466,22 @@ for iii in mapset_iterator:
 
                 spec_name_auto = f"{type}_{sv1}_{m1}x{sv2}_{m2}_auto"
                 so_spectra.write_ps(spec_dir + f"/{spec_name_auto}.dat", lb, ps_dict_auto_mean, type, spectra=spectra)
-                        
-            if exists_cross:
-                ps_dict_cross_mean = {spec: 0 for spec in spectra}
-                for spec in spectra:
-                    for s1, s2 in splits_cross_iterator:
-                        snk1, snk2 = f'sn{s1}', f'sn{s2}'
-                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)][spec]
-                    ps_dict_cross_mean[spec] /= len(splits_cross_iterator)
+                    
+        if exists_cross:
+            ps_dict_cross_mean = {spec: 0 for spec in spectra}
+            for spec in spectra:
+                for s1, s2 in splits_cross_iterator:
+                    snk1, snk2 = f'sn{s1}', f'sn{s2}'
+                    ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)][spec]
+                ps_dict_cross_mean[spec] /= len(splits_cross_iterator)
 
+            if which == 'data':
                 spec_name_cross = f"{type}_{sv1}_{m1}x{sv2}_{m2}_cross"                
                 so_spectra.write_ps(spec_dir + f"/{spec_name_cross}.dat", lb, ps_dict_cross_mean, type, spectra=spectra)
+            else:
+                ps_dict_all[(sv1, m1), (sv2, m2)] = ps_dict_cross_mean
 
+        if which == 'data':
             if exists_noise:
                 ps_dict_noise_mean = {}   
                 for spec in spectra:
@@ -491,6 +490,12 @@ for iii in mapset_iterator:
             
                 spec_name_noise = f"{type}_{sv1}_{m1}x{sv2}_{m2}_noise"
                 so_spectra.write_ps(spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
+
+        if which == 'data':
+            spec_name_all = f"{type}_all_sn_cross_data"
+        else:
+            spec_name_all = f"{type}_all_sn_cross_{iii:05d}"
+        np.save(f"{spec_dir}/{spec_name_all}.npy", ps_dict_all)
 
     ps_dict_all = None
     

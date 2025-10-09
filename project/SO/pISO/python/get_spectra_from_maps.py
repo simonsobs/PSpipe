@@ -431,7 +431,9 @@ for iii in mapset_iterator:
             return ps
             
         # first measure the raw per-split spectra. NOTE: this is only redundant
-        # if sv1==sv2, m1==m2, and pol1==pol2
+        # if sv1==sv2, m1==m2, and pol1==pol2.
+        #
+        # NOTE: this is (s, 0, 1, 2, ...) for a sim
         for snk1 in splits_iterator[sv1]:
             for snk2 in splits_iterator[sv2]:
 
@@ -460,20 +462,29 @@ for iii in mapset_iterator:
                 ps_dict_auto_mean = {spec: 0 for spec in spectra}
                 for spec in spectra:
                     for s1, s2 in splits_auto_iterator:
-                        snk1, snk2 = f'sn{s1}', f'sn{s2}'
-                        ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)][spec]
+                        ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, f'sn{s1}'), (sv2, m2, f'sn{s2}')][spec]
                     ps_dict_auto_mean[spec] /= len(splits_auto_iterator)
 
                 spec_name_auto = f"{type}_{sv1}_{m1}x{sv2}_{m2}_auto"
                 so_spectra.write_ps(spec_dir + f"/{spec_name_auto}.dat", lb, ps_dict_auto_mean, type, spectra=spectra)
                     
+        # need to do special wrangling of splits for mean cross of sims.
+        # we want mean_ij((s + n_i)x(s + n_j)), which is:
+        # mean_ij(sxs + sxn_j + n_ixs + n_ixn_j)
         if exists_cross:
             ps_dict_cross_mean = {spec: 0 for spec in spectra}
             for spec in spectra:
                 for s1, s2 in splits_cross_iterator:
-                    snk1, snk2 = f'sn{s1}', f'sn{s2}'
-                    ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)][spec]
+                    if which == 'data':
+                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'sn{s1}'), (sv2, m2, f'sn{s2}')][spec]
+                    else:
+                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, f'n{s2}')][spec]
+                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, 's')][spec]
+                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, f'n{s2}')][spec]
                 ps_dict_cross_mean[spec] /= len(splits_cross_iterator)
+
+                if which == 'sims':
+                    ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, 's')][spec]
 
             if which == 'data':
                 spec_name_cross = f"{type}_{sv1}_{m1}x{sv2}_{m2}_cross"                

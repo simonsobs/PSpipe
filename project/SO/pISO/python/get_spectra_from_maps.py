@@ -1,13 +1,19 @@
 description = """
 Gets spectra from maps or simulations. The structure of the mpi loop changes
-depending on whether from maps (over maps) or simulations (over simulations).
+depending on whether from maps (over maps and spectra) or simulations
+(over simulations).
+
 The simulations can optionally be written to disk (as full-res maps) if useful.
+
 In the case of simulations, the saved spectra include all signal and noise
 cross terms, since keeping them separate enables lower-variance mc covariances.
-We skip the disk-expensive step of writing intermediate alms to disk.
-The only downstream user of the alms is the noise pseudospectra, which we TODO
-optionally calculate in this script. Prior to this we need to have run
-get_mcm_and_bbl.py. 
+
+Alms are written to disk only in the case of maps, which allows for mpi to go
+over the maps first and then the spectra, since these have different
+combinatorics. If disk-space is an issue, this can be fixed in the future using
+mpi all_gather (for the alms).
+
+Prior to this we need to have run get_mcm_and_bbl.py. 
 """
 
 import sys
@@ -18,7 +24,7 @@ import numpy as np
 import healpy as hp
 
 from pixell import enmap
-from pspipe_utils import kspace, log, pspipe_list, transfer_function
+from pspipe_utils import kspace, log, pspipe_list, transfer_function, simulation
 from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 
 parser = argparse.ArgumentParser(description=description,
@@ -26,13 +32,17 @@ parser = argparse.ArgumentParser(description=description,
 parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
 parser.add_argument('--start', type=int, default=-1,
-                    help='The number of sims to compute in a given task.')
+                    help='The index of the first sim to run. If less than 0 '
+                    '(the default), we run on the dataset specific in the ' \
+                    'paramfile.')
 parser.add_argument('--stop', type=int, default=-1,
-                    help='The number of sims to compute in a given task.')
+                    help='The index of the last sim to run (exclusive).')
 parser.add_argument('--write-sim-map-start', type=int, default=-1,
-                    help='The number of sims to compute in a given task.')
+                    help='If given, the first sim index that will also save '
+                    'the simulated map to disk.')
 parser.add_argument('--write-sim-map-start', type=int, default=-1,
-                    help='The number of sims to compute in a given task.')
+                    help='If given, the last sim index (exclusive) that will '
+                    'also save the simulated map to disk.')
 args = parser.parse_args()
 
 # TODO: speed up map-level operations with mnms.concurrent_op
@@ -72,6 +82,7 @@ spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 
 mcm_dir = d['mcm_dir']
+bestfit_dir = d["best_fits_dir"]
 
 # if data, write into spec_dir
 # if sims, write spectra into simulated_spec_dir and any maps into 
@@ -88,24 +99,25 @@ if which == 'sims' and write_sim_map_start >= 0:
     map_dir = d['simulated_map_dir']
     pspy_utils.create_directory(map_dir)
 
-# if data, we have one instance of a mapset, so it would be ideal to have mixed
-# mpi: over the maps in the mapset, then over the spectra. this would require
-# an allgather and a gather, so it is a TODO. if sims, usually we have a large
-# number AND the maps are all correlated (so they can't easily be divided over
-# processes), so makes more sense to mpi over the sims. NOTE: currently, to keep
-# it simple we just don't mpi the data, also because SO has fewer/smaller maps
-# than ASO
+# if data, we have one instance of a mapset, so we use a mixed distribution of
+# mpi: over the maps in the mapset, then over the spectra. this requires all
+# tasks to have all alms at the end, which in turn requires either writing the
+# alms to disk (with a barrier), or TODO: an allgather and a gather.
+# 
+# if sims, usually we have a large number AND the maps are all correlated (so
+# they can't easily be divided over tasks), so makes more sense to mpi over the
+# sims.
 #
 # this sets up iteration over mapsets, surveys, and maps such that the code is
 # the same for data and sims
 n_map, sv_list, map_list = pspipe_list.get_arrays_list(d)
 n_spec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
+so_mpi.init(True)
 
 if which == 'data':
     # TODO: implement allgathers so first the maps can be divvied up, then 
     # the alms can be allgathered, then the spectra can be divvied up, and the 
-    # computed spectra gathered and saved.
-    so_mpi.init(True)
+    # computed spectra gathered and saved, without writing alms to disk.
     subtasks_alms = so_mpi.taskrange(imin=0, imax=n_map - 1)
     subtasks_spectra = so_mpi.taskrange(imin=0, imax=n_spec - 1)
     log.info(f"Running on data")
@@ -123,8 +135,7 @@ if which == 'data':
     sv2_iterator = sv2_list[subtasks_spectra]
     m2_iterator = m2_list[subtasks_spectra]
 else:
-    so_mpi.init(True)
-    subtasks_mapsets = so_mpi.taskrange(imin=0, imax=stop - start - 1)
+    subtasks_mapsets = so_mpi.taskrange(imin=start, imax=stop - 1)
     log.info(f"Running on sims")
     log.info(f"Number of sims for the mpi loop: {len(subtasks_mapsets)}")
 
@@ -153,7 +164,7 @@ inv_pixwins = {}
 
 # get map-level auxiliary data products
 for sv in surveys:
-    maps[sv] = d[f"arrays_{sv}"]
+    maps[sv] = d[f"arrays_{sv}"] # TODO: replace with maps, arrays is confusing
     nsplits[sv] = d[f"n_splits_{sv}"]
 
     # if data, we must iterate over (signal + noise)_k
@@ -167,7 +178,7 @@ for sv in surveys:
 
     # FIXME: this will not work for SO LF which has a different template despite
     # being the same survey
-    templates[sv] = so_map.read_map(d[f"maps_{sv}_{maps[sv][0]}"][0])
+    templates[sv] = so_map.read_map(d[f"maps_{sv}_{maps[sv][0]}"][0]) # first split of first map
         
     if d[f"pixwin_{sv}"]["pix"] == "CAR" and deconvolve_pixwin:
         wy, wx = enmap.calc_window(templates[sv].data.shape,
@@ -189,6 +200,14 @@ for sv in surveys:
         filters[sv] = kspace.get_kspace_filter(templates[sv],
                                                filter_dicts[sv],
                                                dtype=np.float32)
+
+    if which == 'sims':
+        f_name_cmb = bestfit_dir + "/cmb.dat"
+        ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax, spectra)
+
+        f_name_fg = bestfit_dir + "/fg_{}x{}.dat"
+        map_list = [f"{sv}_{m}" for sv in surveys for m in maps[sv]]
+        l, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, map_list, lmax, spectra)
         
 # get spectrum-level auxiliary data products
 # TODO: replace with pspipe_operator
@@ -212,18 +231,17 @@ if apply_kspace_filter:
 
     for k, v in kspace_transfer_matrix.items():
         if np.count_nonzero(v.diagonal()) > 0:
-            log.info(f'0 in kspace_transfer_matrix {k}')
+            log.info(f'WARNING: 0 in kspace_transfer_matrix {k}')
 
 # now we can iterate over mapsets, and maps within them
 for iii in mapset_iterator:
     
-    # each process needs all the master_alms. see above TODO: we could do
-    # this if only one mapset differently using allgather
+    # this will get safely overwritten if which=='data'
     master_alms = {}
 
     for sv, m in zip(sv_iterator, map_iterator, strict=True):
 
-        log.info(f"[{iii}] Computing alm for survey '{sv}' and map '{m}'")
+        log.info(f"[Mapset {iii}] Computing alm for survey '{sv}' and map '{m}'")
         t0 = time.time()
 
         win_T = so_map.read_map(d[f"window_T_{sv}_{m}"])
@@ -242,7 +260,7 @@ for iii in mapset_iterator:
 
         cal, pol_eff = d[f"cal_{sv}_{m}"], d[f"pol_eff_{sv}_{m}"]
 
-        for snk, k in enumerate(splits_iterator[sv]):
+        for k, snk in enumerate(splits_iterator[sv]):
             
             if which == 'data':
                 split_idx = k
@@ -275,7 +293,7 @@ for iii in mapset_iterator:
                 # HERE
 
                 if apply_kspace_filter and deconvolve_pixwin:
-                    log.info(f"[{iii}] Apply kspace filter and inv pixwin on {m}")
+                    log.info(f"[Mapset {iii}] Apply kspace filter and inv pixwin on {sv} and {m}")
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -283,7 +301,7 @@ for iii in mapset_iterator:
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
                 elif apply_kspace_filter:
-                    log.info(f"[{iii}] WARNING: apply kspace filter but no inv pixwin on {m}")
+                    log.info(f"[Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv} and {m}")
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -292,13 +310,13 @@ for iii in mapset_iterator:
                                               use_ducc_rfft=True)
 
                 elif deconvolve_pixwin:
-                    log.info(f"[{iii}] WARNING: inv pixwin but no kspace filter on {m}")
+                    log.info(f"[Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv} and {m}")
                     split = so_map.fourier_convolution(split,
                                                        inv_pwin,
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
                 else:
-                    log.info(f"[{iii}] WARNING: no kspace filter and no inv pixwin on {m}")
+                    log.info(f"[Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv} and {m}")
 
                             
             elif win_T.pixel == "HEALPIX":
@@ -312,9 +330,9 @@ for iii in mapset_iterator:
                 # sim injection
 
                 if deconvolve_pixwin:
-                    log.info(f"[{iii}] WARNING: inv pixwin but no kspace filter on {m} (HEALPIX)")
+                    log.info(f"[Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv} and {m} (HEALPIX)")
                 else:
-                    log.info(f"[{iii}] WARNING: no kspace filter and no inv pixwin on {m} (HEALPIX)")
+                    log.info(f"[Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv} and {m} (HEALPIX)")
 
             split = split.calibrate(cal=cal, pol_eff=pol_eff)
 
@@ -335,22 +353,26 @@ for iii in mapset_iterator:
         window_tuple = None
         win_kspace = None
 
-        log.info(f"[{iii}] Survey '{sv}' and map '{m}' alm execution time: {time.time() - t0} seconds")
+        log.info(f"[Mapset {iii}] Survey '{sv}' and map '{m}' alm execution time: {time.time() - t0} seconds")
 
     # compute the power spectra
-    t0 = time.time()
-    log.info(f"[{iii}] Computing spectra")
     
     # if data, need to load alms, and so need to wait
     # for all alms to be done
     if which == 'data':
+        t0 = time.time()
+        log.info(f"[Rank {so_mpi.rank}]: Loading alms")
         so_mpi.barrier()
 
         master_alms = {}
         for sv in surveys:
             for m in maps[sv]:
-                for k, snk in enumerate(splits_iterator[sv]):
+                for k, snk in enumerate(splits_iterator[sv]): # k == split_idx
                     master_alms[sv, m, snk] = np.load(f"{alms_dir}/alms_{sv}_{m}_{k}.npy")
+        log.info(f"[Rank {so_mpi.rank} loaded alms: {time.time() - t0} seconds")
+
+    t0 = time.time()
+    log.info(f"[Mapset {iii}] Computing spectra")
 
     # store all the spectra for a mapset in one file. otherwise there will be
     # too many files (O(1 million) for 1,000 ASO sims).
@@ -369,7 +391,8 @@ for iii in mapset_iterator:
 
         # new shit here
         def get_ps(snk1, snk2):
-            # compute specific cls with higher precision, save memory overall
+            # compute specific cls with higher precision, save memory overall by
+            # doing this per spectrum
             l, ps = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1].astype(np.complex128),
                                                   master_alms[sv2, m2, snk2].astype(np.complex128),
                                                   spectra=spectra)
@@ -388,7 +411,7 @@ for iii in mapset_iterator:
             if apply_kspace_filter:
                 if kspace_tf_path == "analytical":
                     xtra_corr = None
-                elif 's' in snk1 and 's' in snk2:
+                elif ('s' in snk1) and ('s' in snk2):
                     xtra_corr = TE_corr[f"{sv1}_{m1}x{sv2}_{m2}"]
                 else:
                     xtra_corr = None
@@ -407,7 +430,8 @@ for iii in mapset_iterator:
             
             return ps
             
-        # first measure the raw per-split spectra
+        # first measure the raw per-split spectra. NOTE: this is only redundant
+        # if sv1==sv2, m1==m2, and pol1==pol2
         for snk1 in splits_iterator[sv1]:
             for snk2 in splits_iterator[sv2]:
 
@@ -416,7 +440,7 @@ for iii in mapset_iterator:
                 ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)] = get_ps(snk1, snk2)
 
         if which == 'data':
-            spec_name_all = f"{type}_all_sn_cross"
+            spec_name_all = f"{type}_all_sn_cross_data"
         else:
             spec_name_all = f"{type}_all_sn_cross_{iii:05d}"
         np.save(f"{spec_dir}/{spec_name_all}.npy", ps_dict_all)
@@ -462,6 +486,7 @@ for iii in mapset_iterator:
             if exists_noise:
                 ps_dict_noise_mean = {}   
                 for spec in spectra:
+                    # exists_noise only if sv1 == sv2
                     ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplits[sv1]
             
                 spec_name_noise = f"{type}_{sv1}_{m1}x{sv2}_{m2}_noise"
@@ -469,4 +494,4 @@ for iii in mapset_iterator:
 
     ps_dict_all = None
     
-    log.info(f"[{iii}] Spectra execution time: {time.time() - t0} seconds")
+    log.info(f"[Mapset {iii}] Spectra execution time: {time.time() - t0} seconds")

@@ -6,7 +6,7 @@ import numpy as np
 import pylab as plt
 import pickle
 import sys
-
+import yaml
 
 def get_proj_pattern(test, map_set, ref_map_set):
 
@@ -29,25 +29,17 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-planck_corr = False
-subtract_bf_fg = False
+# log calib infos from calib yaml file
+with open(d['calib_yaml'], "r") as f:
+    calib_dict: dict = yaml.safe_load(f)
+calib_infos = calib_dict['get_calibs.py']
 
+planck_corr = calib_infos['planck_corr']
+subtract_bf_fg = calib_infos['subtract_bf_fg']
 
-spec_dir = "/global/cfs/cdirs/sobs/users/merrydup/deep56/spectra_0925"
-cov_dir = "/pscratch/sd/m/merrydup/PSpipe_SO/covariances_d56_0925_i1"
-bestfit_dir = "best_fits"
-
-
-_, _, lb, _ = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
-n_bins = len(lb)
-
-spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-
-if d["cov_T_E_only"] == True:
-    modes = ["TT", "TE", "ET", "EE"]
-else:
-    modes = spectra
-
+spec_dir = calib_infos['spec_dir']
+cov_dir = calib_infos['cov_dir']
+bestfit_dir = calib_infos['bestfit_dir']
 
 # Create output dirs
 output_dir = "calibration_results"
@@ -62,15 +54,24 @@ if planck_corr:
 if subtract_bf_fg:
     output_dir += "_fg_sub"
 
+ell_ranges = calib_infos['ell_ranges']
+y_lims_TT = calib_infos['y_lims_TT']
+
+_, _, lb, _ = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
+n_bins = len(lb)
+
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+
+if d["cov_T_E_only"] == True:
+    modes = ["TT", "TE", "ET", "EE"]
+else:
+    modes = spectra
+
 pspy_utils.create_directory(output_dir)
 pspy_utils.create_directory(residual_output_dir)
 pspy_utils.create_directory(chains_dir)
 pspy_utils.create_directory(plot_output_dir)
 
-
-y_lims = {
-    "TT": (-100000, 75000),
-}
 
 # Define the projection pattern - i.e. which
 # spectra combination will be used to compute
@@ -127,11 +128,11 @@ for test in tests:
             np.savetxt(f"{residual_output_dir}/residual_{name}_before.dat", np.array([lb, res_spectrum]).T)
             np.savetxt(f"{residual_output_dir}/residual_cov_{name}.dat", res_cov)
 
-            lmin, lmax = d[f"ell_range_cal_{map_set}"]
+            lmin, lmax = ell_ranges[map_set]
             id = np.where((lb >= lmin) & (lb <= lmax))[0]
             consistency.plot_residual(lb, res_spectrum, {"analytical": res_cov}, "TT", f"{map_set} {test}",
                                     f"{plot_output_dir}/residual_{name}_before",
-                                    lrange=id, l_pow=1, ylims=d[f"y_lims_TT"])
+                                    lrange=id, l_pow=1, ylims=y_lims_TT)
 
             # Calibrate the spectra
             cal_mean, cal_std = consistency.get_calibration_amplitudes(spec_vec, full_cov,
@@ -139,7 +140,7 @@ for test in tests:
                                                                     f"{chains_dir}/{name}")
 
 
-            results_dict[test, ar] = {"multipole_range": d[f"ell_range_cal_{map_set}"],
+            results_dict[test, ar] = {"multipole_range": ell_ranges[map_set],
                                     "ref_map_set": ref_map_set,
                                     "calibs": [cal_mean, cal_std]}
 

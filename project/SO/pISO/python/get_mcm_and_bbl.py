@@ -58,3 +58,6 @@ for task in subtasks:
                                                 l_toep=l_toep,
                                                 binned_mcm=binned_mcm,
                                                 save_file=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}")
+
+# Save the paramfile to keep track
+d.write_to_file(f'{mcm_dir}/_paramfile.dict')

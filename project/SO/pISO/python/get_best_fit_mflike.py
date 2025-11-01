@@ -118,25 +118,20 @@ fg_dict = best_fits.get_foreground_dict(l_th,
                                         band_shift_dict=band_shift_dict,
                                         beams=beams)
 
-for map_set1 in map_set_list:
-    for map_set2 in map_set_list:
-        fg = {}
-        for spec in spectra:
-            fg[spec] = fg_dict[spec.lower(), "all", map_set1, map_set2]
-        so_spectra.write_ps(f"{bestfit_dir}/fg_{map_set1}x{map_set2}.dat", l_th, fg, type, spectra=spectra)
-
 log.info("Writing best fit spectra")
 spectra_list = pspipe_list.get_spec_name_list(d, delimiter = "_")
 best_fit_dict = {}
 for ps_name in spectra_list:
+    fg = {}
     best_fit_dict[ps_name] = {}
     name1, name2 = ps_name.split("x")
     for spec in spectra:
         if spec.lower() in d["fg_components"].keys():
-            fg = fg_dict[spec.lower(), "all", name1, name2]
+            fg[spec] = fg_dict[spec.lower(), "all", name1, name2]
         else:
-            fg = fg_dict[spec.lower()[::-1], "all", name1, name2]
-        best_fit_dict[ps_name][spec] = ps_dict[spec] + fg
+            fg[spec] = fg_dict[spec.lower()[::-1], "all", name1, name2]
+        best_fit_dict[ps_name][spec] = ps_dict[spec] + fg[spec]
+    so_spectra.write_ps(f"{bestfit_dir}/fg_{ps_name}.dat", l_th, fg, type, spectra=spectra)
     so_spectra.write_ps(f"{bestfit_dir}/cmb_and_fg_{ps_name}.dat", l_th, best_fit_dict[ps_name], type, spectra=spectra)
 
 

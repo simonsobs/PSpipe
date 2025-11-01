@@ -60,7 +60,7 @@ log.info(f"Computing unlensed CMB spectra and lensing spectra with cosmological 
 _, unlensed_ps_dict = pspy_utils.unlensed_ps_from_params(cosmo_params, type, lmax + 500, **d["accuracy_params"])
 
 f_name = f"{bestfit_dir}/unlensed_cmb_and_lensing.dat"
-so_spectra.write_ps(f_name, l_th, ps_dict, type, spectra=unlensed_ps_dict.keys())
+so_spectra.write_ps(f_name, l_th, unlensed_ps_dict, type, spectra=unlensed_ps_dict.keys())
 
 
 fg_norm = d["fg_norm"]

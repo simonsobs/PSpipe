@@ -155,7 +155,6 @@ for task in subtasks:
                                  len(component_list_tt) + len(component_list_te) + len(component_list_ee))
 
                 
-            print(spec1, spec2, idxab, idxcd)
             
             fg_params_covmat_block = fg_params_covmat[np.ix_(idxab, idxcd)]
             fg_cov_unbinned = ab.T @ fg_params_covmat_block @ cd 

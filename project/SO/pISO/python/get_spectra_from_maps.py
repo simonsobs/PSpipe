@@ -16,7 +16,6 @@ mpi all_gather (for the alms).
 Prior to this we need to have run get_mcm_and_bbl.py. 
 """
 
-import sys
 import time
 import argparse
 
@@ -24,7 +23,7 @@ import numpy as np
 import healpy as hp
 
 from pixell import enmap
-from pspipe_utils import kspace, log, pspipe_list, transfer_function, simulation
+from pspipe_utils import kspace, log, pspipe_list, transfer_function, simulation, misc
 from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 
 parser = argparse.ArgumentParser(description=description,
@@ -40,15 +39,19 @@ parser.add_argument('--stop', type=int, default=-1,
 parser.add_argument('--write-sim-map-start', type=int, default=-1,
                     help='If given, the first sim index that will also save '
                     'the simulated map to disk.')
-parser.add_argument('--write-sim-map-start', type=int, default=-1,
+parser.add_argument('--write-sim-map-stop', type=int, default=-1,
                     help='If given, the last sim index (exclusive) that will '
                     'also save the simulated map to disk.')
+parser.add_argument('--simulate-syst', action='store_true', # default False, type bool
+                    help='If given, sims will sample random beam and leakage.')
+parser.add_argument('--simulate-lens', action='store_true', # default False, type bool
+                    help='If given, sims will lens the CMB at the map level.')
 args = parser.parse_args()
 
 # TODO: speed up map-level operations with mnms.concurrent_op
 
 # are we running on data or sims? if sims, are we writing any simulated maps
-# to disk?
+# to disk? are we doing any systematics or lensing?
 which = 'data'
 if args.start >= 0:
     which = 'sims'
@@ -62,6 +65,20 @@ if args.start >= 0:
     if write_sim_map_start >= 0:
         assert write_sim_map_stop > write_sim_map_start, \
             f'{write_sim_map_stop=} is not greater than {write_sim_map_start=}'
+        
+        for iii in range(write_sim_map_start, write_sim_map_stop):
+            assert iii in range(start, stop), \
+                f'requested to write simulated map {iii} but sims span ' + \
+                f'only {start} to {stop}'
+            
+    simulate_syst = args.simulate_syst
+    simulate_lens = args.simulate_lens
+
+    tag = ''
+    if simulate_syst:
+        tag += '_syst'
+    if simulate_lens:
+        tag += '_lens'
 
 # get needed info from paramfile
 d = so_dict.so_dict()
@@ -76,13 +93,18 @@ lmax = d["lmax"]
 type = d["type"]
 binning_file = d["binning_file"]
 binned_mcm = d["binned_mcm"]
+mcm_dir = d['mcm_dir']
+bestfit_dir = d["best_fits_dir"]
+
+if which == 'sims':
+    sim_pixwin_apod_deg = d['sim_pixwin_apod_deg']
+    add_white_noise_above_lmax = d['add_white_noise_above_lmax']
+    white_noise_ell_taper_width = d['white_noise_ell_taper_width']
+    keep_noise_models_in_memory = d['keep_noise_models_in_memory']
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
-
-mcm_dir = d['mcm_dir']
-bestfit_dir = d["best_fits_dir"]
 
 # if data, write into spec_dir
 # if sims, write spectra into simulated_spec_dir and any maps into 
@@ -91,18 +113,21 @@ if which == 'data':
     alms_dir = d['alms_dir']
     spec_dir = d['spec_dir']
     pspy_utils.create_directory(alms_dir)
+    pspy_utils.create_directory(spec_dir)
 else:
-    spec_dir = d['simulated_spec_dir']
-pspy_utils.create_directory(spec_dir)
+    spec_dir = d['sim_spec_dir']
+    pspy_utils.create_directory(spec_dir)
 
-if which == 'sims' and write_sim_map_start >= 0:
-    map_dir = d['simulated_map_dir']
-    pspy_utils.create_directory(map_dir)
+    if write_sim_map_start >= 0:
+        sim_map_dir = d['sim_maps_dir']
+        pspy_utils.create_directory(sim_map_dir)
 
 # if data, we have one instance of a mapset, so we use a mixed distribution of
 # mpi: over the maps in the mapset, then over the spectra. this requires all
-# tasks to have all alms at the end, which in turn requires either writing the
-# alms to disk (with a barrier), or TODO: an allgather and a gather.
+# tasks to have all alms at the end, which in turn requires writing the alms to
+# disk and then reading them (with a barrier). this is OK since the alms will
+# be needed to estimate the noise model, and their size on disk is typically
+# much less than the maps themselves due to the limited lmax
 # 
 # if sims, usually we have a large number AND the maps are all correlated (so
 # they can't easily be divided over tasks), so makes more sense to mpi over the
@@ -112,17 +137,23 @@ if which == 'sims' and write_sim_map_start >= 0:
 # the same for data and sims
 n_map, sv_list, map_list = pspipe_list.get_arrays_list(d)
 n_spec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
+
+# convert to arrays to support advanced indexing
+sv_list = np.array(sv_list)
+map_list = np.array(map_list)
+sv1_list = np.array(sv1_list)
+m1_list = np.array(m1_list)
+sv2_list = np.array(sv2_list)
+m2_list = np.array(m2_list)
+
 so_mpi.init(True)
 
 if which == 'data':
-    # TODO: implement allgathers so first the maps can be divvied up, then 
-    # the alms can be allgathered, then the spectra can be divvied up, and the 
-    # computed spectra gathered and saved, without writing alms to disk.
     subtasks_alms = so_mpi.taskrange(imin=0, imax=n_map - 1)
     subtasks_spectra = so_mpi.taskrange(imin=0, imax=n_spec - 1)
-    log.info(f"Running on data")
-    log.info(f"Number of alms for the mpi loop: {len(subtasks_alms)}")
-    log.info(f"Number of spectra for the mpi loop: {len(subtasks_spectra)}")
+    log.info(f"[Rank {so_mpi.rank}] Running on data")
+    log.info(f"[Rank {so_mpi.rank}] Number of alms for the mpi loop: {len(subtasks_alms)}")
+    log.info(f"[Rank {so_mpi.rank}] Number of spectra for the mpi loop: {len(subtasks_spectra)}")
 
     # iteration for alms
     mapset_iterator = range(1) # there is just the data
@@ -136,8 +167,8 @@ if which == 'data':
     m2_iterator = m2_list[subtasks_spectra]
 else:
     subtasks_mapsets = so_mpi.taskrange(imin=start, imax=stop - 1)
-    log.info(f"Running on sims")
-    log.info(f"Number of sims for the mpi loop: {len(subtasks_mapsets)}")
+    log.info(f"[Rank {so_mpi.rank}] Running on sims")
+    log.info(f"[Rank {so_mpi.rank}] Number of sims for the mpi loop: {len(subtasks_mapsets)}")
 
     # iteration for alms
     mapset_iterator = subtasks_mapsets
@@ -170,15 +201,15 @@ for sv in surveys:
     # if data, we must iterate over (signal + noise)_k
     # if sim, we iterate over signal, noise_k separately
     if which == 'data':
-        log.info(f"Running on data, {nsplits[sv]} signal+noise splits for survey {sv}")
+        log.info(f"[Rank {so_mpi.rank}] {nsplits[sv]} signal+noise splits for survey {sv}")
         splits_iterator[sv] = [f'sn{k}' for k in range(nsplits[sv])]
     else:
-        log.info(f"Running on sims, signal and {nsplits[sv]} noise splits ({nsplits[sv]+1} total) for survey {sv}")
+        log.info(f"[Rank {so_mpi.rank}] 1 signal and {nsplits[sv]} noise splits ({nsplits[sv]+1} total) for survey {sv}")
         splits_iterator[sv] = ['s'] + [f'n{k}' for k in range(nsplits[sv])]
 
     # FIXME: this will not work for SO LF which has a different template despite
     # being the same survey
-    templates[sv] = so_map.read_map(d[f"maps_{sv}_{maps[sv][0]}"][0]) # first split of first map
+    templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[sv][0]}"])
         
     if d[f"pixwin_{sv}"]["pix"] == "CAR" and deconvolve_pixwin:
         wy, wx = enmap.calc_window(templates[sv].data.shape,
@@ -200,14 +231,6 @@ for sv in surveys:
         filters[sv] = kspace.get_kspace_filter(templates[sv],
                                                filter_dicts[sv],
                                                dtype=np.float32)
-
-    if which == 'sims':
-        f_name_cmb = bestfit_dir + "/cmb.dat"
-        ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax, spectra)
-
-        f_name_fg = bestfit_dir + "/fg_{}x{}.dat"
-        map_list = [f"{sv}_{m}" for sv in surveys for m in maps[sv]]
-        l, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, map_list, lmax, spectra)
         
 # get spectrum-level auxiliary data products
 # TODO: replace with pspipe_operator
@@ -230,8 +253,83 @@ if apply_kspace_filter:
             _, TE_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
 
     for k, v in kspace_transfer_matrix.items():
-        if np.count_nonzero(v.diagonal()) > 0:
+        if np.count_nonzero(v.diagonal() == 0):
             log.info(f'WARNING: 0 in kspace_transfer_matrix {k}')
+
+# instantiate on-the-fly simulation models. this involves packaging 
+# power spectra and beams etc for the signal model, and the noise model
+if which == 'sims':
+    mapname_list = []
+    mapnames2minfos = {}
+    bl = []
+    cal = []
+    pol_eff = []
+    if simulate_syst:
+        bl_err = []
+        gl = []
+        gl_err = []
+    else:
+        bl_err = None
+        gl = None
+        gl_err = None
+
+    for sv, m in zip(sv_list, map_list):
+        mapname = f'{sv}_{m}'
+        mapname_list.append(mapname)
+
+        mapnames2minfos[mapname] = {
+            'geometry': templates[sv].data.geometry,
+            'pixwin': pixwins[sv] if deconvolve_pixwin else None,
+            'noise_info': d[f'noise_info_{mapname}']
+        }
+
+        bl_T, bl_err_T = misc.prep_beams(d[f"beam_T_{mapname}"], norm='mono')
+        bl_P, bl_err_P = misc.prep_beams(d[f"beam_pol_{mapname}"], norm='mono')
+
+        bl.append(np.array([bl_T, bl_P]))
+
+        cal.append(d[f"cal_{mapname}"])
+        pol_eff.append(d[f"pol_eff_{mapname}"])
+
+        if simulate_syst:
+            if d[f"beam_T_{mapname}"] == d[f"beam_pol_{mapname}"]:
+                bl_err.append(bl_err_T[None]) # (1, nmode, nl)
+            else:
+                bl_err.append(np.array([bl_err_T, bl_err_P]))
+
+            # norm by this map's pol_eff, the most recent one in pol_effs
+            gl_T2E, gl_err_T2E = misc.prep_beams(d[f"leakage_beam_{mapname}_TE"], norm=pol_eff[-1])
+            gl_T2B, gl_err_T2B = misc.prep_beams(d[f"leakage_beam_{mapname}_TB"], norm=pol_eff[-1])
+
+            gl.append(np.array([gl_T2E, gl_T2B]))
+            gl_err.append(np.array([gl_err_T2E, gl_err_T2B]))
+    
+    if simulate_lens:
+        f_name_cmb = bestfit_dir + "unlensed_cmb_and_lensing.dat"
+        spectra_with_lens = spectra + ['PP'] + [f'P{p}' for p in 'TEB'] + [f'{p}P' for p in 'TEB']
+        ps_mat = simulation.unlensed_cmb_and_lensing_matrix_from_file(f_name_cmb, lmax + 500, spectra_with_lens)
+    else:
+        f_name_cmb = bestfit_dir + "cmb.dat"
+        ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax + 500, spectra)
+
+    f_name_fg = bestfit_dir + "fg_{}x{}.dat"
+    _, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, mapname_list, lmax + 500, spectra)
+
+    signal_model = simulation.SignalModel(mapnames2minfos, lmax, ps_mat, fg_mat,
+                                          bl, cal, pol_eff, bl_err, gl, gl_err,
+                                          pixwin_apod_deg=sim_pixwin_apod_deg)
+    
+    modeltags2modelinfos = {}
+    for k, v in d.items():
+        if k.startswith('noise_model'):
+            tag = k.split('noise_model_')[1]
+            modeltags2modelinfos[tag] = v
+    
+    noise_model = simulation.NoiseModel(mapnames2minfos,
+                                        modeltags2modelinfos,
+                                        add_white_noise_above_lmax=add_white_noise_above_lmax,
+                                        white_noise_ell_taper_width=white_noise_ell_taper_width,
+                                        keep_model=keep_noise_models_in_memory)
 
 # now we can iterate over mapsets, and maps within them
 for iii in mapset_iterator:
@@ -241,7 +339,7 @@ for iii in mapset_iterator:
 
     for sv, m in zip(sv_iterator, map_iterator, strict=True):
 
-        log.info(f"[Mapset {iii}] Computing alm for survey '{sv}' and map '{m}'")
+        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Computing alm for survey '{sv}' and map '{m}'")
         t0 = time.time()
 
         win_T = so_map.read_map(d[f"window_T_{sv}_{m}"])
@@ -274,26 +372,33 @@ for iii in mapset_iterator:
                 ###################################
 
                 # data injection
-                split = so_map.read_map(d[f"maps_{sv}_{m}"][split_idx], geometry=win_T.data.geometry)
+                if which == 'data':
+                    map_fn = d[f"maps_{sv}_{m}"][split_idx]
+                    split = so_map.read_map(map_fn, geometry=win_T.data.geometry)
 
-                if d[f"src_free_maps_{sv}"] == True:
-                    ps_map_name = map.replace("_srcfree.fits", ".fits")
-                    if ps_map_name == map:
-                        raise ValueError(f"{ps_map_name} should contain srcfree, check map names!")
-                    ps_map =  so_map.read_map(ps_map_name, geometry=win_T.data.geometry)
-                    ps_map.data -= split.data
-                    
-                    # FIXME: would be cleaner if could just make ps_map with
-                    # cutoff instead of relying on the mask
-                    ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{m}"])
-                    ps_map.data *= ps_mask.data
-                    split.data += ps_map.data
+                    if d[f"src_free_maps_{sv}"] == True:
+                        ps_map_fn = map_fn.replace("_srcfree.fits", ".fits")
+                        if ps_map_fn == map_fn:
+                            raise ValueError(f"{ps_map_fn} should contain srcfree, check map names!")
+                        ps_map =  so_map.read_map(ps_map_fn, geometry=win_T.data.geometry)
+                        ps_map.data -= split.data
+                        
+                        # TODO: would be cleaner if could just make ps_map with
+                        # cutoff instead of relying on the mask
+                        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{m}"])
+                        ps_map.data *= ps_mask.data
+                        split.data += ps_map.data
                 
                 # sim injection, assume no bright point sources after masking
-                # HERE
+                else:
+                    if snk == 's':
+                        split = signal_model.get_sim(f'{sv}_{m}', iii)
+                    else:
+                        split = noise_model.get_sim(f'{sv}_{m}', split_idx, iii)
 
                 if apply_kspace_filter and deconvolve_pixwin:
-                    log.info(f"[Mapset {iii}] Apply kspace filter and inv pixwin on {sv} and {m}")
+                    if k == 0:
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}, {snk}")
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -301,7 +406,8 @@ for iii in mapset_iterator:
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
                 elif apply_kspace_filter:
-                    log.info(f"[Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv} and {m}")
+                    if k == 0:
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv}, {m}, {snk}")
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -310,13 +416,15 @@ for iii in mapset_iterator:
                                               use_ducc_rfft=True)
 
                 elif deconvolve_pixwin:
-                    log.info(f"[Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv} and {m}")
+                    if k == 0:
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}, {snk}")
                     split = so_map.fourier_convolution(split,
                                                        inv_pwin,
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
                 else:
-                    log.info(f"[Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv} and {m}")
+                    if k == 0:
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}, {snk}")
 
                             
             elif win_T.pixel == "HEALPIX":
@@ -325,14 +433,28 @@ for iii in mapset_iterator:
                 ###################################
 
                 # data injection
-                split = so_map.read_map(d[f"maps_{sv}_{m}"][split_idx])
+                if which == 'data':
+                    split = so_map.read_map(d[f"maps_{sv}_{m}"][split_idx])
 
                 # sim injection
+                else:
+                    # TODO: implement this
+                    assert False
 
                 if deconvolve_pixwin:
-                    log.info(f"[Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv} and {m} (HEALPIX)")
+                    if k == 0:
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}, {snk} (HEALPIX)")
                 else:
-                    log.info(f"[Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv} and {m} (HEALPIX)")
+                    if k == 0:
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}, {snk} (HEALPIX)")
+
+            # possibly save raw map sim
+            if which == 'sims':
+                if iii in range(write_sim_map_start, write_sim_map_stop):
+                    if snk == 's':
+                        split.write_map(f"{sim_map_dir}" + f"signal_sim_map{tag}_{sv}_{m}_{iii:05d}.fits")
+                    else:
+                        split.write_map(f"{sim_map_dir}" + f"noise_sim_map{tag}_{sv}_{m}_set{split_idx}_{iii:05d}.fits")
 
             split = split.calibrate(cal=cal, pol_eff=pol_eff)
 
@@ -341,7 +463,7 @@ for iii in mapset_iterator:
 
             if which == 'data':
                 master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
-                np.save(f"{alms_dir}/alms_{sv}_{m}_{split_idx}.npy", master_alms)
+                np.save(f"{alms_dir}" + f"alms_{sv}_{m}_set{split_idx}.npy", master_alms)
                 master_alms = None
             else:
                 master_alms[sv, m, snk] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
@@ -353,7 +475,7 @@ for iii in mapset_iterator:
         window_tuple = None
         win_kspace = None
 
-        log.info(f"[Mapset {iii}] Survey '{sv}' and map '{m}' alm execution time: {time.time() - t0} seconds")
+        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Survey '{sv}' and map '{m}' alm execution time: {time.time() - t0} seconds")
 
     # compute the power spectra
     
@@ -361,18 +483,17 @@ for iii in mapset_iterator:
     # for all alms to be done
     if which == 'data':
         t0 = time.time()
-        log.info(f"[Rank {so_mpi.rank}]: Loading alms")
+        log.info(f"[Rank {so_mpi.rank}] Loading alms")
         so_mpi.barrier()
 
         master_alms = {}
-        for sv in surveys:
-            for m in maps[sv]:
-                for k, snk in enumerate(splits_iterator[sv]): # k == split_idx
-                    master_alms[sv, m, snk] = np.load(f"{alms_dir}/alms_{sv}_{m}_{k}.npy")
-        log.info(f"[Rank {so_mpi.rank} loaded alms: {time.time() - t0} seconds")
+        for sv, m in zip(sv_list, map_list): # all of them, not just this process
+            for k, snk in enumerate(splits_iterator[sv]): # k == split_idx, since data
+                master_alms[sv, m, snk] = np.load(f"{alms_dir}" + f"alms_{sv}_{m}_set{k}.npy")
+        log.info(f"[Rank {so_mpi.rank}] Loaded alms: {time.time() - t0} seconds")
 
     t0 = time.time()
-    log.info(f"[Mapset {iii}] Computing spectra")
+    log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Computing spectra")
 
     # store all the spectra for a mapset in one file. otherwise there will be
     # too many files (O(1 million) for 1,000 ASO sims).
@@ -380,7 +501,7 @@ for iii in mapset_iterator:
     for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
 
         # TODO: replace all below (except TE corr) with pspipe_operator
-        mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}/{sv1}_{m1}x{sv2}_{m2}",
+        mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}" + f"{sv1}_{m1}x{sv2}_{m2}",
                                             spin_pairs=spin_pairs)
         
         xtra_pw1, xtra_pw2 = None, None
@@ -443,7 +564,6 @@ for iii in mapset_iterator:
         
         mbb_inv = None
         Bbl = None
-        master_alms = None
 
         # then we get "derived" spectra: the mean cross, auto and noise spectrum
         # NOTE: the noise spectrum is defined as the noise in a map which is the
@@ -451,7 +571,7 @@ for iii in mapset_iterator:
         # save in a "explicit" format for backwards compatibility. for sims, we
         # just save crosses in a new format
         splits_auto_iterator = pspipe_list.get_splits_auto_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
-        splits_cross_iterator = pspipe_list.get_splits_auto_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
+        splits_cross_iterator = pspipe_list.get_splits_cross_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
 
         exists_auto = len(splits_auto_iterator) > 0
         exists_cross = len(splits_cross_iterator) > 0
@@ -483,7 +603,7 @@ for iii in mapset_iterator:
                         ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, f'n{s2}')][spec]
                 ps_dict_cross_mean[spec] /= len(splits_cross_iterator)
 
-                if which == 'sims':
+                if which == 'sims': # avoid iterating over splits redundantly
                     ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, 's')][spec]
 
             if which == 'data':
@@ -502,12 +622,30 @@ for iii in mapset_iterator:
                 spec_name_noise = f"{type}_{sv1}_{m1}x{sv2}_{m2}_noise"
                 so_spectra.write_ps(spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
 
-        if which == 'data':
-            spec_name_all = f"{type}_all_sn_cross_data"
-        else:
-            spec_name_all = f"{type}_all_sn_cross_{iii:05d}"
-        np.save(f"{spec_dir}/{spec_name_all}.npy", ps_dict_all)
+    master_alms = None
 
+    if which == 'data':
+        spec_name_all = f"{type}_all_sn_cross_data"
+
+        # need to gather all the dicts from the separate mpi tasks to save into
+        # one file. assert there are no overlapping keys
+        list_of_ps_dict_all = so_mpi.comm.gather(ps_dict_all, root=0)
+        if so_mpi.rank == 0:
+            ps_dict_all = {}
+            for i, d in enumerate(list_of_ps_dict_all):
+                assert len(ps_dict_all.keys() & d.keys()) == 0, \
+                    f'Spectra in rank {i} already calculated in lower rank task'
+                ps_dict_all.update(d)
+            
+            ps_dict_all['l'] = lb
+            np.save(f"{spec_dir}" + f"{spec_name_all}.npy", ps_dict_all)
+
+    else:
+        spec_name_all = f"{type}{tag}_all_sn_cross_{iii:05d}"
+        
+        # each process has separate maps in its mapset
+        np.save(f"{spec_dir}" + f"{spec_name_all}.npy", ps_dict_all)
+    
     ps_dict_all = None
     
-    log.info(f"[Mapset {iii}] Spectra execution time: {time.time() - t0} seconds")
+    log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Spectra execution time: {time.time() - t0} seconds")

@@ -82,6 +82,11 @@ for map_set in map_set_list:
     freq_info = d[f"freq_info_{map_set}"]
     if do_bandpass_integration:
         nu_ghz, pb = np.loadtxt(freq_info["passband"]).T
+        
+        # delete any 0-freq entries
+        good_idxs = nu_ghz > 0
+        nu_ghz = nu_ghz[good_idxs]
+        pb = pb[good_idxs]
     else:
         nu_ghz, pb = np.array([freq_info["freq_tag"]]), np.array([1.])
 

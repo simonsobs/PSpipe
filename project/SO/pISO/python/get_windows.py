@@ -68,10 +68,13 @@ for task in subtasks:
 
     log.info(f"[{task}] create windows for '{sv}' survey and '{ar}' array...")
 
-    gal_mask = so_map.read_map(d[f"gal_mask_{sv}_{ar}"])
+    template_geom = enmap.read_map_geometry(d[f"maps_{sv}_{ar}"][0]) # first split
+
+    gal_mask = so_map.read_map(d[f"gal_mask_{sv}_{ar}"], geometry=template_geom)
 
     my_masks["baseline"] = gal_mask.copy()
     my_masks["baseline"].data[:] = 1
+    my_masks["baseline"].data = my_masks["baseline"].data.astype(np.float32, copy=False)
 
     maps = d[f"maps_{sv}_{ar}"]
 
@@ -93,7 +96,7 @@ for task in subtasks:
 
         if not skip_ivar:
             ivar_map = map[:index] + "ivar.fits"
-            ivar_map = so_map.read_map(ivar_map)
+            ivar_map = so_map.read_map(ivar_map, geometry=template_geom)
             my_masks["baseline"].data[ivar_map.data[:] == 0.0] = 0.0
             ivar_all.data[:] += ivar_map.data[:]
 
@@ -102,7 +105,7 @@ for task in subtasks:
 
     if d[f"extra_mask_{sv}_{ar}"] is not None:
         log.info(f"[{task}] apply extra mask")
-        extra_mask = so_map.read_map(d[f"extra_mask_{sv}_{ar}"])
+        extra_mask = so_map.read_map(d[f"extra_mask_{sv}_{ar}"], geometry=template_geom)
         my_masks["baseline"].data[:] *= extra_mask.data[:]
 
     log.info(
@@ -156,7 +159,7 @@ for task in subtasks:
 
         log.info(f"[{task}] include ps mask")
 
-        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
+        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"], geometry=template_geom)
         ps_mask = so_window.create_apodization(
             ps_mask, "C1", apod_pts_source_degree, use_rmax=True
         )

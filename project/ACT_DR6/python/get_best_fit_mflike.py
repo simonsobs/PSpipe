@@ -79,16 +79,23 @@ if d["include_beam_chromaticity_effect_in_best_fit"]:
     alpha_dict, nu_ref_dict = beam_chromaticity.act_dr6_beam_scaling()
     beams = {}
     for map_set in map_set_list:
-        bl_mono_file_name = d[f"beam_mono_{map_set}"]
-        l, bl = pspy_utils.read_beam_file(bl_mono_file_name, lmax=10000)
-        l, nu_array, bl_nu = beam_chromaticity.get_multifreq_beam(l,
-                                                                  bl,
-                                                                  passbands[map_set],
-                                                                  nu_ref_dict[map_set],
-                                                                  alpha_dict[map_set])
-                                                                  
-        beams[map_set + "_s0"] = {"nu": nu_array, "beams": bl_nu.T}
-        beams[map_set + "_s2"] = {"nu": nu_array, "beams": bl_nu.T}
+        if "dr6" in map_set:
+            bl_mono_file_name = d[f"beam_mono_{map_set}"]
+            l, bl = pspy_utils.read_beam_file(bl_mono_file_name, lmax=10000)
+            l, nu_array, bl_nu = beam_chromaticity.get_multifreq_beam(l,
+                                                                      bl,
+                                                                      passbands[map_set],
+                                                                      nu_ref_dict[map_set],
+                                                                      alpha_dict[map_set])
+                                                                      
+            beams[map_set + "_s0"] = {"nu": nu_array, "beams": bl_nu.T}
+            beams[map_set + "_s2"] = {"nu": nu_array, "beams": bl_nu.T}
+        if "Planck" in map_set:
+            nu_array = passbands[map_set][0]
+            print(nu_array)
+            beams[map_set + "_s0"] = {"nu": nu_array, "beams": np.ones((len(nu_array), 10000))}
+            beams[map_set + "_s2"] = {"nu": nu_array, "beams": np.ones((len(nu_array), 10000))}
+            
 
 
 log.info("Getting foregrounds contribution")

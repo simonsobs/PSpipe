@@ -1,4 +1,4 @@
-data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/tiger_deep56_sim/sim103094/'
+data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/tiger_deep56_sim/'
 
 # define paths for scripts in advance. this is the most flexible way for now
 # to allow products to be reused across different paramfiles 
@@ -35,20 +35,6 @@ use_toeplitz_cov  = True
 
 # maps
 src_free_maps_so = False
-
-# maps_dir = data_dir + 'maps/'
-# maps_so_i1_f090 = [maps_dir + 'so/sky_map_i1_f090_set%d_20251019.fits' % (i) for i in range(4)] 
-# maps_so_i1_f150 = [maps_dir + 'so/sky_map_i1_f150_set%d_20251019.fits' % (i) for i in range(4)]
-# maps_so_i3_f090 = [maps_dir + 'so/sky_map_i3_f090_set%d_20251019.fits' % (i) for i in range(4)] 
-# maps_so_i3_f150 = [maps_dir + 'so/sky_map_i3_f150_set%d_20251019.fits' % (i) for i in range(4)] 
-# maps_so_i4_f090 = [maps_dir + 'so/sky_map_i4_f090_set%d_20251019.fits' % (i) for i in range(4)]
-# maps_so_i4_f150 = [maps_dir + 'so/sky_map_i4_f150_set%d_20251019.fits' % (i) for i in range(4)]
-# maps_so_i6_f090 = [maps_dir + 'so/sky_map_i6_f090_set%d_20251019.fits' % (i) for i in range(4)] 
-# maps_so_i6_f150 = [maps_dir + 'so/sky_map_i6_f150_set%d_20251019.fits' % (i) for i in range(4)] 
-# maps_so_c1_f220 = [maps_dir + 'so/sky_map_c1_f220_set%d_20251019.fits' % (i) for i in range(4)] 
-# maps_so_c1_f280 = [maps_dir + 'so/sky_map_c1_f280_set%d_20251019.fits' % (i) for i in range(4)] 
-# maps_so_i5_f220 = [maps_dir + 'so/sky_map_i5_f220_set%d_20251019.fits' % (i) for i in range(4)] 
-# maps_so_i5_f280 = [maps_dir + 'so/sky_map_i5_f280_set%d_20251019.fits' % (i) for i in range(4)] 
 
 cal_so_i1_f090 = 1.02
 cal_so_i1_f150 = 1.02
@@ -146,14 +132,6 @@ leakage_beam_so_c1_f280_TB = leakage_dir + 'gamma_t2b_c1.txt'
 leakage_beam_so_i5_f220_TB = leakage_dir + 'gamma_t2b_i5.txt'
 leakage_beam_so_i5_f280_TB = leakage_dir + 'gamma_t2b_i5.txt'
 
-# mask_dir = data_dir + 'masks/'
-# ps_mask_dr6_pa4_f220 = mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-# 
-# gal_mask_dr6_pa4_f220 = mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-
-# union of so masks because distance_from does not detect footprint edges
-# extra_mask_so_i1_f090 = mask_dir + 'xtra_mask_so_i1_f090.fits'
-
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2
 edge_skip_rescale = 1
@@ -168,6 +146,50 @@ window_dir = data_dir + 'windows/'
 window_kspace_so_i1_f090 = window_dir + 'window_so_i1_f090_kspace.fits'
 window_T_so_i1_f090 =  window_dir + 'window_so_i1_f090_baseline.fits'
 window_pol_so_i1_f090 =  window_dir + 'window_so_i1_f090_baseline.fits'
+
+window_kspace_so_i1_f150 = window_dir + 'window_so_i1_f150_kspace.fits'
+window_T_so_i1_f150 =  window_dir + 'window_so_i1_f150_baseline.fits'
+window_pol_so_i1_f150 =  window_dir + 'window_so_i1_f150_baseline.fits'
+
+window_kspace_so_i3_f090 = window_dir + 'window_so_i3_f090_kspace.fits'
+window_T_so_i3_f090 =  window_dir + 'window_so_i3_f090_baseline.fits'
+window_pol_so_i3_f090 =  window_dir + 'window_so_i3_f090_baseline.fits'
+
+window_kspace_so_i3_f150 = window_dir + 'window_so_i3_f150_kspace.fits'
+window_T_so_i3_f150 =  window_dir + 'window_so_i3_f150_baseline.fits'
+window_pol_so_i3_f150 =  window_dir + 'window_so_i3_f150_baseline.fits'
+
+window_kspace_so_i4_f090 = window_dir + 'window_so_i4_f090_kspace.fits'
+window_T_so_i4_f090 =  window_dir + 'window_so_i4_f090_baseline.fits'
+window_pol_so_i4_f090 =  window_dir + 'window_so_i4_f090_baseline.fits'
+
+window_kspace_so_i4_f150 = window_dir + 'window_so_i4_f150_kspace.fits'
+window_T_so_i4_f150 =  window_dir + 'window_so_i4_f150_baseline.fits'
+window_pol_so_i4_f150 =  window_dir + 'window_so_i4_f150_baseline.fits'
+
+window_kspace_so_i6_f090 = window_dir + 'window_so_i6_f090_kspace.fits'
+window_T_so_i6_f090 =  window_dir + 'window_so_i6_f090_baseline.fits'
+window_pol_so_i6_f090 =  window_dir + 'window_so_i6_f090_baseline.fits'
+
+window_kspace_so_i6_f150 = window_dir + 'window_so_i6_f150_kspace.fits'
+window_T_so_i6_f150 =  window_dir + 'window_so_i6_f150_baseline.fits'
+window_pol_so_i6_f150 =  window_dir + 'window_so_i6_f150_baseline.fits'
+
+window_kspace_so_c1_f220 = window_dir + 'window_so_c1_f220_kspace.fits'
+window_T_so_c1_f220 =  window_dir + 'window_so_c1_f220_baseline.fits'
+window_pol_so_c1_f220 =  window_dir + 'window_so_c1_f220_baseline.fits'
+
+window_kspace_so_c1_f280 = window_dir + 'window_so_c1_f280_kspace.fits'
+window_T_so_c1_f280 =  window_dir + 'window_so_c1_f280_baseline.fits'
+window_pol_so_c1_f280 =  window_dir + 'window_so_c1_f280_baseline.fits'
+
+window_kspace_so_i5_f220 = window_dir + 'window_so_i5_f220_kspace.fits'
+window_T_so_i5_f220 =  window_dir + 'window_so_i5_f220_baseline.fits'
+window_pol_so_i5_f220 =  window_dir + 'window_so_i5_f220_baseline.fits'
+
+window_kspace_so_i5_f280 = window_dir + 'window_so_i5_f280_kspace.fits'
+window_T_so_i5_f280 =  window_dir + 'window_so_i5_f280_baseline.fits'
+window_pol_so_i5_f280 =  window_dir + 'window_so_i5_f280_baseline.fits'
 
 # best fit params (only used for sim generation and covariances computation)
 cosmo_params = {'cosmomc_theta':0.0104059, 'logA': 3.053, 'ombh2': 0.02258, 'omch2': 0.1242, 'ns': 0.9666, 'Alens': 1.0, 'tau': 0.0567}

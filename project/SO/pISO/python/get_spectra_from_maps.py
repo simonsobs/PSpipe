@@ -322,8 +322,8 @@ if which == 'sims':
     modeltags2modelinfos = {}
     for k, v in d.items():
         if k.startswith('noise_model'):
-            tag = k.split('noise_model_')[1]
-            modeltags2modelinfos[tag] = v
+            k = k.split('noise_model_')[1]
+            modeltags2modelinfos[k] = v
     
     noise_model = simulation.NoiseModel(mapnames2minfos,
                                         modeltags2modelinfos,

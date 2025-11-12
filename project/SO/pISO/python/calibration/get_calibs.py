@@ -113,7 +113,6 @@ for test in tests:
                     ps_dict[ms1, ms2, m1] -= bf_fg_TT_binned
 
 
-                ps_dict[ms1, ms2, m1] = ps[m1]
                 for j, (ms3, ms4, m2) in enumerate(spectra_for_cal):
                     if j < i: continue
                     cov = np.load(f"{cov_dir}/analytic_cov_{ms1}x{ms2}_{ms3}x{ms4}.npy")

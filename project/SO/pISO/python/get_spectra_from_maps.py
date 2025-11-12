@@ -396,6 +396,13 @@ for iii in mapset_iterator:
                     else:
                         split = noise_model.get_sim(f'{sv}_{m}', split_idx, iii)
 
+                    # possibly save raw map sim
+                    if iii in range(write_sim_map_start, write_sim_map_stop):
+                        if snk == 's':
+                            split.write_map(f"{sim_map_dir}" + f"signal_sim_map{tag}_{sv}_{m}_{iii:05d}.fits")
+                        else:
+                            split.write_map(f"{sim_map_dir}" + f"noise_sim_map{tag}_{sv}_{m}_set{split_idx}_{iii:05d}.fits")
+
                 if apply_kspace_filter and deconvolve_pixwin:
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}, {snk}")
@@ -447,14 +454,6 @@ for iii in mapset_iterator:
                 else:
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}, {snk} (HEALPIX)")
-
-            # possibly save raw map sim
-            if which == 'sims':
-                if iii in range(write_sim_map_start, write_sim_map_stop):
-                    if snk == 's':
-                        split.write_map(f"{sim_map_dir}" + f"signal_sim_map{tag}_{sv}_{m}_{iii:05d}.fits")
-                    else:
-                        split.write_map(f"{sim_map_dir}" + f"noise_sim_map{tag}_{sv}_{m}_set{split_idx}_{iii:05d}.fits")
 
             split = split.calibrate(cal=cal, pol_eff=pol_eff)
 

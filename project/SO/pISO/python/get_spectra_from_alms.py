@@ -202,6 +202,3 @@ for task in subtasks:
         so_spectra.write_ps(spec_dir + f"/{spec_name_auto}.dat", lb, ps_dict_auto_mean, type, spectra=spectra)
         if not no_cross:
             so_spectra.write_ps(spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
-
-# Save the paramfile to keep track
-d.write_to_file(f'{spec_dir}/_paramfile.dict')

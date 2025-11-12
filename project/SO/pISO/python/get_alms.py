@@ -111,6 +111,3 @@ for task in subtasks:
         np.save(f"{alms_dir}/alms_{sv}_{ar}_{k}.npy", master_alms)
 
     log.info(f"[{task}] execution time {time.time() - t0} seconds")
-
-# Save the paramfile to keep track
-d.write_to_file(f'{alms_dir}/_paramfile.dict')

@@ -66,19 +66,20 @@ for id_sv1, sv1 in enumerate(surveys):
                 if  (id_sv1 == id_sv2) & (id_ar1 > id_ar2) : continue
                 if  (id_sv1 > id_sv2) : continue
 
+
                 for comp in (component_list_tt + component_list_ee):
                     spec = f"{comp[:2].upper()}"
 
                     ps_all[f"{sv1}&{ar1}", f"{sv2}&{ar2}", comp, spec] = fg_dict[comp][f"{sv1}_{ar1}", f"{sv2}_{ar2}"][spec]
-                    ps_all[f"{sv2}&{ar2}", f"{sv1}&{ar1}", comp, spec] = ps_all[f"{sv1}&{ar1}", f"{sv2}&{ar2}", comp, spec]
+                    ps_all[f"{sv2}&{ar2}", f"{sv1}&{ar1}", comp, spec] = fg_dict[comp][f"{sv2}_{ar2}", f"{sv1}_{ar1}"][spec]
 
                 for comp in component_list_te:
                     # fixing the dictionary label to TE here
                     spec_new = "TE"
                     spec = "TT"
-
+                    
                     ps_all[f"{sv1}&{ar1}", f"{sv2}&{ar2}", comp, spec_new] = fg_dict[comp][f"{sv1}_{ar1}", f"{sv2}_{ar2}"][spec]
-                    ps_all[f"{sv2}&{ar2}", f"{sv1}&{ar1}", comp, spec_new] = ps_all[f"{sv1}&{ar1}", f"{sv2}&{ar2}", comp, spec_new]
+                    ps_all[f"{sv2}&{ar2}", f"{sv1}&{ar1}", comp, spec_new] = fg_dict[comp][f"{sv2}_{ar2}", f"{sv1}_{ar1}"][spec]
 
 
                         
@@ -109,6 +110,9 @@ for task in subtasks:
 
     fg_list_ab_te = np.zeros((len(component_list_te), lmax - 2))
     fg_list_cd_te = np.zeros((len(component_list_te), lmax - 2))
+
+    fg_list_ba_te = np.zeros((len(component_list_te), lmax - 2))
+    fg_list_dc_te = np.zeros((len(component_list_te), lmax - 2))
     
     fg_list_ab_ee = np.zeros((len(component_list_ee), lmax - 2))
     fg_list_cd_ee = np.zeros((len(component_list_ee), lmax - 2))
@@ -120,6 +124,9 @@ for task in subtasks:
     for ic,comp in enumerate(component_list_te):
         fg_list_ab_te[ic] = ps_all[na, nb, comp, "TE"]
         fg_list_cd_te[ic] = ps_all[nc, nd, comp, "TE"]
+        # to take into account the ET spectra we flip the arrays
+        fg_list_ba_te[ic] = ps_all[nb, na, comp, "TE"]
+        fg_list_dc_te[ic] = ps_all[nd, nc, comp, "TE"]
 
     for ic,comp in enumerate(component_list_ee):
         fg_list_ab_ee[ic] = ps_all[na, nb, comp, "EE"]
@@ -137,11 +144,19 @@ for task in subtasks:
                 idxcd = np.arange(len(component_list_tt))
                 
             if spec1 == "TE" or spec1 == "ET":
-                ab = fg_list_ab_te
+                if spec1 == "TE":
+                    ab = fg_list_ab_te
+                if spec1 == "ET":
+                    ab = fg_list_ba_te
+                # te or et block in fg covmat is the same
                 idxab = np.arange(len(component_list_tt), len(component_list_tt) + len(component_list_te))
                 
             if spec2 == "TE" or spec2 == "ET":
-                cd = fg_list_cd_te
+                if spec2 == "TE":
+                    cd = fg_list_cd_te
+                if spec2 == "ET":
+                    cd = fg_list_dc_te
+                
                 idxcd = np.arange(len(component_list_tt), len(component_list_tt) + len(component_list_te))
 
             if spec1 == "EE":

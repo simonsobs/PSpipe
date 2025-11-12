@@ -8,7 +8,7 @@ import scipy.stats as ss
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-import AxP_utils
+import AxP_utils as AxP_utils
 import matplotlib
 import pickle
 
@@ -19,24 +19,27 @@ d.read_from_file(sys.argv[1])
 
 remove_first_bin = True
 
-plot_dir = "paper_plot"
+plot_dir = "AxP_plots_fg_marg"
 pspy_utils.create_directory(plot_dir)
 
 runs = ["legacy", "NPIPE"]
 data_dir = {}
-data_dir["legacy"] =  "dr6xlegacy/"
+data_dir["legacy"] =  "/scratch/c.spxsg6/dr6/dr6xlegacy_newbestfit/"
 data_dir["NPIPE"] =  "dr6xnpipe/"
 
 map_set_list = pspipe_list.get_map_set_list(d)
-cov_type_list = ["analytic_cov", "mc_cov", "leakage_cov"]
+cov_type_list = ["analytic_cov", "mc_cov", "leakage_cov", "fg_marginalization_cov"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
-all_ps, all_cov = {}, {}
+all_ps, all_cov, fg_ps, fg_cov = {}, {}, {}, {}
 for run in runs:
     d_dir = data_dir[run]
     cov_dir = f"{d_dir}/covariances"
     spec_dir= f"{d_dir}/spectra_leak_corr_planck_bias_corr"
-    lb, all_ps[run], all_cov[run] = AxP_utils.read_data(map_set_list, spec_dir, cov_dir, cov_type_list, spectra)
+    lb, all_ps[run], all_cov[run] = AxP_utils.read_data(map_set_list, spec_dir, cov_dir, cov_type_list[:-1], spectra)
+    # reading the fg marginalized cov for the spectra it has been produced
+    lb, fg_ps[run], fg_cov[run] = AxP_utils.read_data(map_set_list, spec_dir, cov_dir, ["fg_marginalization_cov"], ["TT", "TE", "ET", "EE"])
+
 
 tested_spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 combination = ["AxA-PxP", "AxP-PxP"]
@@ -79,7 +82,7 @@ for spec in tested_spectra:
 
 
 # Load foreground best fits
-fg_file_name = "dr6xlegacy/best_fits" + "/fg_{}x{}.dat"
+fg_file_name = "/scratch/c.spxsg6/dr6/dr6xlegacy_newbestfit/best_fits" + "/fg_{}x{}.dat"
 l_fg, fg_dict = best_fits.fg_dict_from_files(fg_file_name, map_set_list, d["lmax"], spectra=spectra)
 
 multipole_range, l_pows, y_lims = AxP_utils.get_plot_params()
@@ -127,28 +130,48 @@ for spec in tested_spectra:
                 res_cov_dict = {}
             
                 for cov in cov_type_list:
-                    lb, res_ps, res_cov_dict[cov] = consistency.compare_spectra([ms1, ms2, ms3, ms4],
+                    if not cov == "fg_marginalization_cov":
+                        lb, res_ps, res_cov_dict[cov] = consistency.compare_spectra([ms1, ms2, ms3, ms4],
                                                                                 "ab-cd",
                                                                                 all_ps[run],
                                                                                 all_cov[run][cov],
                                                                                 mode = mode,
                                                                                 return_chi2=False)
                                                                     
+                    else:
+                        if mode in ["TT", "TE", "ET", "EE"]:
+                            lb, res_ps, res_cov_dict[cov] = consistency.compare_spectra([ms1, ms2, ms3, ms4],
+                                                                                "ab-cd",
+                                                                                fg_ps[run],
+                                                                                fg_cov[run][cov],
+                                                                                mode = mode,
+                                                                                return_chi2=False)
+                        else:
+                            continue
+
+
                     if remove_first_bin:
                         lb, res_cov_dict[cov]= lb[1:], res_cov_dict[cov][1:,1:]
                         res_ps = res_ps[1:]
+                
 
                 name = "analytical"
                 if "mc_cov" in cov_type_list:
                     r_cov = covariance.correct_analytical_cov(res_cov_dict["analytic_cov"],
                                                               res_cov_dict["mc_cov"],
                                                               only_diag_corrections=True)
-                                                  
+                
                 if "beam_cov" in cov_type_list:
                     r_cov += res_cov_dict["beam_cov"]
     
+
                 if "leakage_cov" in cov_type_list:
                     r_cov += res_cov_dict["leakage_cov"]
+
+                if "fg_marginalization_cov" in cov_type_list:
+                    if mode in ["TT", "TE", "ET", "EE"]:
+                        r_cov += res_cov_dict["fg_marginalization_cov"]
+
                     
                 chi2 = (res_ps[lrange] - res_fg_b[lrange]) @ np.linalg.inv(r_cov[np.ix_(lrange, lrange)]) @ (res_ps[lrange] - res_fg_b[lrange])
 

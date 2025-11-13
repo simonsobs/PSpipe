@@ -28,7 +28,7 @@ if save_plot_maps_ivar:
 # get reasonable ivar, top 90% of nonzero values seems to work decently
 # TODO: make dynamic
 ivar_smooth_deg = 0.2
-ivar_quantile = 0.2
+ivar_quantile = d['xtra_mask_ivar_quantile']
 
 mask_intersect = True # intersection of every single mask
 mask_union = False # union of every single mask

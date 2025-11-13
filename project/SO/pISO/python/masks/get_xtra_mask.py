@@ -28,7 +28,7 @@ if save_plot_maps_ivar:
 # get reasonable ivar, top 90% of nonzero values seems to work decently
 # TODO: make dynamic
 ivar_smooth_deg = 0.2
-ivar_quantile = 0.1
+ivar_quantile = 0.2
 
 mask_intersect = True # intersection of every single mask
 mask_union = False # union of every single mask
@@ -50,16 +50,19 @@ for sv in d['surveys']:
         map_fns = d[f'maps_{sv}_{m}']
         for i, map_fn in enumerate(map_fns):
 
+            map_dir_fn, map_base_fn = os.path.split(map_fn)
             if d[f"src_free_maps_{sv}"] == True:
-                ivar_fn = map_fn.replace('map_srcfree', 'ivar')
+                ivar_base_fn = map_base_fn.replace('map_srcfree', 'ivar')
             else:
-                ivar_fn = map_fn.replace('map', 'ivar')   
+                ivar_base_fn = map_base_fn.replace('map', 'ivar')
+            ivar_fn = os.path.join(map_dir_fn, ivar_base_fn)   
 
             # mask is based on the smoothed ivar map
             # only the pixels were the original ivar were nonzero though
             ivar = enmap.read_map(ivar_fn) 
             ivar_smooth = enmap.smooth_gauss(ivar, np.deg2rad(ivar_smooth_deg))
             ivar_set_mask = ivar_smooth > np.quantile(ivar_smooth[ivar > 0], ivar_quantile)
+            ivar_set_mask *= ivar > 0
             ivar_set_mask = np.logical_and(ivar_set_mask, additional_mask)
 
             # check that inside of ivar_mask, there are no zero ivar

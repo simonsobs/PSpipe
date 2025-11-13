@@ -3,9 +3,9 @@ arrays_dr6 = ["pa4_f220", "pa5_f090", "pa5_f150", "pa6_f090", "pa6_f150"]
 arrays_Planck = ["f100", "f143", "f217"]
 planck_version = "legacy"
 
-p_act_chain_filename = "/scratch/c.spxsg6/chains/p-actbase_lcdm_camb/p-actbase_lcdm_camb"
+p_act_chain_filename = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/chains/lcdm/p-actbase_lcdm_camb/p-actbase_lcdm_camb"
 
-release_dir = "/scratch/c.spxsg6/dr6/"
+release_dir = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/"
 
 binning_file = release_dir + "binning/binning_50"
 apply_kspace_filter  = True
@@ -109,7 +109,7 @@ beam_mono_dr6_pa5_f150 = beam_file_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_ji
 beam_mono_dr6_pa6_f090 = beam_file_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_mono.txt'
 beam_mono_dr6_pa6_f150 = beam_file_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_mono.txt'
 
-planck_fits_beam_path = release_dir + "dr6xlegacy_newbestfit/for_planck/beams/"
+planck_fits_beam_path = release_dir + "pspipe/for_planck/beams/"
 
 # These are produced by the pipeline
 beam_T_Planck_f100 = "beams/legacy/bl_T_legacy_100hm1x100hm2.dat"
@@ -122,7 +122,7 @@ beam_pol_Planck_f217 = "beams/legacy/bl_pol_legacy_217hm1x217hm2.dat"
 
 include_beam_chromaticity_effect_in_best_fit = True
 
-leakage_file_dir_dr6 = release_dir + "dr6xlegacy_newbestfit/beams/"
+leakage_file_dir_dr6 = release_dir + "beams/leakage_beams/nominal/"
 
 leakage_beam_dr6_pa4_f220_TE = [leakage_file_dir_dr6 + "pa4_f220_gamma_t2e.txt" for i in range(4)]
 leakage_beam_dr6_pa5_f090_TE = [leakage_file_dir_dr6 + "pa5_f090_gamma_t2e.txt" for i in range(4)]
@@ -146,7 +146,7 @@ leakage_beam_Planck_f143_TB = ["beams/legacy/gamma_legacy_143%s_t2b.dat" % split
 leakage_beam_Planck_f217_TB = ["beams/legacy/gamma_legacy_217%s_t2b.dat" % split for split in ["hm1", "hm2"]]
 
 
-mask_dir = release_dir + "masks/"
+mask_dir = release_dir + "pspipe/masks/"
 
 ps_mask_dr6_pa4_f220 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
 ps_mask_dr6_pa5_f090 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
@@ -187,7 +187,7 @@ cross_link_threshold = 0.97
 n_med_ivar = 3
 
 
-window_dir = release_dir + "dr6xlegacy_newbestfit/windows/"
+window_dir = release_dir + "pspipe/windows/"
 
 window_kspace_dr6_pa4_f220 = window_dir + "window_dr6_pa4_f220_kspace.fits"
 window_T_dr6_pa4_f220 =  window_dir +"window_dr6_pa4_f220_baseline.fits"

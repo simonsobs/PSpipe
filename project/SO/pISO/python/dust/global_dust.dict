@@ -74,14 +74,15 @@ window_T_Planck_f353 = window_dir + "window_dr6_pa6_f150_baseline.fits"
 window_pol_Planck_f353 = window_dir + "window_dr6_pa6_f150_baseline.fits"
 
 
-# best fit params (only used for sim generation and covariances computation) # update with your params from PACT
-cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
-accuracy_params = {"lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
+# best fit params (only used for sim generation and covariances computation), from PACT lcdm chain
+cosmo_params = {"cosmomc_theta":1.040727759e-02, "logA": 3.050789144e+00, "ombh2": 2.248927912e-02, "omch2": 1.194830705e-01, "ns": 9.700695084e-01, "tau": 5.719987087e-02}
+accuracy_params = {"recombination_model":"CosmoRec", "lens_potential_accuracy": 8, "lens_margin": 2050, "AccuracyBoost": 2.0, "lSampleBoost": 2.0, "lAccuracyBoost": 2.0, "kmax": 10, "k_per_logint": 130, "nonlinear": True, "DoLateRadTruncation": False, "min_l_logl_sampling": 6000}
 
 
 fg_norm = {"nu_0": 150.0, "ell_0": 3000, "T_CMB": 2.725}
 fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
-fg_params = {"a_tSZ": 3.69, "alpha_tSZ":-0.44, "a_kSZ": 1, "a_p": 5.56, "beta_p": 2.2, "a_c": 3.68, "beta_c": 2.20, "a_s": 2.66, "a_gtt": 8.,  "xi": 0.1, "T_d": 9.60, "a_gte": 0.423, "a_gtb": 0.012, "a_gee": 0.1681,  "a_gbb": 0.113, "a_pste": 0, "a_pstb": 0, "a_psee": 0, "a_psbb": 0, "beta_s":-2.795, "alpha_s":1.0, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
+
+fg_params = {"a_tSZ": 3.352350745e+00, "alpha_tSZ":-6.501443802e-01, "a_kSZ": 2.016949764e+00, "a_p": 7.594274444e+00, "beta_p": 1.902934700e+00, "a_c": 3.684264620e+00, "beta_c":  1.902934700e+00, "a_s": 2.810617983e+00, "beta_s":-2.810871948e+00, "xi": 7.733078253e-02, "a_gtt": 7.954307627e+00, "a_gte": 4.190788929e-01, "a_gtb": 0., "a_gee": 1.686089309e-01, "a_gbb": 0.116, "a_pste": -2.597454946e-02, "a_pstb": 0, "a_psee": 1.356848002e-02, "a_psbb": 0, "alpha_s":1.0, "T_d": 9.60, "T_effd":19.6, "beta_d":1.5, "alpha_dT":-0.6, "alpha_dE":-0.4, "alpha_p":1.}
 
 
 bandpass_shift_Planck_f143  = 0.

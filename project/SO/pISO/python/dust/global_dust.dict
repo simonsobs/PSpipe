@@ -27,8 +27,12 @@ use_toeplitz_cov  = True
 
 src_free_maps_Planck = True
 n_splits_Planck = 2
-maps_Planck_f143 = ["planck_projected/npipe6v20%s_f143_map_srcfree.fits" % split for split in ["A", "B"]] # TODO: enmap.extract(existing_planck_maps, zach_window.shape, zach_window.wcs)
-maps_Planck_f353 = ["planck_projected/npipe6v20%s_f353_map_srcfree.fits" % split for split in ["A", "B"]]
+
+# get from running pipeline_dust.yml
+# then extract the patch given by window_so_i5_f220_baseline.fits
+# enmap.extract(existing_planck_maps, window.shape, window.wcs) 
+maps_Planck_f143 = ["planck_projected/npipe6v20%s_f143_map_srcfree_deep56_patch.fits" % split for split in ["A", "B"]] 
+maps_Planck_f353 = ["planck_projected/npipe6v20%s_f353_map_srcfree_deep56_patch.fits" % split for split in ["A", "B"]]
 
 cal_Planck_f143 = 1.
 cal_Planck_f353 = 1.
@@ -44,7 +48,7 @@ freq_info_Planck_f353 = {"freq_tag": 353, "passband": passband_dir_planck + "pas
 
 planck_fits_beam_path = release_dir + "pspipe/for_planck/beams/"
 
-beam_T_Planck_f143 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_143Ax143B.dat" # Get from act/data/tlouis/dr6v4/beams/npipe_DR6_AxB
+beam_T_Planck_f143 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_143Ax143B.dat" # Get from running pipeline_dust.yml
 beam_T_Planck_f353 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_353Ax353B.dat"
 
 beam_pol_Planck_f143 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_143Ax143B.dat"
@@ -63,15 +67,15 @@ mask_dir = release_dir + "pspipe/masks/"
 ps_mask_Planck_f143 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
 ps_mask_Planck_f353 = mask_dir + "source_mask_15mJy_and_dust_rad12.fits"
 
-window_dir = release_dir + "pspipe/windows/dr6xplanck/"
+window_dir = release_dir + "windows/"
 
-window_kspace_Planck_f143 = window_dir + "window_dr6_pa6_f150_kspace.fits" # zach will give you 
-window_T_Planck_f143 = window_dir + "window_dr6_pa6_f150_baseline.fits"
-window_pol_Planck_f143 = window_dir + "window_dr6_pa6_f150_baseline.fits"
+window_kspace_Planck_f143 = window_dir + "window_so_i5_f220_kspace.fits"  
+window_T_Planck_f143 = window_dir + "window_so_i5_f220_baseline.fits"
+window_pol_Planck_f143 = window_dir + "window_so_i5_f220_baseline.fits"
 
-window_kspace_Planck_f353 = window_dir + "window_dr6_pa6_f150_kspace.fits" # use same one
-window_T_Planck_f353 = window_dir + "window_dr6_pa6_f150_baseline.fits"
-window_pol_Planck_f353 = window_dir + "window_dr6_pa6_f150_baseline.fits"
+window_kspace_Planck_f353 = window_dir + "window_so_i5_f220_kspace.fits" 
+window_T_Planck_f353 = window_dir + "window_so_i5_f220_baseline.fits"
+window_pol_Planck_f353 = window_dir + "window_so_i5_f220_baseline.fits"
 
 
 # best fit params (only used for sim generation and covariances computation), from PACT lcdm chain

@@ -16,7 +16,8 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-planck_fits_beam_path = d["planck_fits_beam_path"]
+#planck_fits_beam_path = d["planck_fits_beam_path"]
+planck_fits_beam_path = "/scratch/c.spxsg6/planck_beams/"
 
 freqs = [100, 143, 217, 353]
 lmax = 3030
@@ -24,8 +25,9 @@ lmax_for_plot = 2000
 releases = ["legacy", "npipe_DR6_AxB"]
 
 for release in releases:
-
-    beam_dir = f"beams/{release}"
+    
+    beam_dir = f"/scratch/c.spxsg6/iso/beams/{release}"
+    #beam_dir = f"beams/{release}"
     pspy_utils.create_directory(beam_dir)
 
     for freq in freqs:

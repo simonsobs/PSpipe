@@ -12,12 +12,12 @@ d.read_from_file(sys.argv[1])
 
 log = log.get_logger(**d)
 
-mcms_dir = "mcms"
-spectra_dir = "spectra"
-noise_dir = "noise_model"
-cov_dir = "covariances"
-bestfit_dir = "best_fits"
-sq_win_alms_dir = "sq_win_alms"
+mcms_dir = d["mcm_dir"]
+spectra_dir = d["spec_dir"]
+noise_dir = d["ps_model_dir"]
+cov_dir = d["cov_dir"]
+bestfit_dir = d["best_fits_dir"]
+sq_win_alms_dir = d["sq_win_alms_dir"]
 
 pspy_utils.create_directory(cov_dir)
 surveys = d["surveys"]

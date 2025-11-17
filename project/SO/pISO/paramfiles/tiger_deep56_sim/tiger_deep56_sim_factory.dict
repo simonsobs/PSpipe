@@ -32,6 +32,7 @@ type = 'Dl'
 cov_T_E_only = False
 use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
+l3_pad = 2000
 
 # maps
 src_free_maps_so = False

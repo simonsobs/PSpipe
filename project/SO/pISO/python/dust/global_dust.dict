@@ -19,6 +19,7 @@ ps_model_dir = "/scratch/c.spxsg6/iso/dust/noise_model"
 sq_win_alms_dir = "/scratch/c.spxsg6/iso/dust/sq_win_alms"
 cov_dir = "/scratch/c.spxsg6/iso/dust/covariances"
 montecarlo_dir = "/scratch/c.spxsg6/iso/dust/montecarlo"
+noise_alms_dir = "/scratch/c.spxsg6/iso/dust/noise_alms"
 
 deconvolve_pixwin = True
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}

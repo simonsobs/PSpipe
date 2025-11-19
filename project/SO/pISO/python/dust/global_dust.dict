@@ -20,6 +20,8 @@ sq_win_alms_dir = "/scratch/c.spxsg6/iso/dust/sq_win_alms"
 cov_dir = "/scratch/c.spxsg6/iso/dust/covariances"
 montecarlo_dir = "/scratch/c.spxsg6/iso/dust/montecarlo"
 noise_alms_dir = "/scratch/c.spxsg6/iso/dust/noise_alms"
+catalog_dir = "/scratch/c.spxsg6/iso/dust/catalogs"
+
 
 deconvolve_pixwin = True
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
@@ -57,13 +59,15 @@ passband_dir_planck = release_dir + "pspipe/for_planck/passbands/"
 freq_info_Planck_f143 = {"freq_tag": 143, "passband": passband_dir_planck + "passband_npipe_f143.dat"}
 freq_info_Planck_f353 = {"freq_tag": 353, "passband": passband_dir_planck + "passband_npipe_f353.dat"}
 
-planck_fits_beam_path = release_dir + "pspipe/for_planck/beams/"
+planck_fits_beam_path = release_dir + "pspipe/for_planck/beams"
 
-beam_T_Planck_f143 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_143Ax143B.dat" # Get from running pipeline_dust.yml
-beam_T_Planck_f353 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_353Ax353B.dat"
+beam_dir = "/scratch/c.spxsg6/iso/dust/beams"
 
-beam_pol_Planck_f143 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_143Ax143B.dat"
-beam_pol_Planck_f353 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_353Ax353B.dat"
+beam_T_Planck_f143 = beam_dir + '/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_143Ax143B.dat'  # Get from running pipeline_dust.yml
+beam_T_Planck_f353 = beam_dir + '/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_353Ax353B.dat'
+beam_pol_Planck_f143 = beam_dir + '/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_143Ax143B.dat'
+beam_pol_Planck_f353 = beam_dir + '/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_353Ax353B.dat'
+
 
 include_beam_chromaticity_effect_in_best_fit = False
 

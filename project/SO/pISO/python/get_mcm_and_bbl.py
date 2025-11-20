@@ -4,11 +4,12 @@ for the different surveys and arrays.
 """
 
 import argparse
+from os.path import join as opj
 import numpy as np
 from pixell import curvedsky
 
 from pspipe_utils import log, pspipe_list, misc
-from pspy import pspy_utils, so_dict, so_map, so_mcm, so_mpi, sph_tools
+from pspy import pspy_utils, so_dict, so_map, so_spectra, so_mcm, so_mpi, sph_tools
 
 parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -49,7 +50,7 @@ if d["use_toeplitz_mcm"] == True:
 else:
     l_exact, l_band, l_toep = None, None, None
 
-n_mcms, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
+n_mcms, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_mcms - 1)
@@ -59,18 +60,18 @@ specs_for_ducc = []
 bls = []
 for task in subtasks:
     task = int(task)
-    sv1, ar1, sv2, ar2 = sv1_list[task], ar1_list[task], sv2_list[task], ar2_list[task]
-    log.info(f"[{task:02d}] mcm matrix for {sv1}_{ar1} x {sv2}_{ar2}")
+    sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
+    log.info(f"[{task:02d}] Computing mcm matrix for {sv1}_{m1} x {sv2}_{m2}")
 
-    l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}"], d[f"beam_pol_{sv1}_{ar1}"])
+    l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
 
-    win1_T = so_map.read_map(d[f"window_T_{sv1}_{ar1}"])
-    win1_pol = so_map.read_map(d[f"window_pol_{sv1}_{ar1}"])
+    win1_T = so_map.read_map(d[f"window_T_{sv1}_{m1}"])
+    win1_pol = so_map.read_map(d[f"window_pol_{sv1}_{m1}"])
 
-    l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}"], d[f"beam_pol_{sv2}_{ar2}"])
+    l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
 
-    win2_T = so_map.read_map(d[f"window_T_{sv2}_{ar2}"])
-    win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{ar2}"])
+    win2_T = so_map.read_map(d[f"window_T_{sv2}_{m2}"])
+    win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{m2}"])
 
     if args.old:
         mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(win1_T, win1_pol),
@@ -85,7 +86,7 @@ for task in subtasks:
                                                     l_band=l_band,
                                                     l_toep=l_toep,
                                                     binned_mcm=binned_mcm,
-                                                    save_file=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}")
+                                                    save_file=opj(f"{mcm_dir}", f"{sv1}_{m1}x{sv2}_{m2}"))
     else:
         # ducc can batch the matrix calculations rather than one at a time, so
         # instead in the loop we just group the inputs, and call the calculation
@@ -138,50 +139,61 @@ if not args.old:
     # get the binned mcms
     bin_lo, bin_hi, _, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
     nbins = len(bin_hi)
+    Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax, type)
 
     # loop over map pairs for the post-processing and saving
     for t, task in enumerate(subtasks):
-        sv1, ar1, sv2, ar2 = sv1_list[task], ar1_list[task], sv2_list[task], ar2_list[task]
+        sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
     
         if binned_mcm:
-            mbb_array = np.zeros((5, nbins, nbins))
-            Bbl_array = np.zeros((5, nbins, lmax))
+            mxx = np.zeros((5, nbins, nbins)) # b x b
+            Bbl = np.zeros((5, nbins, lmax))
 
             for i in range(5):
                 so_mcm.mcm_fortran.bin_mcm(mcm[t, i].T,
                                            bin_lo,
                                            bin_hi,
                                            bin_size,
-                                           mbb_array[i].T,
+                                           mxx[i].T,
                                            doDl)
 
                 so_mcm.mcm_fortran.binning_matrix(mcm[t, i].T,
                                                   bin_lo,
                                                   bin_hi,
                                                   bin_size,
-                                                  Bbl_array[i].T,
+                                                  Bbl[i].T,
                                                   doDl)
         else:
-            mbb_array = mcm[t]
-            Bbl_array = np.zeros((5, nbins, lmax))
-            
-            for i in range(4): # leave the last (the '--' entry) zero
-                so_mcm.mcm_fortran.binning_matrix(np.eye(mcm.shape[-1]).T,
-                                                  bin_lo,
-                                                  bin_hi,
-                                                  bin_size,
-                                                  Bbl_array[i].T,
-                                                  doDl)
+            mxx = mcm[t] # l x l
+            Bbl = np.zeros((nbins, lmax))
 
-        # TODO: the 2x2 block wastes 2x the space and computation on zeros
-        mbb = so_mcm.get_coupling_dict(mbb_array)
-        Bbl = so_mcm.get_coupling_dict(Bbl_array)
+            so_mcm.mcm_fortran.binning_matrix(np.eye(mcm.shape[-1]).T,
+                                              bin_lo,
+                                              bin_hi,
+                                              bin_size,
+                                              Bbl.T,
+                                              doDl)
 
-        mbb_inv = {}
-        for spin_pair in mbb:
-            mbb_inv[spin_pair] = np.linalg.inv(mbb[spin_pair])
-            if binned_mcm:
-                Bbl[spin_pair] = np.dot(mbb_inv[spin_pair], Bbl[spin_pair])
+        # invert the mcm and apply binning. NOTE: mbb, mll, Pbl follow
+        # (nbin, nbin), (2:lmax, 2:lmax), and (nbin, 2:lmax) shape/ordering
+        # respectively, while Bbl follows (nbin, 2:lmax+2) shape/ordering
+        mxx_inv = so_mcm.invert_mcm(mxx)
 
-        prefix = f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}"
-        so_mcm.save_coupling(prefix, mbb_inv, Bbl, spin_pairs=mbb_inv.keys())
+        if binned_mcm:
+            mbl_inv = mxx_inv @ Pbl # Cl->Dl + binning happens immediately after pseudo-Cl
+        else:
+            mbl_inv = Pbl @ mxx_inv # Cl->Dl + binning happens after deconvolution
+
+        # finish the Bbl computation for binned_mcm
+        if binned_mcm:
+            Bbl[:3] = mxx_inv[:3] @ Bbl[:3]
+            np.einsum('mnab,nbl->mal',
+                      np.array([[mxx_inv[3], mxx_inv[4]], [mxx_inv[4], mxx_inv[3]]]),
+                      Bbl[3:],
+                      out=Bbl[3:])
+
+        log.info(f"[{task:02d}] Saving mcm matrix for {sv1}_{m1} x {sv2}_{m2}")
+
+        prefix = opj(f"{mcm_dir}", f"{sv1}_{m1}x{sv2}_{m2}")
+        np.save(prefix + "_mode_coupling_inv.npy", mbl_inv)
+        np.save(prefix + "_Bbl.npy", Bbl)

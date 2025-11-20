@@ -478,26 +478,7 @@ for iii in mapset_iterator:
     ps_dict_all = {}
     for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
-        pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'))
-        
-        def get_ps(snk1, snk2):
-            # compute specific cls with higher precision, save memory overall by
-            # doing this per spectrum. start_at_zero=False to match pspy convention
-            _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1].astype(np.complex128),
-                                                           master_alms[sv2, m2, snk2].astype(np.complex128),
-                                                           spectra=spectra,
-                                                           apply_pspy_cut=True)
-            
-            pseudovec = so_spectra.spec_dict2vec(pseudo_dict, spectra)
-            datavec = pseudo2datavec @ pseudovec
-            
-            # xtra corr debiases signal-only spectra, but cross signal-noise spectra have mean 0
-            # and cross noise-noise spectra are always from different splits (also mean 0)
-            if apply_kspace_filter and kspace_tf_path != "analytical":
-                if ('s' in snk1) and ('s' in snk2):
-                    datavec -= TE_corr_vec[spec_name]
-            
-            return so_spectra.vec2spec_dict(len(lb), datavec, spectra)
+        pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'))            
             
         # first measure the raw per-split spectra. NOTE: this is only redundant
         # if sv1==sv2, m1==m2, and pol1==pol2.
@@ -506,9 +487,25 @@ for iii in mapset_iterator:
         for snk1 in splits_iterator[sv1]:
             for snk2 in splits_iterator[sv2]:
 
+                # compute specific cls with higher precision, save memory overall by
+                # doing this per spectrum. start_at_zero=False to match pspy convention
+                _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1].astype(np.complex128),
+                                                               master_alms[sv2, m2, snk2].astype(np.complex128),
+                                                               spectra=spectra,
+                                                               apply_pspy_cut=True)
+                
+                pseudovec = so_spectra.spec_dict2vec(pseudo_dict, spectra)
+                datavec = pseudo2datavec @ pseudovec
+                
+                # xtra corr debiases signal-only spectra, but cross signal-noise spectra have mean 0
+                # and cross noise-noise spectra are always from different splits (also mean 0)
+                if apply_kspace_filter and kspace_tf_path != "analytical":
+                    if ('s' in snk1) and ('s' in snk2):
+                        datavec -= TE_corr_vec[spec_name]
+                
                 # ps_dict is a nested dict: (sv1, m1, snk1), (sv2, m2, snk2) -> XY -> data,
                 # where XY is some pol cross
-                ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)] = get_ps(snk1, snk2)
+                ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)] = so_spectra.vec2spec_dict(len(lb), datavec, spectra)
         
         pseudo2datavec = None
 

@@ -42,6 +42,8 @@ TQU_indices = {
     'T': 0,
     'Q': 1,
     'U': 2,
+    'E': 0,
+    'B': 1,
 }
 
 class So_Kspec:
@@ -49,6 +51,7 @@ class So_Kspec:
     shape = None
     wcs = None
     ncomp=None
+    Nsplits = None
     lx = None
     ly = None
     lxmap = None
@@ -70,6 +73,34 @@ class So_Kspec:
     def copy(self):
         return deepcopy(self)
     
+    def compute_EB(self):
+        # Create E and B kmaps from Q and U
+        self.kmaps_EB = [enmap.zeros((2, *self.shape), kmap.wcs, dtype=np.complex128) for kmap in self.kmaps]
+        for i in range(len(self.kmaps_EB)):
+            self.kmaps_EB[i][0] = self.kmaps[i][1] * np.cos(2 * np.deg2rad(self.thetamap)) + self.kmaps[i][2] * np.sin(2 * np.deg2rad(self.thetamap))
+            self.kmaps_EB[i][1] = self.kmaps[i][1] * np.sin(2 * np.deg2rad(self.thetamap)) - self.kmaps[i][2] * np.cos(2 * np.deg2rad(self.thetamap))
+
+        # combine kmaps for kspecs cross and autos
+        self.pow_EB_crosses = []
+        self.pow_EB_autos = []
+        self.pow_EB = enmap.zeros(shape=(2, *self.shape), wcs=self.lwcs)
+        self.pow_EB_auto = enmap.zeros(shape=(2, *self.shape), wcs=self.lwcs)
+        for i1, i2 in itertools.combinations_with_replacement(range(self.Nsplits), r=2):
+
+            pow_iter = (self.kmaps_EB[i1] * np.conj(self.kmaps_EB[i2])).real * self.modlmap**2
+
+            if i1 != i2:
+                self.pow_EB_crosses.append(pow_iter)
+                self.pow_EB += pow_iter
+            elif i1 == i2:
+                self.pow_EB_autos.append(pow_iter)
+                self.pow_EB_auto += pow_iter
+
+        # Divide by the number of iterations since we add all iterations
+        self.pow_EB /= self.Nsplits * (self.Nsplits - 1) / 2
+        self.pow_EB_auto /= self.Nsplits
+        self.pow_EB_noise = (self.pow_EB_auto - self.pow_EB) / self.Nsplits
+        
     def axplot(self, map_to_plot=None, TQU=None, colorbar=False, type='Dl', log=False, zoom=1000, ax_to_plot=None, downgrade=2, **args):
         """Plots self.pow by default.
         Also return the imshow() mappable (for colorbar etc.)
@@ -77,8 +108,13 @@ class So_Kspec:
         map_to_plot = self.pow if map_to_plot is None else map_to_plot
         if map_to_plot.shape[0] == 3:
             TQU = TQU or 'T'
-            TQU_i = TQU_indices[TQU]
-            map_to_plot = map_to_plot[TQU_i]
+            if TQU in 'TQU':
+                TQU_i = TQU_indices[TQU]
+                map_to_plot = map_to_plot[TQU_i]
+            elif TQU in 'EB':
+                TQU_i = TQU_indices[TQU]
+                print(TQU_i)
+                map_to_plot = map_to_plot[TQU_i]
         
         fac = type2fac(type=type, ell=self.modlmap)
         map_to_plot /= fac
@@ -119,8 +155,13 @@ class So_Kspec:
         smap = self.pow if which_map is None else which_map
         if smap.shape[0] == 3:
             TQU = TQU or 'T'
-            TQU_i = TQU_indices[TQU]
-            smap = smap[TQU_i]
+            if TQU in 'TQU':
+                TQU_i = TQU_indices[TQU]
+                smap = smap[TQU_i]
+            elif TQU in 'EB':
+                TQU_i = TQU_indices[TQU]
+                smap = smap[TQU_i]
+        
         
         # Define a mask in kspace using theta map
         theta_range = [0, 180]
@@ -141,7 +182,12 @@ class So_Kspec:
         smap = self.pow if which_map is None else which_map
         if smap.shape[0] == 3:
             TQU = TQU or 'T'
-            smap = smap[TQU_indices[TQU]]
+            if TQU in 'TQU':
+                TQU_i = TQU_indices[TQU]
+                smap = smap[TQU_i]
+            elif TQU in 'EB':
+                TQU_i = TQU_indices[TQU]
+                smap = smap[TQU_i]
         
         # Define a mask in kspace using theta map
         theta_range = theta_range or [0, 180]
@@ -175,18 +221,15 @@ def make_1d_spectra_and_save(kspec:So_Kspec, bins_edges, theta_ranges, filename)
     # Start with saving 1d radial power spectra and noise spectra
     ps_full = {}
     ps_full_noise = {}
-    print('all theta spectra')
     for comp in ['T', 'Q', 'U']:
         ps_full[comp] = kspec.radial_binned_1d_spec(bins_edges=bins_edges, TQU=comp)[1]
         ps_full_noise[comp] = kspec.radial_binned_1d_spec(bins_edges=bins_edges, which_map=kspec.pow_noise, TQU=comp)[1]
-        
-    
+
     # Make 1d radial power and noise spectra for given theta_ranges
     ps_thetas = {}
     ps_thetas_noise = {}
     for t, theta_range in enumerate(theta_ranges):
         range_name = f'theta_{t}'
-        print(range_name)
         ps_thetas[range_name] = {}
         ps_thetas_noise[range_name] = {}
         for comp in ['T', 'Q', 'U']:
@@ -240,6 +283,7 @@ def from_enmap_list(enmap_list: list[enmap.ndmap]) -> So_Kspec:
     enmap_template = enmap_list[0] # assume all map should have same geometry
     kspec.shape = (enmap_template.shape[-2], enmap_template.shape[-1])
     kspec.ncomp = 3 if enmap_template.shape[0]==3 else 1
+    kspec.Nsplits = N_splits
     kspec.wcs = enmap_template.wcs
     kspec.ly, kspec.lx = enmap_template.laxes()
     kspec.lymap, kspec.lxmap = enmap_template.lmap()

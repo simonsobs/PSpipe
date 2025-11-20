@@ -7,7 +7,7 @@ binning_file = release_dir + "pspipe/binning/binning_50"
 apply_kspace_filter  = True
 k_filter_Planck = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
 kspace_tf_path  = release_dir + "pspipe/kspace_tf/dust_binning_50/"
-sim_spec_dir = release_dir + "pspipe/sim_spectra/dust_binning_50/"
+sim_spec_dir = "/global/cfs/cdirs/sobs/users/sgiardie/iso/dust/sim_spectra/dust_binning_50/"
 source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
 
 mcm_dir = "/scratch/c.spxsg6/iso/dust/mcms"
@@ -21,7 +21,7 @@ cov_dir = "/scratch/c.spxsg6/iso/dust/covariances"
 montecarlo_dir = "/scratch/c.spxsg6/iso/dust/montecarlo"
 noise_alms_dir = "/scratch/c.spxsg6/iso/dust/noise_alms"
 catalog_dir = "/scratch/c.spxsg6/iso/dust/catalogs"
-
+chain_dir = "/scratch/c.spxsg6/iso/dust/chains"
 
 deconvolve_pixwin = True
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}

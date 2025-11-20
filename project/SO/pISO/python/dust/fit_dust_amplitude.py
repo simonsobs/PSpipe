@@ -1,6 +1,6 @@
 """
-This script uses 143/353 GHz spectra from Planck to fit dust amplitude within ACT survey
-if --use-220 is used , we will also fit the high ell 220 GHz ACT channel, the idea being to try to break the degeneracy between dust and CIB
+This script uses 143/353 GHz spectra from Planck to fit dust amplitude within the deep56 patch
+if --use-220 is used , we will also fit the high ell 220 GHz ACT channel, the idea being to try to break the degeneracy between dust and CIB. We will not use this in the first round of dust fits for ISO, will modify the relevant code later on if needed.
 example use:
 python fit_dust_amplitude.py global_dust.dict --mode BB
 python fit_dust_amplitude.py global_dust.dict --mode TT --use-220  --dr6-result-path ./dr6
@@ -160,9 +160,9 @@ Rminus1_stop = 0.05
 Rminus1_cl_stop = 0.1
 mc_cov = True
 
-result_dir = f"chains/dust_from_planck353_{mode}" # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
-chain_name = f"{result_dir}/dust" # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
-plot_dir = f"plots/dust_from_planck353_{mode}" # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
+result_dir = d["chain_dir"] + f"/dust_from_planck353_{mode}" 
+chain_name = f"{result_dir}/dust" 
+plot_dir = d["plots_base_dir"] + f"/dust_from_planck353_{mode}" 
 
 if use_220:
     chain_name += "_with_220"
@@ -186,8 +186,8 @@ else:
 lmin, lmax = 300, 2000
 idx_planck = np.where((bin_low >= lmin) & (bin_high <= lmax))[0]
 lb, res_planck, cov_res_planck = dust_utils.get_residual_and_cov(["Planck_f143", "Planck_f353"],
-                                                                 "spectra", # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
-                                                                 "covariances", # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
+                                                                 d["spec_dir"], 
+                                                                 d["cov_dir"], 
                                                                  mode,
                                                                  spectra,
                                                                  op="aa+bb-2ab",

@@ -4,7 +4,6 @@ if --use-220 is used , we will also fit the high ell 220 GHz ACT channel, the id
 example use:
 python fit_dust_amplitude.py global_dust.dict --mode BB
 python fit_dust_amplitude.py global_dust.dict --mode TT --use-220  --dr6-result-path ./dr6
-Note that historically we use beta_c=beta_p=2.2 when fitting the CIB jointly with the dust in temperature, using another index might move the amplitude out of the MCMC flat priors.
 """
 
 
@@ -215,6 +214,8 @@ for m in ["TE", "EE", "BB", "TB"]:
 ell = np.arange(2, lmax + 1)
 fg_components = d["fg_components"]
 fg_params = d["fg_params"]
+print(fg_params)
+
 
 if args.no_fit:
     # Load samples

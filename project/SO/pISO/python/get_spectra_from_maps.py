@@ -364,7 +364,7 @@ for iii in mapset_iterator:
                         
                         # TODO: would be cleaner if could just make ps_map with
                         # cutoff instead of relying on the mask
-                        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{m}"])
+                        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{m}"], geometry=win_T.data.geometry)
                         ps_map.data *= ps_mask.data
                         split.data += ps_map.data
                 
@@ -384,7 +384,7 @@ for iii in mapset_iterator:
 
                 if apply_kspace_filter and deconvolve_pixwin:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}, {snk}")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}")
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -393,7 +393,7 @@ for iii in mapset_iterator:
                                               use_ducc_rfft=True)
                 elif apply_kspace_filter:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv}, {m}, {snk}")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv}, {m}")
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -403,14 +403,14 @@ for iii in mapset_iterator:
 
                 elif deconvolve_pixwin:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}, {snk}")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}")
                     split = so_map.fourier_convolution(split,
                                                        inv_pwin,
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
                 else:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}, {snk}")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}")
 
                             
             elif win_T.pixel == "HEALPIX":
@@ -429,10 +429,10 @@ for iii in mapset_iterator:
 
                 if deconvolve_pixwin:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}, {snk} (HEALPIX)")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m} (HEALPIX)")
                 else:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}, {snk} (HEALPIX)")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m} (HEALPIX)")
 
             split = split.calibrate(cal=cal, pol_eff=pol_eff)
 
@@ -457,15 +457,20 @@ for iii in mapset_iterator:
 
     # compute the power spectra
     
-    # if data, need to load alms, and so need to wait
-    # for all alms to be done
+    # if data, need to load alms, and so need to wait for all alms to be done to
+    # load safely. NOTE: but, just need to load the alms needed for this task. 
+    # this saves a lot of memory
     if which == 'data':
         t0 = time.time()
         log.info(f"[Rank {so_mpi.rank}] Loading alms")
         so_mpi.barrier()
 
         master_alms = {}
-        for sv, m in zip(sv_list, map_list): # all of them, not just this process
+        for sv, m in zip(sv_list, map_list):
+            if (sv not in sv1_iterator) and (sv not in sv2_iterator):
+                continue
+            if (m not in m1_iterator) and (m not in m2_iterator):
+                continue
             for k, snk in enumerate(splits_iterator[sv]): # k == split_idx, since data
                 master_alms[sv, m, snk] = np.load(f"{alms_dir}" + f"alms_{sv}_{m}_set{k}.npy")
         log.info(f"[Rank {so_mpi.rank}] Loaded alms: {time.time() - t0} seconds")
@@ -569,8 +574,7 @@ for iii in mapset_iterator:
     master_alms = None
 
     log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Spectra computation time: {time.time() - t0} seconds")
-    t0 = time.time()
-    
+
     if which == 'data':
         spec_name_all = f"{type}_all_sn_cross_data"
 
@@ -594,5 +598,3 @@ for iii in mapset_iterator:
         np.save(f"{spec_dir}" + f"{spec_name_all}.npy", ps_dict_all)
     
     ps_dict_all = None
-    
-    log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Spectra save time: {time.time() - t0} seconds")

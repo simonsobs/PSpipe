@@ -92,15 +92,13 @@ for task in subtasks:
 
     log.info(f'[Rank {so_mpi.rank}] Calculating operators for {spec_name}')
     
-    # get the mbl_inv, Bbl matrices for this array cross
+    # get the mbl_inv for this array cross
     prefix = opj(f"{mcm_dir}", spec_name)
     mbl_inv = np.load(prefix + "_mode_coupling_inv.npy")
-    Bbl = np.load(prefix + "_Bbl.npy")
 
-    # need to splice mbl_inv and Bbl into spectra-ordered arrays
+    # need to splice mbl_inv into spectra-ordered arrays
     # TODO: consider disk-space, memory (could be sparse)
     pseudo2datavec = so_mcm.get_spec2spec_array_from_spin2spin_array(mbl_inv, dense=True)
-    th2datavec = so_mcm.get_spec2spec_array_from_spin2spin_array(Bbl, spin0=not binned_mcm, dense=True)
 
     # get the inv_kspace matrix for this array cross, if necessary
     if apply_kspace_filter:
@@ -115,14 +113,12 @@ for task in subtasks:
     if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
         pseudo2datavec /= np.tile(pixwins[sv2], 9)[:, None] # apply on the left
 
-    # save 
+    # save and plot
     np.save(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'), pseudo2datavec)
-    np.save(opj(f'{mcm_dir}', f'th2datavec_{spec_name}.npy'), th2datavec)
 
-    for name, var in (('pseudo2datavec', pseudo2datavec), ('th2datavec', th2datavec)):
-        plt.figure(figsize=(10, 8))
-        plt.imshow(np.log(np.abs(var[:, ::4])), aspect=25)
-        plt.colorbar()
-        plt.title(f'{name} {spec_name}')
-        plt.savefig(opj(f'{plot_dir}', f'{name}_{spec_name}'), bbox_inches='tight')
-        plt.close()
+    plt.figure(figsize=(10, 8))
+    plt.imshow(np.log(np.abs(pseudo2datavec)), aspect=100)
+    plt.colorbar()
+    plt.title(f'pseudo2datavec {spec_name}')
+    plt.savefig(opj(f'{plot_dir}', f'pseudo2datavec_{spec_name}'), bbox_inches='tight')
+    plt.close()

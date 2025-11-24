@@ -29,6 +29,12 @@ if args.old:
 mcm_dir = d['mcm_dir']
 pspy_utils.create_directory(mcm_dir)
 
+bestfit_dir = d["best_fits_dir"]
+pseudo_dir = opj(bestfit_dir, 'pseudo')
+pspy_utils.create_directory(pseudo_dir)
+
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+
 surveys = d["surveys"]
 niter = d['niter']
 lmax = d["lmax"]
@@ -141,10 +147,32 @@ if not args.old:
     nbins = len(bin_hi)
     Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax, type)
 
-    # loop over map pairs for the post-processing and saving
     for t, task in enumerate(subtasks):
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
-    
+        spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
+
+        # we need to get the best-fit pseudosignal spectra for the covariance. we do
+        # that here to avoid recalculating all the unbinned mcms again in a
+        # different script. NOTE: we need beamed Cls
+        l, signal_dict, save_type = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'), spectra=spectra, return_type=True)
+        assert l[0] == 2, f'Bestfit spectra assumed to start at l=2, got l={l[0]}'
+
+        if save_type == 'Dl':
+            fac = 2*np.pi / (l*(l + 1))
+        else:
+            assert save_type == 'Cl', f'save_type must be Dl or Cl, got {save_type}'
+            fac = 1
+
+        # trim to match mcm
+        for k in signal_dict.keys():
+            signal_dict[k] = signal_dict[k][:lmax-2] * fac[:lmax-2]
+        l = l[:lmax-2]
+
+        # the fully realized mcm matrix would be a lot of memory
+        pseudosignal_dict = so_spectra.spin2spin_array_matmul_spec_dict(mcm[t], signal_dict)
+        so_spectra.write_ps(opj(pseudo_dir, f'pseudo_signal_{spec_name}.dat'), l, pseudosignal_dict, 'Cl', spectra=spectra)
+
+        # now do the binning 
         if binned_mcm:
             mxx = np.zeros((5, nbins, nbins)) # b x b
             Bbl = np.zeros((5, nbins, lmax))
@@ -194,6 +222,5 @@ if not args.old:
 
         log.info(f"[{task:02d}] Saving mcm matrix for {sv1}_{m1} x {sv2}_{m2}")
 
-        prefix = opj(f"{mcm_dir}", f"{sv1}_{m1}x{sv2}_{m2}")
-        np.save(prefix + "_mode_coupling_inv.npy", mbl_inv)
-        np.save(prefix + "_Bbl.npy", Bbl)
+        np.save(opj(f"{mcm_dir}", spec_name + "_mode_coupling_inv.npy") , mbl_inv)
+        np.save(opj(f"{mcm_dir}", spec_name + "_Bbl.npy"), Bbl)

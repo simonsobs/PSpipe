@@ -26,38 +26,25 @@ surveys = d["surveys"]
 apod_pts_source_degree = d["apod_pts_source_degree"]
 # the apodisation length of the final survey mask
 apod_survey_degree = d["apod_survey_degree"]
-# the threshold on the amount of cross linking to keep the data in
-cross_link_threshold = d["cross_link_threshold"]
-# pixel weight with inverse variance above n_ivar * median are set to ivar
-# this ensure that the window is not totally dominated by few pixels with too much weight
-n_med_ivar = d["n_med_ivar"]
 
 # we will skip the edges of the survey where the noise is very difficult to model, the default is to skip 0.5 degree for
 # constructing the kspace mask and 2 degree for the final survey mask, this parameter can be used to rescale the default
 rescale = d["edge_skip_rescale"]
 
 window_dir = d["window_dir"]
-skip_ivar = True
 
 pspy_utils.create_directory(window_dir)
 
-patch = None
-if "patch" in d:
-    patch = so_map.read_map(d["patch"])
-
-
-# here we list the different windows that need to be computed, we will then do a MPI loops over this list
-
-# Use this if you want to only compute one window
+# Use this if you want to only compute one window (for testing)
 # d["surveys"] = ['SO']
 # d["arrays_SO"] = ['i1_f090']
 
-
+# here we list the different windows that need to be computed, we will then do a MPI loops over this list
 n_wins, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 
 log.info(f"number of windows to compute : {n_wins}")
 
-my_masks = {}
+my_masks: dict[so_map.so_map] = {}
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_wins - 1)
@@ -78,13 +65,8 @@ for task in subtasks:
 
     maps = d[f"maps_{sv}_{ar}"]
 
-    if not skip_ivar:
-        ivar_all = gal_mask.copy()
-        ivar_all.data[:] = 0
-
     # the first step is to iterate on the maps of a given array to identify pixels with zero values
     # we will form a first survey mask as the union of all these split masks
-    # we also compute the average ivar map
 
     log.info(f"[{task}] create survey mask from ivar maps")
 
@@ -93,15 +75,6 @@ for task in subtasks:
             index = map.find("map_srcfree.fits")
         else:
             index = map.find("map.fits")
-
-        if not skip_ivar:
-            ivar_map = map[:index] + "ivar.fits"
-            ivar_map = so_map.read_map(ivar_map, geometry=template_geom)
-            my_masks["baseline"].data[ivar_map.data[:] == 0.0] = 0.0
-            ivar_all.data[:] += ivar_map.data[:]
-
-    if not skip_ivar:
-        ivar_all.data[:] /= np.max(ivar_all.data[:])
 
     if d[f"extra_mask_{sv}_{ar}"] is not None:
         log.info(f"[{task}] apply extra mask")
@@ -121,10 +94,6 @@ for task in subtasks:
     log.info(f"[{task}] apply galactic mask")
     my_masks["baseline"].data *= gal_mask.data
 
-    if patch is not None:
-        log.info(f"[{task}] apply patch mask")
-
-        my_masks["baseline"].data *= patch.data
     # with this we can create the k space mask this will only be used for applying the kspace filter
     log.info(
         f"[{task}] appodize kspace mask with {rescale:.2f} apod and write it to disk"
@@ -174,35 +143,18 @@ for task in subtasks:
 
         my_masks[mask_type].write_map(f"{window_dir}/window_{sv}_{ar}_{mask_type}.fits")
 
-        # we also make a version of the windows taking into account the ivar of the maps
-        if not skip_ivar:
-            log.info(f"[{task}] include ivar ")
-
-            mask_type_w = mask_type + "_ivar"
-
-            my_masks[mask_type_w] = my_masks[mask_type].copy()
-            id = np.where(ivar_all.data[:] * my_masks[mask_type_w].data[:] != 0)
-            med = np.median(ivar_all.data[id])
-            ivar_all.data[ivar_all.data[:] > n_med_ivar * med] = n_med_ivar * med
-            my_masks[mask_type_w].data[:] *= ivar_all.data[:]
-
-            my_masks[mask_type_w].data = my_masks[mask_type_w].data.astype(np.float32)
-            my_masks[mask_type_w].write_map(
-                f"{window_dir}/window_{sv}_{ar}_{mask_type_w}.fits"
-            )
-
     for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
-        mask = mask.downgrade(4)
-        mask.plot(file_name=f"{window_dir}/window_{sv}_{ar}_{mask_type}")
+        mask.downgrade(4).plot(file_name=f"{window_dir}/window_{sv}_{ar}_{mask_type}")
 
     if f"{sv}_{ar}" in d["plot_windowed_maps"]:
-        pspy_utils.create_directory(f"{window_dir}/windowed maps")
-        maps_to_plot = so_map.read_map(d[f"maps_{sv}_{ar}"][0])
-        maps_to_plot.data *= my_masks["baseline"].data
-        maps_to_plot.downgrade(2).calibrate(
-            cal=d[f"cal_{sv}_{ar}"], pol_eff=d[f"pol_eff_{sv}_{ar}"]
-        ).plot(
-            file_name=f"{window_dir}/windowed maps/{sv}_{ar}",
-            color_range=(300, 100, 100),
-        )
+        pspy_utils.create_directory(f"{window_dir}/windowed_maps")
+        for s, sv_ar_split in enumerate(d[f"maps_{sv}_{ar}"]):
+            maps_to_plot = so_map.read_map(sv_ar_split)
+            maps_to_plot.data *= my_masks["baseline"].data
+            maps_to_plot.downgrade(4).calibrate(
+                cal=d[f"cal_{sv}_{ar}"], pol_eff=d[f"pol_eff_{sv}_{ar}"]
+            ).plot(
+                file_name=f"{window_dir}/windowed_maps/{sv}_{ar}_split{s}",
+                color_range=(300, 100, 100),
+            )

@@ -1,0 +1,88 @@
+get_calibs.py:
+  surveys_to_calib:
+    - SO
+
+  ref_map_sets:
+    SO_i1_f090: "dr6_pa5_f090"
+    SO_i1_f150: "dr6_pa5_f150"
+
+  planck_corr: False
+  subtract_bf_fg: False
+
+  ell_ranges:
+    SO_i1_f090: [600, 1200]
+    SO_i1_f150: [600, 1200]
+
+  y_lims_plot_TT: [-300000, 500000]
+
+
+get_polar_eff_LCDM.py:
+  lmin_cal: 500
+  lmax_cal_dr6_pa4_f220: 2000
+  lmax_cal_dr6_pa5_f090: 1200
+  lmax_cal_dr6_pa5_f150: 2000
+  lmax_cal_dr6_pa6_f090: 1200
+  lmax_cal_dr6_pa6_f150: 2000
+  lmax_cal_Planck_f100: 1200
+  lmax_cal_Planck_f143: 2000
+  lmax_cal_Planck_f217: 2000
+
+get_polar_eff.py:
+  surveys_to_calib:  
+    - SO
+  ref_map_set_SO_i1_f090: "dr6_pa5_f090"
+  ref_map_set_SO_i1_f150: "dr6_pa5_f150"
+  ell_range_cal_SO_i1_f090: [600, 1200]
+  ell_range_cal_SO_i1_f150: [600, 1200]
+
+compute_tf.py:
+  surveys_to_calib:
+    - SO
+
+  ref_map_sets:
+    SO_i1_f090: "Planck_f100"
+    SO_i1_f150: "Planck_f143"
+
+  subtract_bf_fg: False
+  montecarlo_errors: False
+
+compute_null_tests.py:
+  pte_threshold: 0.01
+  remove_first_bin: True
+
+  skip_pa4_pol: True
+  skip_diff_freq_TT: True
+  skip_EB: False
+  fudge: False
+
+  multipole_range:
+    SO_i1_f090:
+      T: [200, 7000]
+      E: [200, 7000]
+      B: [200, 7000]
+    SO_i1_f150:
+      T: [200, 7000]
+      E: [200, 7000]
+      B: [200, 7000]
+
+  l_pows:
+    TT: 1
+    TE: 0
+    TB: 0
+    ET: 0
+    BT: 0
+    EE: -1
+    EB: -1
+    BE: -1
+    BB: -1
+
+  y_lims:
+    TT: [-100000, 75000]
+    TE: [-30, 30]
+    TB: [-30, 30]
+    ET: [-30, 30]
+    BT: [-30, 30]
+    EE: [-0.01, 0.01]
+    EB: [-0.01, 0.01]
+    BE: [-0.01, 0.01]
+    BB: [-0.01, 0.01]

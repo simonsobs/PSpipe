@@ -32,11 +32,15 @@ with open(f"python/plots_1019.yaml", "r") as f:
 # Define spectra path and template to read it
 try:
     d.read_from_file(sys.argv[1])
-    spectra_path = sys.argv[2]
+    spectra_path = d['spec_dir']
+    yaml_path = d['plot_yaml']
 except:
     spectra_path = "/pscratch/sd/m/merrydup/PSpipe_SO/spectra_1019_carlos_150"
-    spectra_path = "/pscratch/sd/m/merrydup/PSpipe_SO/spectra_1019_maskglitch"
     d.read_from_file(spectra_path + "/_paramfile.dict")
+    yaml_path = "python/plots_1019.yaml"
+
+with open(yaml_path, "r") as f:
+    plot_info: dict = yaml.safe_load(f)
 
 spectra_cross_template = spectra_path + "/Dl_{}x{}_cross.dat"
 spectra_auto_template = spectra_path + "/Dl_{}x{}_auto.dat"

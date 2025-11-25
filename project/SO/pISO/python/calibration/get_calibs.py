@@ -9,22 +9,20 @@ import sys
 import yaml
 
 def get_proj_pattern(test, map_set, ref_map_set):
-
     if test == "AxA-AxB":
         proj_pattern = np.array([1, -1, 0])
         #    [1, -1, 0]]  x [ AxA, AxB, BxB].T    =  AxA - AxB
         name = f"{map_set}x{map_set}-{map_set}x{ref_map_set}"
     elif test == "AxA-BxB":
         proj_pattern = np.array([1, 0, -1])
-         #    [1, 0, -1]]  x [ AxA, AxB, BxB].T    =   AxA - BxB
+        #    [1, 0, -1]]  x [ AxA, AxB, BxB].T    =   AxA - BxB
         name = f"{map_set}x{map_set}-{ref_map_set}x{ref_map_set}"
     elif test == "BxB-AxB":
         proj_pattern = np.array([0, -1, 1])
         #    [[0, -1, 1]]   x [ AxA, AxB, BxB].T    =    BxB - AxB
         name = f"{ref_map_set}x{ref_map_set}-{map_set}x{ref_map_set}"
-
     return  name, proj_pattern
-    
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
@@ -37,12 +35,12 @@ calib_infos = calib_dict['get_calibs.py']
 planck_corr = calib_infos['planck_corr']
 subtract_bf_fg = calib_infos['subtract_bf_fg']
 
-spec_dir = calib_infos['spec_dir']
-cov_dir = calib_infos['cov_dir']
-bestfit_dir = calib_infos['bestfit_dir']
+spec_dir = d['spec_dir']
+cov_dir = d['cov_dir']
+bestfit_dir = d['bestfits_dir']
 
 # Create output dirs
-output_dir = "calibration_results"
+output_dir = d['calib_dir']
 residual_output_dir = f"{output_dir}/residuals"
 plot_output_dir = f"{output_dir}/plots"
 chains_dir = f"{output_dir}/chains"
@@ -53,9 +51,6 @@ if planck_corr:
 
 if subtract_bf_fg:
     output_dir += "_fg_sub"
-
-ell_ranges = calib_infos['ell_ranges']
-y_lims_TT = calib_infos['y_lims_TT']
 
 _, _, lb, _ = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
 n_bins = len(lb)
@@ -72,7 +67,6 @@ pspy_utils.create_directory(residual_output_dir)
 pspy_utils.create_directory(chains_dir)
 pspy_utils.create_directory(plot_output_dir)
 
-
 # Define the projection pattern - i.e. which
 # spectra combination will be used to compute
 # the residuals with
@@ -81,21 +75,25 @@ pspy_utils.create_directory(plot_output_dir)
 
 results_dict = {}
 
-
 tests = ["AxA-AxB", "AxA-BxB", "BxB-AxB"]
 
 for test in tests:
-    for sv in d["surveys_to_calib"]:
+    for sv in calib_infos["surveys_to_calib"]:
         for ar in d[f"arrays_{sv}"]:
         
             map_set = f"{sv}_{ar}"
-            ref_map_set = d[f"ref_map_set_{map_set}"]
+            ref_map_set = calib_infos[f"ref_map_sets"][map_set]
 
             name, proj_pattern = get_proj_pattern(test, map_set, ref_map_set)
             
-            spectra_for_cal = [(map_set, map_set, "TT"),
-                            (map_set, ref_map_set, "TT"),
-                            (ref_map_set, ref_map_set, "TT")]
+            spectra_for_cal = [
+                (ref_map_set, ref_map_set, "TT"),
+                (ref_map_set, map_set, "TT"),
+                (map_set, map_set, "TT"),
+                # (map_set, map_set, "TT"),
+                # (map_set, ref_map_set, "TT"),
+                # (ref_map_set, ref_map_set, "TT"),
+            ]
 
             # Load spectra and cov
             ps_dict = {}
@@ -127,11 +125,11 @@ for test in tests:
             np.savetxt(f"{residual_output_dir}/residual_{name}_before.dat", np.array([lb, res_spectrum]).T)
             np.savetxt(f"{residual_output_dir}/residual_cov_{name}.dat", res_cov)
 
-            lmin, lmax = ell_ranges[map_set]
+            lmin, lmax = calib_infos['ell_ranges'][map_set]
             id = np.where((lb >= lmin) & (lb <= lmax))[0]
             consistency.plot_residual(lb, res_spectrum, {"analytical": res_cov}, "TT", f"{map_set} {test}",
                                     f"{plot_output_dir}/residual_{name}_before",
-                                    lrange=id, l_pow=1, ylims=y_lims_TT)
+                                    lrange=id, l_pow=1, ylims=calib_infos['y_lims_plot_TT'])
 
             # Calibrate the spectra
             cal_mean, cal_std = consistency.get_calibration_amplitudes(spec_vec, full_cov,
@@ -139,7 +137,7 @@ for test in tests:
                                                                     f"{chains_dir}/{name}")
 
 
-            results_dict[test, ar] = {"multipole_range": ell_ranges[map_set],
+            results_dict[test, ar] = {"multipole_range": calib_infos['ell_ranges'][map_set],
                                     "ref_map_set": ref_map_set,
                                     "calibs": [cal_mean, cal_std]}
 
@@ -151,17 +149,17 @@ for test in tests:
             np.savetxt(f"{residual_output_dir}/residual_{name}_after.dat", np.array([lb, res_spectrum]).T)
             consistency.plot_residual(lb, res_spectrum, {"analytical": res_cov}, "TT", f"{map_set} {test}",
                                     f"{plot_output_dir}/residual_{name}_after",
-                                    lrange=id, l_pow=1, ylims=d[f"y_lims_TT"])
+                                    lrange=id, l_pow=1, ylims=calib_infos[f"y_lims_plot_TT"])
 
 
 
 # plot the cal factors
 color_list =  ["blue", "red", "green"]
 
-for sv in d['surveys_to_calib']:
+for sv in calib_infos['surveys_to_calib']:
     for i, ar in enumerate(d[f"arrays_{sv}"]):
         map_set = f"{sv}_{ar}"
-        ref_map_set = d[f"ref_map_set_{map_set}"]
+        ref_map_set = calib_infos[f"ref_map_sets"][map_set]
         print(f"**************")
         print(f"calibration {map_set} with {ref_map_set}")
 

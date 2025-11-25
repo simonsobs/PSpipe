@@ -65,7 +65,6 @@ log.info(f"[Rank {so_mpi.rank}] number of mcm matrices to compute: {len(subtasks
 specs_for_ducc = []
 bls = []
 for task in subtasks:
-    task = int(task)
     sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
     log.info(f"[{task:02d}] Computing mcm matrix for {sv1}_{m1} x {sv2}_{m2}")
 
@@ -170,7 +169,7 @@ if not args.old:
 
         # the fully realized mcm matrix would be a lot of memory
         pseudosignal_dict = so_spectra.spin2spin_array_matmul_spec_dict(mcm[t], signal_dict)
-        so_spectra.write_ps(opj(pseudo_dir, f'pseudo_signal_{spec_name}.dat'), l, pseudosignal_dict, 'Cl', spectra=spectra)
+        so_spectra.write_ps(opj(pseudo_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'), l, pseudosignal_dict, 'Cl', spectra=spectra)
 
         # now do the binning 
         if binned_mcm:

@@ -50,7 +50,6 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_wins - 1)
 
 for task in subtasks:
-    task = int(task)
     sv, ar = sv_list[task], ar_list[task]
 
     log.info(f"[{task}] create windows for '{sv}' survey and '{ar}' array...")

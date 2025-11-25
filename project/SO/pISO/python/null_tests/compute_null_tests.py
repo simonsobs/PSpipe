@@ -61,12 +61,13 @@ def check_freq_pair(f1, f2, f3, f4):
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-with open(f'null_infos.yaml', "r") as f:
-    null_infos: dict = yaml.safe_load(f)
+with open(d['null_test_yaml'], "r") as f:
+    infos_dict: dict = yaml.safe_load(f)
+    
+null_infos = infos_dict['compute_null_tests.py']
 
 pte_threshold = null_infos['pte_threshold']
 remove_first_bin = null_infos['remove_first_bin']
-
 skip_pa4_pol = null_infos['skip_pa4_pol']
 skip_diff_freq_TT = null_infos['skip_diff_freq_TT']
 skip_EB = null_infos['skip_EB']
@@ -87,22 +88,25 @@ if skip_EB == True:
 if skip_diff_freq_TT == True:
     hist_label += "_skip_TT_diff_freq"
 
-# Where the data is
-spectra_dir = null_infos["spectra_dir"]
-cov_dir = null_infos["cov_dir"]
+spectra_dir = d["spec_dir"]
+cov_dir = d["cov_dir"]
+plot_dir = d["plots_dir"]
+bestfits_dir = d['bestfits_dir']
 
-# Created by the code
-null_test_dir = null_infos["null_test_dir"]
-plot_dir = null_infos["plot_dir"]
+null_test_dir = d["null_test_dir"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 pspy_utils.create_directory(null_test_dir)
 pspy_utils.create_directory(plot_dir)
 
-test_list = [{"name":  "test_1",
-              "spec_dir": spectra_dir,
-              "cov_correction": []}]
+test_list = [
+    {
+        "name":  "test_1",
+        "spec_dir": spectra_dir,
+        "cov_correction": [],
+    },
+]
 
 spec_dir_list = []
 cov_type_list = ["analytic_cov"]
@@ -131,7 +135,7 @@ for spec_dir in spec_dir_list:
 
 
 # Load foreground best fits
-fg_file_name = "best_fits/fg_{}x{}.dat"
+fg_file_name = f"{bestfits_dir}" + "fg_{}x{}.dat"
 l_fg, fg_dict = best_fits.fg_dict_from_files(fg_file_name, map_set_list, d["lmax"], spectra=spectra)
 
 # Define PTE dict
@@ -272,7 +276,7 @@ for null in null_list:
 
 # Save pte to pickle
 pickle.dump(pte_dict, open(f"{plot_dir}/pte_dict.pkl", "wb"))
-  
+
 if skip_EB == True:
     tested_spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "BB"]
 else:

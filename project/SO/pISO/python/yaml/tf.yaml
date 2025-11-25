@@ -1,0 +1,10 @@
+compute_tf.py:
+  surveys_to_calib:
+    - SO
+
+  ref_map_sets:
+    SO_i1_f090: "Planck_f100"
+    SO_i1_f150: "Planck_f143"
+
+  subtract_bf_fg: False
+  montecarlo_errors: False

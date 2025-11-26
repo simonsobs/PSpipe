@@ -16,8 +16,8 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-#planck_fits_beam_path = d["planck_fits_beam_path"]
-planck_fits_beam_path = "/scratch/c.spxsg6/planck_beams/"
+planck_fits_beam_path = d["planck_fits_beam_path"]
+beam_dir_d = d["beam_dir"]
 
 freqs = [100, 143, 217, 353]
 lmax = 3030
@@ -26,8 +26,7 @@ releases = ["legacy", "npipe_DR6_AxB"]
 
 for release in releases:
     
-    beam_dir = f"/scratch/c.spxsg6/iso/beams/{release}"
-    #beam_dir = f"beams/{release}"
+    beam_dir = beam_dir_d + f"/{release}"
     pspy_utils.create_directory(beam_dir)
 
     for freq in freqs:
@@ -117,7 +116,7 @@ for release in releases:
 # these beams will be used for source-sub, they have high ell max
 
 release = "npipe"
-beam_dir = f"beams/{release}"
+beam_dir = beam_dir_d + f"/{release}"
 pspy_utils.create_directory(beam_dir)
 
 

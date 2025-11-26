@@ -11,7 +11,7 @@ map_path=/scratch/c.spxsg6/iso/planck_projected
 beam_path=/scratch/c.spxsg6/iso/beams/npipe
 
 # Path to the input point source catalog
-ps_catalog_path=/scratch/c.spxsg6/iso/catalogs/cat_skn_090_20220526_nightonly_ordered.txt
+ps_catalog_path=/scratch/c.spxsg6/iso/dust/catalogs/cat_skn_090_20220526_nightonly_ordered.txt
 # Note that we chose here to use the 90 GHz catalog
 
 # Path to galactic mask

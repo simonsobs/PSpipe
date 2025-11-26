@@ -19,7 +19,9 @@ d.read_from_file(sys.argv[1])
 
 remove_first_bin = True
 
-plot_dir = d["plots_base_dir"] + "AxP_plots_fg_marg"
+plot_dir = d["plots_base_dir"] + "AxP_plots"
+if d["use_fg_covariance"]:
+    plot_dir += "_fg_marg"
 pspy_utils.create_directory(plot_dir)
 
 runs = ["legacy", "NPIPE"]
@@ -28,17 +30,25 @@ data_dir["legacy"] =  d["data_legacy"]
 data_dir["NPIPE"] =  d["data_npipe"]
 
 map_set_list = pspipe_list.get_map_set_list(d)
-cov_type_list = ["analytic_cov", "mc_cov", "leakage_cov", "fg_marginalization_cov"]
+
+if d["use_fg_covariance"]:
+    cov_type_list = ["analytic_cov", "mc_cov", "leakage_cov", "fg_marginalization_cov"]
+else:
+    cov_type_list = ["analytic_cov", "mc_cov", "leakage_cov"]
+
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
-all_ps, all_cov, fg_ps, fg_cov = {}, {}, {}, {}
+all_ps, all_cov = {}, {}
+if d["use_fg_covariance"]:
+    fg_ps, fg_cov = {}, {}
 for run in runs:
     d_dir = data_dir[run]
     cov_dir = f"{d_dir}/covariances"
     spec_dir= f"{d_dir}/spectra_leak_corr_planck_bias_corr"
     lb, all_ps[run], all_cov[run] = AxP_utils.read_data(map_set_list, spec_dir, cov_dir, cov_type_list[:-1], spectra)
     # reading the fg marginalized cov for the spectra it has been produced
-    lb, fg_ps[run], fg_cov[run] = AxP_utils.read_data(map_set_list, spec_dir, cov_dir, ["fg_marginalization_cov"], ["TT", "TE", "ET", "EE"])
+    if d["use_fg_covariance"]:
+        lb, fg_ps[run], fg_cov[run] = AxP_utils.read_data(map_set_list, spec_dir, cov_dir, ["fg_marginalization_cov"], ["TT", "TE", "ET", "EE"])
 
 
 tested_spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]

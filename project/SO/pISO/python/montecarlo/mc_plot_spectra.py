@@ -25,7 +25,7 @@ iStop = d["iStop"]
 lmax = d["lmax"]
 multistep_path = os.path.join(os.path.dirname(pspipe.__file__), "js")
 
-noise_model_dir = d["ps_model_dir"]
+noise_model_dir = d["noise_model_dir"]
 mcm_dir = d["mcm_dir"]
 plot_dir = d["plots_base_dir"] + "/mc_spectra/"
 mc_dir = d["montecarlo_dir"]

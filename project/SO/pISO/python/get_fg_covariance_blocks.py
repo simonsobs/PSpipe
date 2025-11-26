@@ -8,8 +8,8 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-cov_dir = "covariances"
-bestfit_dir = "best_fits"
+cov_dir = d["cov_dir"]
+bestfit_dir = d["best_fits_dir"] 
 
 pspy_utils.create_directory(cov_dir)
 surveys = d["surveys"]

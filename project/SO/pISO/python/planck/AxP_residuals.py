@@ -19,13 +19,13 @@ d.read_from_file(sys.argv[1])
 
 remove_first_bin = True
 
-plot_dir = "AxP_plots_fg_marg"
+plot_dir = d["plots_base_dir"] + "AxP_plots_fg_marg"
 pspy_utils.create_directory(plot_dir)
 
 runs = ["legacy", "NPIPE"]
 data_dir = {}
-data_dir["legacy"] =  "/scratch/c.spxsg6/dr6/dr6xlegacy_newbestfit/"
-data_dir["NPIPE"] =  "dr6xnpipe/"
+data_dir["legacy"] =  d["data_legacy"] 
+data_dir["NPIPE"] =  d["data_npipe"]
 
 map_set_list = pspipe_list.get_map_set_list(d)
 cov_type_list = ["analytic_cov", "mc_cov", "leakage_cov", "fg_marginalization_cov"]

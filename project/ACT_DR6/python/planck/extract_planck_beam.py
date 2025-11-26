@@ -24,7 +24,7 @@ lmax_for_plot = 2000
 releases = ["legacy", "npipe_DR6_AxB"]
 
 for release in releases:
-    
+
     beam_dir = f"beams/{release}"
     pspy_utils.create_directory(beam_dir)
 

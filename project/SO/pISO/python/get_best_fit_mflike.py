@@ -37,7 +37,7 @@ bestfit_dir = d["best_fits_dir"]
 components_dir = f"{bestfit_dir}/components"
 
 plot_base_dir = d["plots_base_dir"]
-plot_dir = f"{plots_dir}/best_fits/"
+plot_dir = f"{plot_base_dir}/best_fits/"
 
 
 

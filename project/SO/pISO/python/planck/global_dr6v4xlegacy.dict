@@ -18,6 +18,9 @@ cov_dir = release_dir + 'covariances'
 data_legacy = "/scratch/c.spxsg6/dr6/dr6xlegacy_newbestfit/"
 data_npipe = "/scratch/c.spxsg6/npipe"
 
+npipe_sim_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
+legacy_sim_dir = "/pscratch/sd/t/tlouis/data_analysis_v4_dec/planck_co_analysis/planck_legacy_sim/"
+
 binning_file = release_dir + "binning/binning_50"
 apply_kspace_filter  = True
 k_filter_dr6 = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}

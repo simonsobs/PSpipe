@@ -17,22 +17,21 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-out_dir = "/scratch/c.spxsg6/iso/planck_projected"
-#out_dir = "planck_projected"
+
+out_dir = "planck_projected"
 pspy_utils.create_directory(out_dir)
 
 # Planck frequencies
 planck_freqs = ["100", "143", "217", "353"]
 
 release_dir = d["release_dir"]
-#template_name = f"{release_dir}/maps/published/act_dr6.02_std_AA_night_pa4_f220_4way_set0_map_srcfree.fits"
-template_name = "/scratch/c.spxsg6/dr6/maps/act_dr6.02_std_AA_night_pa4_f220_4way_set0_map_srcfree.fits"
+template_name = f"{release_dir}/maps/published/act_dr6.02_std_AA_night_pa4_f220_4way_set0_map_srcfree.fits"
 template = so_map.read_map(template_name)
 shape, wcs = template.data.geometry
 
 # Define data directories
-npipe_map_dir = "/scratch/c.spxsg6/planck2020/npipe/"
-legacy_map_dir = "/scratch/c.spxsg6/planck2018/pr3/frequencymaps/"
+pipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"		npipe_map_dir = "/scratch/c.spxsg6/planck2020/npipe/"
+legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"
 
 splits_npipe = ["A", "B"]
 splits_legacy = ["halfmission-1", "halfmission-2"]

@@ -15,8 +15,7 @@ d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
 cat_file = d["source_catalog"]
-#out_dir = "catalogs"
-out_dir = "/scratch/c.spxsg6/iso/catalogs"
+out_dir = "catalogs"
 
 pspy_utils.create_directory(out_dir)
 

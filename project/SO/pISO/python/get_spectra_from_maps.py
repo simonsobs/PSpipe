@@ -18,9 +18,9 @@ Prior to this we need to have run get_mcm_and_bbl.py.
 
 import time
 import argparse
+from os.path import join as opj
 
 import numpy as np
-import healpy as hp
 
 from pixell import enmap
 from pspipe_utils import kspace, log, pspipe_list, transfer_function, simulation, misc
@@ -87,6 +87,7 @@ log = log.get_logger(**d)
 
 surveys = d["surveys"]
 apply_kspace_filter = d["apply_kspace_filter"] # FIXME: this might not be one thing for all surveys etc.
+kspace_tf_path = d["kspace_tf_path"]
 deconvolve_pixwin = d["deconvolve_pixwin"] # FIXME: this might not be one thing for all surveys etc.
 niter = d["niter"]
 lmax = d["lmax"]
@@ -218,13 +219,6 @@ for sv in surveys:
         wx = wx.astype(np.float32)
         pixwins[sv] = (wy[:, None] * wx[None, :])
         inv_pixwins[sv] = pixwins[sv] ** (-1)
-    elif d[f"pixwin_{sv}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
-        # this is a crude approximation. really, it would be something like
-        # Bbl @ (w_l)^2 C_l, so it can't be easily decoupled
-        pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"])
-        _, pw_b = pspy_utils.naive_binning(np.arange(len(pw_l)), pw_l, binning_file, lmax)
-        pixwins[sv] = pw_b
-        inv_pixwins[sv] = pw_b ** (-1)
 
     if d[f"pixwin_{sv}"]["pix"] == "CAR" and apply_kspace_filter:
         filter_dicts[sv] = d[f"k_filter_{sv}"]
@@ -233,28 +227,13 @@ for sv in surveys:
                                                dtype=np.float32)
         
 # get spectrum-level auxiliary data products
-# TODO: replace with pspipe_operator
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
-if apply_kspace_filter:
-    kspace_tf_path = d["kspace_tf_path"]
-    if kspace_tf_path == "analytical":
-        kspace_transfer_matrix = kspace.build_analytic_kspace_filter_matrices(surveys, # FIXME: will break if any non-CAR survey
-                                                                              maps,
-                                                                              templates,
-                                                                              filter_dicts,
-                                                                              binning_file, # FIXME: assumes same binning all maps
-                                                                              lmax)
-    else:
-        kspace_transfer_matrix = {}
-        TE_corr = {}
-        for spec_name in spec_name_list:
-            kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
-            _, TE_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
-
-    for k, v in kspace_transfer_matrix.items():
-        if np.count_nonzero(v.diagonal() == 0):
-            log.info(f'WARNING: 0 in kspace_transfer_matrix {k}')
+if apply_kspace_filter and kspace_tf_path != "analytical":
+    TE_corr_vec = {}
+    for spec_name in spec_name_list:
+        _, TE_corr = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
+        TE_corr_vec[spec_name] = so_spectra.spec_dict2vec(TE_corr, spectra)
 
 # instantiate on-the-fly simulation models. this involves packaging 
 # power spectra and beams etc for the signal model, and the noise model
@@ -385,7 +364,7 @@ for iii in mapset_iterator:
                         
                         # TODO: would be cleaner if could just make ps_map with
                         # cutoff instead of relying on the mask
-                        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{m}"])
+                        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{m}"], geometry=win_T.data.geometry)
                         ps_map.data *= ps_mask.data
                         split.data += ps_map.data
                 
@@ -405,7 +384,7 @@ for iii in mapset_iterator:
 
                 if apply_kspace_filter and deconvolve_pixwin:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}, {snk}")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}")
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -414,7 +393,7 @@ for iii in mapset_iterator:
                                               use_ducc_rfft=True)
                 elif apply_kspace_filter:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv}, {m}, {snk}")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv}, {m}")
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -424,14 +403,14 @@ for iii in mapset_iterator:
 
                 elif deconvolve_pixwin:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}, {snk}")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}")
                     split = so_map.fourier_convolution(split,
                                                        inv_pwin,
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
                 else:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}, {snk}")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}")
 
                             
             elif win_T.pixel == "HEALPIX":
@@ -450,10 +429,10 @@ for iii in mapset_iterator:
 
                 if deconvolve_pixwin:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}, {snk} (HEALPIX)")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m} (HEALPIX)")
                 else:
                     if k == 0:
-                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}, {snk} (HEALPIX)")
+                        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m} (HEALPIX)")
 
             split = split.calibrate(cal=cal, pol_eff=pol_eff)
 
@@ -478,15 +457,20 @@ for iii in mapset_iterator:
 
     # compute the power spectra
     
-    # if data, need to load alms, and so need to wait
-    # for all alms to be done
+    # if data, need to load alms, and so need to wait for all alms to be done to
+    # load safely. NOTE: but, just need to load the alms needed for this task. 
+    # this saves a lot of memory
     if which == 'data':
         t0 = time.time()
         log.info(f"[Rank {so_mpi.rank}] Loading alms")
         so_mpi.barrier()
 
         master_alms = {}
-        for sv, m in zip(sv_list, map_list): # all of them, not just this process
+        for sv, m in zip(sv_list, map_list):
+            if (sv not in sv1_iterator) and (sv not in sv2_iterator):
+                continue
+            if (m not in m1_iterator) and (m not in m2_iterator):
+                continue
             for k, snk in enumerate(splits_iterator[sv]): # k == split_idx, since data
                 master_alms[sv, m, snk] = np.load(f"{alms_dir}" + f"alms_{sv}_{m}_set{k}.npy")
         log.info(f"[Rank {so_mpi.rank}] Loaded alms: {time.time() - t0} seconds")
@@ -498,57 +482,8 @@ for iii in mapset_iterator:
     # too many files (O(1 million) for 1,000 ASO sims).
     ps_dict_all = {}
     for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
-
-        # TODO: replace all below (except TE corr) with pspipe_operator
-        mbb_inv, Bbl = so_mcm.read_coupling(prefix=f"{mcm_dir}" + f"{sv1}_{m1}x{sv2}_{m2}",
-                                            spin_pairs=spin_pairs)
-        
-        xtra_pw1, xtra_pw2 = None, None
-        if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
-            xtra_pw1 = pixwins[sv1]
-        if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
-            xtra_pw2 = pixwins[sv2]
-
-        # new shit here
-        def get_ps(snk1, snk2):
-            # compute specific cls with higher precision, save memory overall by
-            # doing this per spectrum
-            l, ps = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1].astype(np.complex128),
-                                                  master_alms[sv2, m2, snk2].astype(np.complex128),
-                                                  spectra=spectra)
-            
-            lb, ps = so_spectra.bin_spectra(l,
-                                            ps,
-                                            binning_file,
-                                            lmax,
-                                            type=type,
-                                            mbb_inv=mbb_inv,
-                                            spectra=spectra,
-                                            binned_mcm=binned_mcm)
-            
-            # xtra corr debiases signal-only spectra, but cross signal-noise spectra have mean 0
-            # and cross noise-noise spectra are always from different splits (also mean 0)
-            if apply_kspace_filter:
-                if kspace_tf_path == "analytical":
-                    xtra_corr = None
-                elif ('s' in snk1) and ('s' in snk2):
-                    xtra_corr = TE_corr[f"{sv1}_{m1}x{sv2}_{m2}"]
-                else:
-                    xtra_corr = None
-
-                lb, ps = kspace.deconvolve_kspace_filter_matrix(lb,
-                                                                ps,
-                                                                kspace_transfer_matrix[f"{sv1}_{m1}x{sv2}_{m2}"],
-                                                                spectra,
-                                                                xtra_corr=xtra_corr)
-                
-            lb, ps = transfer_function.deconvolve_xtra_tf(lb,
-                                                          ps,
-                                                          spectra,
-                                                          xtra_pw1=xtra_pw1,
-                                                          xtra_pw2=xtra_pw2)
-            
-            return ps
+        spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
+        pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'))            
             
         # first measure the raw per-split spectra. NOTE: this is only redundant
         # if sv1==sv2, m1==m2, and pol1==pol2.
@@ -557,12 +492,27 @@ for iii in mapset_iterator:
         for snk1 in splits_iterator[sv1]:
             for snk2 in splits_iterator[sv2]:
 
+                # compute specific cls with higher precision, save memory overall by
+                # doing this per spectrum. start_at_zero=False to match pspy convention
+                _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1].astype(np.complex128),
+                                                               master_alms[sv2, m2, snk2].astype(np.complex128),
+                                                               spectra=spectra,
+                                                               apply_pspy_cut=True)
+                
+                pseudovec = so_spectra.spec_dict2vec(pseudo_dict, spectra)
+                datavec = pseudo2datavec @ pseudovec
+                
+                # xtra corr debiases signal-only spectra, but cross signal-noise spectra have mean 0
+                # and cross noise-noise spectra are always from different splits (also mean 0)
+                if apply_kspace_filter and kspace_tf_path != "analytical":
+                    if ('s' in snk1) and ('s' in snk2):
+                        datavec -= TE_corr_vec[spec_name]
+                
                 # ps_dict is a nested dict: (sv1, m1, snk1), (sv2, m2, snk2) -> XY -> data,
                 # where XY is some pol cross
-                ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)] = get_ps(snk1, snk2)
+                ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)] = so_spectra.vec2spec_dict(len(lb), datavec, spectra)
         
-        mbb_inv = None
-        Bbl = None
+        pseudo2datavec = None
 
         # then we get "derived" spectra: the mean cross, auto and noise spectrum
         # NOTE: the noise spectrum is defined as the noise in a map which is the
@@ -623,6 +573,8 @@ for iii in mapset_iterator:
 
     master_alms = None
 
+    log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Spectra computation time: {time.time() - t0} seconds")
+
     if which == 'data':
         spec_name_all = f"{type}_all_sn_cross_data"
 
@@ -646,5 +598,3 @@ for iii in mapset_iterator:
         np.save(f"{spec_dir}" + f"{spec_name_all}.npy", ps_dict_all)
     
     ps_dict_all = None
-    
-    log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Spectra execution time: {time.time() - t0} seconds")

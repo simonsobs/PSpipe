@@ -28,7 +28,6 @@ spectra_leak_corr_dir = "/scratch/c.spxsg6/iso/dust/spectra_leak_corr"
 spectra_leak_corr_planck_bias_corr_dir = "/scratch/c.spxsg6/iso/dust/spectra_leak_corr_planck_bias_corr"
 montecarlo_beam_leakage_dir = "/scratch/c.spxsg6/iso/dust/montecarlo_beam_leakage"
 
-
 deconvolve_pixwin = True
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
 
@@ -65,8 +64,7 @@ passband_dir_planck = release_dir + "pspipe/for_planck/passbands/"
 freq_info_Planck_f143 = {"freq_tag": 143, "passband": passband_dir_planck + "passband_npipe_f143.dat"}
 freq_info_Planck_f353 = {"freq_tag": 353, "passband": passband_dir_planck + "passband_npipe_f353.dat"}
 
-planck_fits_beam_path = release_dir + "pspipe/for_planck/beams/"
-
+planck_fits_beam_path = release_dir + "pspipe/for_planck/beams"
 
 beam_dir = "/scratch/c.spxsg6/iso/dust/beams"
 

@@ -72,7 +72,8 @@ def get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra_order, mc_co
         the order of the spectra, e.g ["TT", "TE", "TB", ..., "BB"]
     mc_cov: boolean
         wether to use a monte carlo correction for the covariance
-    
+    leak_cov: boolean
+        wether to use a leakage correction for the covariance 
     """
 
 

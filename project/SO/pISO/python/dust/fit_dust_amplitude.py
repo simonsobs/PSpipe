@@ -1,10 +1,9 @@
 """
-This script uses 143/353 GHz spectra from Planck to fit dust amplitude within ACT survey
-if --use-220 is used , we will also fit the high ell 220 GHz ACT channel, the idea being to try to break the degeneracy between dust and CIB
+This script uses 143/353 GHz spectra from Planck to fit dust amplitude within the deep56 patch
+if --use-220 is used , we will also fit the high ell 220 GHz ACT channel, the idea being to try to break the degeneracy between dust and CIB. We will not use this in the first round of dust fits for ISO, will modify the relevant code later on if needed.
 example use:
 python fit_dust_amplitude.py global_dust.dict --mode BB
 python fit_dust_amplitude.py global_dust.dict --mode TT --use-220  --dr6-result-path ./dr6
-Note that historically we use beta_c=beta_p=2.2 when fitting the CIB jointly with the dust in temperature, using another index might move the amplitude out of the MCMC flat priors.
 """
 
 
@@ -146,6 +145,7 @@ parser.add_argument("--use-220", action="store_true", default=False) # LEAVE BUT
 parser.add_argument("--dr6-result-path", type=str, default=".") # SAME AS ABOVE
 parser.add_argument("--no-fit", action="store_true", default=False) # SAME AS ABOVE
 parser.add_argument("-m", "--mode", type=str, required=True) # VARY FOR TT, TE, EE, TB, BB
+parser.add_argument("--leak-corr", action="store_true", default=False)
 args, dict_file = parser.parse_known_args()
 
 mode = args.mode
@@ -160,9 +160,15 @@ Rminus1_stop = 0.05
 Rminus1_cl_stop = 0.1
 mc_cov = True
 
-result_dir = f"chains/dust_from_planck353_{mode}" # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
-chain_name = f"{result_dir}/dust" # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
-plot_dir = f"plots/dust_from_planck353_{mode}" # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
+result_dir = d["chain_dir"] + f"/dust_from_planck353_{mode}" 
+chain_name = f"{result_dir}/dust" 
+plot_dir = d["plots_base_dir"] + f"/dust_from_planck353_{mode}" 
+if not args.leak-corr:
+    spec_dir = d["spec_dir"]
+    leak_cov = False
+else:
+    spec_dir = d["spectra_leak_corr_planck_bias_corr_dir"]
+    leak_cov = True
 
 if use_220:
     chain_name += "_with_220"
@@ -186,21 +192,22 @@ else:
 lmin, lmax = 300, 2000
 idx_planck = np.where((bin_low >= lmin) & (bin_high <= lmax))[0]
 lb, res_planck, cov_res_planck = dust_utils.get_residual_and_cov(["Planck_f143", "Planck_f353"],
-                                                                 "spectra", # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
-                                                                 "covariances", # YOU MAY WANT TO CHANGE TO FULL PATH, AND/OR FROM PARAMFILE
+                                                                 spec_dir, 
+                                                                 d["cov_dir"], 
                                                                  mode,
                                                                  spectra,
                                                                  op="aa+bb-2ab",
-                                                                 mc_cov=mc_cov)
+                                                                 mc_cov=mc_cov,
+                                                                 leak_cov=leak_cov)
 
 icov_res_planck = np.linalg.inv(cov_res_planck[np.ix_(idx_planck, idx_planck)]) #pre-invert the matrix to avoid doing it during MCMC
 
 # High-ell 220 GHz spectra from ACT DR6
 if use_220:
     spec_name = "dr6_pa4_f220xdr6_pa4_f220"
-    spec_dir = os.path.join(args.dr6_result_path, "spectra")
+    #spec_dir = os.path.join(args.dr6_result_path, "spectra")
     cov_dir = os.path.join(args.dr6_result_path, "covariances")
-    lb, ps_220, cov_220 = dust_utils.get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra, mc_cov=mc_cov)
+    lb, ps_220, cov_220 = dust_utils.get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra, mc_cov=mc_cov, leak_cov=leak_cov)
     lmin, lmax = 4500, 8500+10
     idx_220 = np.where((bin_low >= lmin) & (bin_high <= lmax))[0]
     icov_220 = np.linalg.inv(cov_220[np.ix_(idx_220, idx_220)])
@@ -215,6 +222,8 @@ for m in ["TE", "EE", "BB", "TB"]:
 ell = np.arange(2, lmax + 1)
 fg_components = d["fg_components"]
 fg_params = d["fg_params"]
+print(fg_params)
+
 
 if args.no_fit:
     # Load samples

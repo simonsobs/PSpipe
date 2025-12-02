@@ -45,9 +45,7 @@ def get_residual_and_cov(map_set_list, spec_dir, cov_dir, mode, spectra_order, o
         leak_cov_template = cov_dir + "/leakage_cov_{}x{}_{}x{}.npy"
         _, leak_cov_dict = consistency.get_ps_and_cov_dict(map_set_list, ps_template, leak_cov_template, spectra_order=spectra_order)
         _, _, leak_cov_res, _, _ = consistency.compare_spectra(map_set_list, op, ps_dict, leak_cov_dict, mode=mode)
-        cov_res = covariance.correct_analytical_cov(cov_res,
-                                                    leak_cov_res,
-                                                    only_diag_corrections=True)
+        cov_res += leak_cov_res
 
 
     return lb, res, cov_res
@@ -90,9 +88,7 @@ def get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra_order, mc_co
     if leak_cov:
         leak_cov = np.load(f"{cov_dir}/leakage_cov_{spec_name}_{spec_name}.npy")
         leak_cov = so_cov.selectblock(cov, spectra_order, n_bins=len(lb), block=mode+mode)
-        cov = covariance.correct_analytical_cov(cov,
-                                                leak_cov,
-                                                only_diag_corrections=True)
+        cov += leak_cov
 
 
     return lb, ps[mode], cov

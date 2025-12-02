@@ -30,8 +30,6 @@ mcm_dir = d['mcm_dir']
 pspy_utils.create_directory(mcm_dir)
 
 bestfit_dir = d["best_fits_dir"]
-pseudo_dir = opj(bestfit_dir, 'pseudo')
-pspy_utils.create_directory(pseudo_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -152,7 +150,8 @@ if not args.old:
 
         # we need to get the best-fit pseudosignal spectra for the covariance. we do
         # that here to avoid recalculating all the unbinned mcms again in a
-        # different script. NOTE: we need beamed Cls
+        # different script. NOTE: we need beamed Cls, but the mcm above already
+        # has the beam, so we just need to apply the mcm
         l, signal_dict, save_type = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'), spectra=spectra, return_type=True)
         assert l[0] == 2, f'Bestfit spectra assumed to start at l=2, got l={l[0]}'
 
@@ -169,7 +168,8 @@ if not args.old:
 
         # the fully realized mcm matrix would be a lot of memory
         pseudosignal_dict = so_spectra.spin2spin_array_matmul_spec_dict(mcm[t], signal_dict)
-        so_spectra.write_ps(opj(pseudo_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'), l, pseudosignal_dict, 'Cl', spectra=spectra)
+        so_spectra.write_ps(opj(bestfit_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),
+                            l, pseudosignal_dict, 'Cl', spectra=spectra)
 
         # now do the binning 
         if binned_mcm:

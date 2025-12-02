@@ -44,7 +44,7 @@ def get_residual_and_cov(map_set_list, spec_dir, cov_dir, mode, spectra_order, o
     if leak_cov:
         leak_cov_template = cov_dir + "/leakage_cov_{}x{}_{}x{}.npy"
         _, leak_cov_dict = consistency.get_ps_and_cov_dict(map_set_list, ps_template, leak_cov_template, spectra_order=spectra_order)
-        _, _, leak_cov_res, _, _ = consistency.compare_spectra(map_set_list, op, ps_dict, leak_cov_dict, mode=mode)
+        _, _, leak_cov_res = consistency.compare_spectra(map_set_list, op, ps_dict, leak_cov_dict, mode=mode, return_chi2 = False)
         cov_res += leak_cov_res
 
 

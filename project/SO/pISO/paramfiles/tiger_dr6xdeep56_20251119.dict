@@ -38,6 +38,9 @@ use_toeplitz_mcm  = False
 use_toeplitz_cov  = True
 l3_pad = 2000
 
+savgol_w = 200
+savgol_k = 4
+
 # maps
 src_free_maps_dr6 = True
 src_free_maps_so = False
@@ -196,8 +199,7 @@ leakage_dir = '/home/zatkins/scratch/projects/lat-iso/piso/misc/piso_sims/so/bea
 # leakage_beam_so_i5_f280_TB = leakage_dir + 'gamma_t2b_i5.txt'
 
 mask_dir = data_dir + 'mask/'
-
-xtra_mask_ivar_quantile = 0.1
+xtra_mask_yaml = '/home/zatkins/projects/PSpipe_dev/repos/PSpipe/project/SO/pISO/python/yaml/xtra_mask.yaml'
 
 ps_mask_dr6_pa4_f220 = mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
 ps_mask_dr6_pa5_f090 = mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
@@ -392,13 +394,3 @@ noise_info_so_c1_f220 = {'noise_model_tag': 'c1',  'qid': 'c1a'}
 noise_info_so_c1_f280 = {'noise_model_tag': 'c1',  'qid': 'c1b'}
 noise_info_so_i5_f220 = {'noise_model_tag': 'i5',  'qid': 'i5a'}
 noise_info_so_i5_f280 = {'noise_model_tag': 'i5',  'qid': 'i5b'}
-
-iStart = 0
-iStop = 299
-
-#plot
-range_TT = [10, 8000]
-range_TE = [-150, 150]
-range_ET = [-150, 150]
-range_EE = [-20, 50]
-

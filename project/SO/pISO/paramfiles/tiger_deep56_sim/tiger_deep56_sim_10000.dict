@@ -1,4 +1,4 @@
-data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/tiger_deep56_sim/sim_factory/'
+data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/tiger_deep56_sim/sim_10000/'
 
 # define paths for scripts in advance. this is the most flexible way for now
 # to allow products to be reused across different paramfiles 
@@ -40,19 +40,19 @@ savgol_k = 4
 # maps
 src_free_maps_LAT = False
 
-maps_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/tiger_dr6xdeep56_20251019/maps/'
-maps_LAT_i1_f090 = [maps_dir + 'so/sky_map_i1_f090_set%d_20251019.fits' % (i) for i in range(4)] 
-maps_LAT_i1_f150 = [maps_dir + 'so/sky_map_i1_f150_set%d_20251019.fits' % (i) for i in range(4)]
-maps_LAT_i3_f090 = [maps_dir + 'so/sky_map_i3_f090_set%d_20251019.fits' % (i) for i in range(4)] 
-maps_LAT_i3_f150 = [maps_dir + 'so/sky_map_i3_f150_set%d_20251019.fits' % (i) for i in range(4)] 
-maps_LAT_i4_f090 = [maps_dir + 'so/sky_map_i4_f090_set%d_20251019.fits' % (i) for i in range(4)]
-maps_LAT_i4_f150 = [maps_dir + 'so/sky_map_i4_f150_set%d_20251019.fits' % (i) for i in range(4)]
-maps_LAT_i6_f090 = [maps_dir + 'so/sky_map_i6_f090_set%d_20251019.fits' % (i) for i in range(4)] 
-maps_LAT_i6_f150 = [maps_dir + 'so/sky_map_i6_f150_set%d_20251019.fits' % (i) for i in range(4)] 
-maps_LAT_c1_f220 = [maps_dir + 'so/sky_map_c1_f220_set%d_20251019.fits' % (i) for i in range(4)] 
-maps_LAT_c1_f280 = [maps_dir + 'so/sky_map_c1_f280_set%d_20251019.fits' % (i) for i in range(4)] 
-maps_LAT_i5_f220 = [maps_dir + 'so/sky_map_i5_f220_set%d_20251019.fits' % (i) for i in range(4)] 
-maps_LAT_i5_f280 = [maps_dir + 'so/sky_map_i5_f280_set%d_20251019.fits' % (i) for i in range(4)] 
+maps_dir = '/home/zatkins/scratch/projects/lat-iso/piso/tiger_deep56_sim/sim_10000/maps/'
+maps_LAT_i1_f090 = [maps_dir + 'data_sim_map_LAT_i1_f090_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_i1_f150 = [maps_dir + 'data_sim_map_LAT_i1_f150_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_i3_f090 = [maps_dir + 'data_sim_map_LAT_i3_f090_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_i3_f150 = [maps_dir + 'data_sim_map_LAT_i3_f150_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_i4_f090 = [maps_dir + 'data_sim_map_LAT_i4_f090_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_i4_f150 = [maps_dir + 'data_sim_map_LAT_i4_f150_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_i6_f090 = [maps_dir + 'data_sim_map_LAT_i6_f090_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_i6_f150 = [maps_dir + 'data_sim_map_LAT_i6_f150_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_c1_f220 = [maps_dir + 'data_sim_map_LAT_c1_f220_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_c1_f280 = [maps_dir + 'data_sim_map_LAT_c1_f280_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_i5_f220 = [maps_dir + 'data_sim_map_LAT_i5_f220_set%d_10000.fits' % (i) for i in range(4)]
+maps_LAT_i5_f280 = [maps_dir + 'data_sim_map_LAT_i5_f280_set%d_10000.fits' % (i) for i in range(4)]
 
 cal_LAT_i1_f090 = 1.02
 cal_LAT_i1_f150 = 1.02

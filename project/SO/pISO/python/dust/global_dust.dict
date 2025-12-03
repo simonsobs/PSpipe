@@ -10,6 +10,13 @@ kspace_tf_path  = release_dir + "pspipe/kspace_tf/dust_binning_50/"
 sim_spec_dir = "/scratch/c.spxsg6/iso/dust/sim_spectra/dust_binning_50/"
 source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
 
+planck_projected_dir = "/scratch/c.spxsg6/iso/planck_projected"
+npipe_map_dir = "/scratch/c.spxsg6/planck2020/npipe/"
+legacy_map_dir = "/scratch/c.spxsg6/planck2018/pr3/frequencymaps/"
+
+npipe_sim_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
+legacy_sim_dir = "/pscratch/sd/t/tlouis/data_analysis_v4_dec/planck_co_analysis/planck_legacy_sim/"
+
 mcm_dir = "/scratch/c.spxsg6/iso/dust/mcms"
 alms_dir = "/scratch/c.spxsg6/iso/dust/alms"
 spec_dir = "/scratch/c.spxsg6/iso/dust/spectra"
@@ -33,7 +40,9 @@ pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
 
 niter = 0
 remove_mean = False
-binned_mcm = False
+# this needs to be true for small patches like the Deep56 one
+# if the patch is much larger, switch to false
+binned_mcm = True
 lmax = 3000
 type = 'Dl'
 write_splits_spectra = True

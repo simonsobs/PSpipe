@@ -70,7 +70,17 @@ pipeline:
       cpus_per_task: 4
 
 
-  #to make end-to-end simulation corrections
+  # to generate montecarlo sims
+  planck/get_planck_sim_nlms:
+    slurm:
+      ntasks: 64
+      cpus_per_task: 4
+  montecarlo/mc_mnms_get_spectra_from_nlms:
+    slurm:
+      ntasks: 16
+      cpus_per_task: 4
+
+  #if you want to make end-to-end simulation corrections
   # compute leakage corrections first
   leakage/get_leakage_corrected_spectra_per_split:
     slurm:
@@ -94,6 +104,7 @@ pipeline:
     slurm:
       ntasks: 1
       cpus_per_task: 256
+
 
   montecarlo/mc_analysis: null
   montecarlo/mc_cov_analysis: null

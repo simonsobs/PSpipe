@@ -145,6 +145,7 @@ parser.add_argument("--use-220", action="store_true", default=False) # LEAVE BUT
 parser.add_argument("--dr6-result-path", type=str, default=".") # SAME AS ABOVE
 parser.add_argument("--no-fit", action="store_true", default=False) # SAME AS ABOVE
 parser.add_argument("-m", "--mode", type=str, required=True) # VARY FOR TT, TE, EE, TB, BB
+parser.add_argument("--leak-corr", action="store_true", default=False)
 args, dict_file = parser.parse_known_args()
 
 mode = args.mode
@@ -160,8 +161,19 @@ Rminus1_cl_stop = 0.1
 mc_cov = True
 
 result_dir = d["chain_dir"] + f"/dust_from_planck353_{mode}" 
-chain_name = f"{result_dir}/dust" 
 plot_dir = d["plots_base_dir"] + f"/dust_from_planck353_{mode}" 
+if args.leak_corr:
+    result_dir += "_leak_corr"
+    plot_dir += "_leak_corr"
+
+chain_name = f"{result_dir}/dust"
+
+if not args.leak_corr:
+    spec_dir = d["spec_dir"]
+    leak_cov = False
+else:
+    spec_dir = d["spectra_leak_corr_planck_bias_corr_dir"]
+    leak_cov = True
 
 if use_220:
     chain_name += "_with_220"
@@ -185,21 +197,22 @@ else:
 lmin, lmax = 300, 2000
 idx_planck = np.where((bin_low >= lmin) & (bin_high <= lmax))[0]
 lb, res_planck, cov_res_planck = dust_utils.get_residual_and_cov(["Planck_f143", "Planck_f353"],
-                                                                 d["spec_dir"], 
+                                                                 spec_dir, 
                                                                  d["cov_dir"], 
                                                                  mode,
                                                                  spectra,
                                                                  op="aa+bb-2ab",
-                                                                 mc_cov=mc_cov)
+                                                                 mc_cov=mc_cov,
+                                                                 leak_cov=leak_cov)
 
 icov_res_planck = np.linalg.inv(cov_res_planck[np.ix_(idx_planck, idx_planck)]) #pre-invert the matrix to avoid doing it during MCMC
 
 # High-ell 220 GHz spectra from ACT DR6
 if use_220:
     spec_name = "dr6_pa4_f220xdr6_pa4_f220"
-    spec_dir = os.path.join(args.dr6_result_path, "spectra")
+    #spec_dir = os.path.join(args.dr6_result_path, "spectra")
     cov_dir = os.path.join(args.dr6_result_path, "covariances")
-    lb, ps_220, cov_220 = dust_utils.get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra, mc_cov=mc_cov)
+    lb, ps_220, cov_220 = dust_utils.get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra, mc_cov=mc_cov, leak_cov=leak_cov)
     lmin, lmax = 4500, 8500+10
     idx_220 = np.where((bin_low >= lmin) & (bin_high <= lmax))[0]
     icov_220 = np.linalg.inv(cov_220[np.ix_(idx_220, idx_220)])

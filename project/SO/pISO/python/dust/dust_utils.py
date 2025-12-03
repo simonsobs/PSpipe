@@ -3,7 +3,7 @@ from pspy import so_spectra, so_cov, pspy_utils
 import numpy as np
 import pylab as plt
 
-def get_residual_and_cov(map_set_list, spec_dir, cov_dir, mode, spectra_order, op="aa+bb-2ab", mc_cov=False):
+def get_residual_and_cov(map_set_list, spec_dir, cov_dir, mode, spectra_order, op="aa+bb-2ab", mc_cov=False, leak_cov=False):
     """
     get the corresponding residual and its associated covariance for the given map_set_list,
     the given mode and the given operation
@@ -24,7 +24,8 @@ def get_residual_and_cov(map_set_list, spec_dir, cov_dir, mode, spectra_order, o
         the operation we want to perform
     mc_cov: boolean
         wether to use a monte carlo correction for the covariance
-    
+    leak_cov: boolean
+        wether to use a leakage correction for the covariance
     """
     
     ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
@@ -40,10 +41,17 @@ def get_residual_and_cov(map_set_list, spec_dir, cov_dir, mode, spectra_order, o
                                                     mc_cov_res,
                                                     only_diag_corrections=True)
 
+    if leak_cov:
+        leak_cov_template = cov_dir + "/leakage_cov_{}x{}_{}x{}.npy"
+        _, leak_cov_dict = consistency.get_ps_and_cov_dict(map_set_list, ps_template, leak_cov_template, spectra_order=spectra_order)
+        _, _, leak_cov_res = consistency.compare_spectra(map_set_list, op, ps_dict, leak_cov_dict, mode=mode, return_chi2 = False)
+        cov_res += leak_cov_res
+
+
     return lb, res, cov_res
 
 
-def get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra_order, mc_cov=False):
+def get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra_order, mc_cov=False, leak_cov=False):
     """
     get the corresponding spectrum and its associated covariance for the given spec_name,
     the given mode
@@ -62,7 +70,8 @@ def get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra_order, mc_co
         the order of the spectra, e.g ["TT", "TE", "TB", ..., "BB"]
     mc_cov: boolean
         wether to use a monte carlo correction for the covariance
-    
+    leak_cov: boolean
+        wether to use a leakage correction for the covariance 
     """
 
 
@@ -76,7 +85,12 @@ def get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra_order, mc_co
                                                 mc_cov,
                                                 only_diag_corrections=True)
 
-    
+    if leak_cov:
+        leak_cov = np.load(f"{cov_dir}/leakage_cov_{spec_name}_{spec_name}.npy")
+        leak_cov = so_cov.selectblock(cov, spectra_order, n_bins=len(lb), block=mode+mode)
+        cov += leak_cov
+
+
     return lb, ps[mode], cov
 
 

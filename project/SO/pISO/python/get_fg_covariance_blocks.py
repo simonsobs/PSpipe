@@ -4,6 +4,33 @@ import numpy as np
 from pspy import pspy_utils, so_dict, so_mpi, so_cov
 from pspipe_utils import pspipe_list, best_fits, log
 
+def fg_params_covmat(chain_filename, fg_par_list):
+    """Extract the covariance matrix for selected parameters from a chain.
+       The main purpose of this is to derive the covmat of foreground amplitudes from the P-ACT baseline lcdm 
+       chain.
+    Parameters
+    ----------
+    chain_filename: string
+      string indicating the position of the chains. Include also the chain name, without the extension 
+      (e.g. ".1.txt"), following the getdist convention 
+    fg_par_list :  list
+      list of the parameters for which we want to extract the covariance matrix  
+    """
+    try:
+        import getdist
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError("you need to install getdist to use this function")
+
+    samples = getdist.loadMCSamples(chain_filename,settings={'ignore_rows':0.4})
+    # get the list of pars of the total covmat first
+    covpar = samples.getCovMat().paramNames
+    # select indices where the fg params are
+    i = np.isin(covpar,fg_par_list)
+    # extract the covmat for the params of interest
+    covmat = samples.getCov(pars = i)
+
+    return covmat
+
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
@@ -96,7 +123,7 @@ ncovs, na_list, nb_list, nc_list, nd_list = pspipe_list.get_covariances_list(d)
 
 fg_par_list = ['a_tSZ','a_kSZ','a_p','a_c','a_gtt','a_s','xi', 'a_gte','a_pste', 'a_gee','a_psee']
 if read_fg_cov_from_chain:
-    fg_params_covmat = pspy_utils.fg_params_covmat(chain_filename, fg_par_list)
+    fg_params_covmat = fg_params_covmat(chain_filename, fg_par_list)
 else:
     # in this case, you should be careful that the covmat you want to load has the correct order 
     # of the fg params, as in fg_par_list

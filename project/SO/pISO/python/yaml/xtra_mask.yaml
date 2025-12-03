@@ -1,6 +1,6 @@
 get_xtra_mask.py:
   surveys_to_xtra_mask:
-    - LAT
+    - lat_iso
   save_plot_mask: true
   save_plot_maps_ivar: true
   ivar_smooth_deg: 0.2

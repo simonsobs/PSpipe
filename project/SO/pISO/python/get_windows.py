@@ -9,6 +9,7 @@ MODIFIED VERSION, SKIP IVAR AND XLINK
 """
 
 import sys
+from os.path import join as opj
 
 import numpy as np
 from pixell import enmap
@@ -32,8 +33,9 @@ apod_survey_degree = d["apod_survey_degree"]
 rescale = d["edge_skip_rescale"]
 
 window_dir = d["window_dir"]
-
 pspy_utils.create_directory(window_dir)
+
+plot_dir = opj(d['plots_dir'], 'windows')
 
 # Use this if you want to only compute one window (for testing)
 # d["surveys"] = ['SO']
@@ -144,16 +146,16 @@ for task in subtasks:
 
     for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
-        mask.downgrade(4).plot(file_name=f"{window_dir}/window_{sv}_{ar}_{mask_type}")
+        mask.downgrade(4).plot(file_name=f"{plot_dir}/window_{sv}_{ar}_{mask_type}")
 
     if f"{sv}_{ar}" in d["plot_windowed_maps"]:
-        pspy_utils.create_directory(f"{window_dir}/windowed_maps")
+        pspy_utils.create_directory(f"{plot_dir}/windowed_maps")
         for s, sv_ar_split in enumerate(d[f"maps_{sv}_{ar}"]):
             maps_to_plot = so_map.read_map(sv_ar_split)
             maps_to_plot.data *= my_masks["baseline"].data
             maps_to_plot.downgrade(4).calibrate(
                 cal=d[f"cal_{sv}_{ar}"], pol_eff=d[f"pol_eff_{sv}_{ar}"]
             ).plot(
-                file_name=f"{window_dir}/windowed_maps/{sv}_{ar}_split{s}",
+                file_name=f"{plot_dir}/windowed_maps/{sv}_{ar}_split{s}",
                 color_range=(300, 100, 100),
             )

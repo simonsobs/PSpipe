@@ -21,8 +21,7 @@ d.read_from_file(args.paramfile)
 log = log.get_logger(**d)
 
 mcm_dir = d['mcm_dir']
-plot_base_dir = d["plots_dir"]
-plot_dir = f"{plot_base_dir}/mcms/"
+plot_dir = opj(d['plots_dir'], 'mcms')
 pspy_utils.create_directory(plot_dir)
 
 surveys = d["surveys"]

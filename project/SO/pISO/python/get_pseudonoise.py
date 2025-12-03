@@ -42,7 +42,7 @@ square2flat_spectra = ['TT', 'TE', 'TB', 'ET', 'EE', 'EB', 'BT', 'BE', 'BB']
 
 bestfit_dir = d["best_fits_dir"]
 noise_dir = opj(bestfit_dir, 'noise')
-plot_dir = opj(d['plots_base_dir'], 'noise')
+plot_dir = opj(d['plots_dir'], 'noise')
 pspy_utils.create_directory(noise_dir)
 pspy_utils.create_directory(plot_dir)
 

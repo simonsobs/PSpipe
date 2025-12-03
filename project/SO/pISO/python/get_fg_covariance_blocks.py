@@ -17,7 +17,14 @@ arrays = {sv: d[f"arrays_{sv}"] for sv in surveys}
 binning_file = d["binning_file"]
 lmax = d["lmax"]
 spectra = ["TT", "TE", "ET", "EE"]
-chain_filename = d["p_act_chain_filename"]
+# try to read the path to the MCMC chain used to extract the FG covmat
+# or read the precomputed covmat (with the correct fg params order)
+try:
+    chain_filename = d["p_act_chain_filename"]
+    read_fg_cov_from_chain = True
+except:
+    fg_cov_path = d["fg_covmat_path"]
+    read_fg_cov_from_chain = False
 
 array_list = [f"{sv}_{ar}" for sv in surveys for ar in arrays[sv]]
 
@@ -88,8 +95,12 @@ log.info(f"construct block fg covariance")
 ncovs, na_list, nb_list, nc_list, nd_list = pspipe_list.get_covariances_list(d)
 
 fg_par_list = ['a_tSZ','a_kSZ','a_p','a_c','a_gtt','a_s','xi', 'a_gte','a_pste', 'a_gee','a_psee']
-fg_params_covmat = pspy_utils.fg_params_covmat(chain_filename, fg_par_list)
-
+if read_fg_cov_from_chain:
+    fg_params_covmat = pspy_utils.fg_params_covmat(chain_filename, fg_par_list)
+else:
+    # in this case, you should be careful that the covmat you want to load has the correct order 
+    # of the fg params, as in fg_par_list
+    fg_params_covmat = np.loadtxt(fg_cov_path)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=ncovs - 1)

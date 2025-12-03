@@ -1,4 +1,4 @@
-data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/tiger_dr6xbossn_20250804_split_sandbox/20251031/'
+data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/tiger_dr6xbossn_20250804_split_sandbox/20251116_exact/'
 
 # define paths for scripts in advance. this is the most flexible way for now
 # to allow products to be reused across different paramfiles 

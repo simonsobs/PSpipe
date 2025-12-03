@@ -293,22 +293,23 @@ if which == 'sims':
 
     f_name_fg = bestfit_dir + "fg_{}x{}.dat"
     _, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, mapname_list, lmax + 500, spectra)
-
-    signal_model = simulation.SignalModel(mapnames2minfos, lmax, ps_mat, fg_mat,
-                                          bl, cal, pol_eff, bl_err, gl, gl_err,
-                                          pixwin_apod_deg=sim_pixwin_apod_deg)
     
     modeltags2modelinfos = {}
     for k, v in d.items():
         if k.startswith('noise_model'):
             k = k.split('noise_model_')[1]
             modeltags2modelinfos[k] = v
+
+    signal_model_args = (mapnames2minfos, lmax, ps_mat, fg_mat, bl, cal, pol_eff)
+    noise_model_args = (mapnames2minfos, modeltags2modelinfos)
+    signal_model_kwargs = dict(bl_err=bl_err, gl=gl, gl_err=gl_err, pixwin_apod_deg=sim_pixwin_apod_deg)
+    noise_model_kwargs = dict(add_white_noise_above_lmax=add_white_noise_above_lmax,
+                              white_noise_ell_taper_width=white_noise_ell_taper_width,
+                              keep_model=keep_noise_models_in_memory)
     
-    noise_model = simulation.NoiseModel(mapnames2minfos,
-                                        modeltags2modelinfos,
-                                        add_white_noise_above_lmax=add_white_noise_above_lmax,
-                                        white_noise_ell_taper_width=white_noise_ell_taper_width,
-                                        keep_model=keep_noise_models_in_memory)
+    data_model = simulation.DataModel(signal_model_args, noise_model_args, 
+                                      signal_model_kwargs=signal_model_kwargs,
+                                      noise_model_kwargs=noise_model_kwargs)
 
 # now we can iterate over mapsets, and maps within them
 for iii in mapset_iterator:
@@ -371,9 +372,9 @@ for iii in mapset_iterator:
                 # sim injection, assume no bright point sources after masking
                 else:
                     if snk == 's':
-                        split = signal_model.get_sim(f'{sv}_{m}', iii)
+                        split = data_model.get_signal_sim(f'{sv}_{m}', iii)
                     else:
-                        split = noise_model.get_sim(f'{sv}_{m}', split_idx, iii)
+                        split = data_model.get_noise_sim(f'{sv}_{m}', split_idx, iii)
 
                     # possibly save raw map sim
                     if iii in range(write_sim_map_start, write_sim_map_stop):
@@ -485,8 +486,8 @@ for iii in mapset_iterator:
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
         pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'))            
             
-        # first measure the raw per-split spectra. NOTE: this is only redundant
-        # if sv1==sv2, m1==m2, and pol1==pol2.
+        # first measure the raw per-split spectra. NOTE: redundant computation
+        # is performed when sv1==sv2 and m1==m2, but the code is cleaner
         #
         # NOTE: this is (s, 0, 1, 2, ...) for a sim
         for snk1 in splits_iterator[sv1]:

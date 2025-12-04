@@ -36,6 +36,7 @@ window_dir = d["window_dir"]
 pspy_utils.create_directory(window_dir)
 
 plot_dir = opj(d['plots_dir'], 'windows')
+pspy_utils.create_directory(plot_dir)
 
 # Use this if you want to only compute one window (for testing)
 # d["surveys"] = ['SO']

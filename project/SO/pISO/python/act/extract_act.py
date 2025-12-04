@@ -14,13 +14,11 @@ parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
-parser.add_argument('published-act-map-dir', type=str,
-                    help='Path to published dr6 maps on this cluster')
 args = parser.parse_args()
 
 d = so_dict.so_dict()
 d.read_from_file(args.paramfile)
-published_act_map_dir = args.published_act_map_dir
+published_act_map_dir = d['published_act_map_dir']
 
 # FIXME: won't fork for LF
 sv = 'lat_iso'

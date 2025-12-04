@@ -5,15 +5,15 @@ yaml_dir = '/home/zatkins/projects/PSpipe_dev/repos/PSpipe/project/SO/pISO/pytho
 # define paths for scripts in advance. this is the most flexible way for now
 # to allow products to be reused across different paramfiles 
 
-alms_dir = data_dir + 'alms/{run_name}/'
-best_fits_dir = data_dir + 'best_fits/{run_name}/'
-mask_dir = data_dir + 'mask/{run_name}/'
-mcm_dir = data_dir + 'mcms/{run_name}/'
-plots_dir = data_dir + 'plots/{run_name}/'
-sim_maps_dir = data_dir + 'sims/maps/{run_name}/'
-sim_spec_dir = data_dir + 'sims/spectra/{run_name}/'
-spec_dir = data_dir + 'spectra/{run_name}/'
-window_dir = data_dir + 'windows/{run_name}/'
+alms_dir = data_dir + f'alms/{run_name}/'
+best_fits_dir = data_dir + f'best_fits/{run_name}/'
+mask_dir = data_dir + f'mask/{run_name}/'
+mcm_dir = data_dir + f'mcms/{run_name}/'
+plots_dir = data_dir + f'plots/{run_name}/'
+sim_maps_dir = data_dir + f'sims/maps/{run_name}/'
+sim_spec_dir = data_dir + f'sims/spectra/{run_name}/'
+spec_dir = data_dir + f'spectra/{run_name}/'
+window_dir = data_dir + f'windows/{run_name}/'
 
 surveys = ['dr6', 'lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
@@ -46,7 +46,9 @@ savgol_k = 4
 src_free_maps_dr6 = True
 src_free_maps_lat_iso = False
 
-maps_dir_dr6 = data_dir + 'maps/dr6/deep56/'
+published_act_map_dir = data_dir + 'maps/dr6/published/'
+
+maps_dir_dr6 = data_dir + 'maps/dr6/deep56//'
 maps_dr6_pa4_f220 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa4_f220_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
 maps_dr6_pa5_f090 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa5_f090_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
 maps_dr6_pa5_f150 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa5_f150_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
@@ -54,7 +56,7 @@ maps_dr6_pa6_f090 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa6_f090_4way_set%d
 maps_dr6_pa6_f150 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa6_f150_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
 n_splits_dr6 = len(maps_dr6_pa4_f220) # TODO: clean this up
 
-maps_dir_lat_iso = data_dir + 'maps/lat/deep56'
+maps_dir_lat_iso = data_dir + 'maps/lat/deep56/'
 maps_lat_iso_i1_f090 = [maps_dir_lat_iso + '20251119/sky_map_i1_f090_set%d_20251119.fits' % (i) for i in range(4)] 
 maps_lat_iso_i1_f150 = [maps_dir_lat_iso + '20251119/sky_map_i1_f150_set%d_20251119.fits' % (i) for i in range(4)]
 maps_lat_iso_i3_f090 = [maps_dir_lat_iso + '20251119/sky_map_i3_f090_set%d_20251119.fits' % (i) for i in range(4)] 
@@ -211,45 +213,45 @@ leakage_dir_lat_iso = data_dir + 'beams/lat/iso/leakage_beams/'
 # leakage_beam_lat_iso_i5_f220_TB = leakage_dir_lat_iso + 'gamma_t2b_i5.txt'
 # leakage_beam_lat_iso_i5_f280_TB = leakage_dir_lat_iso + 'gamma_t2b_i5.txt'
 
-xtra_mask_input_dir = data_dir + 'mask/
+ps_and_gal_mask_dir = data_dir + 'mask/'
 xtra_mask_yaml = yaml_dir + 'xtra_mask.yaml'
-ps_mask_dr6_pa4_f220 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_dr6_pa5_f090 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_dr6_pa5_f150 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_dr6_pa6_f090 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_dr6_pa6_f150 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_dr6_pa4_f220 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_dr6_pa5_f090 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_dr6_pa5_f150 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_dr6_pa6_f090 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_dr6_pa6_f150 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
 
-ps_mask_lat_iso_i1_f090 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_i1_f150 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_i3_f090 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_i3_f150 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_i4_f090 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_i4_f150 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_i6_f090 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_i6_f150 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_c1_f220 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_c1_f280 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_i5_f220 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
-ps_mask_lat_iso_i5_f280 = xtra_mask_input_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i1_f090 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i1_f150 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i3_f090 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i3_f150 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i4_f090 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i4_f150 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i6_f090 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i6_f150 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_c1_f220 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_c1_f280 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i5_f220 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
+ps_mask_lat_iso_i5_f280 = ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits'
 
-gal_mask_dr6_pa4_f220 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_dr6_pa5_f090 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_dr6_pa5_f150 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_dr6_pa6_f090 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_dr6_pa6_f150 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_dr6_pa4_f220 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_dr6_pa5_f090 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_dr6_pa5_f150 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_dr6_pa6_f090 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_dr6_pa6_f150 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
 
-gal_mask_lat_iso_i1_f090 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_i1_f150 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_i3_f090 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_i3_f150 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_i4_f090 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_i4_f150 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_i6_f090 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_i6_f150 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_c1_f220 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_c1_f280 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_i5_f220 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
-gal_mask_lat_iso_i5_f280 = xtra_mask_input_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i1_f090 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i1_f150 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i3_f090 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i3_f150 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i4_f090 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i4_f150 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i6_f090 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i6_f150 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_c1_f220 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_c1_f280 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i5_f220 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
+gal_mask_lat_iso_i5_f280 = ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits'
 
 # additional_mask = mask_dir + 'ra_greater_than_zero.fits'
 

@@ -152,19 +152,15 @@ if not args.old:
         # that here to avoid recalculating all the unbinned mcms again in a
         # different script. NOTE: we need beamed Cls, but the mcm above already
         # has the beam, so we just need to apply the mcm
-        l, signal_dict, save_type = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'), spectra=spectra, return_type=True)
+        l, signal_dict = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'),
+                                            spectra=spectra, return_type='Cl',
+                                            return_dtype=np.float32)
         assert l[0] == 2, f'Bestfit spectra assumed to start at l=2, got l={l[0]}'
 
-        if save_type == 'Dl':
-            fac = 2*np.pi / (l*(l + 1))
-        else:
-            assert save_type == 'Cl', f'save_type must be Dl or Cl, got {save_type}'
-            fac = 1
-
         # trim to match mcm
-        for k in signal_dict.keys():
-            signal_dict[k] = signal_dict[k][:lmax-2] * fac[:lmax-2]
         l = l[:lmax-2]
+        for k in signal_dict.keys():
+            signal_dict[k] = signal_dict[k][:lmax-2]
 
         # the fully realized mcm matrix would be a lot of memory
         pseudosignal_dict = so_spectra.spin2spin_array_matmul_spec_dict(mcm[t], signal_dict)

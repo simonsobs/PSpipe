@@ -125,11 +125,8 @@ for task in subtasks:
         
         # save as human-readable spectrum, so l convention and Cl type is clear
         l = np.arange(2, lmax, dtype=inp_noise_model.dtype)
-        inp_noise_model_dict = {
-            spec: inp_noise_model.reshape(9, -1)[i] for i, spec in enumerate(square2flat_spectra)
-        }
-        so_spectra.write_ps(opj(noise_dir, f'raw_pseudo_noise_{spec_name}_set{k}.dat'),
-                            l, inp_noise_model_dict, 'Cl', spectra=spectra)
+        so_spectra.write_ps_matrix(opj(noise_dir, f'raw_pseudo_noise_{spec_name}_set{k}.dat'),
+                                   l, inp_noise_model, 'Cl', spectra=spectra)
 
     alms1 = None
     alms2 = None
@@ -175,12 +172,21 @@ for task in subtasks:
         spec_name2 = f"{sv}_{m2}x{sv}_{m2}" # auto for m2
     
     for k in range(nsplits):
-        inp_noise_model = np.load(opj(noise_dir, f"raw_pseudo_noise_{spec_name}_set{k}.npy"))
+        _, inp_noise_model = so_spectra.read_ps_matrix(opj(noise_dir, f'raw_pseudo_noise_{spec_name}_set{k}.dat'),
+                                                       spectra=spectra,
+                                                       return_type='Cl',
+                                                       return_dtype=np.float32)
         out_noise_model = np.zeros_like(inp_noise_model)
 
         if m1 != m2:
-            inp_noise_model1 = np.load(opj(noise_dir, f"raw_pseudo_noise_{spec_name1}_set{k}.npy"))
-            inp_noise_model2 = np.load(opj(noise_dir, f"raw_pseudo_noise_{spec_name2}_set{k}.npy"))
+            _, inp_noise_model1 = so_spectra.read_ps_matrix(opj(noise_dir, f'raw_pseudo_noise_{spec_name1}_set{k}.dat'),
+                                                            spectra=spectra,
+                                                            return_type='Cl',
+                                                            return_dtype=np.float32)
+            _, inp_noise_model2 = so_spectra.read_ps_matrix(opj(noise_dir, f'raw_pseudo_noise_{spec_name2}_set{k}.dat'),
+                                                            spectra=spectra,
+                                                            return_type='Cl',
+                                                            return_dtype=np.float32)
             diags = np.zeros((2, 3, nell - 3), dtype=inp_noise_model.dtype)
         
         # for plots
@@ -284,11 +290,8 @@ for task in subtasks:
 
         # save as human-readable spectrum, so l convention and Cl type is clear
         l = np.arange(2, lmax, dtype=out_noise_model.dtype)
-        out_noise_model_dict = {
-            spec: out_noise_model.reshape(9, -1)[i] for i, spec in enumerate(square2flat_spectra)
-        }
-        so_spectra.write_ps(opj(noise_dir, f'pseudo_noise_{spec_name}_set{k}.dat'),
-                            l, out_noise_model_dict, 'Cl', spectra=spectra)
+        so_spectra.write_ps_matrix(opj(noise_dir, f'pseudo_noise_{spec_name}_set{k}.dat'),
+                                   l, out_noise_model, 'Cl', spectra=spectra)
 
         # plot and save
         if m1 == m2:

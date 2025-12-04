@@ -128,9 +128,9 @@ log.info(f'All union survey solid angle : {so_window.get_survey_solid_angle(so_m
 
 # plot and save union and intersect masks
 p = enplot.plot(mask_intersect, downgrade=8, ticks=1, colorbar=True)
-enplot.write(opj(mask_dir, f'xtra_mask_intersect'), p)
+enplot.write(opj(plot_dir_mask, f'xtra_mask_intersect'), p)
 enmap.write_map(opj(mask_dir, f'xtra_mask_intersect.fits'), mask_intersect.astype(np.float32))
 
 p = enplot.plot(mask_union, downgrade=8, ticks=1, colorbar=True)
-enplot.write(opj(mask_dir, f'xtra_mask_union'), p)
+enplot.write(opj(plot_dir_mask, f'xtra_mask_union'), p)
 enmap.write_map(opj(mask_dir, f'xtra_mask_union.fits'), mask_union.astype(np.float32))

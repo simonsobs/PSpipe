@@ -44,8 +44,10 @@ def run_mcmc(chain_name, fg_params, Rminus1_stop, Rminus1_cl_stop):
     priors = {
         "TT": {
             "a_p": {"prior": {"min": 0, "max": 15}, "proposal": 0.1, "latex": "a_p"},
-            "a_c": {"prior": {"min": 0, "max": 8}, "proposal": 0.12, "latex": "a_c"},
-            "a_gtt": { "prior": {"min": 1.0, "max": 20}, "proposal": 0.1, "latex": r"a_\mathrm{dust}^\mathrm{TT}"},
+           # "a_c": {"prior": {"min": 0, "max": 8}, "proposal": 0.12, "latex": "a_c"},
+            "a_c": {"prior": {"min": 0, "max": 15}, "proposal": 0.12, "latex": "a_c"},
+           # "a_gtt": { "prior": {"min": 1.0, "max": 20}, "proposal": 0.1, "latex": r"a_\mathrm{dust}^\mathrm{TT}"},
+            "a_gtt": { "prior": {"min": 0.0, "max": 20}, "proposal": 0.1, "latex": r"a_\mathrm{dust}^\mathrm{TT}"},
         }
     }
     

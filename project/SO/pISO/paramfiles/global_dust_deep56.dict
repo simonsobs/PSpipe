@@ -32,7 +32,7 @@ chain_dir = "/scratch/c.spxsg6/iso/dust/chains"
 # if you want to compute the leakage contribution and end-to-end sim corrections
 sim_spectra_planck_noise_and_syst_dir = "/scratch/c.spxsg6/iso/dust/sim_spectra_planck_noise_and_syst"
 noise_alms_dir = "/scratch/c.spxsg6/iso/dust/noise_alms"
-planck_mc_correction_dir = "/scratch/c.spxsg6/iso/dust/montecarlo"
+planck_mc_correction_dir = "/scratch/c.spxsg6/iso/dust/montecarlo_planck"
 spectra_leak_corr_dir = "/scratch/c.spxsg6/iso/dust/spectra_leak_corr"
 spectra_leak_corr_planck_bias_corr_dir = "/scratch/c.spxsg6/iso/dust/spectra_leak_corr_planck_bias_corr"
 montecarlo_beam_leakage_dir = "/scratch/c.spxsg6/iso/dust/montecarlo_beam_leakage"

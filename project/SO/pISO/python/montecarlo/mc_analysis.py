@@ -32,9 +32,10 @@ elif sim_alm_dtype == "complex128":
 
 if not args.planck_correction:
     sim_spec_dir = d["sim_spec_dir"]
+    mc_dir = d["montecarlo_dir"]
 else:
     sim_spec_dir = d["sim_spectra_planck_noise_and_syst_dir"]
-print(sim_spec_dir)
+    mc_dir = d["planck_mc_correction_dir"]
 
 mcm_dir = d["mcm_dir"]
 mc_dir = d["montecarlo_dir"]

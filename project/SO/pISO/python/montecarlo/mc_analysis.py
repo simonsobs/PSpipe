@@ -8,6 +8,11 @@ from pspy import pspy_utils, so_dict, so_spectra
 from pspipe_utils import log
 import numpy as np
 import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--planck_correction", action="store_true", default=False)
+args, dict_file = parser.parse_known_args()
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -25,8 +30,12 @@ if sim_alm_dtype == "complex64":
 elif sim_alm_dtype == "complex128":
     spec_dtype = np.float64
 
+if not args.planck_correction:
+    sim_spec_dir = d["sim_spec_dir"]
+else:
+    sim_spec_dir = d["sim_spectra_planck_noise_and_syst_dir"]
+print(sim_spec_dir)
 
-sim_spec_dir = d["sim_spec_dir"]
 mcm_dir = d["mcm_dir"]
 mc_dir = d["montecarlo_dir"]
 cov_dir = d["cov_dir"]

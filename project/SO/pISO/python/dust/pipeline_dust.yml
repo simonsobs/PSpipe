@@ -60,6 +60,42 @@ pipeline:
       cpus_per_task: 42
 
 
+  # to generate montecarlo sims
+  planck/get_planck_sim_nlms:
+    slurm:
+      ntasks: 64
+      cpus_per_task: 4
+  montecarlo/mc_mnms_get_spectra_from_nlms:
+    slurm:
+      ntasks: 16
+      cpus_per_task: 4
+
+  #if you want to make end-to-end simulation corrections
+  # compute leakage corrections first
+  leakage/get_leakage_corrected_spectra_per_split:
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  leakage/get_leakage_sim:
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  leakage/get_leakage_covariance:
+    slurm:
+      ntasks: 1
+      cpus_per_task: 256
+
+  planck/get_planck_spectra_correction_from_nlms:
+    slurm:
+      ntasks: 32
+      cpus_per_task: 32
+  montecarlo/mc_analysis: null
+  planck/get_corrected_planck_spectra:
+    slurm:
+      ntasks: 1
+      cpus_per_task: 256
+
+
   montecarlo/mc_analysis: null
   montecarlo/mc_cov_analysis: null
   montecarlo/mc_plot_spectra: null

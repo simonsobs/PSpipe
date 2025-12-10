@@ -22,8 +22,8 @@ planck_arrays = d[f"arrays_{sv}"]
 
 version = d["planck_version"]
 
-npipe_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
-legacy_dir = "/pscratch/sd/t/tlouis/data_analysis_v4_dec/planck_co_analysis/planck_legacy_sim/"
+npipe_dir = d["npipe_sim_dir"] 
+legacy_dir = d["legacy_sim_dir"] 
 
 if version == "npipe":
     planck_splits = ["A", "B"]

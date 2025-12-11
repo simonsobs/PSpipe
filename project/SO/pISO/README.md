@@ -132,6 +132,10 @@ in the paramfile, and
     ```
     in the yaml file.
     - command: `sbatch --mem 48G --cpus-per-task 4 --time 10:00 --job-name get_xtra_mask /path/to/sbatch/script.slurm python -u /path/to/PSpipe/project/SO/pISO/python/masks/get_xtra_mask.py /path/to/PSpipe/project/SO/pISO/paramfiles/dr6xdeep56_20251119.dict`
+4. Get the source subtracted LAT maps. for that we will use the ACT maps and source subtracted maps to get a source map and subtract it from LAT maps. This is meant to be a temporary solution before we get actual source subtracted maps.
+    - command : `python /path/to/PSpipe/project/SO/pISO/python/act/subtract_source.py /path/to/PSpipe/project/SO/pISO/paramfiles/dr6xdeep56_20251119.dict`
+  
+
 
 After this point, the `data_dir` should look like:
 ```bash
@@ -228,6 +232,81 @@ scheme to run a modified pipeline that, e.g., uses some products from a differen
 run.
 
 # Planck Preprocessing
+
+Here are some specific instructions to pre-process Planck maps, namely to project them and to subtract the planck bright sources.
+(A large part of this section comes from DR6xPlanck)
+
+## Extract products
+
+### Beams
+Running `python/planck/extract_planck_beams.py` will extract and plot planck's beams in the right folder. You just need to specify where the original beams stand with `planck_fits_beam_path`. 
+It also extract some "extended" NPIPE beams and save these in both legacy and NPIPE folders, these will be used for source subtraction.
+```bash
+python {python_path}/extract_planck_beams.py {paramfile}
+```
+
+### Maps projection
+`python/planck/project_planck_maps.py` will project planck maps and ivar on the patch specified by the map at `planck_projection_template` (you can use an already projected ACT or LAT map for instance).
+TODO : project planck masks ?
+```bash
+salloc -N 1 -C cpu -q interactive -t 01:00:00
+OMP_NUM_THREADS=32 srun -n 8 -c 32 --cpu_bind=cores python {python_path}/project_planck_maps.py {paramfile}
+```
+This script can run in about 10 minutes (depends on the template size).
+
+### Passbands and other
+`planck_symlinks.sh` creates the right tymlinks for passbands and other (?).
+```bash
+bash {python_path}/planck_symlinks.sh {paramfile}
+```
+
+## Subtract point-sources
+You first need to extract the source catalog defined by `planck_source_catalog` in the paramfile with `python/planck/reformat_source_catalog.py`. You can then run the source subtraction using the 2 bash file. Note that you need to specify the path of your dory file with `dory_path` (you can use `python/planck/dory.py`, you just need to install enlib). These scripts read maps at `maps_dir_planck/{npipe|legacy}/` and make _srcfree maps.
+You need to run this part with an interactive allocation, it takes around 10 minutes per map :
+```bash
+salloc -N 1 -C cpu -q interactive -t 03:00:00
+bash {python_path}/run_legacy_src_subtraction_interactive.sh {legacy_paramfile}
+bash {python_path}/run_npipe_src_subtraction_interactive.sh {npipe_paramfile}
+```
+
+In the end, you should have the follwing added to your `data_dir` :
+```bash
+/path/to/my/PSpipe/data_dir
+├── beams
+│   │── legacy
+│   │   ├── leakage_beams
+│   │   └── main_beams
+│   └── npipe
+│       ├── leakage_beams
+│       └── main_beams
+├── maps
+│   └── planck
+│       └── deep56
+│           ├── legacy
+│           │   ├── HFI_SkyMap_2048_R3.01_halfmission-1_f100_ivar.fits
+│           │   ...
+│           │   └── HFI_SkyMap_2048_R3.01_halfmission-2_f353_map_srcfree.fits
+│           ├── npipe
+│           │   ├── npipe6v20A_f100_ivar.fits
+│           │   ...
+│           │   └── npipe6v20B_f353_map_srcfree.fits
+│           └── ... src subtraction stuff
+└── passbands
+    └── planck
+        ├── passband_npipe_f100.dat
+        ├── passband_npipe_f143.dat
+        ├── passband_npipe_f217.dat
+        └── passband_npipe_f353.dat
+```
+
+## Compute spectra
+
+You can then add "planck" to `surveys`, and all associated products in a paramfile. Please note that Planck beam only go up to ell = 4000, so you need `lmax` lower than this.
+Planck can be included in spectra computation for calib or transfer function estimations.
+
+## End-to-end sim correction
+
+
 
 ## Dust-in-patch
 Use the result of this to update the `fg_params` in the paramfile for dust.

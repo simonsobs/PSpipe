@@ -32,7 +32,7 @@ d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
 spectra_dir = d['spec_dir']
-ps_model_dir = d['ps_model_dir'] 
+ps_model_dir = d['noise_model_dir'] 
 plot_dir = d['plots_base_dir'] + "/noise_model/"
 
 pspy_utils.create_directory(ps_model_dir)

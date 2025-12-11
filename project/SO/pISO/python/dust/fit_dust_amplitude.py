@@ -1,6 +1,6 @@
 """
 This script uses 143/353 GHz spectra from Planck to fit dust amplitude within the deep56 patch
-if --use-220 is used , we will also fit the high ell 220 GHz ACT channel, the idea being to try to break the degeneracy between dust and CIB. We will not use this in the first round of dust fits for ISO, will modify the relevant code later on if needed.
+if --use-220 is used , we will also fit the high ell 220 GHz ACT channel, the idea being to try to break the degeneracy between dust and CIB. In the default case, we use beta_c = beta_p = 2.20, which is preferred by Planck data. To set a different value use the flag --beta_value, while if you want to sample the beta CIB use the flag --sample_beta
 example use:
 python fit_dust_amplitude.py global_dust.dict --mode BB
 python fit_dust_amplitude.py global_dust.dict --mode TT --use-220  --dr6-result-path ./dr6
@@ -22,7 +22,7 @@ import dust_utils
 mpl.use("Agg")
 
 def run_mcmc(chain_name, fg_params, Rminus1_stop, Rminus1_cl_stop):
-
+    
     info = {
         "likelihood": {"my_like": loglike},
         "sampler": {
@@ -44,11 +44,21 @@ def run_mcmc(chain_name, fg_params, Rminus1_stop, Rminus1_cl_stop):
     priors = {
         "TT": {
             "a_p": {"prior": {"min": 0, "max": 15}, "proposal": 0.1, "latex": "a_p"},
-            "a_c": {"prior": {"min": 0, "max": 8}, "proposal": 0.12, "latex": "a_c"},
+            "a_c": {"prior": {"min": 0, "max": 15}, "proposal": 0.12, "latex": "a_c"},
             "a_gtt": { "prior": {"min": 1.0, "max": 20}, "proposal": 0.1, "latex": r"a_\mathrm{dust}^\mathrm{TT}"},
         }
     }
     
+    if args.sample_beta:
+        # when sampling beta for CIB, forcing beta_c and beta_p to be equal (no difference seen when
+        # they are sampled differently)
+        priors["TT"].update(
+            {
+             "beta_p": {"prior": {"min": 0, "max": 5}, "proposal": 0.1, "latex": r"\beta_p"},
+             "beta_c": {"value": 'lambda beta_p: beta_p', "derived": True, "latex": r"\beta_c"},
+             })
+
+     
     if use_220:
         priors["TT"].update(
             {
@@ -75,27 +85,34 @@ def run_mcmc(chain_name, fg_params, Rminus1_stop, Rminus1_cl_stop):
     return run(info)
     
     
-def loglike(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb, bandint_shift_dr6_pa4_f220=0.0):
+def loglike(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb, beta_c = 2.2, beta_p = 2.2, bandint_shift_dr6_pa4_f220=0.0):
     """
     Compute the loglikelihood for the given fg parameters
     The residual from which we measure the dust is by default the Planck 353 GHz x353 GHz + 143 GHz x143  GHz - 2 x 143 GHz x353 GHz residual
     optionnaly if use_220 has been set to TRUE, we will also fit the high ell 220 GHz ACT channel
     """
+    # reassign the beta values if not sampled
+    if args.sample_beta:
+        beta_c = beta_c
+        beta_p = beta_p
+    else:
+        beta_c = args.beta_value
+        beta_p = args.beta_value
+
     if use_220:
-        _, res_planck_model, _, fg_220_model = get_fg_model(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb,
-                                                            bandint_shift_dr6_pa4_f220=bandint_shift_dr6_pa4_f220)
+        _, res_planck_model, _, fg_220_model = get_fg_model(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb, beta_c, beta_p, bandint_shift_dr6_pa4_f220=bandint_shift_dr6_pa4_f220)
                                                               
         chi2 =  (res_planck[idx_planck] - res_planck_model[idx_planck]) @ icov_res_planck @ (res_planck[idx_planck] - res_planck_model[idx_planck])
         chi2 +=  (ps_220[idx_220] - fg_220_model[idx_220]) @ icov_220 @ (ps_220[idx_220] - fg_220_model[idx_220])
         
     else:
-        _, res_planck_model = get_fg_model(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb)
+        _, res_planck_model = get_fg_model(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb, beta_c, beta_p)
         
         chi2 =  (res_planck[idx_planck] - res_planck_model[idx_planck]) @ icov_res_planck @ (res_planck[idx_planck] - res_planck_model[idx_planck])
 
     return -0.5 * chi2
         
-def get_fg_model(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb, bandint_shift_dr6_pa4_f220=0.0):
+def get_fg_model(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb, beta_c, beta_p, bandint_shift_dr6_pa4_f220=0.0):
     """
     get the fg model for the given fg parameters
     The residual from which we measure the dust is by default the Planck 353 GHz x353 GHz + 143 GHz x143  GHz - 2 x 143 GHz x353 GHz residual
@@ -109,6 +126,8 @@ def get_fg_model(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb, bandint_shift_dr6_
     fg_params["a_gee"] = a_gee
     fg_params["a_gbb"] = a_gbb
     fg_params["a_gtb"] = a_gtb
+    fg_params["beta_p"] = beta_p
+    fg_params["beta_c"] = beta_c
 
     band_shift_dict = {}
     for map_set in passbands.keys():
@@ -141,11 +160,14 @@ def get_fg_model(a_p, a_c, a_gtt, a_gte, a_gee, a_gbb, a_gtb, bandint_shift_dr6_
 # Parse arguments
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--use-220", action="store_true", default=False) # LEAVE BUT DONT PASS THIS FLAG WHEN RUNNING
-parser.add_argument("--dr6-result-path", type=str, default=".") # SAME AS ABOVE
-parser.add_argument("--no-fit", action="store_true", default=False) # SAME AS ABOVE
-parser.add_argument("-m", "--mode", type=str, required=True) # VARY FOR TT, TE, EE, TB, BB
+parser.add_argument("--use-220", action="store_true", default=False) 
+parser.add_argument("--dr6-result-path-spectra", type=str, default=".") 
+parser.add_argument("--dr6-result-path-covariance", type=str, default=".")
+parser.add_argument("--no-fit", action="store_true", default=False) 
+parser.add_argument("-m", "--mode", type=str, required=True)
 parser.add_argument("--leak-corr", action="store_true", default=False)
+parser.add_argument("--sample_beta", action="store_true", default=False)
+parser.add_argument("--beta_value", type=float, default=2.2)
 args, dict_file = parser.parse_known_args()
 
 mode = args.mode
@@ -183,6 +205,13 @@ if do_bandpass_integration:
     chain_name += f"_passbands"
     plot_dir += f"_passbands"
     
+if args.sample_beta:
+    chain_name += f"_sampled_beta"
+    plot_dir += f"_sampled_beta"
+else:
+    chain_name += f"_beta{args.beta_value}"
+    plot_dir += f"_beta{args.beta_value}"
+
 pspy_utils.create_directory(plot_dir)
 
 passbands = dust_utils.load_band_pass(d, use_220=use_220)
@@ -210,8 +239,8 @@ icov_res_planck = np.linalg.inv(cov_res_planck[np.ix_(idx_planck, idx_planck)]) 
 # High-ell 220 GHz spectra from ACT DR6
 if use_220:
     spec_name = "dr6_pa4_f220xdr6_pa4_f220"
-    #spec_dir = os.path.join(args.dr6_result_path, "spectra")
-    cov_dir = os.path.join(args.dr6_result_path, "covariances")
+    spec_dir = os.path.join(args.dr6_result_path_spectra)
+    cov_dir = os.path.join(args.dr6_result_path_covariance)
     lb, ps_220, cov_220 = dust_utils.get_spectra_and_cov(spec_dir, cov_dir, spec_name, mode, spectra, mc_cov=mc_cov, leak_cov=leak_cov)
     lmin, lmax = 4500, 8500+10
     idx_220 = np.where((bin_low >= lmin) & (bin_high <= lmax))[0]
@@ -221,6 +250,10 @@ params = {"TT": ["a_c", "a_p", "a_gtt"]}
 if use_220:
     params["TT"].append(f"bandint_shift_dr6_pa4_f220")
     
+if args.sample_beta:
+    params["TT"].append("beta_c")
+    params["TT"].append("beta_p")
+
 for m in ["TE", "EE", "BB", "TB"]:
     params[m] = [f"a_g{m.lower()}"]
 
@@ -251,9 +284,9 @@ for par_name in params[mode]:
     mean[par_name] = samples.mean(par_name)
 
 if use_220:
-    lb, res_planck_model, lb_220, fg_220_model = get_fg_model(mean["a_p"], mean["a_c"], mean["a_gtt"], mean["a_gte"],
-                                                              mean["a_gee"], mean["a_gbb"], mean["a_gtb"], bandint_shift_dr6_pa4_f220=mean["bandint_shift_dr6_pa4_f220"])
-                                                          
+    lb, res_planck_model, lb_220, fg_220_model = get_fg_model(mean["a_p"], mean["a_c"], mean["a_gtt"], mean["a_gte"], mean["a_gee"], mean["a_gbb"], mean["a_gtb"], mean["beta_c"], mean["beta_p"], bandint_shift_dr6_pa4_f220=mean["bandint_shift_dr6_pa4_f220"])
+
+                                                  
     chi2 =  (res_planck[idx_planck] - res_planck_model[idx_planck]) @ icov_res_planck @ (res_planck[idx_planck] - res_planck_model[idx_planck])
     chi2 +=  (ps_220[idx_220] - fg_220_model[idx_220]) @ icov_220 @ (ps_220[idx_220] - fg_220_model[idx_220])
     
@@ -262,7 +295,8 @@ if use_220:
 
 else:
     lb, res_planck_model = get_fg_model(mean["a_p"], mean["a_c"], mean["a_gtt"], mean["a_gte"],
-                                        mean["a_gee"], mean["a_gbb"], mean["a_gtb"], bandint_shift_dr6_pa4_f220=0)
+                                        mean["a_gee"], mean["a_gbb"], mean["a_gtb"], mean["beta_c"], mean["beta_p"], bandint_shift_dr6_pa4_f220=0)
+
 
     chi2 =  (res_planck[idx_planck] - res_planck_model[idx_planck]) @ icov_res_planck @ (res_planck[idx_planck] - res_planck_model[idx_planck])
     

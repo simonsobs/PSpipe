@@ -21,9 +21,10 @@ import argparse
 from os.path import join as opj
 
 import numpy as np
+import healpy as hp
 
 from pixell import enmap
-from pspipe_utils import kspace, log, pspipe_list, transfer_function, simulation, misc
+from pspipe_utils import kspace, log, pspipe_list, transfer_function, misc
 from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 
 parser = argparse.ArgumentParser(description=description,
@@ -220,12 +221,12 @@ for sv in surveys:
         pixwins[sv] = (wy[:, None] * wx[None, :])
         inv_pixwins[sv] = pixwins[sv] ** (-1)
 
-    if d[f"pixwin_{sv}"]["pix"] == "CAR" and apply_kspace_filter:
+    if apply_kspace_filter:
         filter_dicts[sv] = d[f"k_filter_{sv}"]
         filters[sv] = kspace.get_kspace_filter(templates[sv],
                                                filter_dicts[sv],
                                                dtype=np.float32)
-        
+
 # get spectrum-level auxiliary data products
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
@@ -238,6 +239,7 @@ if apply_kspace_filter and kspace_tf_path != "analytical":
 # instantiate on-the-fly simulation models. this involves packaging 
 # power spectra and beams etc for the signal model, and the noise model
 if which == 'sims':
+    from pspipe_utils import simulation
     mapname_list = []
     mapnames2minfos = {}
     bl = []
@@ -333,7 +335,7 @@ for iii in mapset_iterator:
             if apply_kspace_filter:
                 filter = filters[sv]
                 weighted_filter = filter_dicts[sv]["weighted"]
-            if deconvolve_pixwin:
+            if deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR":
                 inv_pwin = inv_pixwins[sv] # if d[f"pixwin_{sv}"]["pix"] == "CAR" else None # FIXME: see above
 
         cal, pol_eff = d[f"cal_{sv}_{m}"], d[f"pol_eff_{sv}_{m}"]
@@ -383,7 +385,7 @@ for iii in mapset_iterator:
                         else:
                             split.write_map(f"{sim_map_dir}" + f"noise_sim_map{tag}_{sv}_{m}_set{split_idx}_{iii:05d}.fits")
 
-                if apply_kspace_filter and deconvolve_pixwin:
+                if apply_kspace_filter and deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR":
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}")
                     split = kspace.filter_map(split,
@@ -413,7 +415,6 @@ for iii in mapset_iterator:
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}")
 
-                            
             elif win_T.pixel == "HEALPIX":
                 ###################################
                 # INJECT MAPS
@@ -454,7 +455,7 @@ for iii in mapset_iterator:
         window_tuple = None
         win_kspace = None
 
-        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Survey '{sv}' and map '{m}' alm execution time: {time.time() - t0} seconds")
+        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Survey '{sv}' and map '{m}' alm execution time: {(time.time() - t0):.3f} seconds")
 
     # compute the power spectra
     
@@ -474,7 +475,7 @@ for iii in mapset_iterator:
                 continue
             for k, snk in enumerate(splits_iterator[sv]): # k == split_idx, since data
                 master_alms[sv, m, snk] = np.load(f"{alms_dir}" + f"alms_{sv}_{m}_set{k}.npy")
-        log.info(f"[Rank {so_mpi.rank}] Loaded alms: {time.time() - t0} seconds")
+        log.info(f"[Rank {so_mpi.rank}] Loaded alms: {(time.time() - t0):.3f} seconds")
 
     t0 = time.time()
     log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Computing spectra")

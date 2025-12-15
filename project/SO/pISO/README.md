@@ -255,7 +255,7 @@ OMP_NUM_THREADS=32 srun -n 8 -c 32 --cpu_bind=cores python {python_path}/project
 This script can run in about 10 minutes (depends on the template size).
 
 ### Passbands and other
-`planck_symlinks.sh` creates the right tymlinks for passbands and other (?).
+`planck_symlinks.sh` creates the right symlinks for passbands and other (?).
 ```bash
 bash {python_path}/planck_symlinks.sh {paramfile}
 ```
@@ -300,9 +300,9 @@ You can run these using:
 ```bash
 salloc -N 4 -C cpu -q interactive -t 02:00:00
 
-OMP_NUM_THREADS=4 srun -n 256 -c 4 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/planck/get_planck_sim_nlms.py global_legacy.dict
+OMP_NUM_THREADS=4 srun -n 256 -c 4 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/planck/get_planck_sim_nlms.py {paramfile}
 
-OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_mnms_get_spectra_from_nlms_per_split.py global_legacy.dict
+OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_mnms_get_spectra_from_nlms_per_split.py {paramfile}
 ```
 
 To compute the montecarlo contribution to the covariance matrix, we run `path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_analysis` (computing the average and standard deviation of the sims), `path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_cov_analysis.py` (computing the montecarlo contribution to the covariance) and plotting functions:

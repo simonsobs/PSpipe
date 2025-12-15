@@ -453,7 +453,7 @@ In the end, you should have the following added to your `data_dir` :
 │   └── planck
 │       └── analytic_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
 │       ├── ...
-leakage_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
+│       ├── leakage_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
 │       ├── ...
 │       └── mc_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
 └── windows

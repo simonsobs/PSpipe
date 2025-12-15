@@ -315,7 +315,7 @@ OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python path/to/PSpipe/proj
 ```
 
 We can also generate noise-only simulations with `path/to/PSpipe/project/SO/pISO/python/planck/get_planck_spectra_correction_from_nlms.py`, to compute the correlated residual measured in the AxB NPIPE simulations or hm1xhm2 legacy simulations. These spectra are saved in the `sim_spectra_planck_noise_and_syst_dir` path.
-We then compute the mean and standard deviation of these simulations with `path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_analysis`, using the flag `--planck-correction`, to point the code to the `sim_spectra_planck_noise_and_syst_dir` directory. The average of these corrections are saved at the `planck_mc_correction_dir` path. Finally, the Planck spectra (already corrected by the leakage and read from the `spectra_leak_corr_dir` directory), are also corrected for the correlated residuals from the end-to-end simulations running `path/to/PSpipe/project/SO/pISO/python/planck/get_corrected_planck_spectra.py`. The final spectra are saved in `spectra_leak_corr_planck_bias_corr_dir`.
+We then compute the mean and standard deviation of these simulations with `path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_analysis`, using the flag `--planck-correction`, to point the code to the `sim_spectra_planck_noise_and_syst_dir` directory. The average of these corrections are saved at the `planck_mc_correction_dir` path. Finally, the Planck spectra (already corrected by the leakage and read from the `spectra_leak_corr_dir` directory) are corrected for the correlated residuals from the end-to-end simulations running `path/to/PSpipe/project/SO/pISO/python/planck/get_corrected_planck_spectra.py`. The final spectra are saved in `spectra_leak_corr_planck_bias_corr_dir`.
 
 You can run it with:
 ```bash
@@ -343,7 +343,7 @@ OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python path/to/PSpipe/proj
 OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python path/to/PSpipe/project/SO/pISO/python/dust/fit_dust_amplitude.py {paramfile} --mode BB
 ```
 
-The `path/to/PSpipe/project/SO/pISO/python/dust/fit_dust_amplitude.py` can be run with additional flags in case we want to use the leakage and end-to-end sim corrected spectra (`--leak-corr`), the ACT DR6 220 channel for the CIB fit (`--use-220` and `--dr6-result-path-spectra` + `--dr6-result-path-covariance`), in case we want to sampled over the beta of CIB (--sample_beta) or set them to a value different than the default 2.20 (--beta_value), which is the value preferred by Planck data.
+The `path/to/PSpipe/project/SO/pISO/python/dust/fit_dust_amplitude.py` can be run with additional flags in case we want to use the leakage and end-to-end sim corrected spectra (`--leak-corr`), the ACT DR6 220 channel for the CIB fit (`--use-220` and `--dr6-result-path-spectra` + `--dr6-result-path-covariance`), in case we want to sampled over the beta of CIB (`--sample_beta`) or set them to a value different than the default 2.20 (`--beta_value`), which is the value preferred by Planck data.
 
 ## Contribution to the covariance matrix from foreground parameters uncertainty
 

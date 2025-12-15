@@ -46,7 +46,6 @@ if type not in ["Dl", "Cl"]:
     raise ValueError("Unkown 'type' value! Must be either 'Dl' or 'Cl'")
 binning_file = d["binning_file"]
 binned_mcm = d["binned_mcm"]
-mk_pseudospectra = False
 
 if d["use_toeplitz_mcm"] == True:
     assert args.old, 'can only toeplitz with pspy for now' # FIXME

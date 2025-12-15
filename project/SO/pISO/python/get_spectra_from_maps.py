@@ -212,20 +212,23 @@ for sv in surveys:
     # FIXME: this will not work for SO LF which has a different template despite
     # being the same survey
     templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[sv][0]}"])
-        
-    if d[f"pixwin_{sv}"]["pix"] == "CAR" and deconvolve_pixwin:
-        wy, wx = enmap.calc_window(templates[sv].data.shape,
-                                   order=d[f"pixwin_{sv}"]["order"])
-        wy = wy.astype(np.float32)
-        wx = wx.astype(np.float32)
-        pixwins[sv] = (wy[:, None] * wx[None, :])
-        inv_pixwins[sv] = pixwins[sv] ** (-1)
+    
+    # NOTE: a map may a CAR map but have a HEALPIX pixwin, in which case we may
+    # kspace filter it, but want to use a HEALPIX pixwin
+    if templates[sv].pixel == "CAR":
+        if d[f"pixwin_{sv}"]["pix"] == "CAR" and deconvolve_pixwin:
+            wy, wx = enmap.calc_window(templates[sv].data.shape,
+                                    order=d[f"pixwin_{sv}"]["order"])
+            wy = wy.astype(np.float32)
+            wx = wx.astype(np.float32)
+            pixwins[sv] = (wy[:, None] * wx[None, :])
+            inv_pixwins[sv] = pixwins[sv] ** (-1)
 
-    if apply_kspace_filter:
-        filter_dicts[sv] = d[f"k_filter_{sv}"]
-        filters[sv] = kspace.get_kspace_filter(templates[sv],
-                                               filter_dicts[sv],
-                                               dtype=np.float32)
+        if apply_kspace_filter:
+            filter_dicts[sv] = d[f"k_filter_{sv}"]
+            filters[sv] = kspace.get_kspace_filter(templates[sv],
+                                                filter_dicts[sv],
+                                                dtype=np.float32)
 
 # get spectrum-level auxiliary data products
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
@@ -329,14 +332,14 @@ for iii in mapset_iterator:
 
         window_tuple = (win_T, win_pol)
 
-        if win_T.pixel == "CAR": # FIXME: might not match d[f"pixwin_{sv}"]["pix"], there should only be one
-            if apply_kspace_filter or deconvolve_pixwin:
+        if win_T.pixel == "CAR":
+            if apply_kspace_filter or (deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR"):
                 win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{m}"])
             if apply_kspace_filter:
                 filter = filters[sv]
                 weighted_filter = filter_dicts[sv]["weighted"]
             if deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR":
-                inv_pwin = inv_pixwins[sv] # if d[f"pixwin_{sv}"]["pix"] == "CAR" else None # FIXME: see above
+                inv_pwin = inv_pixwins[sv]
 
         cal, pol_eff = d[f"cal_{sv}_{m}"], d[f"pol_eff_{sv}_{m}"]
 
@@ -347,11 +350,7 @@ for iii in mapset_iterator:
             else:
                 split_idx = k - 1 # we put signal first because it is always correlated, so has biggest memory footprint
             
-            if win_T.pixel == "CAR": # FIXME: might not match d[f"pixwin_{sv}"]["pix"], there should only be one
-
-                ###################################
-                # INJECT MAPS
-                ###################################
+            if win_T.pixel == "CAR":
 
                 # data injection
                 if which == 'data':
@@ -385,7 +384,7 @@ for iii in mapset_iterator:
                         else:
                             split.write_map(f"{sim_map_dir}" + f"noise_sim_map{tag}_{sv}_{m}_set{split_idx}_{iii:05d}.fits")
 
-                if apply_kspace_filter and deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR":
+                if apply_kspace_filter and (deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR"):
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}")
                     split = kspace.filter_map(split,
@@ -404,7 +403,7 @@ for iii in mapset_iterator:
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
 
-                elif deconvolve_pixwin:
+                elif deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR":
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}")
                     split = so_map.fourier_convolution(split,
@@ -416,9 +415,6 @@ for iii in mapset_iterator:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}")
 
             elif win_T.pixel == "HEALPIX":
-                ###################################
-                # INJECT MAPS
-                ###################################
 
                 # data injection
                 if which == 'data':
@@ -496,11 +492,14 @@ for iii in mapset_iterator:
 
                 # compute specific cls with higher precision, save memory overall by
                 # doing this per spectrum. start_at_zero=False to match pspy convention
+                # TODO: test if speed penalty of alm np.complex128 conversion 
+                # is worth the memory saved (takes ~14s per spectrum)
                 _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1].astype(np.complex128),
                                                                master_alms[sv2, m2, snk2].astype(np.complex128),
                                                                spectra=spectra,
                                                                apply_pspy_cut=True)
                 
+                # FIXME: assumes pseudo2datavec in spectra order
                 pseudovec = so_spectra.spec_dict2vec(pseudo_dict, spectra)
                 datavec = pseudo2datavec @ pseudovec
                 

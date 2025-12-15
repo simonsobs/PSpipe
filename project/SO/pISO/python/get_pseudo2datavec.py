@@ -49,7 +49,7 @@ if apply_kspace_filter:
         # being the same survey
         templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[sv][0]}"])
             
-        if d[f"pixwin_{sv}"]["pix"] == "CAR":
+        if templates[sv].pixel == "CAR":
             filter_dicts[sv] = d[f"k_filter_{sv}"]
         else:
             raise NotImplementedError('can only kspace filter CAR maps')
@@ -97,6 +97,7 @@ for task in subtasks:
 
     # need to splice mbl_inv into spectra-ordered arrays
     # TODO: consider disk-space, memory (could be sparse)
+    # FIXME: function assumes TT, TE, TB, ET, BT, EE, EB, BE, BB order
     pseudo2datavec = so_mcm.get_spec2spec_array_from_spin2spin_array(mbl_inv, dense=True)
 
     # get the inv_kspace matrix for this array cross, if necessary
@@ -104,6 +105,7 @@ for task in subtasks:
         inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix[spec_name]) 
 
         # apply the inv_kspace matrix to mbl_inv to get data operator
+        # FIXME: assumes inv_kspace_mat in TT, TE, TB, ET, BT, EE, EB, BE, BB order
         pseudo2datavec = inv_kspace_mat @ pseudo2datavec
 
     # get the pixwin for healpix, if necessary

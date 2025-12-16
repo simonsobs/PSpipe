@@ -4,11 +4,15 @@ noise in the covariance (TODO: add these pieces, fg_covs, lensing).
 
 # Setup
 1. Install `PSpipe` dependencies in an environment
+   For now you need to get on `zach_piso` branchs os `pspy` and `pspipe_utils`, so you may want to run something like (the order is important):
+   ```bash
+    pip install git+https://github.com/simonsobs/pspipe_utils.git@zach_piso --no-dep
+    pip install git+https://github.com/simonsobs/pspy.git@zach_piso --no-dep
+    ```
 2. Download `PSpipe` to a directory on your system
 3. Make a directory on your system for `PSpipe` input and output. It can be
 named whatever you want, but we'll refer to it as the `data_dir` 
-5. Locate all required pre-existing products on your system. Either copy or 
-symlink above products into subdirectories with those names inside the
+5. Locate all required pre-existing products on your system. Either copy or symlink (you can use `symlinks.sh`) above products into subdirectories with those names inside the
 `data_dir`. It should look like this:
     ```bash
     /path/to/my/PSpipe/data_dir
@@ -132,10 +136,8 @@ in the paramfile, and
     ```
     in the yaml file.
     - command: `sbatch --mem 48G --cpus-per-task 4 --time 10:00 --job-name get_xtra_mask /path/to/sbatch/script.slurm python -u /path/to/PSpipe/project/SO/pISO/python/masks/get_xtra_mask.py /path/to/PSpipe/project/SO/pISO/paramfiles/dr6xdeep56_20251119.dict`
-4. Get the source subtracted LAT maps. for that we will use the ACT maps and source subtracted maps to get a source map and subtract it from LAT maps. This is meant to be a temporary solution before we get actual source subtracted maps.
-    - command : `python /path/to/PSpipe/project/SO/pISO/python/act/subtract_source.py /path/to/PSpipe/project/SO/pISO/paramfiles/dr6xdeep56_20251119.dict`
-  
-
+4. Get the source subtracted LAT maps. For that we will use the ACT maps and source subtracted maps to get a source map and subtract it from LAT maps. This is meant to be a temporary solution before we get actual source subtracted maps.
+    - `python /path/to/PSpipe/project/SO/pISO/python/act/subtract_source.py /path/to/PSpipe/project/SO/pISO/paramfiles/dr6xdeep56_20251119.dict`
 
 After this point, the `data_dir` should look like:
 ```bash
@@ -240,27 +242,28 @@ Here are some specific instructions to pre-process Planck maps, namely to projec
 
 ### Beams
 Running `python/planck/extract_planck_beams.py` will extract and plot planck's beams in the right folder. You just need to specify where the original beams stand with `planck_fits_beam_path`. 
-It also extract some "extended" NPIPE beams and save these in both legacy and NPIPE folders, these will be used for source subtraction.
+It also extract some "extended" NPIPE beams (with higher `lmax`) and save these in both legacy and NPIPE folders, these will be used for source subtraction.
 ```bash
-python {python_path}/extract_planck_beams.py {paramfile}
+python /path/to/PSpipe/project/SO/pISO/python/planck/extract_planck_beams.py {paramfile}
 ```
 
 ### Maps projection
 `python/planck/project_planck_maps.py` will project planck maps and ivar on the patch specified by the map at `planck_projection_template` (you can use an already projected ACT or LAT map for instance).
-TODO : project planck masks ?
+TODO : also project planck masks ?
 ```bash
 salloc -N 1 -C cpu -q interactive -t 01:00:00
-OMP_NUM_THREADS=32 srun -n 8 -c 32 --cpu_bind=cores python {python_path}/project_planck_maps.py {paramfile}
+OMP_NUM_THREADS=32 srun -n 8 -c 32 --cpu_bind=cores python /path/to/PSpipe/project/SO/pISO/python/planck/project_planck_maps.py {paramfile}
 ```
 This script can run in about 10 minutes (depends on the template size).
 
 ### Passbands and other
-`planck_symlinks.sh` creates the right tymlinks for passbands and other (?).
+`symlinks.sh` can be used to create the right symlinks in you `data_dir`.
 ```bash
-bash {python_path}/planck_symlinks.sh {paramfile}
+bash /path/to/PSpipe/project/SO/pISO/python/symlinks.sh {paramfile}
 ```
 
 ## Subtract point-sources
+TODO : release projected srcfree Planck maps ? This part is a bit painful.
 You first need to extract the source catalog defined by `planck_source_catalog` in the paramfile with `python/planck/reformat_source_catalog.py`. You can then run the source subtraction using the 2 bash file. Note that you need to specify the path of your dory file with `dory_path` (you can use `python/planck/dory.py`, you just need to install enlib). These scripts read maps at `maps_dir_planck/{npipe|legacy}/` and make _srcfree maps.
 You need to run this part with an interactive allocation, it takes around 10 minutes per map :
 ```bash

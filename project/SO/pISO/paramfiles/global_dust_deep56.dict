@@ -1,3 +1,6 @@
+run_name = "dust_deep56"
+data_dir = "/scratch/c.spxsg6/iso/dust/"
+
 surveys = ["Planck"]
 arrays_Planck = ["f143", "f353"]
 planck_version = "npipe"
@@ -6,36 +9,38 @@ release_dir = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/"
 binning_file = release_dir + "pspipe/binning/binning_50"
 apply_kspace_filter  = True
 k_filter_Planck = {"type":'binary_cross', "vk_mask":[-90, 90], "hk_mask":[-50, 50], "weighted":False}
+
 kspace_tf_path  = release_dir + "pspipe/kspace_tf/dust_binning_50/"
-sim_spec_dir = "/scratch/c.spxsg6/iso/dust/sim_spectra/dust_binning_50/"
 source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
-
-planck_projected_dir = "/scratch/c.spxsg6/iso/planck_projected"
-npipe_map_dir = "/scratch/c.spxsg6/planck2020/npipe/"
-legacy_map_dir = "/scratch/c.spxsg6/planck2018/pr3/frequencymaps/"
-
+npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
+legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"
 npipe_sim_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
-legacy_sim_dir = "/pscratch/sd/t/tlouis/data_analysis_v4_dec/planck_co_analysis/planck_legacy_sim/"
+legacy_sim_dir = "/global/cfs/cdirs/sobs/users/sgiardie/iso/legacy/legacy_sims"
 
-mcm_dir = "/scratch/c.spxsg6/iso/dust/mcms"
-alms_dir = "/scratch/c.spxsg6/iso/dust/alms"
-spec_dir = "/scratch/c.spxsg6/iso/dust/spectra"
-best_fits_dir = "/scratch/c.spxsg6/iso/dust/best_fits"
-plots_base_dir = "/scratch/c.spxsg6/iso/dust/plots"
-noise_model_dir = "/scratch/c.spxsg6/iso/dust/noise_model"
-sq_win_alms_dir = "/scratch/c.spxsg6/iso/dust/sq_win_alms"
-cov_dir = "/scratch/c.spxsg6/iso/dust/covariances"
-montecarlo_dir = "/scratch/c.spxsg6/iso/dust/montecarlo"
-catalog_dir = "/scratch/c.spxsg6/iso/dust/catalogs"
-chain_dir = "/scratch/c.spxsg6/iso/dust/chains"
+mcm_dir = data_dir + f"mcms/{run_name}"
+alms_dir = data_dir + f"alms/{run_name}"
+spec_dir = data_dir + f"spectra/{run_name}"
+best_fits_dir = data_dir + f"best_fits/{run_name}"
+plots_base_dir = data_dir + f"plots/{run_name}"
+noise_model_dir = data_dir + f"noise_model/{run_name}"
+sq_win_alms_dir = data_dir + f"sq_win_alms/{run_name}"
+cov_dir = data_dir + f"covariances/{run_name}"
+montecarlo_dir = data_dir + f"montecarlo/{run_name}"
+catalog_dir = data_dir + f"catalogs/{run_name}"
+chain_dir = data_dir + f"chains/{run_name}"
+sim_spec_dir = data_dir + f"sim_spectra/dust_binning_50/{run_name}"
+planck_projected_dir = data_dir + f"planck_projected/{run_name}"
+mask_dir = data_dir + f'mask/{run_name}'
+window_dir = data_dir + f'windows/{run_name}'
 
 # if you want to compute the leakage contribution and end-to-end sim corrections
-sim_spectra_planck_noise_and_syst_dir = "/scratch/c.spxsg6/iso/dust/sim_spectra_planck_noise_and_syst"
-noise_alms_dir = "/scratch/c.spxsg6/iso/dust/noise_alms"
-planck_mc_correction_dir = "/scratch/c.spxsg6/iso/dust/montecarlo_planck"
-spectra_leak_corr_dir = "/scratch/c.spxsg6/iso/dust/spectra_leak_corr"
-spectra_leak_corr_planck_bias_corr_dir = "/scratch/c.spxsg6/iso/dust/spectra_leak_corr_planck_bias_corr"
-montecarlo_beam_leakage_dir = "/scratch/c.spxsg6/iso/dust/montecarlo_beam_leakage"
+
+sim_spectra_planck_noise_and_syst_dir = data_dir + f"sim_spectra_planck_noise_and_syst/{run_name}"
+noise_alms_dir = data_dir + f"noise_alms/{run_name}"
+planck_mc_correction_dir = data_dir + f"montecarlo_planck/{run_name}"
+spectra_leak_corr_dir = data_dir + f"spectra_leak_corr/{run_name}"
+spectra_leak_corr_planck_bias_corr_dir = data_dir + f"spectra_leak_corr_planck_bias_corr/{run_name}"
+montecarlo_beam_leakage_dir = data_dir + f"montecarlo_beam_leakage/{run_name}"
 
 deconvolve_pixwin = True
 pixwin_Planck = {"pix": 'HEALPIX', "nside": 2048}
@@ -77,7 +82,7 @@ freq_info_Planck_f353 = {"freq_tag": 353, "passband": passband_dir_planck + "pas
 
 planck_fits_beam_path = release_dir + "pspipe/for_planck/beams"
 
-beam_dir = "/scratch/c.spxsg6/iso/dust/beams"
+beam_dir = data_dir + "beams"
 
 beam_T_Planck_f143 = beam_dir + '/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_143Ax143B.dat'  # Get from running pipeline_dust.yml
 beam_T_Planck_f353 = beam_dir + '/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_353Ax353B.dat'
@@ -92,18 +97,16 @@ edge_skip_rescale = 1
 cross_link_threshold = 0.97
 n_med_ivar = 3
 
-mask_dir = '/scratch/c.spxsg6/dr6/masks/'
-ps_mask_Planck_f143 = '/scratch/c.spxsg6/dr6/masks/source_mask_15mJy_and_dust_rad12_deep56.fits'
-ps_mask_Planck_f353 = '/scratch/c.spxsg6/dr6/masks/source_mask_15mJy_and_dust_rad12_deep56.fits'
+ps_mask_Planck_f143 = mask_dir + '/source_mask_15mJy_and_dust_rad12_deep56.fits'
+ps_mask_Planck_f353 = mask_dir + '/source_mask_15mJy_and_dust_rad12_deep56.fits'
 
-window_dir = '/scratch/c.spxsg6/iso/dust/windows/'
-window_kspace_Planck_f143 = '/scratch/c.spxsg6/iso/dust/windows/window_so_i5_f220_kspace.fits'
-window_T_Planck_f143 = '/scratch/c.spxsg6/iso/dust/windows/window_so_i5_f220_baseline.fits'
-window_pol_Planck_f143 = '/scratch/c.spxsg6/iso/dust/windows/window_so_i5_f220_baseline.fits'
+window_kspace_Planck_f143 = window_dir + '/window_so_i5_f220_kspace.fits'
+window_T_Planck_f143 = window_dir + '/window_so_i5_f220_baseline.fits'
+window_pol_Planck_f143 = window_dir + '/window_so_i5_f220_baseline.fits'
 
-window_kspace_Planck_f353 = '/scratch/c.spxsg6/iso/dust/windows/window_so_i5_f220_kspace.fits'
-window_T_Planck_f353 = '/scratch/c.spxsg6/iso/dust/windows/window_so_i5_f220_baseline.fits'
-window_pol_Planck_f353 = '/scratch/c.spxsg6/iso/dust/windows/window_so_i5_f220_baseline.fits'
+window_kspace_Planck_f353 = window_dir + '/window_so_i5_f220_kspace.fits'
+window_T_Planck_f353 = 'window_dir + '/window_so_i5_f220_baseline.fits'
+window_pol_Planck_f353 = window_dir + '/window_so_i5_f220_baseline.fits'
 
 leakage_beam_Planck_f143_TE = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_143%s_t2e.dat' % split for split in ["A", "B"]]
 leakage_beam_Planck_f353_TE = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_353%s_t2e.dat' % split for split in ["A", "B"]]

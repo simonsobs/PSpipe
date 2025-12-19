@@ -54,6 +54,10 @@ use_toeplitz_cov = True
 src_free_maps_Planck = True
 n_splits_Planck = 2
 
+l3_pad = 2000
+
+savgol_w = 300
+savgol_k = 4
 
 maps_Planck_f100 = [ f'{planck_projected_dir}npipe6v20A_f100_map_deep56_patch_srcfree.fits',  f'{planck_projected_dir}npipe6v20B_f100_map_deep56_patch_srcfree.fits']
 maps_Planck_f143 = [ f'{planck_projected_dir}npipe6v20A_f143_map_deep56_patch_srcfree.fits',  f'{planck_projected_dir}npipe6v20B_f143_map_deep56_patch_srcfree.fits']

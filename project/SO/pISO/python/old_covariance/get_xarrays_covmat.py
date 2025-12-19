@@ -58,6 +58,7 @@ if d["use_beam_covariance"]:
     so_cov.plot_cov_matrix(x_ar_beam_corr, file_name=f"{plot_dir}/xar_beam_corr")
 
 
+<<<<<<< HEAD
 if d["use_fg_covariance"]:
     log.info(f"create x array fg cov mat from fg cov block")
 
@@ -72,3 +73,6 @@ if d["use_fg_covariance"]:
     np.save(f"{cov_dir}/x_ar_fg_cov.npy", x_ar_fg_cov)
     x_ar_fg_corr = so_cov.cov2corr(x_ar_fg_cov, remove_diag=True)
     so_cov.plot_cov_matrix(x_ar_fg_corr, file_name=f"{plot_dir}/xar_fg_corr")
+=======
+
+>>>>>>> origin/iso

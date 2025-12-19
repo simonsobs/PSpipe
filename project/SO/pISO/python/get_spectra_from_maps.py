@@ -21,9 +21,10 @@ import argparse
 from os.path import join as opj
 
 import numpy as np
+import healpy as hp
 
 from pixell import enmap
-from pspipe_utils import kspace, log, pspipe_list, transfer_function, simulation, misc
+from pspipe_utils import kspace, log, pspipe_list, transfer_function, misc
 from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 
 parser = argparse.ArgumentParser(description=description,
@@ -211,21 +212,24 @@ for sv in surveys:
     # FIXME: this will not work for SO LF which has a different template despite
     # being the same survey
     templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[sv][0]}"])
-        
-    if d[f"pixwin_{sv}"]["pix"] == "CAR" and deconvolve_pixwin:
-        wy, wx = enmap.calc_window(templates[sv].data.shape,
-                                   order=d[f"pixwin_{sv}"]["order"])
-        wy = wy.astype(np.float32)
-        wx = wx.astype(np.float32)
-        pixwins[sv] = (wy[:, None] * wx[None, :])
-        inv_pixwins[sv] = pixwins[sv] ** (-1)
+    
+    # NOTE: a map may a CAR map but have a HEALPIX pixwin, in which case we may
+    # kspace filter it, but want to use a HEALPIX pixwin
+    if templates[sv].pixel == "CAR":
+        if d[f"pixwin_{sv}"]["pix"] == "CAR" and deconvolve_pixwin:
+            wy, wx = enmap.calc_window(templates[sv].data.shape,
+                                    order=d[f"pixwin_{sv}"]["order"])
+            wy = wy.astype(np.float32)
+            wx = wx.astype(np.float32)
+            pixwins[sv] = (wy[:, None] * wx[None, :])
+            inv_pixwins[sv] = pixwins[sv] ** (-1)
 
-    if d[f"pixwin_{sv}"]["pix"] == "CAR" and apply_kspace_filter:
-        filter_dicts[sv] = d[f"k_filter_{sv}"]
-        filters[sv] = kspace.get_kspace_filter(templates[sv],
-                                               filter_dicts[sv],
-                                               dtype=np.float32)
-        
+        if apply_kspace_filter:
+            filter_dicts[sv] = d[f"k_filter_{sv}"]
+            filters[sv] = kspace.get_kspace_filter(templates[sv],
+                                                filter_dicts[sv],
+                                                dtype=np.float32)
+
 # get spectrum-level auxiliary data products
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
@@ -238,6 +242,7 @@ if apply_kspace_filter and kspace_tf_path != "analytical":
 # instantiate on-the-fly simulation models. this involves packaging 
 # power spectra and beams etc for the signal model, and the noise model
 if which == 'sims':
+    from pspipe_utils import simulation
     mapname_list = []
     mapnames2minfos = {}
     bl = []
@@ -293,22 +298,23 @@ if which == 'sims':
 
     f_name_fg = bestfit_dir + "fg_{}x{}.dat"
     _, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, mapname_list, lmax + 500, spectra)
-
-    signal_model = simulation.SignalModel(mapnames2minfos, lmax, ps_mat, fg_mat,
-                                          bl, cal, pol_eff, bl_err, gl, gl_err,
-                                          pixwin_apod_deg=sim_pixwin_apod_deg)
     
     modeltags2modelinfos = {}
     for k, v in d.items():
         if k.startswith('noise_model'):
             k = k.split('noise_model_')[1]
             modeltags2modelinfos[k] = v
+
+    signal_model_args = (mapnames2minfos, lmax, ps_mat, fg_mat, bl, cal, pol_eff)
+    noise_model_args = (mapnames2minfos, modeltags2modelinfos)
+    signal_model_kwargs = dict(bl_err=bl_err, gl=gl, gl_err=gl_err, pixwin_apod_deg=sim_pixwin_apod_deg)
+    noise_model_kwargs = dict(add_white_noise_above_lmax=add_white_noise_above_lmax,
+                              white_noise_ell_taper_width=white_noise_ell_taper_width,
+                              keep_model=keep_noise_models_in_memory)
     
-    noise_model = simulation.NoiseModel(mapnames2minfos,
-                                        modeltags2modelinfos,
-                                        add_white_noise_above_lmax=add_white_noise_above_lmax,
-                                        white_noise_ell_taper_width=white_noise_ell_taper_width,
-                                        keep_model=keep_noise_models_in_memory)
+    data_model = simulation.DataModel(signal_model_args, noise_model_args, 
+                                      signal_model_kwargs=signal_model_kwargs,
+                                      noise_model_kwargs=noise_model_kwargs)
 
 # now we can iterate over mapsets, and maps within them
 for iii in mapset_iterator:
@@ -326,14 +332,14 @@ for iii in mapset_iterator:
 
         window_tuple = (win_T, win_pol)
 
-        if win_T.pixel == "CAR": # FIXME: might not match d[f"pixwin_{sv}"]["pix"], there should only be one
-            if apply_kspace_filter or deconvolve_pixwin:
+        if win_T.pixel == "CAR":
+            if apply_kspace_filter or (deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR"):
                 win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{m}"])
             if apply_kspace_filter:
                 filter = filters[sv]
                 weighted_filter = filter_dicts[sv]["weighted"]
-            if deconvolve_pixwin:
-                inv_pwin = inv_pixwins[sv] # if d[f"pixwin_{sv}"]["pix"] == "CAR" else None # FIXME: see above
+            if deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR":
+                inv_pwin = inv_pixwins[sv]
 
         cal, pol_eff = d[f"cal_{sv}_{m}"], d[f"pol_eff_{sv}_{m}"]
 
@@ -344,11 +350,7 @@ for iii in mapset_iterator:
             else:
                 split_idx = k - 1 # we put signal first because it is always correlated, so has biggest memory footprint
             
-            if win_T.pixel == "CAR": # FIXME: might not match d[f"pixwin_{sv}"]["pix"], there should only be one
-
-                ###################################
-                # INJECT MAPS
-                ###################################
+            if win_T.pixel == "CAR":
 
                 # data injection
                 if which == 'data':
@@ -371,9 +373,9 @@ for iii in mapset_iterator:
                 # sim injection, assume no bright point sources after masking
                 else:
                     if snk == 's':
-                        split = signal_model.get_sim(f'{sv}_{m}', iii)
+                        split = data_model.get_signal_sim(f'{sv}_{m}', iii)
                     else:
-                        split = noise_model.get_sim(f'{sv}_{m}', split_idx, iii)
+                        split = data_model.get_noise_sim(f'{sv}_{m}', split_idx, iii)
 
                     # possibly save raw map sim
                     if iii in range(write_sim_map_start, write_sim_map_stop):
@@ -382,7 +384,7 @@ for iii in mapset_iterator:
                         else:
                             split.write_map(f"{sim_map_dir}" + f"noise_sim_map{tag}_{sv}_{m}_set{split_idx}_{iii:05d}.fits")
 
-                if apply_kspace_filter and deconvolve_pixwin:
+                if apply_kspace_filter and (deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR"):
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}")
                     split = kspace.filter_map(split,
@@ -401,7 +403,7 @@ for iii in mapset_iterator:
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
 
-                elif deconvolve_pixwin:
+                elif deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR":
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}")
                     split = so_map.fourier_convolution(split,
@@ -412,11 +414,7 @@ for iii in mapset_iterator:
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}")
 
-                            
             elif win_T.pixel == "HEALPIX":
-                ###################################
-                # INJECT MAPS
-                ###################################
 
                 # data injection
                 if which == 'data':
@@ -453,7 +451,7 @@ for iii in mapset_iterator:
         window_tuple = None
         win_kspace = None
 
-        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Survey '{sv}' and map '{m}' alm execution time: {time.time() - t0} seconds")
+        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Survey '{sv}' and map '{m}' alm execution time: {(time.time() - t0):.3f} seconds")
 
     # compute the power spectra
     
@@ -473,7 +471,7 @@ for iii in mapset_iterator:
                 continue
             for k, snk in enumerate(splits_iterator[sv]): # k == split_idx, since data
                 master_alms[sv, m, snk] = np.load(f"{alms_dir}" + f"alms_{sv}_{m}_set{k}.npy")
-        log.info(f"[Rank {so_mpi.rank}] Loaded alms: {time.time() - t0} seconds")
+        log.info(f"[Rank {so_mpi.rank}] Loaded alms: {(time.time() - t0):.3f} seconds")
 
     t0 = time.time()
     log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Computing spectra")
@@ -485,8 +483,8 @@ for iii in mapset_iterator:
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
         pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'))            
             
-        # first measure the raw per-split spectra. NOTE: this is only redundant
-        # if sv1==sv2, m1==m2, and pol1==pol2.
+        # first measure the raw per-split spectra. NOTE: redundant computation
+        # is performed when sv1==sv2 and m1==m2, but the code is cleaner
         #
         # NOTE: this is (s, 0, 1, 2, ...) for a sim
         for snk1 in splits_iterator[sv1]:
@@ -494,11 +492,14 @@ for iii in mapset_iterator:
 
                 # compute specific cls with higher precision, save memory overall by
                 # doing this per spectrum. start_at_zero=False to match pspy convention
+                # TODO: test if speed penalty of alm np.complex128 conversion 
+                # is worth the memory saved (takes ~14s per spectrum)
                 _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1].astype(np.complex128),
                                                                master_alms[sv2, m2, snk2].astype(np.complex128),
                                                                spectra=spectra,
                                                                apply_pspy_cut=True)
                 
+                # FIXME: assumes pseudo2datavec in spectra order
                 pseudovec = so_spectra.spec_dict2vec(pseudo_dict, spectra)
                 datavec = pseudo2datavec @ pseudovec
                 

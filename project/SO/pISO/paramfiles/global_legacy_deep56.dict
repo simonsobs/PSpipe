@@ -9,7 +9,9 @@ release_dir = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/"
 binning_file = release_dir + "pspipe/binning/binning_50"
 apply_kspace_filter = True
 
-planck_projected_dir = data_dir + "planck_projected/"
+maps_dir_planck = data_dir + "planck_projected/"
+
+planck_projection_template = f"{release_dir}/maps/published/act_dr6.02_std_AA_night_pa4_f220_4way_set0_map_srcfree.fits"
 npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
 legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"
 
@@ -36,7 +38,8 @@ sim_spec_dir =  data_dir + f"sim_spectra/dust_binning_50/{run_name}"
 
 k_filter_Planck = {'type': 'binary_cross', 'vk_mask': [-90, 90], 'hk_mask': [-50, 50], 'weighted': False}
 kspace_tf_path = release_dir + "pspipe/kspace_tf/dust_binning_50/"
-source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
+planck_source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
+
 deconvolve_pixwin = True
 
 pixwin_Planck = {'pix': 'HEALPIX', 'nside': 2048}

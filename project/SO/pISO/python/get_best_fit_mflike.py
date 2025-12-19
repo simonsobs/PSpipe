@@ -5,7 +5,7 @@ It uses camb and the foreground model of mflike based on fgspectra
 import matplotlib
 
 matplotlib.use("Agg")
-import sys
+from os.path import join as opj
 import argparse
 
 import numpy as np
@@ -36,8 +36,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 bestfit_dir = d["best_fits_dir"]
 components_dir = f"{bestfit_dir}/components"
 
-plot_base_dir = d["plots_base_dir"]
-plot_dir = f"{plot_base_dir}/best_fits/"
+plot_dir = opj(d['plots_dir'], 'best_fits')
 
 
 

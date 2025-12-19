@@ -21,8 +21,7 @@ d.read_from_file(args.paramfile)
 log = log.get_logger(**d)
 
 mcm_dir = d['mcm_dir']
-plot_base_dir = d["plots_base_dir"]
-plot_dir = f"{plot_base_dir}/mcms/"
+plot_dir = opj(d['plots_dir'], 'mcms')
 pspy_utils.create_directory(plot_dir)
 
 surveys = d["surveys"]
@@ -50,7 +49,7 @@ if apply_kspace_filter:
         # being the same survey
         templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[sv][0]}"])
             
-        if d[f"pixwin_{sv}"]["pix"] == "CAR":
+        if templates[sv].pixel == "CAR":
             filter_dicts[sv] = d[f"k_filter_{sv}"]
         else:
             raise NotImplementedError('can only kspace filter CAR maps')
@@ -98,6 +97,7 @@ for task in subtasks:
 
     # need to splice mbl_inv into spectra-ordered arrays
     # TODO: consider disk-space, memory (could be sparse)
+    # FIXME: function assumes TT, TE, TB, ET, BT, EE, EB, BE, BB order
     pseudo2datavec = so_mcm.get_spec2spec_array_from_spin2spin_array(mbl_inv, dense=True)
 
     # get the inv_kspace matrix for this array cross, if necessary
@@ -105,6 +105,7 @@ for task in subtasks:
         inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix[spec_name]) 
 
         # apply the inv_kspace matrix to mbl_inv to get data operator
+        # FIXME: assumes inv_kspace_mat in TT, TE, TB, ET, BT, EE, EB, BE, BB order
         pseudo2datavec = inv_kspace_mat @ pseudo2datavec
 
     # get the pixwin for healpix, if necessary
@@ -115,9 +116,10 @@ for task in subtasks:
 
     # save and plot
     np.save(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'), pseudo2datavec)
-
     plt.figure(figsize=(10, 8))
     plt.imshow(np.log(np.abs(pseudo2datavec)), aspect=100)
+    plt.xticks([pseudo2datavec.shape[1] * (2 * i + 1) / 18 for i in range(9)], spectra)
+    plt.yticks([pseudo2datavec.shape[0] * (2 * i + 1) / 18 for i in range(9)], spectra)
     plt.colorbar()
     plt.title(f'pseudo2datavec {spec_name}')
     plt.savefig(opj(f'{plot_dir}', f'pseudo2datavec_{spec_name}'), bbox_inches='tight')

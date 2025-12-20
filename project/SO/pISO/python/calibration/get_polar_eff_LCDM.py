@@ -10,24 +10,31 @@ import getdist.plots as gdplt
 from cobaya.run import run
 import numpy as np
 import sys
+import yaml
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
+# log calib infos from calib yaml file
+with open(d['poleff_yaml'], "r") as f:
+    calib_dict: dict = yaml.safe_load(f)
+calib_infos: dict = calib_dict['get_polar_eff_LCDM.py']
+
 # Set up directories
-spec_dir = "/global/cfs/cdirs/sobs/users/merrydup/deep56/spectra_0925"
-cov_dir = "/pscratch/sd/m/merrydup/PSpipe_SO/covariances_d56_0925_i1"
-bestfit_dir = "best_fits"
-mcm_dir = "mcms"
+spec_dir = d['spec_dir']
+cov_dir = d['cov_dir']
+bestfit_dir = d['best_fits_dir']
+mcm_dir = d["mcm_dir"]
 planck_corr = False
 use_leakage_cov = False
 
 if planck_corr:
     spec_dir = "spectra_leak_corr_planck_bias_corr"
 
-
-output_dir = "pol_eff_results"
+output_dir = d['poleff_dir']
 pspy_utils.create_directory(output_dir)
+plots_dir = d['plots_dir'] + '/poleff/'
+pspy_utils.create_directory(plots_dir)
 
 ps_filename = f"{bestfit_dir}/cmb.dat"
 
@@ -60,6 +67,8 @@ fg_params["a_gte"] = 1.
 
 print(dust_priors)
 
+measure_list = calib_infos['sets_to_measure'] or [f'{sv}_{ar}' for sv in surveys for ar in arrays[sv]]
+
 passbands = {}
 for sv in surveys:
     for ar in arrays[sv]:
@@ -84,11 +93,10 @@ def get_model(cmb_th, fg_th, Bbl, dust_amp, pol_eff, mode):
     return Bbl @ ps_theory
 
 pol_eff_mean, pol_eff_std, dust_mean, dust_std = {}, {}, {}, {}
-for sv in surveys:
-    for ar in arrays[sv]:
+for sv_ar in measure_list:
         for spectrum in ["EE", "TE"]:
         
-            print(spectrum, sv, ar, d["lmin_cal"], d[f"lmax_cal_{sv}_{ar}"])
+            print(spectrum, sv, ar, calib_infos["lmin_cal"], calib_infos[f"lmax_cal_{sv}_{ar}"])
 
             # Load ps and cov
             spec_name = f"{sv}_{ar}x{sv}_{ar}"
@@ -104,7 +112,7 @@ for sv in surveys:
             cov = so_cov.selectblock(cov, spectra, n_bins=n_bins, block=spectrum+spectrum)
 
             # Multipole cuts
-            id = np.where((lb >= d["lmin_cal"]) & (lb <= d[f"lmax_cal_{sv}_{ar}"]))[0]
+            id = np.where((lb >= calib_infos["lmin_cal"]) & (lb <= calib_infos[f"lmax_cal_{sv}_{ar}"]))[0]
             ps = ps[id]
             cov = cov[np.ix_(id, id)]
             invcov = np.linalg.inv(cov)
@@ -174,7 +182,7 @@ for sv in surveys:
             
             gdplot = gdplt.get_subplot_plotter()
             gdplot.triangle_plot(samples, ["pol_eff", "dust_amp"], filled=True, title_limit=1)
-            plt.savefig(f"{output_dir}/posterior_dist_{spectrum}_{sv}_{ar}.png", dpi=300, bbox_inches="tight")
+            plt.savefig(f"{plots_dir}/posterior_dist_{spectrum}_{sv}_{ar}.png", dpi=300, bbox_inches="tight")
 
 
 for sv in surveys:

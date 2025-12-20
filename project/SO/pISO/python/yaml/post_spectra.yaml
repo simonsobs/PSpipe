@@ -1,47 +1,48 @@
 get_calibs.py:
-  surveys_to_calib:
-    - SO
-
   ref_map_sets:
-    SO_i1_f090: "dr6_pa5_f090"
-    SO_i1_f150: "dr6_pa5_f150"
+    lat_iso_i1_f090: "planck_f100"
+    lat_iso_i1_f150: "planck_f143"
 
   planck_corr: False
   subtract_bf_fg: False
 
   ell_ranges:
-    SO_i1_f090: [600, 1200]
-    SO_i1_f150: [600, 1200]
+    lat_iso_i1_f090: [600, 1200]
+    lat_iso_i1_f150: [600, 1200]
 
   y_lims_plot_TT: [-300000, 500000]
 
 
 get_polar_eff_LCDM.py:
+  # sets_to_measure: None # To measure all
+  sets_to_measure:
+    - lat_iso_i1_f090
+    - lat_iso_i1_f150
   lmin_cal: 500
   lmax_cal_dr6_pa4_f220: 2000
   lmax_cal_dr6_pa5_f090: 1200
   lmax_cal_dr6_pa5_f150: 2000
   lmax_cal_dr6_pa6_f090: 1200
   lmax_cal_dr6_pa6_f150: 2000
-  lmax_cal_Planck_f100: 1200
-  lmax_cal_Planck_f143: 2000
-  lmax_cal_Planck_f217: 2000
+  lmax_cal_planck_f100: 1200
+  lmax_cal_planck_f143: 2000
+  lmax_cal_planck_f217: 2000
 
 get_polar_eff.py:
   surveys_to_calib:  
-    - SO
-  ref_map_set_SO_i1_f090: "dr6_pa5_f090"
-  ref_map_set_SO_i1_f150: "dr6_pa5_f150"
-  ell_range_cal_SO_i1_f090: [600, 1200]
-  ell_range_cal_SO_i1_f150: [600, 1200]
+    - lat_iso
+  ref_map_set_lat_iso_i1_f090: "dr6_pa5_f090"
+  ref_map_set_lat_iso_i1_f150: "dr6_pa5_f150"
+  ell_range_cal_lat_iso_i1_f090: [600, 1200]
+  ell_range_cal_lat_iso_i1_f150: [600, 1200]
 
 compute_tf.py:
   surveys_to_calib:
-    - SO
+    - lat_iso
 
   ref_map_sets:
-    SO_i1_f090: "Planck_f100"
-    SO_i1_f150: "Planck_f143"
+    lat_iso_i1_f090: "planck_f100"
+    lat_iso_i1_f150: "planck_f143"
 
   subtract_bf_fg: False
   montecarlo_errors: False
@@ -56,11 +57,11 @@ compute_null_tests.py:
   fudge: False
 
   multipole_range:
-    SO_i1_f090:
+    lat_iso_i1_f090:
       T: [200, 7000]
       E: [200, 7000]
       B: [200, 7000]
-    SO_i1_f150:
+    lat_iso_i1_f150:
       T: [200, 7000]
       E: [200, 7000]
       B: [200, 7000]
@@ -86,3 +87,66 @@ compute_null_tests.py:
     EB: [-0.01, 0.01]
     BE: [-0.01, 0.01]
     BB: [-0.01, 0.01]
+
+plot_everything.py:
+  yscale:
+    TT: log
+    EE: linear
+    BB: linear
+    TE: linear
+    ET: linear
+    TB: linear
+    BT: linear
+    EB: linear
+    BE: linear
+  cross_AxB:
+    xlims:
+      TT: [0, 6000]
+      EE: [0, 5000]
+      BB: [0, 5000]
+      TE: [0, 5000]
+      ET: [0, 5000]
+      TB: [0, 5000]
+      BT: [0, 5000]
+      EB: [0, 5000]
+      BE: [0, 5000]
+    ylims:
+      TT: [10, 7000]
+      EE: [-10, 60]
+      BB: [-20, 20]
+      TE: [-200, 200]
+      ET: [-200, 200]
+      TB: [-40, 40]
+      BT: [-40, 40]
+      EB: [-15, 15]
+      BE: [-15, 15]
+  noise_BxB:
+    xlims:
+      TT: [0, 8000]
+      EE: [0, 8000]
+      BB: [0, 8000]
+      TE: [0, 8000]
+      ET: [0, 8000]
+      BE: [0, 8000]
+      TB: [0, 8000]
+      BT: [0, 8000]
+      EB: [0, 8000]
+    ylims:
+      TT: [.000001, 10.01]
+      EE: [.000001, 10.01]
+      BB: [.000001, 10.01]
+      TE: [-0.0001, 0.0001]
+      ET: [-0.0001, 0.0001]
+      BT: [-0.0001, 0.0001]
+      TB: [-0.0001, 0.0001]
+      EB: [-0.0001, 0.0001]
+      BE: [-0.0001, 0.0001]
+  noise_rms_BxB:
+    xlims:
+      TT: [100, 8000]
+      EE: [100, 8000]
+      BB: [100, 8000]
+    ylims:
+      TT: [.0001, 100.0001]
+      EE: [.0001, 100.0001]
+      BB: [.0001, 100.0001]

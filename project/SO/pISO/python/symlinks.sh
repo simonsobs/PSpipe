@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# To use this : 
+# bash /path/to/PSpipe/project/SO/python/symlinks.sh $paramfile.dict
+
 PARAMFILE=$1
 read data_dir < <(
 python - <<END
@@ -13,9 +16,9 @@ END
 dr6_realease_passbands='/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/pspipe/for_planck/passbands'
 freqs=("100" "143" "217" "353")
 
-passbands_dir=${data_dir}/passbands/
-
 # Planck passbands
+passbands_dir=${data_dir}/passbands/
+mkdir -p ${passbands_dir}
 ln -s ${dr6_realease_passbands} ${passbands_dir}
 mv ${passbands_dir}/passbands ${passbands_dir}/planck
 
@@ -30,3 +33,7 @@ mv ${dr6_beams_dir}/nominal ${dr6_beams_dir}/main_beams
 
 ln -s /global/cfs/cdirs/cmb/data/act_dr6/dr6.02/beams/leakage_beams/nominal/ ${dr6_beams_dir}
 mv ${dr6_beams_dir}/nominal ${dr6_beams_dir}/leakage_beams
+
+# Copy DR6 binning
+mkdir -p ${data_dir}/binning
+cp /global/cfs/cdirs/cmb/data/act_dr6/dr6.02/pspipe/binning/binning_50 ${data_dir}/binning/binning_50.dat

@@ -26,7 +26,7 @@ n_sims = 10000
 bestfit_dir = d["best_fits_dir"]
 sim_dir =  d["montecarlo_beam_leakage_dir"]
 cov_dir =  d["cov_dir"]
-plot_dir = d["plots_base_dir"] + "/leakage/"
+plot_dir = d["plots_dir"] + "/leakage/"
 
 pspy_utils.create_directory(plot_dir)
 pspy_utils.create_directory(sim_dir)

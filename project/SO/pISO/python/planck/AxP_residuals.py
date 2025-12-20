@@ -19,7 +19,7 @@ d.read_from_file(sys.argv[1])
 
 remove_first_bin = True
 
-plot_dir = d["plots_base_dir"] + "AxP_plots"
+plot_dir = d["plots_dir"] + "AxP_plots"
 if d["use_fg_covariance"]:
     plot_dir += "_fg_marg"
 pspy_utils.create_directory(plot_dir)

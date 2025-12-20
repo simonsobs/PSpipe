@@ -23,7 +23,7 @@ else:
     modes_for_cov = spectra
 
 cov_dir = d["cov_dir"]
-plot_dir = d["plots_base_dir"] + "/x_ar_cov"
+plot_dir = d["plots_dir"] + "/x_ar_cov"
 
 pspy_utils.create_directory(plot_dir)
 

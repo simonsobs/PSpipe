@@ -27,7 +27,7 @@ multistep_path = os.path.join(os.path.dirname(pspipe.__file__), "js")
 
 noise_model_dir = d["noise_model_dir"]
 mcm_dir = d["mcm_dir"]
-plot_dir = d["plots_base_dir"] + "/mc_spectra/"
+plot_dir = d["plots_dir"] + "/mc_spectra/"
 mc_dir = d["montecarlo_dir"]
 bestfit_dir = d["best_fits_dir"]
 

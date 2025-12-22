@@ -1,0 +1,133 @@
+# Set directory where all pipeline products will be stored
+product_dir: products/dust
+
+# Set path to the dict file: __pspipe_root__ is a placeholder that is going to be replaced when
+# parsing the yaml file by the location to the pspipe installation
+config_file: !concat [__pspipe_root__, project/ACT_DR6/paramfiles/global_dust.dict]
+
+variables:
+  maps_Planck_f100:
+    - planck_projected/npipe6v20A_f100_map_srcfree.fits
+    - planck_projected/npipe6v20B_f100_map_srcfree.fits
+  maps_Planck_f143:
+    - planck_projected/npipe6v20A_f143_map_srcfree.fits
+    - planck_projected/npipe6v20B_f143_map_srcfree.fits
+  maps_Planck_f217:
+    - planck_projected/npipe6v20A_f217_map_srcfree.fits
+    - planck_projected/npipe6v20B_f217_map_srcfree.fits
+  maps_Planck_f353:
+    - planck_projected/npipe6v20A_f353_map_srcfree.fits
+    - planck_projected/npipe6v20B_f353_map_srcfree.fits
+  beam_T_Planck_f100 : beams/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_100Ax100B.dat
+  beam_T_Planck_f217 : beams/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_217Ax217B.dat
+  beam_T_Planck_f143 : beams/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_143Ax143B.dat
+  beam_T_Planck_f353 : beams/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_353Ax353B.dat
+  beam_pol_Planck_f100 : beams/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_100Ax100B.dat
+  beam_pol_Planck_f143 : beams/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_143Ax143B.dat
+  beam_pol_Planck_f217 : beams/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_217Ax217B.dat
+  beam_pol_Planck_f353 : beams/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_353Ax353B.dat
+
+
+
+pipeline:
+  # Planck maps pre-processing
+  planck/project_planck_maps:
+    slurm:
+      ntasks: 8
+      cpus_per_task: 32
+      
+  planck/extract_planck_beam: null
+  planck/reformat_source_catalog: null
+  planck/source_npipe_subtraction:
+    script_file: planck/run_npipe_src_subtraction.sh
+    # Mandatory here since the script already use `srun` commands
+    slurm: false
+  planck/check_src_subtraction:
+    slurm:
+      ntasks: 16
+
+  # use the new codes until possible
+  get_best_fit_mflike: null
+  get_mcm_bbl_and_pseudosignal --old:
+    slurm:
+      ntasks: 14
+      cpus_per_task: 8
+  get_pseudo2datavec:
+    slurm:
+      ntasks: 2
+      cpus_per_task: 128
+  get_spectra_from_maps:
+    slurm:
+      ntasks: 17
+      cpus_per_task: 4
+  old_covariance/get_noise_model: null
+  old_covariance/get_sq_windows_alms:
+    slurm:
+      ntasks: 3
+      cpus_per_task: 64
+  old_covariance/get_covariance_blocks:
+    slurm:
+      ntasks: 6
+      cpus_per_task: 42
+  
+  # to generate montecarlo sims
+  planck/get_planck_sim_nlms:
+    slurm:
+      ntasks: 64
+      cpus_per_task: 4
+  montecarlo/mc_mnms_get_spectra_from_nlms:
+    slurm:
+      ntasks: 16
+      cpus_per_task: 4
+
+
+  # to generate montecarlo sims
+  planck/get_planck_sim_nlms:
+    slurm:
+      ntasks: 64
+      cpus_per_task: 4
+  montecarlo/mc_mnms_get_spectra_from_nlms:
+    slurm:
+      ntasks: 16
+      cpus_per_task: 4
+
+  #if you want to make end-to-end simulation corrections
+  # compute leakage corrections first
+  leakage/get_leakage_corrected_spectra_per_split:
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  leakage/get_leakage_sim:
+    slurm:
+      ntasks: 20
+      cpus_per_task: 12
+  leakage/get_leakage_covariance:
+    slurm:
+      ntasks: 1
+      cpus_per_task: 256
+
+  planck/get_planck_spectra_correction_from_nlms:
+    slurm:
+      ntasks: 32
+      cpus_per_task: 32
+  montecarlo/mc_analysis: null
+  planck/get_corrected_planck_spectra:
+    slurm:
+      ntasks: 1
+      cpus_per_task: 256
+
+
+  montecarlo/mc_analysis: null
+  montecarlo/mc_cov_analysis: null
+  montecarlo/mc_plot_spectra: null
+      
+  fit_dust_amplitude.{mode}:
+    script_file: dust/fit_dust_amplitude
+    matrix:
+      mode:
+        - TT
+        - TE
+        - EE
+        - BB
+        - TB
+    kwargs: --mode "{mode}"

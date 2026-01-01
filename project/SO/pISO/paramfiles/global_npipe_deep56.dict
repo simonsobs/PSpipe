@@ -105,7 +105,7 @@ leakage_beam_Planck_f353_TE = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_35
 leakage_beam_Planck_f100_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_100%s_t2b.dat' % split for split in ["A", "B"]]
 leakage_beam_Planck_f143_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_143%s_t2b.dat' % split for split in ["A", "B"]]
 leakage_beam_Planck_f217_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_217%s_t2b.dat' % split for split in ["A", "B"]]
-leakage_beam_Planck_f143_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_143%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f353_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_353%s_t2b.dat' % split for split in ["A", "B"]]
 
 include_beam_chromaticity_effect_in_best_fit = False
 

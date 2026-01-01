@@ -60,6 +60,22 @@ pipeline:
     slurm:
       ntasks: 17
       cpus_per_task: 4
+  get_spectra_from_maps:
+    slurm:
+      ntasks: 17
+      cpus_per_task: 4
+  old/get_alms:
+    slurm:
+      ntasks: 2
+      cpus_per_task: 128
+  old/get_spectra_from_alms:
+    slurm:
+      ntasks: 3
+      cpus_per_task: 64
+#  get_spectra_from_maps:
+#    slurm:
+#      ntasks: 17
+#      cpus_per_task: 4
   old_covariance/get_noise_model: null
   old_covariance/get_sq_windows_alms:
     slurm:

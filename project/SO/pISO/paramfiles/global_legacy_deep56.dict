@@ -20,6 +20,7 @@ legacy_sim_dir = "/global/cfs/cdirs/sobs/users/sgiardie/iso/legacy/legacy_sims"
 
 mcm_dir =  data_dir + f"mcms/{run_name}/"
 alms_dir =  data_dir + f"alms/{run_name}/"
+old_spec_dir =  data_dir + f"old_spectra/{run_name}/"
 spec_dir =  data_dir + f"spectra/{run_name}/"
 best_fits_dir =  data_dir + f"best_fits"
 plots_dir =  data_dir + f"plots/{run_name}/"

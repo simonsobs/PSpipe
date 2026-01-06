@@ -264,7 +264,11 @@ bash /path/to/PSpipe/project/SO/pISO/python/symlinks.sh {paramfile}
 
 ## Subtract point-sources
 TODO : release projected srcfree Planck maps ? This part is a bit painful.
-You first need to extract the source catalog defined by `planck_source_catalog` in the paramfile with `python/planck/reformat_source_catalog.py`. You can then run the source subtraction using the 2 bash file. Note that you need to specify the path of your dory file with `dory_path` (you can use `python/planck/dory.py`, you just need to install enlib). These scripts read maps at `maps_dir_planck/{npipe|legacy}/` and make _srcfree maps.
+You first need to extract the source catalog defined by `planck_source_catalog` in the paramfile with `python/planck/reformat_source_catalog.py`:
+```bash
+python /path/to/PSpipe/project/SO/pISO/python/planck/reformat_source_catalog.py {paramfile}
+```
+ You can then run the source subtraction using the 2 bash file. Note that you need to specify the path of your dory file with `dory_path` (you can use `python/planck/dory.py`, you just need to install enlib). These scripts read maps at `maps_dir_planck/{npipe|legacy}/` and make _srcfree maps.
 You need to run this part with an interactive allocation, it takes around 10 minutes per map :
 ```bash
 salloc -N 1 -C cpu -q interactive -t 03:00:00

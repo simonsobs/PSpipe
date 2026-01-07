@@ -8,6 +8,7 @@ import pylab as plt
 import pickle
 import sys
 import yaml
+import scipy.stats as ss
 
 
 def get_proj_pattern(test, map_set, ref_map_set):
@@ -150,17 +151,6 @@ for test in tests:
 
         lmin, lmax = calib_infos["ell_ranges"][map_set]
         id = np.where((lb >= lmin) & (lb <= lmax))[0]
-        consistency.plot_residual(
-            lb,
-            res_spectrum,
-            {"analytical": res_cov},
-            "TT",
-            f"{map_set} {test}",
-            f"{plot_output_dir}/residual_{name}_before",
-            lrange=id,
-            l_pow=1,
-            ylims=calib_infos["y_lims_plot_TT"],
-        )
 
         # Calibrate the spectra
         cal_mean, cal_std = consistency.get_calibration_amplitudes(
@@ -170,6 +160,7 @@ for test in tests:
             "TT",
             id,
             f"{chains_dir}/{name}",
+            Rminus1_cl_stop=0.1,
         )
 
         results_dict[test, map_set] = {
@@ -179,93 +170,215 @@ for test in tests:
         }
 
         calib_vec = np.array([cal_mean**2, cal_mean, 1])
-        res_spectrum, res_cov = consistency.project_spectra_vec_and_cov(
+        res_spectrum_cal, res_cov_cal = consistency.project_spectra_vec_and_cov(
             spec_vec, full_cov, proj_pattern, calib_vec=calib_vec
         )
 
         np.savetxt(
             f"{residual_output_dir}/residual_{name}_after.dat",
-            np.array([lb, res_spectrum]).T,
+            np.array([lb, res_spectrum_cal]).T,
         )
-        consistency.plot_residual(
-            lb,
-            res_spectrum,
-            {"analytical": res_cov},
-            "TT",
-            f"{map_set} {test}",
-            f"{plot_output_dir}/residual_{name}_after",
-            lrange=id,
-            l_pow=1,
-            ylims=calib_infos[f"y_lims_plot_TT"],
-        )
+        
+        ### THIS REPLACES CONSISTENCY.PLOT_RESIDUAL
+        expected_res = 0.
+        remove_dof = 0.
+        
+        res_th = np.ones(len(lb)) * expected_res
+        chi2 = (res_spectrum[id] - res_th[id]) @ np.linalg.inv(res_cov[np.ix_(id, id)]) @ (res_spectrum[id] - res_th[id])
+        ndof = len(lb[id]) - remove_dof
+        pte = 1 - ss.chi2(ndof).cdf(chi2)
+        
+        chi2_cal = (res_spectrum_cal[id] - res_th[id]) @ np.linalg.inv(res_cov_cal[np.ix_(id, id)]) @ (res_spectrum_cal[id] - res_th[id])
+        ndof_cal = len(lb[id]) - remove_dof
+        pte_cal = 1 - ss.chi2(ndof_cal).cdf(chi2_cal)
 
         fig, ax = plt.subplots(
-            2, gridspec_kw={"hspace": 0, "height_ratios": (2, 1)}, figsize=(8, 6)
+            2,
+            gridspec_kw={"hspace": 0, "height_ratios": (2, 1)},
+            figsize=(8, 6),
+            sharex=True,
         )
+
+        ax[0].set_yscale("log")
 
         proj_indices = get_proj_indices(test)
-
+        ell_pow = 1
         ax[0].errorbar(
-            lb,
+            lb - 6,
             ps_dict[
                 spectra_for_cal[proj_indices[0]][0],
                 spectra_for_cal[proj_indices[0]][1],
                 "TT",
-            ],
+            ] * lb**ell_pow,
+            np.sqrt(
+                cov_dict[
+                    (
+                        spectra_for_cal[proj_indices[0]][0],
+                        spectra_for_cal[proj_indices[0]][1],
+                        "TT",
+                    ),
+                    (
+                        spectra_for_cal[proj_indices[0]][0],
+                        spectra_for_cal[proj_indices[0]][1],
+                        "TT",
+                    ),
+                ].diagonal()
+            ) * lb**ell_pow,
             color="grey",
             label=test[:3],
-            ls="--",
+            ls="",
+            alpha=.6,
+            marker='.',
+            mfc='white',
+            mec='tab:grey',
+            linewidth=.5,
+            elinewidth=1,
         )
         ax[0].errorbar(
-            lb,
+            lb + 2,
             ps_dict[
                 spectra_for_cal[proj_indices[1]][0],
                 spectra_for_cal[proj_indices[1]][1],
                 "TT",
-            ],
-            color="blue",
+            ] * lb**ell_pow,
+            np.sqrt(
+                cov_dict[
+                    (
+                        spectra_for_cal[proj_indices[1]][0],
+                        spectra_for_cal[proj_indices[1]][1],
+                        "TT",
+                    ),
+                    (
+                        spectra_for_cal[proj_indices[1]][0],
+                        spectra_for_cal[proj_indices[1]][1],
+                        "TT",
+                    ),
+                ].diagonal()
+            ) * lb**ell_pow,
+            color="tab:blue",
             label=test[-3:],
-            ls="--",
+            ls="",
+            alpha=.6,
+            marker='.',
+            mfc='white',
+            mec='tab:blue',
+            linewidth=.5,
+            elinewidth=1,
         )
 
         ax[0].errorbar(
-            lb,
+            lb - 2,
             ps_dict[
                 spectra_for_cal[proj_indices[0]][0],
                 spectra_for_cal[proj_indices[0]][1],
                 "TT",
-            ],
+            ]
+            * calib_vec[proj_indices[0]]
+            * lb**ell_pow,
+            np.sqrt(
+                cov_dict[
+                    (
+                        spectra_for_cal[proj_indices[0]][0],
+                        spectra_for_cal[proj_indices[0]][1],
+                        "TT",
+                    ),
+                    (
+                        spectra_for_cal[proj_indices[0]][0],
+                        spectra_for_cal[proj_indices[0]][1],
+                        "TT",
+                    ),
+                ].diagonal()
+            ) * calib_vec[proj_indices[0]]
+            * lb**ell_pow,
             color="grey",
-            label=test[:3],
-            ls="--",
+            label=test[:3] + ' cal',
+            ls="-",
+            marker='.',
+            mfc='white',
+            mec='tab:grey',
+            linewidth=.5,
+            elinewidth=1,
         )
         ax[0].errorbar(
-            lb,
+            lb + 6,
             ps_dict[
                 spectra_for_cal[proj_indices[1]][0],
                 spectra_for_cal[proj_indices[1]][1],
                 "TT",
-            ],
-            color="blue",
-            label=test[-3:],
-            ls="--",
+            ]
+            * calib_vec[proj_indices[1]]
+            * lb**ell_pow,
+            np.sqrt(
+                cov_dict[
+                    (
+                        spectra_for_cal[proj_indices[1]][0],
+                        spectra_for_cal[proj_indices[1]][1],
+                        "TT",
+                    ),
+                    (
+                        spectra_for_cal[proj_indices[1]][0],
+                        spectra_for_cal[proj_indices[1]][1],
+                        "TT",
+                    ),
+                ].diagonal()
+            ) * calib_vec[proj_indices[1]]
+            * lb**ell_pow,
+            color="tab:blue",
+            label=test[-3:]+ ' cal',
+            ls="-",
+            marker='.',
+            mfc='white',
+            mec='tab:blue',
+            # linewidth=.5,
+            # elinewidth=1,
         )
+        
+        ax[1].errorbar(lb, res_spectrum / np.sqrt(res_cov.diagonal()),
+                     yerr=np.sqrt(res_cov.diagonal()) / np.sqrt(res_cov.diagonal()),
+                     ls="None", marker = ".",
+                     linewidth=.5,
+                     alpha=.5,
+                     color="tab:blue",
+                     label=f"{test} [$\chi^2 = {{{chi2:.1f}}}/{{{ndof}}}$ (${{{pte:.4f}}}$)]")
+        ax[1].errorbar(lb, res_spectrum_cal / np.sqrt(res_cov_cal.diagonal()),
+                     yerr=np.sqrt(res_cov_cal.diagonal()) / np.sqrt(res_cov_cal.diagonal()),
+                     ls="None", marker = ".",
+                     color="tab:blue",
+                     label=f"{test} cal [$\chi^2 = {{{chi2_cal:.1f}}}/{{{ndof_cal}}}$ (${{{pte_cal:.4f}}}$)]")
+        ax[1].axhline(0, color='black', zorder=-10)
+
+        ax[1].axvspan(xmin=0, xmax=lmin,
+                    color="gray", alpha=0.7, zorder=-20)
+        ax[1].axvspan(xmin=lmax, xmax=10000,
+                    color="gray", alpha=0.7, zorder=-20)
+
+        ax[0].legend(title=f'A={ref_map_set}   B={map_set}')
+        ax[0].set_xlim(0, lmax + 500)
+        ax[0].set_ylim(4e5, 4e6)
+        ax[0].set_ylabel(fr"$\ell^{{{ell_pow}}} D_\ell^\mathrm{{TT}}$", fontsize=18)
+        ax[0].set_title(f'cal={cal_mean:.3f}+-{cal_std:.3f}')
+
+        ax[1].legend(loc='lower right')
+        ax[1].set_ylim(-8, 7)
+        ax[1].set_ylabel(fr"$\Delta D_\ell^\mathrm{{TT}} / \sigma(\Delta D_\ell^\mathrm{{TT}})$", fontsize=16)
+        ax[1].set_xlabel(r"$\ell$", fontsize=20)
 
         plt.savefig(f"{plot_output_dir}/calib_full_{name}.png")
+        plt.close()
 
 
 # plot the cal factors
 color_list = ["blue", "red", "green"]
-
+fig, ax = plt.subplots(figsize=(8, 6))
 for i, (map_set, ref_map_set) in enumerate(calib_infos[f"ref_map_sets"].items()):
     print(f"**************")
     print(f"calibration {map_set} with {ref_map_set}")
 
     for j, test in enumerate(tests):
         cal, std = results_dict[test, map_set]["calibs"]
-        print(f"{test}, cal: {cal}, sigma cal: {std}")
+        print(f"{test}, cal: {cal:.4f}, sigma cal: {std:.5f}")
 
-        plt.errorbar(
+        ax.errorbar(
             i + 0.9 + j * 0.1,
             cal,
             std,
@@ -278,10 +391,10 @@ for i, (map_set, ref_map_set) in enumerate(calib_infos[f"ref_map_sets"].items())
         )
 
     if i == 0:
-        plt.legend(fontsize=15)
+        ax.legend(fontsize=15)
 
 x = np.arange(1, len(calib_infos[f"ref_map_sets"]) + 1)
-plt.xticks(x, calib_infos[f"ref_map_sets"].keys())
+ax.set_xticks(x, calib_infos[f"ref_map_sets"].keys())
 # plt.ylim(0.967, 1.06)
 plt.tight_layout()
 plt.savefig(f"{plot_output_dir}/calibs_summary.pdf", bbox_inches="tight")

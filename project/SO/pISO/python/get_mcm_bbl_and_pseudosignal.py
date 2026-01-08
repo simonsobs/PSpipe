@@ -30,8 +30,6 @@ mcm_dir = d['mcm_dir']
 pspy_utils.create_directory(mcm_dir)
 
 bestfit_dir = d["best_fits_dir"]
-pseudo_dir = opj(bestfit_dir, 'pseudo')
-pspy_utils.create_directory(pseudo_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -65,9 +63,7 @@ log.info(f"[Rank {so_mpi.rank}] number of mcm matrices to compute: {len(subtasks
 specs_for_ducc = []
 bls = []
 for task in subtasks:
-    task = int(task)
     sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
-    log.info(f"[{task:02d}] Computing mcm matrix for {sv1}_{m1} x {sv2}_{m2}")
 
     l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
 
@@ -80,6 +76,8 @@ for task in subtasks:
     win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{m2}"])
 
     if args.old:
+        log.info(f"[{task:02d}] Computing mcm for {sv1}_{m1} x {sv2}_{m2} the old-fashioned way")
+
         mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(win1_T, win1_pol),
                                                     win2=(win2_T, win2_pol),
                                                     bl1=(bl1["T"], bl1["E"]),
@@ -99,6 +97,7 @@ for task in subtasks:
         # once outside the loop. finally, we need to loop again to apply binning
         # (since the binning function does one matrix at a time) and save the
         # outputs by name individually (also one matrix at a time)
+        log.info(f"[{task:02d}] ducc mcm : preparing data for {sv1}_{m1} x {sv2}_{m2} ")
 
         # TODO: make DRY code with so_mcm for preparing inputs
         lmax_limit = np.inf
@@ -131,6 +130,9 @@ for task in subtasks:
         bls.append(bl)
 
 if not args.old:
+    # so_mpi.barrier()
+    log.info(f"[{task:02d}] Computing mcm matrices using ducc")
+    
     specs_for_ducc = np.array(specs_for_ducc)
     bls = np.repeat(bls, (1, 1, 1, 2), axis=1) # (nspec, 4, nl) -> (nspec, 5, nl)
     bls = bls[..., None, :] # (nspec, 5, nl) -> (nspec, 5, 1, nl)
@@ -148,29 +150,29 @@ if not args.old:
     Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax, type)
 
     for t, task in enumerate(subtasks):
+        log.info(f"[{task:02d}] Computing bbl and other products")
+
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
 
         # we need to get the best-fit pseudosignal spectra for the covariance. we do
         # that here to avoid recalculating all the unbinned mcms again in a
-        # different script. NOTE: we need beamed Cls
-        l, signal_dict, save_type = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'), spectra=spectra, return_type=True)
+        # different script. NOTE: we need beamed Cls, but the mcm above already
+        # has the beam, so we just need to apply the mcm
+        l, signal_dict = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'),
+                                            spectra=spectra, return_type='Cl',
+                                            return_dtype=np.float32)
         assert l[0] == 2, f'Bestfit spectra assumed to start at l=2, got l={l[0]}'
 
-        if save_type == 'Dl':
-            fac = 2*np.pi / (l*(l + 1))
-        else:
-            assert save_type == 'Cl', f'save_type must be Dl or Cl, got {save_type}'
-            fac = 1
-
         # trim to match mcm
-        for k in signal_dict.keys():
-            signal_dict[k] = signal_dict[k][:lmax-2] * fac[:lmax-2]
         l = l[:lmax-2]
+        for k in signal_dict.keys():
+            signal_dict[k] = signal_dict[k][:lmax-2]
 
         # the fully realized mcm matrix would be a lot of memory
         pseudosignal_dict = so_spectra.spin2spin_array_matmul_spec_dict(mcm[t], signal_dict)
-        so_spectra.write_ps(opj(pseudo_dir, f'pseudo_signal_{spec_name}.dat'), l, pseudosignal_dict, 'Cl', spectra=spectra)
+        so_spectra.write_ps(opj(bestfit_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),
+                            l, pseudosignal_dict, 'Cl', spectra=spectra)
 
         # now do the binning 
         if binned_mcm:

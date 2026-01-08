@@ -239,14 +239,14 @@ Here are some specific instructions to pre-process Planck maps, namely to projec
 ## Extract products
 
 ### Beams
-Running `/path/to/PSpipe/project/SO/pISO/python/planck/extract_planck_beams.py` will extract and plot planck's beams in the right folder. You just need to specify where the original beams stand with `planck_fits_beam_path`. 
+Running `python/planck/extract_planck_beams.py` will extract and plot planck's beams in the right folder. You just need to specify where the original beams stand with `planck_fits_beam_path`. 
 It also extract some "extended" NPIPE beams and save these in both legacy and NPIPE folders, these will be used for source subtraction.
 ```bash
 python {python_path}/extract_planck_beams.py {paramfile}
 ```
 
 ### Maps projection
-`/path/to/PSpipe/project/SO/pISO/python/planck/project_planck_maps.py` will project planck maps and ivar on the patch specified by the map at `planck_projection_template` (you can use an already projected ACT or LAT map for instance).
+`python/planck/project_planck_maps.py` will project planck maps and ivar on the patch specified by the map at `planck_projection_template` (you can use an already projected ACT or LAT map for instance).
 TODO : project planck masks ?
 ```bash
 salloc -N 1 -C cpu -q interactive -t 01:00:00
@@ -261,7 +261,7 @@ bash {python_path}/planck_symlinks.sh {paramfile}
 ```
 
 ## Subtract point-sources
-You first need to extract the source catalog defined by `planck_source_catalog` in the paramfile with `/path/to/PSpipe/project/SO/pISO/python/planck/reformat_source_catalog.py`. You can then run the source subtraction using the 2 bash file. Note that you need to specify the path of your dory file with `dory_path` (you can use `/path/to/PSpipe/project/SO/pISO/python/planck/dory.py`, you just need to install enlib). These scripts read maps at `maps_dir_planck/{npipe|legacy}/` and make _srcfree maps.
+You first need to extract the source catalog defined by `planck_source_catalog` in the paramfile with `python/planck/reformat_source_catalog.py`. You can then run the source subtraction using the 2 bash file. Note that you need to specify the path of your dory file with `dory_path` (you can use `python/planck/dory.py`, you just need to install enlib). These scripts read maps at `maps_dir_planck/{npipe|legacy}/` and make _srcfree maps.
 You need to run this part with an interactive allocation, it takes around 10 minutes per map :
 ```bash
 salloc -N 1 -C cpu -q interactive -t 03:00:00
@@ -276,57 +276,57 @@ Planck can be included in spectra computation for calib or transfer function est
 
 ## Leakage corrections
 
-We can correct the power spectra from  T->P beam leakage using the script `/path/to/PSpipe/project/SO/pISO/python/leakage/get_leakage_corrected_spectra_per_split.py`. This subtracts from each data spectra the expected contribution from the leakage computed from the planet beam leakage measurement and a best fit model. Note that the correction due to not exactly knowing the best-fit model is going to be a second order one. The corrected spectra are saved in the directory `spectra_leak_corr_dir`, whose path is read from the parameter file. 
-We then use `/path/to/PSpipe/project/SO/pISO/python/leakage/get_leakage_sim` to compute the montecarlo simulations needed to estimate the covariance of the spectra due to the uncertainties in the leakage model. The simulations are saved at the path `montecarlo_beam_leakage_dir`. The covariance is computed with `/path/to/PSpipe/project/SO/pISO/python/leakage/get_leakage_dir`, saving the leakage contribution to the total covariance in the covariance directory `cov_dir`.
+We can correct the power spectra from  T->P beam leakage using the script `python/leakage/get_leakage_corrected_spectra_per_split.py`. This subtracts from each data spectra the expected contribution from the leakage computed from the planet beam leakage measurement and a best fit model. Note that the correction due to not exactly knowing the best-fit model is going to be a second order one. The corrected spectra are saved in the directory `spectra_leak_corr_dir`, whose path is read from the parameter file. 
+We then use `python/leakage/get_leakage_sim` to compute the montecarlo simulations needed to estimate the covariance of the spectra due to the uncertainties in the leakage model. The simulations are saved at the path `montecarlo_beam_leakage_dir`. The covariance is computed with `python/leakage/get_leakage_dir`, saving the leakage contribution to the total covariance in the covariance directory `cov_dir`.
 
 You can run these scripts with:
 ```bash
 salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
 
-OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python /path/to/PSpipe/project/SO/pISO/python/leakage/get_leakage_corrected_spectra_per_split.py {paramfile}
+OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python python/leakage/get_leakage_corrected_spectra_per_split.py {paramfile}
 
-OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python /path/to/PSpipe/project/SO/pISO/python/leakage/get_leakage_sim.py {paramfile}
+OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python python/leakage/get_leakage_sim.py {paramfile}
 
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python /path/to/PSpipe/project/SO/pISO/python/leakage/get_leakage_covariance.py {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/leakage/get_leakage_covariance.py {paramfile}
 ```
 
 The same pipeline can also be used to compute ACT DR6 beam leakage corrected spectra and covariance.
 
 ## End-to-end sim correction
 
-To start the generation of Planck montecarlo simulations, we start with the `path/to/PSpipe/project/SO/pISO/python/planck/get_planck_sim_nlms` script, used to get the noise alms for Planck NPIPE or legacy noise simulations. These noise maps are used to generate simulations of CMB + foregrounds + noise in the `path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_mnms_get_spectra_from_nlms.py` script, saved at the path `sim_spec_dir`.
+To start the generation of Planck montecarlo simulations, we start with the `python/planck/get_planck_sim_nlms` script, used to get the noise alms for Planck NPIPE or legacy noise simulations. These noise maps are used to generate simulations of CMB + foregrounds + noise in the `python/montecarlo/mc_mnms_get_spectra_from_nlms.py` script, saved at the path `sim_spec_dir`.
 
 You can run these using:
 ```bash
 salloc -N 4 -C cpu -q interactive -t 02:00:00
 
-OMP_NUM_THREADS=4 srun -n 256 -c 4 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/planck/get_planck_sim_nlms.py {paramfile}
+OMP_NUM_THREADS=4 srun -n 256 -c 4 --cpu_bind=cores python python/planck/get_planck_sim_nlms.py {paramfile}
 
-OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_mnms_get_spectra_from_nlms_per_split.py {paramfile}
+OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python python/montecarlo/mc_mnms_get_spectra_from_nlms_per_split.py {paramfile}
 ```
 
-To compute the montecarlo contribution to the covariance matrix, we run `path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_analysis` (computing the average and standard deviation of the sims), `path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_cov_analysis.py` (computing the montecarlo contribution to the covariance) and plotting functions:
+To compute the montecarlo contribution to the covariance matrix, we run `python/montecarlo/mc_analysis` (computing the average and standard deviation of the sims), `python/montecarlo/mc_cov_analysis.py` (computing the montecarlo contribution to the covariance) and plotting functions:
 ```bash
 salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_analysis.py {paramfile}
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_cov_analysis.py {paramfile}
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_plot_spectra.py {paramfile}
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_plot_covariances.py {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_analysis.py {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_cov_analysis.py {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_plot_spectra.py {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_plot_covariances.py {paramfile}
 ```
 
-We can also generate noise-only simulations with `path/to/PSpipe/project/SO/pISO/python/planck/get_planck_spectra_correction_from_nlms.py`, to compute the correlated residual measured in the AxB NPIPE simulations or hm1xhm2 legacy simulations. These spectra are saved in the `sim_spectra_planck_noise_and_syst_dir` path.
-We then compute the mean and standard deviation of these simulations with `path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_analysis`, using the flag `--planck-correction`, to point the code to the `sim_spectra_planck_noise_and_syst_dir` directory. The average of these corrections are saved at the `planck_mc_correction_dir` path. Finally, the Planck spectra (already corrected by the leakage and read from the `spectra_leak_corr_dir` directory) are corrected for the correlated residuals from the end-to-end simulations running `path/to/PSpipe/project/SO/pISO/python/planck/get_corrected_planck_spectra.py`. The final spectra are saved in `spectra_leak_corr_planck_bias_corr_dir`.
+We can also generate noise-only simulations with `python/planck/get_planck_spectra_correction_from_nlms.py`, to compute the correlated residual measured in the AxB NPIPE simulations or hm1xhm2 legacy simulations. These spectra are saved in the `sim_spectra_planck_noise_and_syst_dir` path.
+We then compute the mean and standard deviation of these simulations with `python/montecarlo/mc_analysis`, using the flag `--planck-correction`, to point the code to the `sim_spectra_planck_noise_and_syst_dir` directory. The average of these corrections are saved at the `planck_mc_correction_dir` path. Finally, the Planck spectra (already corrected by the leakage and read from the `spectra_leak_corr_dir` directory) are corrected for the correlated residuals from the end-to-end simulations running `python/planck/get_corrected_planck_spectra.py`. The final spectra are saved in `spectra_leak_corr_planck_bias_corr_dir`.
 
 You can run it with:
 ```bash
 salloc -N 4 -C cpu -q interactive -t 03:00:00
-OMP_NUM_THREADS=32 srun -n 32 -c 32 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/planck/get_planck_spectra_correction_from_nlms.py {paramfile}
+OMP_NUM_THREADS=32 srun -n 32 -c 32 --cpu_bind=cores python python/planck/get_planck_spectra_correction_from_nlms.py {paramfile}
 
 salloc -N 1 -C cpu -q interactive -t 01:00:00
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/montecarlo/mc_analysis.py --planck-correction {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_analysis.py --planck-correction {paramfile}
 
 salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python path/to/PSpipe/project/SO/pISO/python/planck/get_corrected_planck_spectra.py {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/planck/get_corrected_planck_spectra.py {paramfile}
 ```
 
 ## Dust-in-patch
@@ -336,14 +336,14 @@ To run the script to fit for the dust use:
 ```bash
 salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
 
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python path/to/PSpipe/project/SO/pISO/python/dust/fit_dust_amplitude.py {paramfile} --mode TT
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python path/to/PSpipe/project/SO/pISO/python/dust/fit_dust_amplitude.py {paramfile} --mode TE
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python path/to/PSpipe/project/SO/pISO/python/dust/fit_dust_amplitude.py {paramfile} --mode TB
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python path/to/PSpipe/project/SO/pISO/python/dust/fit_dust_amplitude.py {paramfile} --mode EE
-OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python path/to/PSpipe/project/SO/pISO/python/dust/fit_dust_amplitude.py {paramfile} --mode BB
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode TT
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode TE
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode TB
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode EE
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode BB
 ```
 
-The `path/to/PSpipe/project/SO/pISO/python/dust/fit_dust_amplitude.py` can be run with additional flags in case we want to use the leakage and end-to-end sim corrected spectra (`--leak-corr`), the ACT DR6 220 channel for the CIB fit (`--use-220` and `--dr6-result-path-spectra` + `--dr6-result-path-covariance`), in case we want to sampled over the beta of CIB (`--sample_beta`) or set them to a value different than the default 2.20 (`--beta_value`), which is the value preferred by Planck data.
+The `python/dust/fit_dust_amplitude.py` can be run with additional flags in case we want to use the leakage and end-to-end sim corrected spectra (`--leak-corr`), the ACT DR6 220 channel for the CIB fit (`--use-220` and `--dr6-result-path-spectra` + `--dr6-result-path-covariance`), in case we want to sampled over the beta of CIB (`--sample_beta`) or set them to a value different than the default 2.20 (`--beta_value`), which is the value preferred by Planck data.
 
 ## Contribution to the covariance matrix from foreground parameters uncertainty
 
@@ -465,7 +465,6 @@ In the end, you should have the following added to your `data_dir` :
         ├── ...
         └── window_lat_iso_i6_f150_kspace.fits
 ```
-
 
 # Main Pipeline
 Here we get the power spectra (all possible crosses of maps) and their covariance

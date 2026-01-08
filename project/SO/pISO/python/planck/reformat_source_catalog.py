@@ -14,8 +14,9 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
-cat_file = d["source_catalog"]
-out_dir = d["catalog_dir"]
+cat_file = d["planck_source_catalog"]
+
+out_dir = d["maps_dir_planck"]
 
 pspy_utils.create_directory(out_dir)
 

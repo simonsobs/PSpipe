@@ -1,5 +1,4 @@
 """Subtract sources from given maps and copy both initial maps and srcfree maps.
-TODO : Make UHF source map
 TODO : get actual source subtracted maps and don't use this script anymore :)
 """
 
@@ -99,11 +98,11 @@ for task in subtasks:
         input_map = enmap.read_map(map_fn)
         lat_dir = os.path.dirname(map_fn)
 
-        if "f090" in map_fn:
+        if ("f090" in map_fn) or ("f100" in map_fn):
             srcmap = srcmap_f090
-        elif "f150" in map_fn:
+        elif ("f150" in map_fn) or ("f143" in map_fn):
             srcmap = srcmap_f150
-        elif ("f220" in map_fn) or ("f280" in map_fn):
+        elif ("f220" in map_fn) or ("f280" in map_fn) or ("f217" in map_fn):
             srcmap = srcmap_f220
 
         srcfree_map = input_map - srcmap

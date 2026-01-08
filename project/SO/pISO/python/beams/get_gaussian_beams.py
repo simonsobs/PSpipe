@@ -1,5 +1,6 @@
 import numpy as np
 import healpy as hp
+import os
 
 from pspy import so_dict
 
@@ -9,6 +10,8 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
 beam_dir = d['beam_dir_lat_iso']
+
+os.makedirs(beam_dir, exist_ok=True)
 
 l = np.arange(12000)
 

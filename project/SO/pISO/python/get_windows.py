@@ -149,7 +149,12 @@ for task in subtasks:
         log.info(f"[{task}] downgrade and plot {mask_type} ")
         mask.downgrade(4).plot(file_name=f"{plot_dir}/window_{sv}_{ar}_{mask_type}")
 
-    if f"{sv}_{ar}" in d["plot_windowed_maps"]:
+    if d["plot_windowed_maps"] == 'all':
+        plot_list = [f"{sv}_{ar}" for sv in d['surveys'] for ar in d[f'arrays_{sv}']]
+    else:
+        plot_list = d["plot_windowed_maps"]
+
+    if f"{sv}_{ar}" in plot_list:
         pspy_utils.create_directory(f"{plot_dir}/windowed_maps")
         for s, sv_ar_split in enumerate(d[f"maps_{sv}_{ar}"]):
             maps_to_plot = so_map.read_map(sv_ar_split)
@@ -160,3 +165,6 @@ for task in subtasks:
                 file_name=f"{plot_dir}/windowed_maps/{sv}_{ar}_split{s}",
                 color_range=(300, 100, 100),
             )
+
+# Save the paramfile to keep track
+d.write_to_file(f'{window_dir}/_paramfile.dict')

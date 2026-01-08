@@ -1,20 +1,30 @@
 get_calibs.py:
   ref_map_sets:
-    lat_iso_i1_f090: "planck_f100"
-    # lat_iso_i1_f150: "planck_f143"
+    lat_iso_i3_f090: "lat_iso_i1_f090"
+    lat_iso_i3_f150: "lat_iso_i1_f150"
+    lat_iso_i4_f090: "lat_iso_i1_f090"
+    lat_iso_i4_f150: "lat_iso_i1_f150"
+    lat_iso_i6_f090: "lat_iso_i1_f090"
+    lat_iso_i6_f150: "lat_iso_i1_f150"
 
   planck_corr: False
   subtract_bf_fg: False
 
   ell_ranges:
-    lat_iso_i1_f090: [600, 1200]
-    lat_iso_i1_f150: [600, 1200]
+    lat_iso_i1_f090: [800, 1200]
+    lat_iso_i1_f150: [800, 1200]
+    lat_iso_i3_f090: [800, 1200]
+    lat_iso_i3_f150: [800, 1200]
+    lat_iso_i4_f090: [800, 1200]
+    lat_iso_i4_f150: [800, 1200]
+    lat_iso_i6_f090: [800, 1200]
+    lat_iso_i6_f150: [800, 1200]
 
   y_lims_plot_TT: [-300000, 500000]
 
 
 get_polar_eff_LCDM.py:
-  # sets_to_measure: None To measure all
+  # sets_to_measure: None # To measure all
   sets_to_measure:
     - lat_iso_i1_f090
     - lat_iso_i1_f150
@@ -56,15 +66,49 @@ compute_null_tests.py:
   skip_EB: False
   fudge: False
 
+  apply_calib:
+    lat_iso_i1_f090: 1.
+    lat_iso_i1_f150: 1.
+    lat_iso_i3_f090: 1.
+    lat_iso_i3_f150: 1.
+    lat_iso_i4_f090: 1.
+    lat_iso_i4_f150: 1.
+    lat_iso_i6_f090: 1.
+    lat_iso_i6_f150: 1.
+
   multipole_range:
     lat_iso_i1_f090:
-      T: [200, 7000]
-      E: [200, 7000]
-      B: [200, 7000]
+      T: [200, 3500]
+      E: [200, 3500]
+      B: [200, 3500]
     lat_iso_i1_f150:
-      T: [200, 7000]
-      E: [200, 7000]
-      B: [200, 7000]
+      T: [200, 3500]
+      E: [200, 3500]
+      B: [200, 3500]
+    lat_iso_i3_f090:
+      T: [200, 3500]
+      E: [200, 3500]
+      B: [200, 3500]
+    lat_iso_i3_f150:
+      T: [200, 3500]
+      E: [200, 3500]
+      B: [200, 3500]
+    lat_iso_i4_f090:
+      T: [200, 3500]
+      E: [200, 3500]
+      B: [200, 3500]
+    lat_iso_i4_f150:
+      T: [200, 3500]
+      E: [200, 3500]
+      B: [200, 3500]
+    lat_iso_i6_f090:
+      T: [200, 3500]
+      E: [200, 3500]
+      B: [200, 3500]
+    lat_iso_i6_f150:
+      T: [200, 3500]
+      E: [200, 3500]
+      B: [200, 3500]
 
   l_pows:
     TT: 1
@@ -101,15 +145,15 @@ plot_everything.py:
     BE: linear
   cross_AxB:
     xlims:
-      TT: [0, 6000]
-      EE: [0, 5000]
-      BB: [0, 5000]
-      TE: [0, 5000]
-      ET: [0, 5000]
-      TB: [0, 5000]
-      BT: [0, 5000]
-      EB: [0, 5000]
-      BE: [0, 5000]
+      TT: [0, 3500]
+      EE: [0, 3500]
+      BB: [0, 3500]
+      TE: [0, 3500]
+      ET: [0, 3500]
+      TB: [0, 3500]
+      BT: [0, 3500]
+      EB: [0, 3500]
+      BE: [0, 3500]
     ylims:
       TT: [10, 7000]
       EE: [-10, 60]
@@ -122,15 +166,15 @@ plot_everything.py:
       BE: [-15, 15]
   noise_BxB:
     xlims:
-      TT: [0, 8000]
-      EE: [0, 8000]
-      BB: [0, 8000]
-      TE: [0, 8000]
-      ET: [0, 8000]
-      BE: [0, 8000]
-      TB: [0, 8000]
-      BT: [0, 8000]
-      EB: [0, 8000]
+      TT: [0, 3500]
+      EE: [0, 3500]
+      BB: [0, 3500]
+      TE: [0, 3500]
+      ET: [0, 3500]
+      BE: [0, 3500]
+      TB: [0, 3500]
+      BT: [0, 3500]
+      EB: [0, 3500]
     ylims:
       TT: [.000001, 10.01]
       EE: [.000001, 10.01]
@@ -143,23 +187,21 @@ plot_everything.py:
       BE: [-0.0001, 0.0001]
   noise_rms_BxB:
     xlims:
-      TT: [100, 8000]
-      EE: [100, 8000]
-      BB: [100, 8000]
+      TT: [100, 3500]
+      EE: [100, 3500]
+      BB: [100, 3500]
     ylims:
-      TT: [.0001, 100.0001]
-      EE: [.0001, 100.0001]
-      BB: [.0001, 100.0001]
+      TT: [.000001, 100.0001]
+      EE: [.000001, 100.0001]
+      BB: [.000001, 100.0001]
 
 fit_noises.py:
-  lmin_fit: 400
-  lmax_fit: 400
   noise_rms_BxB:
     xlims:
-      TT: [100, 8000]
-      EE: [100, 8000]
-      BB: [100, 8000]
+      TT: [100, 3000]
+      EE: [100, 3000]
+      BB: [100, 3000]
     ylims:
-      TT: [.0001, 10.0001]
-      EE: [.0001, 10.0001]
-      BB: [.0001, 10.0001]
+      TT: [.000001, 10.0001]
+      EE: [.000001, 10.0001]
+      BB: [.000001, 10.0001]

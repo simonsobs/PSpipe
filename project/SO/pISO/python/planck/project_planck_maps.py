@@ -127,10 +127,10 @@ for task in subtasks:
 
         rot=f"{legacy_ivar.coordinate},{template.coordinate}"
         ivar_project = reproject.healpix2map(legacy_ivar.data, shape[1:], wcs, rot=rot, method="spline",
-                                             spin=[0], extensive=True)
+                                            spin=[0], extensive=True)
         ivar_project = so_map.from_enmap(ivar_project)
 
         out_file_name = f"HFI_SkyMap_2048_R3.01_{split_legacy}_f{freq}_ivar"
-        ivar_project.write_map(file_name=f"{out_dir}/{out_file_name}.fits")
-        ivar_project.downgrade(8).plot(file_name=f"{out_dir}/{out_file_name}",
+        ivar_project.write_map(file_name=f"{out_dir}/legacy/{out_file_name}.fits")
+        ivar_project.downgrade(8).plot(file_name=f"{out_dir}/legacy/{out_file_name}",
                                        color_range=5e-4)

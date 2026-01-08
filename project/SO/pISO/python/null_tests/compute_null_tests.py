@@ -61,9 +61,8 @@ def check_freq_pair(f1, f2, f3, f4):
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-with open(d['null_test_yaml'], "r") as f:
+with open(d['nulls_yaml'], "r") as f:
     infos_dict: dict = yaml.safe_load(f)
-    
 null_infos = infos_dict['compute_null_tests.py']
 
 pte_threshold = null_infos['pte_threshold']
@@ -90,10 +89,10 @@ if skip_diff_freq_TT == True:
 
 spectra_dir = d["spec_dir"]
 cov_dir = d["cov_dir"]
-plot_dir = d["plots_dir"]
-bestfits_dir = d['bestfits_dir']
+plot_dir = d["plots_dir"] + '/nulls/'
+bestfits_dir = d['best_fits_dir']
 
-null_test_dir = d["null_test_dir"]
+null_test_dir = d["nulls_dir"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -124,7 +123,7 @@ map_set_list = pspipe_list.get_map_set_list(d)
 all_cov = {}
 _ps_temp = spectra_dir + "/Dl_{}x{}_cross.dat"
 for cov in cov_type_list:
-    cov_template = f"{cov_dir}/{cov}" + "_{}x{}_{}x{}.npy"
+    cov_template = f"{cov_dir}/{cov}" + "_{}x{}_{}x{}_nocv.npy"
     _, all_cov[cov] =  consistency.get_ps_and_cov_dict(map_set_list, _ps_temp, cov_template, spectra_order=spectra)
     
 all_ps = {}
@@ -144,14 +143,13 @@ for label in label_list:
     pte_dict[label, "all"] = []
     for spec in spectra:
         pte_dict[label, spec] = []
-    
+
 operations = {"diff": "ab-cd"}
 
 null_list = pspipe_list.get_null_list(d, spectra=spectra, remove_TT_diff_freq=False)
 
 for null in null_list:
 
-        
     mode, ms1, ms2, ms3, ms4 = null
     lmin, lmax = get_lmin_lmax(null, multipole_range)
 

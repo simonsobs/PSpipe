@@ -19,7 +19,7 @@ map_dir = "planck_projected"
 
 planck_version = d["planck_version"]
 
-out_dir = d["plots_base_dir"] + "/source_sub_check"
+out_dir = d["plots_dir"] + "/source_sub_check"
 pspy_utils.create_directory(out_dir)
 
 # Read catalog

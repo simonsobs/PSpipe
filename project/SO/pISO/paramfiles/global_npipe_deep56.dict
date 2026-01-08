@@ -10,6 +10,8 @@ binning_file = release_dir + "pspipe/binning/binning_50"
 apply_kspace_filter = True
 
 maps_dir_planck = data_dir + "planck_projected/"
+
+planck_projection_template = f"{release_dir}/maps/published/act_dr6.02_std_AA_night_pa4_f220_4way_set0_map_srcfree.fits"
 npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
 legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"
 
@@ -17,27 +19,28 @@ npipe_sim_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
 legacy_sim_dir = "/global/cfs/cdirs/sobs/users/sgiardie/iso/legacy/legacy_sims"
 
 
-mcm_dir =  data_dir + f"mcms/{run_name}"
-alms_dir =  data_dir + f"alms/{run_name}"
-spec_dir =  data_dir + f"spectra/{run_name}"
+mcm_dir =  data_dir + f"mcms/{run_name}/"
+alms_dir =  data_dir + f"alms/{run_name}/"
+old_spec_dir =  data_dir + f"old_spectra/{run_name}/"
+spec_dir =  data_dir + f"spectra/{run_name}/"
 best_fits_dir =  data_dir + f"best_fits"
-plots_base_dir =  data_dir + f"plots/{run_name}"
-noise_model_dir =  data_dir + f"noise_model/{run_name}"
-sq_win_alms_dir =  data_dir + f"sq_win_alms/{run_name}"
-cov_dir =  data_dir + f"covariances/{run_name}"
-montecarlo_dir =  data_dir + f"montecarlo/{run_name}"
-noise_alms_dir =  data_dir + f"noise_alms/{run_name}"
-chain_dir =  data_dir + f"chains/{run_name}"
-sim_spectra_planck_noise_and_syst_dir =  data_dir + f"sim_spectra_planck_noise_and_syst/{run_name}"
-planck_mc_correction_dir =  data_dir + f"montecarlo/{run_name}"
-spectra_leak_corr_dir =  data_dir + f"spectra_leak_corr/{run_name}"
-spectra_leak_corr_planck_bias_corr_dir =  data_dir + f"spectra_leak_corr_planck_bias_corr/{run_name}"
-montecarlo_beam_leakage_dir =  data_dir + f"montecarlo_beam_leakage/{run_name}"
-sim_spec_dir =  data_dir + f"sim_spectra/dust_binning_50/{run_name}"
+plots_dir =  data_dir + f"plots/{run_name}/"
+noise_model_dir =  data_dir + f"noise_model/{run_name}/"
+sq_win_alms_dir =  data_dir + f"sq_win_alms/"
+cov_dir =  data_dir + f"covariances/{run_name}/"
+montecarlo_dir =  data_dir + f"montecarlo/{run_name}/"
+noise_alms_dir =  data_dir + f"noise_alms/{run_name}/"
+chain_dir =  data_dir + f"chains/{run_name}/"
+sim_spectra_planck_noise_and_syst_dir =  data_dir + f"sim_spectra_planck_noise_and_syst/{run_name}/"
+planck_mc_correction_dir =  data_dir + f"montecarlo_planck_mc_corr/{run_name}/"
+spectra_leak_corr_dir =  data_dir + f"spectra_leak_corr/{run_name}/"
+spectra_leak_corr_planck_bias_corr_dir =  data_dir + f"spectra_leak_corr_planck_bias_corr/{run_name}/"
+montecarlo_beam_leakage_dir =  data_dir + f"montecarlo_beam_leakage/{run_name}/"
+sim_spec_dir =  data_dir + f"sim_spectra/dust_binning_50/{run_name}/"
 
 k_filter_Planck = {'type': 'binary_cross', 'vk_mask': [-90, 90], 'hk_mask': [-50, 50], 'weighted': False}
-kspace_tf_path = release_dir + "pspipe/kspace_tf/dust_binning_50/"
-source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
+kspace_tf_path = "analytical" 
+planck_source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
 deconvolve_pixwin = True
 
 pixwin_Planck = {'pix': 'HEALPIX', 'nside': 2048}
@@ -59,10 +62,10 @@ l3_pad = 2000
 savgol_w = 300
 savgol_k = 4
 
-maps_Planck_f100 = [ f'{maps_dir_planck}npipe6v20A_f100_map_deep56_patch_srcfree.fits',  f'{maps_dir_planck}npipe6v20B_f100_map_deep56_patch_srcfree.fits']
-maps_Planck_f143 = [ f'{maps_dir_planck}npipe6v20A_f143_map_deep56_patch_srcfree.fits',  f'{maps_dir_planck}npipe6v20B_f143_map_deep56_patch_srcfree.fits']
-maps_Planck_f217 = [ f'{maps_dir_planck}npipe6v20A_f217_map_deep56_patch_srcfree.fits',  f'{maps_dir_planck}npipe6v20B_f217_map_deep56_patch_srcfree.fits']
-maps_Planck_f353 = [ f'{maps_dir_planck}npipe6v20A_f353_map_deep56_patch_srcfree.fits',  f'{maps_dir_planck}npipe6v20B_f353_map_deep56_patch_srcfree.fits']
+maps_Planck_f100 = [ f'{planck_projected_dir}/npipe/npipe6v20A_f100_map_deep56_patch_srcfree.fits',  f'{planck_projected_dir}/npipe/npipe6v20B_f100_map_deep56_patch_srcfree.fits']
+maps_Planck_f143 = [ f'{planck_projected_dir}/npipe/npipe6v20A_f143_map_deep56_patch_srcfree.fits',  f'{planck_projected_dir}/npipe/npipe6v20B_f143_map_deep56_patch_srcfree.fits']
+maps_Planck_f217 = [ f'{planck_projected_dir}/npipe/npipe6v20A_f217_map_deep56_patch_srcfree.fits',  f'{planck_projected_dir}/npipe/npipe6v20B_f217_map_deep56_patch_srcfree.fits']
+maps_Planck_f353 = [ f'{planck_projected_dir}/npipe/npipe6v20A_f353_map_deep56_patch_srcfree.fits',  f'{planck_projected_dir}/npipe/npipe6v20B_f353_map_deep56_patch_srcfree.fits']
 
 cal_Planck_f100 = 1.0
 cal_Planck_f143 = 1.0
@@ -102,7 +105,7 @@ leakage_beam_Planck_f353_TE = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_35
 leakage_beam_Planck_f100_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_100%s_t2b.dat' % split for split in ["A", "B"]]
 leakage_beam_Planck_f143_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_143%s_t2b.dat' % split for split in ["A", "B"]]
 leakage_beam_Planck_f217_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_217%s_t2b.dat' % split for split in ["A", "B"]]
-leakage_beam_Planck_f143_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_143%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f353_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_353%s_t2b.dat' % split for split in ["A", "B"]]
 
 include_beam_chromaticity_effect_in_best_fit = False
 

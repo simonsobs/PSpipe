@@ -362,105 +362,105 @@ In the end, you should have the following added to your `data_dir` :
 │       ├── ...
 │       └── alms_Planck_f353.npy
 ├── beams
-│   │── legacy
-│   │   ├── leakage_beams
-│   │   └── main_beams
-│   └── npipe
-│       ├── leakage_beams
-│       └── main_beams
+│   │── legacy
+│   │   ├── leakage_beams
+│   │   └── main_beams
+│   └── npipe
+│       ├── leakage_beams
+│       └── main_beams
 ├── maps
-│   └── planck
-│       └── deep56
-│           ├── legacy
-│           │   ├── HFI_SkyMap_2048_R3.01_halfmission-1_f100_ivar.fits
+│   └── planck
+│       └── deep56
+│           ├── legacy
+│           │   ├── HFI_SkyMap_2048_R3.01_halfmission-1_f100_ivar.fits
 │           │   ...
-│           │   └── HFI_SkyMap_2048_R3.01_halfmission-2_f353_map_srcfree.fits
-│           ├── npipe
-│           │   ├── npipe6v20A_f100_ivar.fits
+│           │   └── HFI_SkyMap_2048_R3.01_halfmission-2_f353_map_srcfree.fits
+│           ├── npipe
+│           │   ├── npipe6v20A_f100_ivar.fits
 │           │   ...
 │           │   └── npipe6v20B_f353_map_srcfree.fits
 │           └── ... src subtraction stuff
 ├── passbands
-│    └── planck
-│        ├── passband_npipe_f100.dat
-│        ├── passband_npipe_f143.dat
-│        ├── passband_npipe_f217.dat
-│        └── passband_npipe_f353.dat
+│    └── planck
+│        ├── passband_npipe_f100.dat
+│        ├── passband_npipe_f143.dat
+│        ├── passband_npipe_f217.dat
+│        └── passband_npipe_f353.dat
 │
 ├── best_fits
-│   └── planck
-│       ├── cmb_and_fg_Planck_f100xPlanck_f100.dat
-│       ├── ...
-│       ├── cmb.dat
-│       ├── components
-│       │    ├── bb_dust_Planck_f100xPlanck_f100.dat
-│       │    ├── ...
-│       │    └── tt_tSZxCIB_Planck_f353xPlanck_f353.dat
-│       ├── fg_Planck_f100xPlanck_f100.dat
-│       ├── ...
-│       └── fg_Planck_f353xPlanck_f353.dat
+│   └── planck
+│       ├── cmb_and_fg_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       ├── cmb.dat
+│       ├── components
+│       │    ├── bb_dust_Planck_f100xPlanck_f100.dat
+│       │    ├── ...
+│       │    └── tt_tSZxCIB_Planck_f353xPlanck_f353.dat
+│       ├── fg_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       └── fg_Planck_f353xPlanck_f353.dat
 ├── catalogs
 │   ├── cat_skn_090_20220526_nightonly_ordered.txt
-│   └── ...
+│   └── ...
 ├── mcms
-│    └── planck
+│    └── planck
 │        ├── Planck_f100xPlanck_f100_Bbl_spin0xspin0.npy
-│        └── ...
+│        └── ...
 ├── spectra
-│   └── planck
-│       ├── Dl_Planck_f100xPlanck_f100.dat
-│       ├── ...
-│       ├── Dl_Planck_f353xPlanck_f353.dat
+│   └── planck
+│       ├── Dl_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       ├── Dl_Planck_f353xPlanck_f353.dat
 ├── spectra_leak_corr
-│   └── planck
-│       ├── Dl_Planck_f100xPlanck_f100.dat
-│       ├── ...
-│       ├── Dl_Planck_f353xPlanck_f353.dat
+│   └── planck
+│       ├── Dl_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       ├── Dl_Planck_f353xPlanck_f353.dat
 ├── spectra_leak_corr_planck_bias_corr
-│   └── planck
-│       ├── Dl_Planck_f100xPlanck_f100.dat
-│       ├── ...
-│       ├── Dl_Planck_f353xPlanck_f353.dat
+│   └── planck
+│       ├── Dl_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       ├── Dl_Planck_f353xPlanck_f353.dat
 ├── sim_spectra/
-│   └── planck
-│       └── Dl_Planck_f100xPlanck_f100_00_00000.dat
-│       ├── ...
-│       ├── Dl_Planck_f100xPlanck_f100_auto_00000.dat
-│       ├── ...
-│       ├── Dl_Planck_f100xPlanck_f100_cross_00000.dat
-│       ├── ...
-│       ├── Dl_Planck_f100xPlanck_f100_noise_00000.dat
-│       └── ...
+│   └── planck
+│       └── Dl_Planck_f100xPlanck_f100_00_00000.dat
+│       ├── ...
+│       ├── Dl_Planck_f100xPlanck_f100_auto_00000.dat
+│       ├── ...
+│       ├── Dl_Planck_f100xPlanck_f100_cross_00000.dat
+│       ├── ...
+│       ├── Dl_Planck_f100xPlanck_f100_noise_00000.dat
+│       └── ...
 ├── sim_spectra_planck_noise_and_syst/
-│   └── Dl_Planck_f100xPlanck_f100_00_00000.dat
-│   ├── ...
-│   ├── Dl_Planck_f100xPlanck_f100_auto_00000.dat
-│   ├── ...
-│   ├── Dl_Planck_f100xPlanck_f100_cross_00000.dat
-│   ├── ...
-│   ├── Dl_Planck_f100xPlanck_f100_noise_00000.dat
-│   └── ...
+│   └── Dl_Planck_f100xPlanck_f100_00_00000.dat
+│   ├── ...
+│   ├── Dl_Planck_f100xPlanck_f100_auto_00000.dat
+│   ├── ...
+│   ├── Dl_Planck_f100xPlanck_f100_cross_00000.dat
+│   ├── ...
+│   ├── Dl_Planck_f100xPlanck_f100_noise_00000.dat
+│   └── ...
 ├── montecarlo
-│   └── planck
-│       └── spectra_BB_Planck_f100xPlanck_f100_auto.dat
-│       ├── ...
-│       └── spectra_TT_Planck_f353xPlanck_f353_noise.dat
+│   └── planck
+│       └── spectra_BB_Planck_f100xPlanck_f100_auto.dat
+│       ├── ...
+│       └── spectra_TT_Planck_f353xPlanck_f353_noise.dat
 ├── planck_mc_correction
-│   └── spectra_BB_Planck_f100xPlanck_f100_auto.dat
-│   ├── ...
-│   └── spectra_TT_Planck_f353xPlanck_f353_noise.dat
+│   └── spectra_BB_Planck_f100xPlanck_f100_auto.dat
+│   ├── ...
+│   └── spectra_TT_Planck_f353xPlanck_f353_noise.dat
 ├── covariances
-│   └── planck
-│       └── analytic_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
-│       ├── ...
-│       ├── leakage_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
-│       ├── ...
-│       └── mc_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
+│   └── planck
+│       └── analytic_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
+│       ├── ...
+│       ├── leakage_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
+│       ├── ...
+│       └── mc_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
 └── windows
-    └── dr6xplanck
+    └── dr6xplanck
         ├── window_dr6_pa5_f150_kspace.fits
         └── ...
-    └── dr6xdeep56_20251119
+    └── dr6xdeep56_20251119
         ├── window_dr6_pa4_f220_baseline.fits
         ├── ...
         └── window_lat_iso_i6_f150_kspace.fits

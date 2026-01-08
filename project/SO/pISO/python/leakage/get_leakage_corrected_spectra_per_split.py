@@ -27,9 +27,9 @@ binning_file = d["binning_file"]
 type = d["type"]
 
 bestfit_dir = d["best_fits_dir"]
-spec_dir = d["spec_dir"]
+spec_dir = d["old_spec_dir"]
 spec_corr_dir = d["spectra_leak_corr_dir"]
-plot_dir = d["plots_base_dir"]+"/leakage/"
+plot_dir = d["plots_dir"]+"/leakage/"
 
 lmax_for_plot = 2000
 

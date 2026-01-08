@@ -10,33 +10,37 @@ binning_file = release_dir + "pspipe/binning/binning_50"
 apply_kspace_filter = True
 
 maps_dir_planck = data_dir + "planck_projected/"
+
+planck_projection_template = f"{release_dir}/maps/published/act_dr6.02_std_AA_night_pa4_f220_4way_set0_map_srcfree.fits"
 npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
 legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"
 
 npipe_sim_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
 legacy_sim_dir = "/global/cfs/cdirs/sobs/users/sgiardie/iso/legacy/legacy_sims"
 
-mcm_dir =  data_dir + f"mcms/{run_name}"
-alms_dir =  data_dir + f"alms/{run_name}"
-spec_dir =  data_dir + f"spectra/{run_name}"
+mcm_dir =  data_dir + f"mcms/{run_name}/"
+alms_dir =  data_dir + f"alms/{run_name}/"
+old_spec_dir =  data_dir + f"old_spectra/{run_name}/"
+spec_dir =  data_dir + f"spectra/{run_name}/"
 best_fits_dir =  data_dir + f"best_fits"
-plots_base_dir =  data_dir + f"plots/{run_name}"
-noise_model_dir =  data_dir + f"noise_model/{run_name}"
-sq_win_alms_dir =  data_dir + f"sq_win_alms/{run_name}"
-cov_dir =  data_dir + f"covariances/{run_name}"
-montecarlo_dir =  data_dir + f"montecarlo/{run_name}"
-noise_alms_dir =  data_dir + f"noise_alms/{run_name}"
-chain_dir =  data_dir + f"chains/{run_name}"
-sim_spectra_planck_noise_and_syst_dir =  data_dir + f"sim_spectra_planck_noise_and_syst/{run_name}"
-planck_mc_correction_dir =  data_dir + f"montecarlo/{run_name}"
-spectra_leak_corr_dir =  data_dir + f"spectra_leak_corr/{run_name}"
-spectra_leak_corr_planck_bias_corr_dir =  data_dir + f"spectra_leak_corr_planck_bias_corr/{run_name}"
-montecarlo_beam_leakage_dir =  data_dir + f"montecarlo_beam_leakage/{run_name}"
-sim_spec_dir =  data_dir + f"sim_spectra/dust_binning_50/{run_name}"
+plots_dir =  data_dir + f"plots/{run_name}/"
+noise_model_dir =  data_dir + f"noise_model/{run_name}/"
+sq_win_alms_dir =  data_dir + f"sq_win_alms/"
+cov_dir =  data_dir + f"covariances/{run_name}/"
+montecarlo_dir =  data_dir + f"montecarlo/{run_name}/"
+noise_alms_dir =  data_dir + f"noise_alms/{run_name}/"
+chain_dir =  data_dir + f"chains/{run_name}/"
+sim_spectra_planck_noise_and_syst_dir =  data_dir + f"sim_spectra_planck_noise_and_syst/{run_name}/"
+planck_mc_correction_dir =  data_dir + f"montecarlo_planck_mc_corr/{run_name}/"
+spectra_leak_corr_dir =  data_dir + f"spectra_leak_corr/{run_name}/"
+spectra_leak_corr_planck_bias_corr_dir =  data_dir + f"spectra_leak_corr_planck_bias_corr/{run_name}/"
+montecarlo_beam_leakage_dir =  data_dir + f"montecarlo_beam_leakage/{run_name}/"
+sim_spec_dir =  data_dir + f"sim_spectra/dust_binning_50/{run_name}/"
 
 k_filter_Planck = {'type': 'binary_cross', 'vk_mask': [-90, 90], 'hk_mask': [-50, 50], 'weighted': False}
-kspace_tf_path = release_dir + "pspipe/kspace_tf/dust_binning_50/"
-source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
+kspace_tf_path = "analytical" 
+planck_source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
+
 deconvolve_pixwin = True
 
 pixwin_Planck = {'pix': 'HEALPIX', 'nside': 2048}

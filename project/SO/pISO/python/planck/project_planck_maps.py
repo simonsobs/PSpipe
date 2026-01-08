@@ -133,4 +133,4 @@ for task in subtasks:
         out_file_name = f"HFI_SkyMap_2048_R3.01_{split_legacy}_f{freq}_ivar"
         ivar_project.write_map(file_name=f"{out_dir}/legacy/{out_file_name}.fits")
         ivar_project.downgrade(8).plot(file_name=f"{out_dir}/legacy/{out_file_name}",
-                                       color_range=5e-4)
+                                    color_range=5e-4)

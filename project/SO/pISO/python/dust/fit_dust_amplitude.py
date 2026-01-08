@@ -183,7 +183,7 @@ Rminus1_cl_stop = 0.1
 mc_cov = True
 
 result_dir = d["chain_dir"] + f"/dust_from_planck353_{mode}" 
-plot_dir = d["plots_base_dir"] + f"/dust_from_planck353_{mode}" 
+plot_dir = d["plots_dir"] + f"/dust_from_planck353_{mode}" 
 if args.leak_corr:
     result_dir += "_leak_corr"
     plot_dir += "_leak_corr"

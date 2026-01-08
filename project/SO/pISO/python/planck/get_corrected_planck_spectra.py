@@ -32,7 +32,7 @@ n_sims = d["iStop"] - d["iStart"] + 1
 spec_dir = d["spectra_leak_corr_dir"]
 spec_corr_dir = d["spectra_leak_corr_planck_bias_corr_dir"]
 bestfit_dir = d["best_fits_dir"]
-plot_dir = d["plots_base_dir"] + "/planck_mc_correction/"
+plot_dir = d["plots_dir"] + "/planck_mc_correction/"
 
 pspy_utils.create_directory(spec_corr_dir)
 pspy_utils.create_directory(plot_dir)

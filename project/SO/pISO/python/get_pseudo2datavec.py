@@ -22,7 +22,9 @@ log = log.get_logger(**d)
 
 mcm_dir = d['mcm_dir']
 plot_dir = opj(d['plots_dir'], 'mcms')
+spec_dir = d["spec_dir"]
 pspy_utils.create_directory(plot_dir)
+pspy_utils.create_directory(spec_dir)
 
 surveys = d["surveys"]
 lmax = d['lmax']
@@ -69,6 +71,13 @@ if apply_kspace_filter:
     for k, v in kspace_transfer_matrix.items():
         if np.count_nonzero(v.diagonal() == 0):
             log.info(f'WARNING: 0 in kspace_transfer_matrix {k}')
+
+    # this will be used in the old covariance computation
+    for spec_name in spec_name_list:
+        one_d_tf = kspace_transfer_matrix[spec_name].diagonal()
+        cov_T_E_only = d["cov_T_E_only"]
+        if cov_T_E_only == True: one_d_tf = one_d_tf[:4 * n_bins]
+        np.savetxt(f"{spec_dir}/one_dimension_kspace_tf_{spec_name}.dat", one_d_tf)
 
 if d[f"pixwin_{sv}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
     pixwins = {}

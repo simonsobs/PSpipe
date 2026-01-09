@@ -37,8 +37,6 @@ else:
     sim_spec_dir = d["sim_spectra_planck_noise_and_syst_dir"]
     mc_dir = d["planck_mc_correction_dir"]
 
-mcm_dir = d["mcm_dir"]
-mc_dir = d["montecarlo_dir"]
 cov_dir = d["cov_dir"]
 
 pspy_utils.create_directory(mc_dir)

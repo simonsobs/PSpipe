@@ -70,9 +70,9 @@ if apply_kspace_filter:
         if np.count_nonzero(v.diagonal() == 0):
             log.info(f'WARNING: 0 in kspace_transfer_matrix {k}')
 
-if d[f"pixwin_{sv}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
-    pixwins = {}
-    for sv in surveys:
+pixwins = {}
+for sv in surveys:
+    if d[f"pixwin_{sv}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
         # this is a crude approximation. really, it would be something like
         # Bbl @ (pw_l)^2 C_l, so it can't be easily decoupled
         pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"])

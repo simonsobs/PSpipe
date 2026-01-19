@@ -60,22 +60,20 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_mcms - 1)
 log.info(f"[Rank {so_mpi.rank}] number of mcm matrices to compute: {len(subtasks)}")
 
-specs_for_ducc = []
-bls = []
-for task in subtasks:
-    sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
+if args.old:
+    for task in subtasks:
+        sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
 
-    l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
+        l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
 
-    win1_T = so_map.read_map(d[f"window_T_{sv1}_{m1}"])
-    win1_pol = so_map.read_map(d[f"window_pol_{sv1}_{m1}"])
+        win1_T = so_map.read_map(d[f"window_T_{sv1}_{m1}"])
+        win1_pol = so_map.read_map(d[f"window_pol_{sv1}_{m1}"])
 
-    l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
+        l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
 
-    win2_T = so_map.read_map(d[f"window_T_{sv2}_{m2}"])
-    win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{m2}"])
+        win2_T = so_map.read_map(d[f"window_T_{sv2}_{m2}"])
+        win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{m2}"])
 
-    if args.old:
         log.info(f"[{task:02d}] Computing mcm for {sv1}_{m1} x {sv2}_{m2} the old-fashioned way")
 
         mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(win1_T, win1_pol),
@@ -91,13 +89,35 @@ for task in subtasks:
                                                     l_toep=l_toep,
                                                     binned_mcm=binned_mcm,
                                                     save_file=opj(f"{mcm_dir}", f"{sv1}_{m1}x{sv2}_{m2}"))
-    else:
-        # ducc can batch the matrix calculations rather than one at a time, so
-        # instead in the loop we just group the inputs, and call the calculation
-        # once outside the loop. finally, we need to loop again to apply binning
-        # (since the binning function does one matrix at a time) and save the
-        # outputs by name individually (also one matrix at a time)
-        log.info(f"[{task:02d}] ducc mcm : preparing data for {sv1}_{m1} x {sv2}_{m2} ")
+
+# TODO: rewrite to not repeat for equivalent windows. Ideally, we would split up
+# mcm and Bbl, since mcm is just ultimately used for pseudo2datavec, which is 
+# related to Bbl (theory2datavec = pseudo2datavec @ theory2pseudo). I.e., we 
+# probably want a pseudo2datavec script followed by a Bbl script
+else:
+    # ducc can batch the matrix calculations rather than one at a time, so
+    # instead in the loop we just group the inputs, and call the calculation
+    # once outside the loop. finally, we need to loop again to apply binning
+    # (since the binning function does one matrix at a time) and save the
+    # outputs by name individually (also one matrix at a time)
+    specs_for_ducc = []
+    bls = []
+    for task in subtasks:
+        sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
+
+        # for now, save some i/o and map2alm for likely case that pol is T
+        win1_T = so_map.read_map(d[f"window_T_{sv1}_{m1}"])
+        if d[f'window_pol_{sv1}_{m1}'] != d[f'window_T_{sv1}_{m1}']:
+            win1_pol = so_map.read_map(d[f'window_pol_{sv1}_{m1}'])
+        else:
+            win1_pol = win1_T
+
+        win2_T = so_map.read_map(d[f"window_T_{sv2}_{m2}"])
+        if d[f'window_pol_{sv2}_{m2}'] != d[f'window_T_{sv2}_{m2}']:
+            win2_pol = so_map.read_map(d[f'window_pol_{sv2}_{m2}'])
+        else:
+            win2_pol = win2_T
+        log.info(f"[{task:02d}]: preparing data for {sv1}_{m1} x {sv2}_{m2}")
 
         # TODO: make DRY code with so_mcm for preparing inputs
         lmax_limit = np.inf
@@ -110,13 +130,22 @@ for task in subtasks:
         maxl = np.minimum(lmax + l3_pad, lmax_limit)
 
         win1_alm_T = sph_tools.map2alm(win1_T, niter=niter, lmax=maxl, dtype=np.complex128)
-        win1_alm_P = sph_tools.map2alm(win1_pol, niter=niter, lmax=maxl, dtype=np.complex128)
+        if win1_pol is not win1_T: # tests object equivalence
+            win1_alm_P = sph_tools.map2alm(win1_pol, niter=niter, lmax=maxl, dtype=np.complex128)
+        else:
+            win1_alm_P = win1_alm_T
         win1 = (win1_alm_T, win1_alm_P)
 
         win2_alm_T = sph_tools.map2alm(win2_T, niter=niter, lmax=maxl, dtype=np.complex128)
-        win2_alm_P = sph_tools.map2alm(win2_pol, niter=niter, lmax=maxl, dtype=np.complex128)
+        if win2_pol is not win2_T: # tests object equivalence
+            win2_alm_P = sph_tools.map2alm(win2_pol, niter=niter, lmax=maxl, dtype=np.complex128)
+        else:
+            win2_alm_P = win2_alm_T
         win2 = (win2_alm_T, win2_alm_P)
 
+        _, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
+        _, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
+        
         bl1 = (bl1["T"], bl1["E"])
         bl2 = (bl2["T"], bl2["E"])
 
@@ -128,21 +157,19 @@ for task in subtasks:
                 bl.append(bl1[i][2:lmax] * bl2[j][2:lmax]) # TODO: reconsider pspipe conventions
         specs_for_ducc.append(spec_for_ducc)
         bls.append(bl)
-
-if not args.old:
-    # so_mpi.barrier()
-    log.info(f"[{task:02d}] Computing mcm matrices using ducc")
+        
+    log.info(f"[Rank {so_mpi.rank}]: Computing mcm matrices using ducc")
     
     specs_for_ducc = np.array(specs_for_ducc)
     bls = np.repeat(bls, (1, 1, 1, 2), axis=1) # (nspec, 4, nl) -> (nspec, 5, nl)
     bls = bls[..., None, :] # (nspec, 5, nl) -> (nspec, 5, 1, nl)
 
-    mcm = so_mcm.ducc_couplings(specs_for_ducc, lmax, spec_index=(0, 1, 2, 3),
-                                mat_index=(0, 1, 2, 3, 4), dtype=np.float64,
-                                coupling=False, pspy_index_convention=True)
+    mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, spec_index=(0, 1, 2, 3),
+                                 mat_index=(0, 1, 2, 3, 4), dtype=np.float64,
+                                 coupling=False, pspy_index_convention=True)
 
     # apply total-diagonal beams on the right
-    mcm *= bls
+    mcms *= bls
 
     # get the binned mcms
     bin_lo, bin_hi, _, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
@@ -157,8 +184,8 @@ if not args.old:
 
         # we need to get the best-fit pseudosignal spectra for the covariance. we do
         # that here to avoid recalculating all the unbinned mcms again in a
-        # different script. NOTE: we need beamed Cls, but the mcm above already
-        # has the beam, so we just need to apply the mcm
+        # different script. NOTE: we need beamed Cls, but the mcms above already
+        # have the beam, so we just need to apply the mcm
         l, signal_dict = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'),
                                             spectra=spectra, return_type='Cl',
                                             return_dtype=np.float32)
@@ -170,7 +197,8 @@ if not args.old:
             signal_dict[k] = signal_dict[k][:lmax-2]
 
         # the fully realized mcm matrix would be a lot of memory
-        pseudosignal_dict = so_spectra.spin2spin_array_matmul_spec_dict(mcm[t], signal_dict)
+        mcm_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(mcms[t], spectra)
+        pseudosignal_dict = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(mcm_dict, signal_dict)
         so_spectra.write_ps(opj(bestfit_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),
                             l, pseudosignal_dict, 'Cl', spectra=spectra)
 
@@ -180,24 +208,24 @@ if not args.old:
             Bbl = np.zeros((5, nbins, lmax))
 
             for i in range(5):
-                so_mcm.mcm_fortran.bin_mcm(mcm[t, i].T,
+                so_mcm.mcm_fortran.bin_mcm(mcms[t, i].T,
                                            bin_lo,
                                            bin_hi,
                                            bin_size,
                                            mxx[i].T,
                                            doDl)
 
-                so_mcm.mcm_fortran.binning_matrix(mcm[t, i].T,
+                so_mcm.mcm_fortran.binning_matrix(mcms[t, i].T,
                                                   bin_lo,
                                                   bin_hi,
                                                   bin_size,
                                                   Bbl[i].T,
                                                   doDl)
         else:
-            mxx = mcm[t] # l x l
+            mxx = mcms[t] # l x l
             Bbl = np.zeros((nbins, lmax))
 
-            so_mcm.mcm_fortran.binning_matrix(np.eye(mcm.shape[-1]).T,
+            so_mcm.mcm_fortran.binning_matrix(np.eye(mcms.shape[-1]).T,
                                               bin_lo,
                                               bin_hi,
                                               bin_size,

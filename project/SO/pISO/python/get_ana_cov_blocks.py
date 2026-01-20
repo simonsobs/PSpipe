@@ -13,7 +13,7 @@ import time
 import numpy as npy
 import numba
 
-from pspipe_utils import log, pspipe_list, dict_utils
+from pspipe_utils import log, pspipe_list, covariance, dict_utils
 from pspy import so_dict, so_mcm, so_mpi, so_spectra
 
 parser = argparse.ArgumentParser(description=description,
@@ -85,37 +85,6 @@ def update_pseudospectra_dict(f1, f2, pseudospectra_dict=None):
             if can_sn_alm_info not in pseudospectra_dict:
                 pseudospectra_dict[can_sn_alm_info] = val
         
-        return pseudospectra_dict
-
-    # we may need to flip the order of the maps since, even though
-    # mapi x mapj will show up in the right order, mapi x mapp might not
-    pseudospectra_key = ((sv1, m1, 's'), (sv2, m2, 's'))
-    if pseudospectra_key not in pseudospectra_dict:
-        try:
-            spec_name = f"{sv1}_{m1}x{sv2}_{m2}" 
-            _, ps_dict = so_spectra.read_ps(opj(bestfit_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),
-                                            spectra, return_type='Cl',
-                                            return_dtype=npy.float32)
-            flip_spec = False
-        except FileNotFoundError:
-            spec_name = f"{sv2}_{m2}x{sv1}_{m1}" 
-            _, ps_dict = so_spectra.read_ps(opj(bestfit_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),
-                                            spectra, return_type='Cl',
-                                            return_dtype=npy.float32)
-            ps_dict = {spec[::-1]: val for spec, val in ps_dict.items()}
-            flip_spec = True
-        pseudospectra_dict[(sv1, m1, 's'), (sv2, m2, 's')] = ps_dict
-    
-    if n1 == n2:
-        for k in range(nsplits[sv1]):
-            _, ps_dict = so_spectra.read_ps(opj(noise_dir, f'pseudo_noise_{spec_name}_set{k}.dat'),
-                                            spectra, return_type='Cl',
-                                            return_dtype=npy.float32)
-            if flip_spec:
-                ps_dict = {spec[::-1]: val for spec, val in ps_dict.items()}
-            
-            pseudospectra_dict[(sv1, m1, f'n{k}'), (sv2, m2, f'n{k}')] = ps_dict
-    
     return pseudospectra_dict
 
 def TEB2pol(TEB):
@@ -134,7 +103,7 @@ def get_can_discon_com_4pt(snf1, snf2, snf3, snf4):
     can_sn_field_info = pspipe_list.canonize_disconnected_4pt(snf1, snf2, snf3, snf4)
     can = can_sn_field_info in canonized_sn_field_info2canonized_disconnected_combo_4pt
 
-    ref_split1, ref_split2, ref_split3, ref_split4 = pspipe_list.get_4pt_sn_term_type(split1, split2, split3, split4)
+    ref_split1, ref_split2, ref_split3, ref_split4 = covariance.get_4pt_sn_term_type(split1, split2, split3, split4)
     ref_snf1 = (sv1, m1, pol1, ref_split1)
     ref_snf2 = (sv2, m2, pol2, ref_split2)
     ref_snf3 = (sv3, m3, pol3, ref_split3)
@@ -389,7 +358,7 @@ for task in subtasks:
                                   mat_index=mat_index, dtype=npy.float32,
                                   coupling=True, pspy_index_convention=True)
     
-    log.info(f'Rank {so_mpi.rank}, Task {task}]: Calculated {specs_for_ducc.shape[0]}x{specs_for_ducc.shape[1]} couplings in {(time.time() - t0):.3f} seconds')            
+    log.info(f'[Rank {so_mpi.rank}, Task {task}]: Calculated {specs_for_ducc.shape[0]}x{specs_for_ducc.shape[1]} couplings in {(time.time() - t0):.3f} seconds')            
 
     # now add all terms together
     pseudo_cov = npy.zeros((len(spectra) * (lmax - 2), len(spectra) * (lmax - 2)), dtype=npy.float32)
@@ -455,7 +424,7 @@ for task in subtasks:
                                                  w4_coupling, w2_12, w2_34, C12, C34,
                                                  coupling)
 
-    log.info(f'Rank {so_mpi.rank}, Task {task}]: Added terms to pseudo cov in {(time.time() - t0):.3f} seconds')
+    log.info(f'[Rank {so_mpi.rank}, Task {task}]: Added terms to pseudo cov in {(time.time() - t0):.3f} seconds')
 
     # convert from pseudo to spec cov
     # NOTE: cast the pseudo2datavec because they are small so casting is fast,
@@ -464,26 +433,43 @@ for task in subtasks:
     # pseudo2datavec, we lose some accuracy, but this is all approximate anyway
     t0 = time.time()
 
+    pseudo_cov = so_mcm.get_spec2spec_sparse_dict_mat_from_dense_mat(pseudo_cov, spectra, skip_empty=False)
+
     spec_name_ij = f"{svi}_{mi}x{svj}_{mj}"
-    pseudo2datavec_ij = npy.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name_ij}.npy')).astype(pseudo_cov.dtype, copy=False)
+    pseudo2datavec_ij = npy.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name_ij}.npy'), allow_pickle=True).item()
+    pseudo2datavec_ij = so_mcm.sparse_dict_mat_astype(pseudo2datavec_ij, npy.float32)
 
     spec_name_pq = f"{svp}_{mp}x{svq}_{mq}"
-    pseudo2datavec_pq = npy.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name_pq}.npy')).astype(pseudo_cov.dtype, copy=False)
+    pseudo2datavec_pq_T = npy.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name_pq}.npy'), allow_pickle=True).item()
+    pseudo2datavec_pq_T = so_mcm.sparse_dict_mat_astype(pseudo2datavec_pq_T, npy.float32)
+    pseudo2datavec_pq_T = so_mcm.sparse_dict_mat_transpose(pseudo2datavec_pq_T)
 
-    ana_cov = pseudo2datavec_ij @ pseudo_cov @ pseudo2datavec_pq.T
+    # do sparse math. we want the dense array in the end
+    ana_cov = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(pseudo2datavec_ij, pseudo_cov)
+    ana_cov = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(ana_cov, pseudo2datavec_pq_T,
+                                                            dense=True, dtype=npy.float32)
+    
+    # finalize: need to divide the split factor from each side and cast to double
     ana_cov /= (len(splits_cross_iterator_ij) * len(splits_cross_iterator_pq))
     ana_cov = ana_cov.astype(npy.float64, copy=False)
 
-    log.info(f'Rank {so_mpi.rank}, Task {task}]: Calculated pseudo-to-power-spectrum cov in {(time.time() - t0):.3f} seconds')
-    log.info(f'Rank {so_mpi.rank}, Task {task}]: Calculated ana. cov. for {svi}_{mi}x{svj}_{mj}, {svp}_{mp}x{svq}_{mq} in {(time.time() - t_block):.3f} seconds')
-
+    log.info(f'[Rank {so_mpi.rank}, Task {task}]: Calculated pseudo-to-power-spectrum cov in {(time.time() - t0):.3f} seconds')
+    
     npy.save(opj(cov_dir, f'analytic_cov_{spec_name_ij}_{spec_name_pq}.npy'), ana_cov)
+    log.info(f'[Rank {so_mpi.rank}, Task {task}]: Calculated ana. cov. for {svi}_{mi}x{svj}_{mj}, {svp}_{mp}x{svq}_{mq} in {(time.time() - t_block):.3f} seconds')
+
+    # cleanup
+    pseudo_cov = None
+    pseudo2datavec_ij = None
+    pseudo2datavec_pq_T
+    ana_cov = None
 
 # these may be useful to check later
 cov_block2couplings_preshape = so_mpi.gather_set_or_dict(cov_block2couplings_preshape,
                                                          allgather=False,
                                                          root=0,
                                                          overlap_allowed=False)
+
 cov_block2TEB_block2can_sn_alm_info2nterms = so_mpi.gather_set_or_dict(cov_block2TEB_block2can_sn_alm_info2nterms,
                                                                        allgather=False,
                                                                        root=0,

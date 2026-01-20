@@ -31,6 +31,15 @@ surveys = d["surveys"]
 lmax = d["lmax"]
 cov_correlation_by_noise_model = d['cov_correlation_by_noise_model']
 cov_spin00_coupling_only = d['cov_spin00_coupling_only']
+use_toeplitz_cov = d['use_toeplitz_cov']
+if use_toeplitz_cov:
+    l_exact = d['l_exact']
+    l_toeplitz = d['l_toeplitz']
+    dl_band = d['dl_band']
+else:
+    l_exact = -1
+    l_toeplitz = -1
+    dl_band = -1
 
 bestfit_dir = d["best_fits_dir"]
 noise_dir = opj(bestfit_dir, 'noise')
@@ -75,7 +84,7 @@ def update_pseudospectra_dict(f1, f2, pseudospectra_dict=None):
             _, ps_dict = so_spectra.read_ps(opj(dir, fn_template.format(spec_name=spec_name)),
                                             spectra, return_type='Cl',
                                             return_dtype=npy.float32)
-            ps_dict = {spec[::-1]: val for spec, val in ps_dict.items()} # ET -> TE
+            ps_dict = {spec[::-1]: val for spec, val in ps_dict.items()} # TE -> ET
         
         for (TEB1, TEB2), val in ps_dict.items():
             sna1 = sv1, m1, TEB1, split
@@ -126,16 +135,19 @@ def get_can_discon_com_4pt(snf1, snf2, snf3, snf4):
         can_discon_com_4pt = reference_sn_field_info2reference_canonized_disconnected_combo_4pt[ref_sn_field_info]
     
     return can_discon_com_4pt
-    
-# FIXME: we need this for now pending ducc api changes (see below)
-def pols_disconnected_combo_4pt2ducc_mat_spintype_idx(pol1, pol2, pol3, pol4):
-    spin2_1 = int(pol1 == 'pol' and pol2 == 'pol')
-    spin2_2 = int(pol3 == 'pol' and pol4 == 'pol')
 
-    # if 0, then the spintype is 00, which is ducc_mat index 0
-    # if 1, then the spintype is 02 (or 20), which is ducc_mat index 1
-    # if 2, then the spintype is ++, which is ducc_mat index 2
-    return spin2_1 + spin2_2
+# NOTE: this function is insensitive to disconnected 4pt canonization
+def pols_disconnected_combo_4pt2ducc_optype(pol1, pol2, pol3, pol4):
+    if cov_spin00_coupling_only:
+        return 0 
+    else:
+        spin2_1 = int(pol1 == 'pol' and pol2 == 'pol')
+        spin2_2 = int(pol3 == 'pol' and pol4 == 'pol')
+
+        # if 0, then the spintype is 00, which is ducc optype 0
+        # if 1, then the spintype is 02 (or 20), which is ducc optype 1
+        # if 2, then the spintype is ++, which is ducc optype 2
+        return spin2_1 + spin2_2
 
 @numba.njit(parallel=True)
 def add_term_to_pseudo_cov_block(pseudo_cov_block, num_terms, w4_1234, w4_coupling, w2_12, w2_34, C12, C34, coupling):
@@ -172,7 +184,7 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_covs - 1)
 log.info(f"[Rank {so_mpi.rank}] Number of covs to compute: {len(subtasks)} (out of {n_covs} total)")
 
-cov_block2couplings_preshape = {}
+cov_block2couplings_types = {}
 cov_block2TEB_block2can_sn_alm_info2nterms = {}
 
 for task in subtasks:
@@ -210,29 +222,11 @@ for task in subtasks:
             
     # now couplings. we need figure out which couplings we actually need first
     #
-    # FIXME: the general case with ducc is too tricky to implement right now;
-    # instead, we only support two simpler cases: spin00 (for arbitrary windows),
-    # and all spins but only when T window and pol window are the same for all
-    # fields in this block. otherwise, we need to call the function 3 times, 
-    # with spin00-alone, and two mixed spins, and each of the mixed spins 
-    # waste somte computation. ideally we want ducc to not force you to package
-    # spins together
-
-    # can_discon_com_4pts2specs_for_ducc to track indices in output ducc
-    # array. use list instead of set because we need to track insertion order,
-    # but a dict is overkill
-    can_discon_com_4pts2specs_for_ducc = [] 
+    # can_discon_com_4pts_and_optypes to track indices in output ducc array for
+    # specific spectrum and optype. use list instead of set because we need to
+    # track insertion order, but a dict is overkill
+    can_discon_com_4pts_and_optypes = [] 
     specs_for_ducc = []
-
-    # FIXME: a cludge around the all-spins case for ducc right now
-    if not cov_spin00_coupling_only:
-        ducc_all_spin_one_coup_check = {}
-
-    # for each cov TEB sub-block, tracks how many times a canonical 4pt combo
-    # of (sv, m, TEB, split)s recurs, so it can be added once (times this count)
-    # rather than each time
-    TEB_block2can_sn_alm_info2nterms = {} # "alm_info" since keys are TEB instead of T and pol
-    
     def update_ducc_inputs_and_nterms(sna1, sna2, sna3, sna4, can_sn_alm_info2nterms):
         # update ducc inputs with minimal unique couplings, and track their
         # order
@@ -252,23 +246,13 @@ for task in subtasks:
         snf4 = (sv4, m4, pol4, split4)
         can_discon_com_4pt = get_can_discon_com_4pt(snf1, snf2, snf3, snf4)
 
-        if can_discon_com_4pt not in can_discon_com_4pts2specs_for_ducc:
-            can_discon_com_4pts2specs_for_ducc.append(can_discon_com_4pt)
+        # NOTE: although using uncanonized pol1, pol2, pol3, pol4, the optype is
+        # insensitive to disconnected 4pt canonization
+        optype = pols_disconnected_combo_4pt2ducc_optype(pol1, pol2, pol3, pol4)
+        
+        if (can_discon_com_4pt, optype) not in can_discon_com_4pts_and_optypes:
+            can_discon_com_4pts_and_optypes.append((can_discon_com_4pt, optype))
             specs_for_ducc.append(canonized_wls[can_discon_com_4pt])
-
-        # we are iterating over (T, pol) to make sure there is one coupling for
-        # this term otherwise, i.e., the key is 4pt sn_field_info ex (T, pol)
-        if not cov_spin00_coupling_only:
-            f1 = sv1, m1, split1
-            f2 = sv2, m2, split2
-            f3 = sv3, m3, split3
-            f4 = sv4, m4, split4
-            if (f1, f2, f3, f4) not in ducc_all_spin_one_coup_check:
-                ducc_all_spin_one_coup_check[f1, f2, f3, f4] = can_discon_com_4pt
-            else:
-                assert ducc_all_spin_one_coup_check[f1, f2, f3, f4] == can_discon_com_4pt, \
-                    'For now, cannot support pol-dependent windows if doing spinny ' + \
-                    'coupling flavors'
 
         # track the number of times this term has appeared in this cov TEB
         # sub-block
@@ -278,9 +262,13 @@ for task in subtasks:
         else:
             can_sn_alm_info2nterms[can_sn_alm_info] += 1
 
+    # for each cov TEB sub-block, tracks how many times a canonical 4pt combo
+    # of (sv, m, TEB, split)s recurs, so it can be added once (times this count)
+    # rather than each time
+    TEB_block2can_sn_alm_info2nterms = {} # "alm_info" since keys are TEB instead of T and pol
+    
     splits_cross_iterator_ij = pspipe_list.get_splits_cross_iterator(svi, nsplits[svi], svj, nsplits[svj])
     splits_cross_iterator_pq = pspipe_list.get_splits_cross_iterator(svp, nsplits[svp], svq, nsplits[svq])        
-
     for (TEBi, TEBj), (TEBp, TEBq) in product(spectra, repeat=2):    
         if (TEBi, TEBj, TEBp, TEBq) not in TEB_block2can_sn_alm_info2nterms:
             TEB_block2can_sn_alm_info2nterms[TEBi, TEBj, TEBp, TEBq] = {}
@@ -336,29 +324,27 @@ for task in subtasks:
                                               can_sn_alm_info2nterms)
 
     # set up and perform the ducc calculation
-    specs_for_ducc = npy.array(specs_for_ducc)[:, None, :] # (nspecs, nl) -> (nspecs, 1, nl)
-    if cov_spin00_coupling_only:
-        # just line all canonized wls up and send to ducc
-        spec_index = (0, 0, 0, 0)
-        mat_index = (0, -1, -1, -1, -1)
-    else:
-        # repeat wl as 00, 02, and 22 spin pairs because we need the 00, 02, ++
-        # coupling flavors for each wl
-        specs_for_ducc = npy.tile(specs_for_ducc, (1, 3, 1)) # (nspecs, 1, nl) -> (nspecs, 3, nl)
-        spec_index = (0, 1, 1, 2)
-        mat_index = (0, 1, -1, 2, -1)
+    specs_for_ducc = npy.array(specs_for_ducc)
+    optypes_for_ducc = [item[1] for item in can_discon_com_4pts_and_optypes]
 
-    cov_block2couplings_preshape[(svi, mi), (svj, mj), 
-                                 (svp, mp), (svq, mq)] = specs_for_ducc.shape[:-1]
+    optype_counts = {}
+    cov_block2couplings_types[(svi, mi), (svj, mj), 
+                              (svp, mp), (svq, mq)] = optype_counts
+    for optype in optypes_for_ducc:
+        if optype in optype_counts:
+            optype_counts[optype] += 1
+        else:
+            optype_counts[optype] = 1
+    
     cov_block2TEB_block2can_sn_alm_info2nterms[(svi, mi), (svj, mj), 
                                                (svp, mp), (svq, mq)] = TEB_block2can_sn_alm_info2nterms
 
     t0 = time.time()
-    coups = so_mcm.ducc_couplings(specs_for_ducc, lmax, spec_index=spec_index,
-                                  mat_index=mat_index, dtype=npy.float32,
-                                  coupling=True, pspy_index_convention=True)
+    coups = so_mcm.ducc_couplings(specs_for_ducc, lmax, optypes_for_ducc, dtype=npy.float32,
+                                  l_exact=l_exact, l_toeplitz=l_toeplitz, dl_band=dl_band,
+                                  log=log, coupling=True, pspy_index_convention=True)
     
-    log.info(f'[Rank {so_mpi.rank}, Task {task}]: Calculated {specs_for_ducc.shape[0]}x{specs_for_ducc.shape[1]} couplings in {(time.time() - t0):.3f} seconds')            
+    log.info(f'[Rank {so_mpi.rank}, Task {task}]: Calculated {optype_counts} couplings in {(time.time() - t0):.3f} seconds')            
 
     # now add all terms together
     pseudo_cov = npy.zeros((len(spectra) * (lmax - 2), len(spectra) * (lmax - 2)), dtype=npy.float32)
@@ -412,13 +398,12 @@ for task in subtasks:
                     C34 = pseudospectra_dict[sna3, sna4]
                 
                     # get the coupling itself
-                    ducc_mat_coup_idx = can_discon_com_4pts2specs_for_ducc.index(can_discon_com_4pt_coupling)
-                    if cov_spin00_coupling_only:
-                        ducc_mat_spintype_idx = 0 
-                    else:
-                        ducc_mat_spintype_idx = pols_disconnected_combo_4pt2ducc_mat_spintype_idx(pol1, pol2, pol3, pol4)
-
-                    coupling = coups[ducc_mat_coup_idx, ducc_mat_spintype_idx]
+                    #
+                    # NOTE: although using uncanonized pol1, pol2, pol3, pol4, the optype is
+                    # insensitive to disconnected 4pt canonization
+                    optype = pols_disconnected_combo_4pt2ducc_optype(pol1, pol2, pol3, pol4)
+                    coups_idx = can_discon_com_4pts_and_optypes.index((can_discon_com_4pt_coupling, optype))
+                    coupling = coups[coups_idx]
 
                     add_term_to_pseudo_cov_block(pseudo_cov_block, nterms, w4_1234,
                                                  w4_coupling, w2_12, w2_34, C12, C34,
@@ -465,10 +450,10 @@ for task in subtasks:
     ana_cov = None
 
 # these may be useful to check later
-cov_block2couplings_preshape = so_mpi.gather_set_or_dict(cov_block2couplings_preshape,
-                                                         allgather=False,
-                                                         root=0,
-                                                         overlap_allowed=False)
+cov_block2couplings_types = so_mpi.gather_set_or_dict(cov_block2couplings_types,
+                                                      allgather=False,
+                                                      root=0,
+                                                      overlap_allowed=False)
 
 cov_block2TEB_block2can_sn_alm_info2nterms = so_mpi.gather_set_or_dict(cov_block2TEB_block2can_sn_alm_info2nterms,
                                                                        allgather=False,
@@ -476,5 +461,5 @@ cov_block2TEB_block2can_sn_alm_info2nterms = so_mpi.gather_set_or_dict(cov_block
                                                                        overlap_allowed=False)
 
 if so_mpi.rank == 0:
-    npy.save(opj(cov_dir, 'cov_block2couplings_preshape.npy'), cov_block2couplings_preshape)
+    npy.save(opj(cov_dir, 'cov_block2couplings_types.npy'), cov_block2couplings_types)
     npy.save(opj(cov_dir, 'cov_block2TEB_block2can_sn_alm_info2nterms.npy'), cov_block2TEB_block2can_sn_alm_info2nterms)

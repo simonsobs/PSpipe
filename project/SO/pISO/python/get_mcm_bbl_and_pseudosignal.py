@@ -160,13 +160,14 @@ else:
         
     log.info(f"[Rank {so_mpi.rank}]: Computing mcm matrices using ducc")
     
-    specs_for_ducc = np.array(specs_for_ducc)
+    specs_for_ducc = np.array(specs_for_ducc).reshape(len(subtasks)*4, maxl + 1) # (nspec, 4, nl) -> (nspec*4, nl)
     bls = np.repeat(bls, (1, 1, 1, 2), axis=1) # (nspec, 4, nl) -> (nspec, 5, nl)
     bls = bls[..., None, :] # (nspec, 5, nl) -> (nspec, 5, 1, nl)
 
-    mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, spec_index=(0, 1, 2, 3),
-                                 mat_index=(0, 1, 2, 3, 4), dtype=np.float64,
-                                 coupling=False, pspy_index_convention=True)
+    mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, len(subtasks)*[0, 1, 2, 4],
+                                 dtype=np.float64, coupling=False,
+                                 pspy_index_convention=True)
+    mcms = mcms.reshape(len(subtasks), 5, lmax+1, lmax+1) # (nspec*5, nl, nl) -> (nspec, 5, nl, nl)
 
     # apply total-diagonal beams on the right
     mcms *= bls

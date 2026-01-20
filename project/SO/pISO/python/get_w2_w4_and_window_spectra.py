@@ -18,7 +18,7 @@ import numpy as np
 import numba
 from pixell import enmap, curvedsky, wcsutils
 
-from pspipe_utils import log, pspipe_list, dict_utils
+from pspipe_utils import log, pspipe_list, covariance, dict_utils
 from pspy import so_dict, so_mpi, pspy_utils
 
 parser = argparse.ArgumentParser(description=description,
@@ -557,7 +557,7 @@ for task in subtasks:
             reference_term2reference_can_discon_com_4pt[term] = reference_can_discon_com_4pt
     
     def update_disconnected_4pt(split1='s', split2='s', split3='s', split4='s'):
-        term = pspipe_list.get_4pt_sn_term_type(split1, split2, split3, split4)
+        term = covariance.get_4pt_sn_term_type(split1, split2, split3, split4)
         ref_split1, ref_split2, ref_split3, ref_split4 = term
         
         # if we are going to use the reference coupling for this split term, then

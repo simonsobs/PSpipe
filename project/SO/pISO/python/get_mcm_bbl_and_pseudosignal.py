@@ -196,7 +196,8 @@ else:
         for k in signal_dict.keys():
             signal_dict[k] = signal_dict[k][:lmax-2]
 
-        # the fully realized mcm matrix would be a lot of memory
+        # the fully realized mcm matrix would be a lot of memory. also, don't
+        # need to copy blocks since just being used in math
         mcm_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(mcms[t], spectra)
         pseudosignal_dict = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(mcm_dict, signal_dict)
         so_spectra.write_ps(opj(bestfit_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),

@@ -181,10 +181,14 @@ def update_ducc_inputs_and_nterms(sna1, sna2, sna3, sna4,
         optype = pols_disconnected_combo_4pt2ducc_optype(pol1, pol2, pol3, pol4)
         
         # if the can_discon_com_4pt_and_optype is not in the block_set, add it
-        # to a temporary list for this block. we only then add the list for this
-        # block to the block_set list if it can fit in the cache.
-        if (can_discon_com_4pt, optype) not in block_set_can_discon_com_4pts_and_optypes:
-            this_block_can_discon_com_4pts_and_optypes.append((can_discon_com_4pt, optype))
+        # to a temporary list for this block (only once). we only then add the
+        # list for this block to the block_set list if it can fit in the cache.
+        # NOTE: test this_block_can_discon_com_4pts_and_optypes to reduce wasted
+        # cache misses
+        can_discon_com_4pt_and_optype = (can_discon_com_4pt, optype)
+        if can_discon_com_4pt_and_optype not in this_block_can_discon_com_4pts_and_optypes:
+            if can_discon_com_4pt_and_optype not in block_set_can_discon_com_4pts_and_optypes:
+                this_block_can_discon_com_4pts_and_optypes.append(can_discon_com_4pt_and_optype)
 
         # track the number of times this term has appeared in this cov TEB
         # sub-block
@@ -232,7 +236,6 @@ t0 = time.time()
 subtasks = so_mpi.taskrange(imin=0, imax=n_covs - 1)
 
 cov_block_sets2can_discon_com_4pts_and_optypes = {}
-cov_block_sets2optype_counts = {}
 cov_block2TEB_block2can_sn_alm_info2nterms = {}
 
 # need to initialize objects before while loop, that otherwise are re-initialized
@@ -369,14 +372,6 @@ while True:
     if end_set_and_redo_block or end_loop:
         cov_block_sets2can_discon_com_4pts_and_optypes[tuple(cov_block_set)] = can_discon_com_4pts_and_optypes
 
-        optype_counts = {}
-        for (can_discon_com_4pt, optype) in can_discon_com_4pts_and_optypes:
-            if optype in optype_counts:
-                optype_counts[optype] += 1
-            else:
-                optype_counts[optype] = 1
-        cov_block_sets2optype_counts[cov_block_set] = optype_counts
-
         cov_block_set = []
         can_discon_com_4pts_and_optypes = [] 
         
@@ -389,7 +384,7 @@ while True:
     can_discon_com_4pts_and_optypes += this_block_can_discon_com_4pts_and_optypes
     i += 1
 
-log.info(f'[Rank {so_mpi.rank}]: Loop over cov block sets in {(time.time() - t0):.3f} seconds')
+log.info(f'[Rank {so_mpi.rank}] Loop over cov block sets in {(time.time() - t0):.3f} seconds')
 
 t0 = time.time()
 
@@ -398,20 +393,15 @@ cov_block_sets2can_discon_com_4pts_and_optypes = so_mpi.gather_set_or_dict(cov_b
                                                                            allgather=True,
                                                                            overlap_allowed=False)
 
-cov_block_sets2optype_counts = so_mpi.gather_set_or_dict(cov_block_sets2optype_counts,
-                                                         allgather=True,
-                                                         overlap_allowed=False)
-
 cov_block2TEB_block2can_sn_alm_info2nterms = so_mpi.gather_set_or_dict(cov_block2TEB_block2can_sn_alm_info2nterms,
                                                                        allgather=True,
                                                                        overlap_allowed=False)
 
 if so_mpi.rank == 0:
     npy.save(opj(cov_dir, 'cov_block_sets2can_discon_com_4pts_and_optypes.npy'), cov_block_sets2can_discon_com_4pts_and_optypes)
-    npy.save(opj(cov_dir, 'cov_block_sets2optype_counts.npy'), cov_block_sets2optype_counts)
     npy.save(opj(cov_dir, 'cov_block2TEB_block2can_sn_alm_info2nterms.npy'), cov_block2TEB_block2can_sn_alm_info2nterms)
 
-log.info(f'[Rank {so_mpi.rank}]: Save cov block sets in {(time.time() - t0):.3f} seconds')
+log.info(f'[Rank {so_mpi.rank}] Save cov block sets in {(time.time() - t0):.3f} seconds')
 
 # now mpi over cov_block_sets
 cov_block_sets = list(cov_block_sets2can_discon_com_4pts_and_optypes.keys())
@@ -441,11 +431,18 @@ for task in subtasks:
     coups = so_mcm.ducc_couplings(specs_for_ducc, lmax, optypes_for_ducc, dtype=npy.float32,
                                   l_exact=l_exact, l_toeplitz=l_toeplitz, dl_band=dl_band,
                                   log=log, coupling=True, pspy_index_convention=True)
+
+    optype_counts = {}
+    for optype in optypes_for_ducc:
+        if optype in optype_counts:
+            optype_counts[optype] += 1
+        else:
+            optype_counts[optype] = 1
+    
     specs_for_ducc = None
     optypes_for_ducc = None
 
-    optype_counts = cov_block_sets2optype_counts[cov_block_set]
-    log.info(f'[Rank {so_mpi.rank}, Task {task}]: Calculated {optype_counts} couplings in {(time.time() - t0):.3f} seconds')            
+    log.info(f'[Rank {so_mpi.rank}, Task {task}] Calculated {optype_counts} couplings in {(time.time() - t0):.3f} seconds')            
 
     # now add all terms together for each cov block
     for i, cov_block in enumerate(cov_block_set):
@@ -453,7 +450,7 @@ for task in subtasks:
 
         (svi, mi), (svj, mj), (svp, mp), (svq, mq) = cov_block
 
-        log.info(f"[Rank {so_mpi.rank}, Task {task}, Block {i}]: Calculating ana. cov. for {svi}_{mi}x{svj}_{mj}, {svp}_{mp}x{svq}_{mq}")
+        log.info(f"[Rank {so_mpi.rank}, Task {task}, Block {i}] Calculating ana. cov. for {svi}_{mi}x{svj}_{mj}, {svp}_{mp}x{svq}_{mq}")
         
         # "n" holds the "noise correlation group" information: f1 and f2 have 
         # correlated noise only if ni == nj
@@ -493,54 +490,53 @@ for task in subtasks:
                     sv3, m3, TEB3, split3 = sna3
                     sv4, m4, TEB4, split4 = sna4
 
-                    if nterms is not None:                    
-                        pol1 = TEB2pol(TEB1)
-                        pol2 = TEB2pol(TEB2)
-                        pol3 = TEB2pol(TEB3)
-                        pol4 = TEB2pol(TEB4)
+                    pol1 = TEB2pol(TEB1)
+                    pol2 = TEB2pol(TEB2)
+                    pol3 = TEB2pol(TEB3)
+                    pol4 = TEB2pol(TEB4)
 
-                        snf1 = (sv1, m1, pol1, split1)
-                        snf2 = (sv2, m2, pol2, split2)
-                        snf3 = (sv3, m3, pol3, split3)
-                        snf4 = (sv4, m4, pol4, split4)
+                    snf1 = (sv1, m1, pol1, split1)
+                    snf2 = (sv2, m2, pol2, split2)
+                    snf3 = (sv3, m3, pol3, split3)
+                    snf4 = (sv4, m4, pol4, split4)
 
-                        # get the w4 for this actual can_sn_alm_info
-                        can_con_sn_field_info_1234 = pspipe_list.canonize_connected_4pt(snf1, snf2, snf3, snf4)
-                        can_con_com_4pt_1234 = canonized_sn_field_info2canonized_connected_combo_4pt[can_con_sn_field_info_1234]
-                        w4_1234 = canonized_w4s[can_con_com_4pt_1234]
+                    # get the w4 for this actual can_sn_alm_info
+                    can_con_sn_field_info_1234 = pspipe_list.canonize_connected_4pt(snf1, snf2, snf3, snf4)
+                    can_con_com_4pt_1234 = canonized_sn_field_info2canonized_connected_combo_4pt[can_con_sn_field_info_1234]
+                    w4_1234 = canonized_w4s[can_con_com_4pt_1234]
 
-                        # get the w4 for the coupling that will be used for this term
-                        can_discon_com_4pt_coupling = get_can_discon_com_4pt(snf1, snf2, snf3, snf4)
-                        can_con_com_4pt_coupling = pspipe_list.canonize_connected_4pt(*can_discon_com_4pt_coupling)
-                        w4_coupling = canonized_w4s[can_con_com_4pt_coupling]
-                        
-                        # get the w2 factors
-                        can_con_sn_field_info_12 = pspipe_list.canonize_connected_2pt(snf1, snf2)
-                        can_con_com_2pt_12 = canonized_sn_field_info2canonized_connected_combo_2pt[can_con_sn_field_info_12]
-                        w2_12 = canonized_w2s[can_con_com_2pt_12]
-
-                        can_con_sn_field_info_34 = pspipe_list.canonize_connected_2pt(snf3, snf4)
-                        can_con_com_2pt_34 = canonized_sn_field_info2canonized_connected_combo_2pt[can_con_sn_field_info_34]
-                        w2_34 = canonized_w2s[can_con_com_2pt_34]
-
-                        # get the spectra
-                        # sna pairs already canonized since discon 4pt is canonized
-                        C12 = pseudospectra_dict[sna1, sna2]
-                        C34 = pseudospectra_dict[sna3, sna4]
+                    # get the w4 for the coupling that will be used for this term
+                    can_discon_com_4pt_coupling = get_can_discon_com_4pt(snf1, snf2, snf3, snf4)
+                    can_con_com_4pt_coupling = pspipe_list.canonize_connected_4pt(*can_discon_com_4pt_coupling)
+                    w4_coupling = canonized_w4s[can_con_com_4pt_coupling]
                     
-                        # get the coupling itself
-                        #
-                        # NOTE: although using uncanonized pol1, pol2, pol3, pol4, the optype is
-                        # insensitive to disconnected 4pt canonization
-                        optype = pols_disconnected_combo_4pt2ducc_optype(pol1, pol2, pol3, pol4)
-                        coups_idx = can_discon_com_4pts_and_optypes.index((can_discon_com_4pt_coupling, optype))
-                        coupling = coups[coups_idx]
+                    # get the w2 factors
+                    can_con_sn_field_info_12 = pspipe_list.canonize_connected_2pt(snf1, snf2)
+                    can_con_com_2pt_12 = canonized_sn_field_info2canonized_connected_combo_2pt[can_con_sn_field_info_12]
+                    w2_12 = canonized_w2s[can_con_com_2pt_12]
 
-                        add_term_to_pseudo_cov_block(pseudo_cov_block, nterms, w4_1234,
-                                                    w4_coupling, w2_12, w2_34, C12, C34,
-                                                    coupling)
+                    can_con_sn_field_info_34 = pspipe_list.canonize_connected_2pt(snf3, snf4)
+                    can_con_com_2pt_34 = canonized_sn_field_info2canonized_connected_combo_2pt[can_con_sn_field_info_34]
+                    w2_34 = canonized_w2s[can_con_com_2pt_34]
 
-        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}]: Added terms to pseudo cov in {(time.time() - t0):.3f} seconds')
+                    # get the spectra
+                    # sna pairs already canonized since discon 4pt is canonized
+                    C12 = pseudospectra_dict[sna1, sna2]
+                    C34 = pseudospectra_dict[sna3, sna4]
+                
+                    # get the coupling itself
+                    #
+                    # NOTE: although using uncanonized pol1, pol2, pol3, pol4, the optype is
+                    # insensitive to disconnected 4pt canonization
+                    optype = pols_disconnected_combo_4pt2ducc_optype(pol1, pol2, pol3, pol4)
+                    coups_idx = can_discon_com_4pts_and_optypes.index((can_discon_com_4pt_coupling, optype))
+                    coupling = coups[coups_idx]
+
+                    add_term_to_pseudo_cov_block(pseudo_cov_block, nterms, w4_1234,
+                                                w4_coupling, w2_12, w2_34, C12, C34,
+                                                coupling)
+
+        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Added terms to pseudo cov in {(time.time() - t0):.3f} seconds')
 
         # convert from pseudo to spec cov
         # NOTE: cast the pseudo2datavec because they are small so casting is fast,
@@ -569,10 +565,10 @@ for task in subtasks:
         ana_cov /= (len(splits_cross_iterator_ij) * len(splits_cross_iterator_pq))
         ana_cov = ana_cov.astype(npy.float64, copy=False)
 
-        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}]: Calculated pseudo-to-power-spectrum cov in {(time.time() - t0):.3f} seconds')
+        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Calculated pseudo-to-power-spectrum cov in {(time.time() - t0):.3f} seconds')
         
         npy.save(opj(cov_dir, f'analytic_cov_{spec_name_ij}_{spec_name_pq}.npy'), ana_cov)
-        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}]: Calculated ana. cov. for {svi}_{mi}x{svj}_{mj}, {svp}_{mp}x{svq}_{mq} in {(time.time() - t_block):.3f} seconds')
+        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Calculated ana. cov. for {svi}_{mi}x{svj}_{mj}, {svp}_{mp}x{svq}_{mq} in {(time.time() - t_block):.3f} seconds')
 
         # cleanup
         pseudo_cov = None
@@ -581,4 +577,4 @@ for task in subtasks:
         ana_cov = None
     
     coups = None
-    log.info(f'[Rank {so_mpi.rank}, Task {task}]: Calculated cov block set for {len(cov_block_set)} cov blocks in {(time.time() - t_block_set):.3f} seconds')
+    log.info(f'[Rank {so_mpi.rank}, Task {task}] Calculated cov block set for {len(cov_block_set)} cov blocks in {(time.time() - t_block_set):.3f} seconds')

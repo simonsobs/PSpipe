@@ -218,7 +218,9 @@ for sv in surveys:
     nsplits[sv] = d[f'n_splits_{sv}']
 
 # first, figure out all the "shared couplings" sets of cov blocks, such that the
-# total number of couplings in each block is <= the cache size
+# total number of couplings in each block is <= the cache size. NOTE: a nominal
+# cov_block_set might get "chopped" by blindly cutting all the cov blocks into
+# equal-length subtasks
 so_mpi.init(True)
 
 t0 = time.time()
@@ -333,38 +335,60 @@ while True:
 
     cov_block2TEB_block2can_sn_alm_info2nterms[cov_block] = TEB_block2can_sn_alm_info2nterms
 
-    # (a) try to add this block to the cache. if not able, continue (redo) while
-    # loop without incrementing so that we do this cov_block again, but record
-    # and reset this cov block set. this takes precedence over condition (b), 
-    # since the next loop iteration is a do-over
-    # (b) if we are on the last block and it can be added to the cache, then the
-    # loop will end after this block. in this one-off situation, add the current
-    # block contents to the set, then record the set, and break.
-    # (c) otherwise proceed: add this cov block to current set and go on to the 
-    # next block.
-    # NOTE: a nominal cov_block_set might get "chopped" by blindly cutting all
-    # the cov blocks into equal-length subtasks
-    end_set_and_redo_block = len(can_discon_com_4pts_and_optypes & this_block_can_discon_com_4pts_and_optypes) > coupling_cache_size
+    # there are now four possibilities for what to do with this block:
+    # (a) if the current block requires more couplings than the cache size 
+    # limit, and the current cache is empty, then we have no recourse: 
+    # ending the set, resetting the cache, and redoing the block will of course
+    # never work. therefore, we first force the one block into the cache, and
+    # then end the set and reset the cache. we then go on to the next block.
+    # this *does* "violate" the cache limit, so we issue a warning
+    # (b) like (a), if adding the current block's couplings to the cache would
+    # result in a cache size more than the cache size limit, but unlike (a) if 
+    # the cache is not empty, we do have a recourse: end the set, reset the
+    # cache, and then redo this block with an empty cache. 
+    # (c) if we are on the last block of all the subtasks, but we know we are 
+    # not going to redo this block with an empty cache (i.e., not (b)), then
+    # we are also on the last task of the loop. like (a) we must force the block
+    # into the cache and end the set. unlike (a), we break the loop instead of
+    # going on to the next block. it's possible that (a) and (c) occur at the 
+    # same time, in which case (c) takes priority.
+    # (d) otherwise proceed: add this block to the current cache and go on to 
+    # the next block. hopefully this happens most of the time
+
+    single_block_set = False
+    end_set_and_redo_block = False
+    if len(can_discon_com_4pts_and_optypes & this_block_can_discon_com_4pts_and_optypes) > coupling_cache_size:
+        single_block_set = len(can_discon_com_4pts_and_optypes) == 0
+        end_set_and_redo_block = len(can_discon_com_4pts_and_optypes) > 0
+
     end_loop = (i+1 == len(subtasks)) and not end_set_and_redo_block
 
-    if end_loop:
+    if single_block_set:
+        log.warning(f"[Rank {so_mpi.rank}, Task {task}] Number of couplings for cov block {cov_block} is "
+                    f"{len(this_block_can_discon_com_4pts_and_optypes)}, which excees the coupling cache "
+                    f"size of {coupling_cache_size}. Adding to single-block-set, may result in OOM later.")
+
+    if single_block_set or end_loop:
         cov_block_set.append(cov_block)
         can_discon_com_4pts_and_optypes &= this_block_can_discon_com_4pts_and_optypes
 
-    if end_set_and_redo_block or end_loop:
+    if single_block_set or end_set_and_redo_block or end_loop:
         cov_block_sets2can_discon_com_4pts_and_optypes[tuple(cov_block_set)] = can_discon_com_4pts_and_optypes
 
         cov_block_set = []
         can_discon_com_4pts_and_optypes = set()
         
+        if single_block_set and not end_loop:
+            i += 1
+            continue
         if end_set_and_redo_block:
             continue
         if end_loop:
             break
-
-    cov_block_set.append(cov_block)
-    can_discon_com_4pts_and_optypes &= this_block_can_discon_com_4pts_and_optypes
-    i += 1
+    else:
+        cov_block_set.append(cov_block)
+        can_discon_com_4pts_and_optypes &= this_block_can_discon_com_4pts_and_optypes
+        i += 1
 
 log.info(f'[Rank {so_mpi.rank}] Loop over cov block sets in {(time.time() - t0):.3f} seconds')
 
@@ -453,19 +477,18 @@ for task in subtasks:
         pseudospectra_dict = {}
         update_pseudospectra_dict((svi, mi, ni), (svp, mp, np), pseudospectra_dict=pseudospectra_dict)
         update_pseudospectra_dict((svj, mj, nj), (svq, mq, nq), pseudospectra_dict=pseudospectra_dict)
-        
         update_pseudospectra_dict((svi, mi, ni), (svq, mq, nq), pseudospectra_dict=pseudospectra_dict)
         update_pseudospectra_dict((svj, mj, nj), (svp, mp, np), pseudospectra_dict=pseudospectra_dict)
                 
         pseudo_cov = npy.zeros((len(spectra) * (lmax - 2), len(spectra) * (lmax - 2)), dtype=npy.float32)
-
         TEB_block2can_sn_alm_info2nterms = cov_block2TEB_block2can_sn_alm_info2nterms[cov_block]
-
+        total_nterms = 0
         for ridx, (TEBi, TEBj) in enumerate(spectra):
             for cidx, (TEBp, TEBq) in enumerate(spectra):
                 pseudo_cov_block = pseudo_cov[ridx*(lmax - 2):(ridx+1)*(lmax - 2), cidx*(lmax - 2):(cidx+1)*(lmax - 2)]
 
                 can_sn_alm_info2nterms = TEB_block2can_sn_alm_info2nterms[TEBi, TEBj, TEBp, TEBq]
+                total_nterms += len(can_sn_alm_info2nterms)
                 for can_sn_alm_info, nterms in can_sn_alm_info2nterms.items():
                     (sna1, sna2, sna3, sna4) = can_sn_alm_info
                     sv1, m1, TEB1, split1 = sna1
@@ -519,7 +542,7 @@ for task in subtasks:
                                                 w4_coupling, w2_12, w2_34, C12, C34,
                                                 coupling)
 
-        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Added terms to pseudo cov in {(time.time() - t0):.3f} seconds')
+        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Added {total_nterms} terms to pseudo cov in {(time.time() - t0):.3f} seconds')
 
         # convert from pseudo to spec cov
         # NOTE: cast the pseudo2datavec because they are small so casting is fast,
@@ -556,7 +579,7 @@ for task in subtasks:
         # cleanup
         pseudo_cov = None
         pseudo2datavec_ij = None
-        pseudo2datavec_pq_T
+        pseudo2datavec_pq_T = None
         ana_cov = None
     
     coups = None

@@ -340,20 +340,58 @@ log.info(f'[Rank {so_mpi.rank}] Save cov block sets in {(time.time() - t0):.3f} 
 # make some useful plots
 if so_mpi.rank == 0:
     import matplotlib.pyplot as plt
+
     num_calculated_couplings_per_set = []
+    mem_per_set = []
     num_cov_blocks_per_set = []
     for cov_block_sets, can_discon_com_4pts_and_optypes in cov_block_sets2can_discon_com_4pts_and_optypes.items():
         num_calculated_couplings_per_set.append(len(can_discon_com_4pts_and_optypes))
+
+        # FIXME: get actual lmaxs
+        lmax1, lmax2 = d['lmax'], d['lmax']
+        mem = len(can_discon_com_4pts_and_optypes) * (lmax1+1)*(lmax2+1) * 4
+        mem += 81 * (lmax1+1)*(lmax2+1) * 4
+        mem /= 1e9
+        mem_per_set.append(mem)
+
         num_cov_blocks_per_set.append(len(cov_block_sets))
     num_calculated_couplings_per_set = npy.array(num_calculated_couplings_per_set)
+    mem_per_set = npy.array(mem_per_set)
     num_cov_blocks_per_set = npy.array(num_cov_blocks_per_set)
+
+    fig, ax1 = plt.subplots()
+    ax1.hist(mem_per_set, histtype='step', bins=30, color='C0')
+    ax1.semilogy()
+    mean = np.mean(mem_per_set)
+    ax1.axvline(mean, linestyle='--', color='C0', label = f'Mean memory (GB) per cov block set: {mean:0.3f}')
+    ax1.tick_params(axis='x', color='C0', labelcolor='C0')
+    ax1.set_xlabel('Memory (GB) per cov block set')
+    ax1.set_ylabel('Number of cov block sets')
+
+    ax2 = ax1.twiny()
+    ax2.hist(num_calculated_couplings_per_set, histtype='step', bins=30, color='C1')
+    ax2.semilogy()
+    mean = np.mean(num_calculated_couplings_per_set)
+    ax2.axvline(mean, linestyle='--', color='C1', label = f'Mean number of couplings per cov block set: {mean:0.3f}')
+    ax2.tick_params(axis='x', color='C1', labelcolor='C1')
+    ax2.set_xlabel('Number of couplings per cov block set')
+    ax2.set_ylabel('Number of cov block sets')
+
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines2 + lines1, labels2 + labels1)
+    ax1.set_zorder(ax2.get_zorder() + 1)
+    ax1.set_facecolor('none')
+    plt.savefig(opj(plot_dir, 'num_couplings_and_mem_per_cov_block_set.png'))
+    plt.close()
+
     num_calculated_couplings_per_cov_block = num_calculated_couplings_per_set / num_cov_blocks_per_set
     weights = num_cov_blocks_per_set
 
     _ = plt.hist(num_calculated_couplings_per_cov_block, histtype='step', bins=30, weights=weights)
     plt.semilogy()
     mean = npy.mean(num_calculated_couplings_per_cov_block * weights) / npy.mean(weights)
-    plt.axvline(mean, linestyle='--', color='k', alpha=0.3, label = f'Mean couplings per cov block: {mean:0.3f}')
+    plt.axvline(mean, linestyle='--', color='C0', label = f'Mean couplings per cov block: {mean:0.3f}')
     plt.legend()
     plt.xlabel('Number of couplings per cov block')
     plt.ylabel('Number of cov blocks')
@@ -370,7 +408,7 @@ if so_mpi.rank == 0:
     _ = plt.hist(nterms, histtype='step', bins=30)
     plt.semilogy()
     mean = npy.mean(nterms)
-    plt.axvline(mean, linestyle='--', color='k', alpha=0.3, label = f'Mean added terms per cov block: {mean:0.3f}')
+    plt.axvline(mean, linestyle='--', color='C0', label = f'Mean added terms per cov block: {mean:0.3f}')
     plt.legend()
     plt.xlabel('Number of added terms per cov block')
     plt.ylabel('Number of cov blocks')

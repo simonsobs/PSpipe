@@ -122,17 +122,19 @@ cov_type_list = list(dict.fromkeys(cov_type_list)) #remove doublon
 spec_dir_list = list(dict.fromkeys(spec_dir_list)) #remove doublon
 map_set_list = pspipe_list.get_map_set_list(d)
 
+calib_suffix = '_calib' if null_infos['use_calib'] else ''
+poleff_suffix = '_poleff' if null_infos['use_poleff'] else ''
 
 all_ps = {}
 for spec_dir in spec_dir_list:
     cov_template = f"{cov_dir}/{cov_type_list[0]}" + "_{}x{}_{}x{}.npy"
-    ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
+    ps_template = spec_dir + "/Dl_{}x{}" + f"_cross{calib_suffix}{poleff_suffix}.dat"
     all_ps[spec_dir], _ = consistency.get_ps_and_cov_dict(map_set_list, ps_template, cov_template, spectra_order=spectra)
     lb = all_ps[spec_dir]["ell"]
 del _
 print('loaded spec')
 all_cov = {}
-_ps_temp = spectra_dir + "/Dl_{}x{}_cross.dat"
+_ps_temp = spectra_dir + "/Dl_{}x{}" + f"_cross{calib_suffix}{poleff_suffix}.dat"
 for cov in cov_type_list:
     cov_template = f"{cov_dir}/{cov}" + "_{}x{}_{}x{}.npy"
     _, all_cov[cov] =  consistency.get_ps_and_cov_dict(map_set_list, _ps_temp, cov_template, spectra_order=spectra)
@@ -141,11 +143,6 @@ print('loaded covs')
 del _
 
 # Apply calibration if needed
-if 'calibs' in null_infos:
-    print('Apply calibs from nulls yaml file')
-    for spec_dir in spec_dir_list:
-        all_ps[spec_dir] = {key: ps / null_infos['calibs'][key[0]] / null_infos['calibs'][key[1]] for key, ps in all_ps[spec_dir].items() if key != 'ell'}
-        all_ps[spec_dir]["ell"] = lb
 
 # Load foreground best fits
 fg_file_name = f"{bestfits_dir}" + "fg_{}x{}.dat"

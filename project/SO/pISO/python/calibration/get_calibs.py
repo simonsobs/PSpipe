@@ -92,7 +92,10 @@ results_dict = {}
 
 tests = ["AxA-AxB", "AxA-BxB", "BxB-AxB"]
 
+
 for test in tests:
+    pte_list = []
+    pte_cal_list = []
     # Loop over each map_set-ref_map_set combination
     # (so you can measure calib on a same map_set with different ref_map_set)
     for map_set, ref_map_set in calib_infos[f"ref_map_sets"].items():
@@ -160,7 +163,7 @@ for test in tests:
             "TT",
             id,
             f"{chains_dir}/{name}",
-            Rminus1_cl_stop=0.1,
+            Rminus1_cl_stop=0.01,
         )
 
         results_dict[test, map_set] = {
@@ -187,16 +190,18 @@ for test in tests:
         chi2 = (res_spectrum[id] - res_th[id]) @ np.linalg.inv(res_cov[np.ix_(id, id)]) @ (res_spectrum[id] - res_th[id])
         ndof = len(lb[id]) - remove_dof
         pte = 1 - ss.chi2(ndof).cdf(chi2)
+        pte_list.append(pte)
         
         chi2_cal = (res_spectrum_cal[id] - res_th[id]) @ np.linalg.inv(res_cov_cal[np.ix_(id, id)]) @ (res_spectrum_cal[id] - res_th[id])
-        ndof_cal = len(lb[id]) - remove_dof
+        ndof_cal = len(lb[id]) - remove_dof - 2  # TODO : Should there be a - 2 here ??
         pte_cal = 1 - ss.chi2(ndof_cal).cdf(chi2_cal)
-
+        pte_cal_list.append(pte_cal)
         fig, ax = plt.subplots(
             2,
-            gridspec_kw={"hspace": 0, "height_ratios": (2, 1)},
-            figsize=(8, 6),
+            gridspec_kw={"hspace": 0, "height_ratios": (2.5, 1)},
+            figsize=(9, 9),
             sharex=True,
+            dpi=200,
         )
 
         ax[0].set_yscale("log")
@@ -224,15 +229,15 @@ for test in tests:
                     ),
                 ].diagonal()
             ) * lb**ell_pow,
-            color="grey",
-            label=test[:3],
+            color="tab:red",
+            label=test[-3:],
             ls="",
             alpha=.6,
             marker='.',
             mfc='white',
-            mec='tab:grey',
+            mec='tab:red',
             linewidth=.5,
-            elinewidth=1,
+            elinewidth=.6,
         )
         ax[0].errorbar(
             lb + 2,
@@ -256,14 +261,14 @@ for test in tests:
                 ].diagonal()
             ) * lb**ell_pow,
             color="tab:blue",
-            label=test[-3:],
+            label=test[:3],
             ls="",
             alpha=.6,
             marker='.',
             mfc='white',
             mec='tab:blue',
             linewidth=.5,
-            elinewidth=1,
+            elinewidth=.6,
         )
 
         ax[0].errorbar(
@@ -273,7 +278,7 @@ for test in tests:
                 spectra_for_cal[proj_indices[0]][1],
                 "TT",
             ]
-            * calib_vec[proj_indices[0]]
+            / calib_vec[proj_indices[1]]
             * lb**ell_pow,
             np.sqrt(
                 cov_dict[
@@ -290,14 +295,15 @@ for test in tests:
                 ].diagonal()
             ) * calib_vec[proj_indices[0]]
             * lb**ell_pow,
-            color="grey",
-            label=test[:3] + ' cal',
+            color="red",
+            label=test[-3:] + ' cal',
             ls="-",
             marker='.',
             mfc='white',
-            mec='tab:grey',
+            mec='red',
             linewidth=.5,
-            elinewidth=1,
+            elinewidth=.6,
+            alpha=.8,
         )
         ax[0].errorbar(
             lb + 6,
@@ -306,7 +312,7 @@ for test in tests:
                 spectra_for_cal[proj_indices[1]][1],
                 "TT",
             ]
-            * calib_vec[proj_indices[1]]
+            / calib_vec[proj_indices[0]]
             * lb**ell_pow,
             np.sqrt(
                 cov_dict[
@@ -323,28 +329,31 @@ for test in tests:
                 ].diagonal()
             ) * calib_vec[proj_indices[1]]
             * lb**ell_pow,
-            color="tab:blue",
-            label=test[-3:]+ ' cal',
+            color="blue",
+            label=test[:3]+ ' cal',
             ls="-",
             marker='.',
             mfc='white',
-            mec='tab:blue',
-            # linewidth=.5,
-            # elinewidth=1,
+            mec='blue',
+            alpha=.8,
+            linewidth=.7,
+            elinewidth=.6,
         )
         
-        ax[1].errorbar(lb, res_spectrum / np.sqrt(res_cov.diagonal()),
+        ax[1].errorbar(lb, - res_spectrum / np.sqrt(res_cov.diagonal()),
                      yerr=np.sqrt(res_cov.diagonal()) / np.sqrt(res_cov.diagonal()),
                      ls="None", marker = ".",
                      linewidth=.5,
                      alpha=.5,
                      color="tab:blue",
-                     label=f"{test} [$\chi^2 = {{{chi2:.1f}}}/{{{ndof}}}$ (${{{pte:.4f}}}$)]")
-        ax[1].errorbar(lb, res_spectrum_cal / np.sqrt(res_cov_cal.diagonal()),
+                    #  label=f"{test} [$\chi^2 = {{{chi2:.1f}}}/{{{ndof}}}$ (${{{pte:.4f}}}$)]")
+                     label=f"{test} [PTE={pte:.4f}]")
+        ax[1].errorbar(lb, - res_spectrum_cal / np.sqrt(res_cov_cal.diagonal()),
                      yerr=np.sqrt(res_cov_cal.diagonal()) / np.sqrt(res_cov_cal.diagonal()),
                      ls="None", marker = ".",
-                     color="tab:blue",
-                     label=f"{test} cal [$\chi^2 = {{{chi2_cal:.1f}}}/{{{ndof_cal}}}$ (${{{pte_cal:.4f}}}$)]")
+                     color="blue",
+                    #  label=f"{test} cal [$\chi^2={{{chi2_cal:.1f}}}/{{{ndof_cal}}}$ (${{{pte_cal:.4f}}}$)]")
+                     label=f"{test} cal [PTE={pte_cal:.4f}]")
         ax[1].axhline(0, color='black', zorder=-10)
 
         ax[1].axvspan(xmin=0, xmax=lmin,
@@ -352,31 +361,50 @@ for test in tests:
         ax[1].axvspan(xmin=lmax, xmax=10000,
                     color="gray", alpha=0.7, zorder=-20)
 
-        ax[0].legend(title=f'A={ref_map_set}   B={map_set}')
-        ax[0].set_xlim(0, lmax + 500)
-        ax[0].set_ylim(4e5, 4e6)
+        ax[0].legend(title=f'A={map_set}   B={ref_map_set}')
+        ax[0].set_xlim(0, lmax + 600)
+        ax[0].set_ylim(*calib_infos['ylims'])
         ax[0].set_ylabel(fr"$\ell^{{{ell_pow}}} D_\ell^\mathrm{{TT}}$", fontsize=18)
         ax[0].set_title(f'cal={cal_mean:.3f}+-{cal_std:.3f}')
 
         ax[1].legend(loc='lower right')
-        ax[1].set_ylim(-8, 7)
+        ax[1].set_ylim(-8, 6)
         ax[1].set_ylabel(fr"$\Delta D_\ell^\mathrm{{TT}} / \sigma(\Delta D_\ell^\mathrm{{TT}})$", fontsize=16)
         ax[1].set_xlabel(r"$\ell$", fontsize=20)
 
         plt.savefig(f"{plot_output_dir}/calib_full_{name}.png")
         plt.close()
+        
+    n_samples = len(pte_list)
+    n_bins_hist = 10
+    bins = np.linspace(0, 1, n_bins_hist + 1)
+    min_pte, max_pte = np.min(pte_list), np.max(pte_list)
+    min_pte_cal, max_pte_cal = np.min(pte_cal_list), np.max(pte_cal_list)
+    
+    plt.figure(figsize=(8,6))
+    plt.title("Array-bands test", fontsize=16)
+    plt.xlabel(r"Probability to exceed (PTE)", fontsize=16)
+    plt.hist(pte_list, bins=bins, label=f"n tests: {n_samples}, min: {min_pte:.3f}, max: {max_pte:.3f}", histtype="bar", facecolor="blue", edgecolor="black", linewidth=3, alpha=.7)
+    plt.hist(pte_cal_list, bins=bins, label=f"n tests: {n_samples}, min: {min_pte_cal:.3f}, max: {max_pte_cal:.3f}", histtype="bar", facecolor="red", edgecolor="black", linewidth=3, alpha=.7)
+    plt.axhline(n_samples/n_bins_hist, color="k", ls="--", alpha=0.5)
+    plt.xlim(0, 1)
+    plt.tight_layout()
+    plt.legend(fontsize=16)
+    plt.savefig(f"{plot_output_dir}/PTE_hist_{test}", dpi=300, bbox_inches='tight')
+    plt.clf()
+    plt.close()
 
 
 # plot the cal factors
 color_list = ["blue", "red", "green"]
-fig, ax = plt.subplots(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(12, 6))
 for i, (map_set, ref_map_set) in enumerate(calib_infos[f"ref_map_sets"].items()):
     print(f"**************")
     print(f"calibration {map_set} with {ref_map_set}")
-
+    ax.axhline(1, color='grey', ls='--')
     for j, test in enumerate(tests):
         cal, std = results_dict[test, map_set]["calibs"]
-        print(f"{test}, cal: {cal:.4f}, sigma cal: {std:.5f}")
+        print(f"{test}, cal: {cal:.5f}, sigma cal: {std:.5f}")
 
         ax.errorbar(
             i + 0.9 + j * 0.1,
@@ -395,10 +423,31 @@ for i, (map_set, ref_map_set) in enumerate(calib_infos[f"ref_map_sets"].items())
 
 x = np.arange(1, len(calib_infos[f"ref_map_sets"]) + 1)
 ax.set_xticks(x, calib_infos[f"ref_map_sets"].keys())
+ax.set_ylabel('Calibration factor', fontsize=18)
 # plt.ylim(0.967, 1.06)
 plt.tight_layout()
 plt.savefig(f"{plot_output_dir}/calibs_summary.pdf", bbox_inches="tight")
 plt.clf()
 plt.close()
 
-pickle.dump(results_dict, open(f"{calib_dir}/calibs_dict.pkl", "wb"))
+print(results_dict[test, map_set]["calibs"][0])
+calibs_to_save = {
+    'bestfits' : {
+        sv_ar: {
+            test: float(results_dict[test, sv_ar]["calibs"][0])
+            for test in tests
+        }
+        for sv_ar in calib_infos[f"ref_map_sets"].keys()
+    },
+    'std' : {
+        sv_ar: {
+            test: float(results_dict[test, sv_ar]["calibs"][1])
+            for test in tests
+        }
+        for sv_ar in calib_infos[f"ref_map_sets"].keys()
+    },
+}
+
+file = open(f"{calib_dir}/calibs_dict.yaml", "w")
+yaml.dump(calibs_to_save, file)
+file.close()

@@ -110,6 +110,6 @@ for task in subtasks:
         enplot.write(
             f"{map_fn[:-5]}_srcfree.fits",
             enplot.plot(
-                srcfree_map, downgrade=8, ticks=1, colorbar=True, range=(300, 100, 100)
+                srcfree_map, downgrade=8, ticks=1, colorbar=True, range=(1000, 300, 300)
             ),
         )

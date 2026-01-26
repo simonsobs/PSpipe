@@ -98,7 +98,10 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 pspy_utils.create_directory(null_test_dir)
 pspy_utils.create_directory(plot_dir)
-
+print('creating dirs')
+for spec in spectra:
+    pspy_utils.create_directory(plot_dir + f'{spec}/')
+print('created dirs')
 test_list = [
     {
         "name":  "test_1",
@@ -120,18 +123,29 @@ spec_dir_list = list(dict.fromkeys(spec_dir_list)) #remove doublon
 map_set_list = pspipe_list.get_map_set_list(d)
 
 
-all_cov = {}
-_ps_temp = spectra_dir + "/Dl_{}x{}_cross.dat"
-for cov in cov_type_list:
-    cov_template = f"{cov_dir}/{cov}" + "_{}x{}_{}x{}_nocv.npy"
-    _, all_cov[cov] =  consistency.get_ps_and_cov_dict(map_set_list, _ps_temp, cov_template, spectra_order=spectra)
-    
 all_ps = {}
 for spec_dir in spec_dir_list:
+    cov_template = f"{cov_dir}/{cov_type_list[0]}" + "_{}x{}_{}x{}.npy"
     ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
     all_ps[spec_dir], _ = consistency.get_ps_and_cov_dict(map_set_list, ps_template, cov_template, spectra_order=spectra)
     lb = all_ps[spec_dir]["ell"]
+del _
+print('loaded spec')
+all_cov = {}
+_ps_temp = spectra_dir + "/Dl_{}x{}_cross.dat"
+for cov in cov_type_list:
+    cov_template = f"{cov_dir}/{cov}" + "_{}x{}_{}x{}.npy"
+    _, all_cov[cov] =  consistency.get_ps_and_cov_dict(map_set_list, _ps_temp, cov_template, spectra_order=spectra)
+    
+print('loaded covs')
+del _
 
+# Apply calibration if needed
+if 'calibs' in null_infos:
+    print('Apply calibs from nulls yaml file')
+    for spec_dir in spec_dir_list:
+        all_ps[spec_dir] = {key: ps / null_infos['calibs'][key[0]] / null_infos['calibs'][key[1]] for key, ps in all_ps[spec_dir].items() if key != 'ell'}
+        all_ps[spec_dir]["ell"] = lb
 
 # Load foreground best fits
 fg_file_name = f"{bestfits_dir}" + "fg_{}x{}.dat"
@@ -143,6 +157,7 @@ for label in label_list:
     pte_dict[label, "all"] = []
     for spec in spectra:
         pte_dict[label, spec] = []
+pte_dict_for_plot = {}
 
 operations = {"diff": "ab-cd"}
 
@@ -221,7 +236,6 @@ for null in null_list:
         np.save(f"{null_test_dir}/ps_{label}_{fname}.npy", res_cov_dict[label] )
         np.savetxt(f"{null_test_dir}/cov_{label}_{fname}.npy", np.transpose([lb, res_ps_dict[label], sigma]))
 
-
     # Plot residual and get chi2
     lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
     plot_title = f"{ms1}x{ms2} - {ms3}x{ms4}"
@@ -234,15 +248,14 @@ for null in null_list:
 
     chi2_dict = consistency.plot_residual(lb, res_ps_dict, res_cov_dict, mode=mode,
                                           title=plot_title.replace("dr6_", ""),
-                                          file_name=f"{plot_dir}/{fname}",
+                                          file_name=f"{plot_dir}/{mode}/{fname}",
                                           expected_res=expected_res,
                                           lrange=lrange,
                                           overplot_theory_lines=(lb_fg, res_fg_b),
                                           l_pow=l_pows[mode],
                                           return_chi2=True,
                                           ylims=ylims)
-                                          
-                 
+    plt.close()
     
     if skip_pa4_pol == True:
         if ("pa4" in fname) & (mode != "TT"):
@@ -270,10 +283,14 @@ for null in null_list:
 
         if (pte <= pte_threshold) or (pte >= 1-pte_threshold):
             print(f"[{label}] [{plot_title} {mode}] PTE = {pte:.04f}")
+    pte_dict_for_plot[(mode, ms1, ms2, ms3, ms4)] = pte
 
 
 # Save pte to pickle
-pickle.dump(pte_dict, open(f"{plot_dir}/pte_dict.pkl", "wb"))
+with open(f"{plot_dir}/pte_dict.pkl", "wb") as f:
+    pickle.dump(pte_dict, f)
+with open(f"{plot_dir}/pte_dict_for_plot.pkl", "wb") as f:
+    pickle.dump(pte_dict_for_plot, f)
 
 if skip_EB == True:
     tested_spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "BB"]

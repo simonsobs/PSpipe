@@ -4,47 +4,46 @@ get_calibs.py:
     lat_iso_i3_f150: "lat_iso_i1_f150"
     lat_iso_i4_f090: "lat_iso_i1_f090"
     lat_iso_i4_f150: "lat_iso_i1_f150"
-    lat_iso_i6_f090: "lat_iso_i1_f090"
-    lat_iso_i6_f150: "lat_iso_i1_f150"
+    # lat_iso_i6_f090: "lat_iso_i1_f090"
+    # lat_iso_i6_f150: "lat_iso_i1_f150"
 
   planck_corr: False
   subtract_bf_fg: False
 
   ell_ranges:
-    lat_iso_i1_f090: [800, 1200]
-    lat_iso_i1_f150: [800, 1200]
-    lat_iso_i3_f090: [800, 1200]
-    lat_iso_i3_f150: [800, 1200]
-    lat_iso_i4_f090: [800, 1200]
-    lat_iso_i4_f150: [800, 1200]
-    lat_iso_i6_f090: [800, 1200]
-    lat_iso_i6_f150: [800, 1200]
+    lat_iso_i1_f090: [1400, 3000]
+    lat_iso_i1_f150: [1400, 3000]
+    lat_iso_i3_f090: [1400, 3000]
+    lat_iso_i3_f150: [1400, 3000]
+    lat_iso_i4_f090: [1400, 3000]
+    lat_iso_i4_f150: [1400, 3000]
+    lat_iso_i6_f090: [1400, 3000]
+    lat_iso_i6_f150: [1400, 3000]
+  
+  ylims: [100000, 4000000]
 
   y_lims_plot_TT: [-300000, 500000]
 
 
 get_polar_eff_LCDM.py:
+  use_cal: True
   # sets_to_measure: None # To measure all
   sets_to_measure:
-    - lat_iso_i1_f090
-    - lat_iso_i1_f150
-  lmin_cal: 500
-  lmax_cal_dr6_pa4_f220: 2000
-  lmax_cal_dr6_pa5_f090: 1200
-  lmax_cal_dr6_pa5_f150: 2000
-  lmax_cal_dr6_pa6_f090: 1200
-  lmax_cal_dr6_pa6_f150: 2000
-  lmax_cal_planck_f100: 1200
-  lmax_cal_planck_f143: 2000
-  lmax_cal_planck_f217: 2000
-
-get_polar_eff.py:
-  surveys_to_calib:  
-    - lat_iso
-  ref_map_set_lat_iso_i1_f090: "dr6_pa5_f090"
-  ref_map_set_lat_iso_i1_f150: "dr6_pa5_f150"
-  ell_range_cal_lat_iso_i1_f090: [600, 1200]
-  ell_range_cal_lat_iso_i1_f150: [600, 1200]
+    - lat_iso_i3_f090
+    - lat_iso_i3_f150
+    - lat_iso_i4_f090
+    - lat_iso_i4_f150
+    # - lat_iso_i6_f090
+    # - lat_iso_i6_f150
+  ell_ranges:
+    lat_iso_i1_f090: [500, 1500]
+    lat_iso_i1_f150: [500, 1500]
+    lat_iso_i3_f090: [500, 1500]
+    lat_iso_i3_f150: [500, 1500]
+    lat_iso_i4_f090: [500, 1500]
+    lat_iso_i4_f150: [500, 1500]
+    lat_iso_i6_f090: [500, 1500]
+    lat_iso_i6_f150: [500, 1500]
 
 compute_tf.py:
   surveys_to_calib:
@@ -61,54 +60,47 @@ compute_null_tests.py:
   pte_threshold: 0.01
   remove_first_bin: True
 
+  use_calib: True
+  use_poleff: True
+
   skip_pa4_pol: True
   skip_diff_freq_TT: True
   skip_EB: False
   fudge: False
 
-  apply_calib:
-    lat_iso_i1_f090: 1.
-    lat_iso_i1_f150: 1.
-    lat_iso_i3_f090: 1.
-    lat_iso_i3_f150: 1.
-    lat_iso_i4_f090: 1.
-    lat_iso_i4_f150: 1.
-    lat_iso_i6_f090: 1.
-    lat_iso_i6_f150: 1.
-
   multipole_range:
-    lat_iso_i1_f090:
-      T: [200, 3500]
-      E: [200, 3500]
-      B: [200, 3500]
-    lat_iso_i1_f150:
-      T: [200, 3500]
-      E: [200, 3500]
-      B: [200, 3500]
+    # lat_iso_i1_f090:
+    #   T: [1500, 2800]
+    #   E: [1500, 2800]
+    #   B: [1500, 2800]
+    # lat_iso_i1_f150:
+    #   T: [1500, 2800]
+    #   E: [1500, 2800]
+    #   B: [1500, 2800]
     lat_iso_i3_f090:
-      T: [200, 3500]
-      E: [200, 3500]
-      B: [200, 3500]
+      T: [1500, 2800]
+      E: [1500, 2800]
+      B: [1500, 2800]
     lat_iso_i3_f150:
-      T: [200, 3500]
-      E: [200, 3500]
-      B: [200, 3500]
+      T: [1500, 2800]
+      E: [1500, 2800]
+      B: [1500, 2800]
     lat_iso_i4_f090:
-      T: [200, 3500]
-      E: [200, 3500]
-      B: [200, 3500]
+      T: [1500, 2800]
+      E: [1500, 2800]
+      B: [1500, 2800]
     lat_iso_i4_f150:
-      T: [200, 3500]
-      E: [200, 3500]
-      B: [200, 3500]
-    lat_iso_i6_f090:
-      T: [200, 3500]
-      E: [200, 3500]
-      B: [200, 3500]
-    lat_iso_i6_f150:
-      T: [200, 3500]
-      E: [200, 3500]
-      B: [200, 3500]
+      T: [1500, 2800]
+      E: [1500, 2800]
+      B: [1500, 2800]
+    # lat_iso_i6_f090:
+    #   T: [1500, 2800]
+    #   E: [1500, 2800]
+    #   B: [1500, 2800]
+    # lat_iso_i6_f150:
+    #   T: [1500, 2800]
+    #   E: [1500, 2800]
+    #   B: [1500, 2800]
 
   l_pows:
     TT: 1
@@ -122,7 +114,7 @@ compute_null_tests.py:
     BB: -1
 
   y_lims:
-    TT: [-100000, 75000]
+    TT: [-200000, 150000]
     TE: [-30, 30]
     TB: [-30, 30]
     ET: [-30, 30]
@@ -133,6 +125,15 @@ compute_null_tests.py:
     BB: [-0.01, 0.01]
 
 plot_everything.py:
+  survey_cross: True
+  freq_cross: True
+  Cell_noise: True
+  Dell_noise: True
+  Dell_corr_noise: True
+  TF: True
+
+  load_cov: False
+  frequencies: ['090', '150']
   yscale:
     TT: log
     EE: linear
@@ -164,7 +165,16 @@ plot_everything.py:
       BT: [-40, 40]
       EB: [-15, 15]
       BE: [-15, 15]
-  noise_BxB:
+  noise_Dell_BxB:
+    xlims:
+      TT: [0, 3500]
+      EE: [0, 3000]
+      BB: [0, 3000]
+    ylims:
+      TT: [20., 30000]
+      EE: [1., 1000.01]
+      BB: [1., 1000.01]
+  noise_corr_Dell_BxB:
     xlims:
       TT: [0, 3500]
       EE: [0, 3500]
@@ -176,31 +186,43 @@ plot_everything.py:
       BT: [0, 3500]
       EB: [0, 3500]
     ylims:
-      TT: [.000001, 10.01]
-      EE: [.000001, 10.01]
-      BB: [.000001, 10.01]
-      TE: [-0.0001, 0.0001]
-      ET: [-0.0001, 0.0001]
-      BT: [-0.0001, 0.0001]
-      TB: [-0.0001, 0.0001]
-      EB: [-0.0001, 0.0001]
-      BE: [-0.0001, 0.0001]
-  noise_rms_BxB:
+      TT: [-1000, 1000]
+      EE: [-1000, 1000]
+      BB: [-1000, 1000]
+      TE: [-100, 10]
+      ET: [-100, 100]
+      BT: [-100, 100]
+      TB: [-100, 100]
+      EB: [-100, 100]
+      BE: [-100, 100]
+  noise_Cell_BxB:
     xlims:
       TT: [100, 3500]
       EE: [100, 3500]
       BB: [100, 3500]
     ylims:
-      TT: [.000001, 100.0001]
-      EE: [.000001, 100.0001]
-      BB: [.000001, 100.0001]
+      TT: [.00001, 10.0001]
+      EE: [.00001, 10.0001]
+      BB: [.00001, 10.0001]
+  transfer_function:
+    xlims:
+      TT: [0, 3000]
+      EE: [0, 3000]
+    ylims:
+      TT: [.0, 2]
+      EE: [.0, 2]
+    bin_sizes:
+      TT: 1
+      EE: 3
 
 fit_noises.py:
+  lmin_fit: 600
+  lmax_fit: 3000
   noise_rms_BxB:
     xlims:
-      TT: [100, 3000]
-      EE: [100, 3000]
-      BB: [100, 3000]
+      TT: [100, 8000]
+      EE: [100, 8000]
+      BB: [100, 8000]
     ylims:
       TT: [.000001, 10.0001]
       EE: [.000001, 10.0001]

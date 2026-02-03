@@ -108,7 +108,8 @@ for task in subtasks:
     if apply_kspace_filter:
         inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix[spec_name]) 
 
-        # apply the inv_kspace matrix to mbl_inv to get data operator
+        # apply the inv_kspace matrix to mbl_inv to get data operator. don't
+        # need to copy because just being used in math
         # FIXME: script assumes same spectra ordering as what made these matrices
         inv_kspace_mat = so_mcm.get_spec2spec_sparse_dict_mat_from_dense_mat(inv_kspace_mat, spectra)
         pseudo2datavec = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(inv_kspace_mat, pseudo2datavec)

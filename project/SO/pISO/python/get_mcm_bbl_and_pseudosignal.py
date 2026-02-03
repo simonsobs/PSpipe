@@ -8,7 +8,7 @@ from os.path import join as opj
 import numpy as np
 from pixell import curvedsky
 
-from pspipe_utils import log, pspipe_list, misc
+from pspipe_utils import log, pspipe_list, misc, kspace
 from pspy import pspy_utils, so_dict, so_map, so_spectra, so_mcm, so_mpi, sph_tools
 
 parser = argparse.ArgumentParser(description=description,
@@ -36,7 +36,6 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 surveys = d["surveys"]
 niter = d['niter']
 lmax = d["lmax"]
-l3_pad = d['l3_pad']
 type = d['type']
 if type == "Dl":
     doDl = 1
@@ -46,6 +45,20 @@ if type not in ["Dl", "Cl"]:
     raise ValueError("Unkown 'type' value! Must be either 'Dl' or 'Cl'")
 binning_file = d["binning_file"]
 binned_mcm = d["binned_mcm"]
+
+apply_kspace_filter = d['apply_kspace_filter']
+templates = {}
+filter_dicts = {}
+for sv in surveys:
+    maps = d[f'arrays_{sv}']
+    templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[0]}"])
+    if templates[sv].pixel == "CAR":
+        if apply_kspace_filter:
+            filter_dicts[sv] = d[f"k_filter_{sv}"]
+        else:
+            filter_dicts[sv] = None
+    else:
+        filter_dicts[sv] = None
 
 if d["use_toeplitz_mcm"] == True:
     assert args.old, 'can only toeplitz with pspy for now' # FIXME
@@ -58,7 +71,7 @@ n_mcms, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_mcms - 1)
-log.info(f"[Rank {so_mpi.rank}] number of mcm matrices to compute: {len(subtasks)}")
+log.info(f"[Rank {so_mpi.rank}] Number of mcm matrices to compute: {len(subtasks)}")
 
 if args.old:
     for task in subtasks:
@@ -74,7 +87,7 @@ if args.old:
         win2_T = so_map.read_map(d[f"window_T_{sv2}_{m2}"])
         win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{m2}"])
 
-        log.info(f"[{task:02d}] Computing mcm for {sv1}_{m1} x {sv2}_{m2} the old-fashioned way")
+        log.info(f"[Rank {so_mpi.rank}, {task:02d}] Computing mcm for {sv1}_{m1} x {sv2}_{m2} the old-fashioned way")
 
         mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(win1_T, win1_pol),
                                                     win2=(win2_T, win2_pol),
@@ -117,17 +130,17 @@ else:
             win2_pol = so_map.read_map(d[f'window_pol_{sv2}_{m2}'])
         else:
             win2_pol = win2_T
-        log.info(f"[{task:02d}]: preparing data for {sv1}_{m1} x {sv2}_{m2}")
+        log.info(f"[Rank {so_mpi.rank}, {task:02d}]: Preparing data for {sv1}_{m1} x {sv2}_{m2}")
 
         # TODO: make DRY code with so_mcm for preparing inputs
         lmax_limit = np.inf
         for win in (win1_T, win1_pol, win2_T, win2_pol):
-            _lmax_limit = win.get_lmax_limit()
+            _lmax_limit = win.get_lmax_limit() * 2 # this is OK
             if _lmax_limit < lmax_limit:
                 lmax_limit = _lmax_limit
         if lmax > lmax_limit:
             raise ValueError("the requested lmax is too high with respect to the map pixellisation")
-        maxl = np.minimum(lmax + l3_pad, lmax_limit)
+        maxl = np.minimum(2*lmax, lmax_limit).astype(int)
 
         win1_alm_T = sph_tools.map2alm(win1_T, niter=niter, lmax=maxl, dtype=np.complex128)
         if win1_pol is not win1_T: # tests object equivalence
@@ -167,7 +180,7 @@ else:
     mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, len(subtasks)*[0, 1, 2, 4],
                                  dtype=np.float64, coupling=False,
                                  pspy_index_convention=True)
-    mcms = mcms.reshape(len(subtasks), 5, lmax+1, lmax+1) # (nspec*5, nl, nl) -> (nspec, 5, nl, nl)
+    mcms = mcms.reshape(len(subtasks), 5, lmax-2, lmax-2) # (nspec*5, nl, nl) -> (nspec, 5, nl, nl)
 
     # apply total-diagonal beams on the right
     mcms *= bls
@@ -178,15 +191,20 @@ else:
     Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax, type)
 
     for t, task in enumerate(subtasks):
-        log.info(f"[{task:02d}] Computing bbl and other products")
+        log.info(f"[Rank {so_mpi.rank}, {task:02d}] Computing bbl and other products")
 
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
 
         # we need to get the best-fit pseudosignal spectra for the covariance. we do
         # that here to avoid recalculating all the unbinned mcms again in a
-        # different script. NOTE: we need beamed Cls, but the mcms above already
-        # have the beam, so we just need to apply the mcm
+        # different script. NOTE: we need beamed (and tf'ed, if necessary)
+        # pseudo Cls, but the mcms above already have the beam, so we just need
+        # to apply the mcm (and tf, if necessary)
+        l, tf = kspace.build_analytic_kspace_filter_diag(sv1, sv2, lmax, templates,
+                                                         filter_dicts, dtype=np.float32)
+        assert l[0] == 0, f'Tf assumed to start at l=0, got l={l[0]}'
+
         l, signal_dict = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'),
                                             spectra=spectra, return_type='Cl',
                                             return_dtype=np.float32)
@@ -195,7 +213,7 @@ else:
         # trim to match mcm
         l = l[:lmax-2]
         for k in signal_dict.keys():
-            signal_dict[k] = signal_dict[k][:lmax-2]
+            signal_dict[k] = tf[2:lmax] * signal_dict[k][:lmax-2]
 
         # the fully realized mcm matrix would be a lot of memory. also, don't
         # need to copy blocks since just being used in math
@@ -252,7 +270,7 @@ else:
                       Bbl[3:],
                       out=Bbl[3:])
 
-        log.info(f"[{task:02d}] Saving mcm matrix for {sv1}_{m1} x {sv2}_{m2}")
+        log.info(f"[Rank {so_mpi.rank}, {task:02d}] Saving mcm matrix for {sv1}_{m1} x {sv2}_{m2}")
 
         np.save(opj(f"{mcm_dir}", spec_name + "_mode_coupling_inv.npy") , mbl_inv)
         np.save(opj(f"{mcm_dir}", spec_name + "_Bbl.npy"), Bbl)

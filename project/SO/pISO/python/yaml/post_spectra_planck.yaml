@@ -1,3 +1,53 @@
+get_calibs.py:
+  ref_map_sets:
+    lat_iso_i1_f090: "planck_f100"
+    lat_iso_i1_f150: "planck_f143"
+    lat_iso_i3_f090: "planck_f100"
+    lat_iso_i3_f150: "planck_f143"
+    lat_iso_i4_f090: "planck_f100"
+    lat_iso_i4_f150: "planck_f143"
+    lat_iso_i6_f090: "planck_f100"
+    lat_iso_i6_f150: "planck_f143"
+
+  planck_corr: False
+  subtract_bf_fg: False
+
+  ell_ranges:
+    lat_iso_i1_f090: [800, 1400]
+    lat_iso_i1_f150: [800, 1400]
+    lat_iso_i3_f090: [800, 1400]
+    lat_iso_i3_f150: [800, 1400]
+    lat_iso_i4_f090: [800, 1400]
+    lat_iso_i4_f150: [800, 1400]
+    lat_iso_i6_f090: [800, 1400]
+    lat_iso_i6_f150: [800, 1400]
+  ylims: [200000, 3500000]
+
+  y_lims_plot_TT: [-300000, 500000]
+
+
+get_polar_eff_LCDM.py:
+  use_cal: True
+  # sets_to_measure: None # To measure all
+  sets_to_measure:
+    - lat_iso_i1_f090
+    - lat_iso_i1_f150
+    - lat_iso_i3_f090
+    - lat_iso_i3_f150
+    - lat_iso_i4_f090
+    - lat_iso_i4_f150
+    - lat_iso_i6_f090
+    - lat_iso_i6_f150
+  ell_ranges:
+    lat_iso_i1_f090: [800, 2000]
+    lat_iso_i1_f150: [800, 2000]
+    lat_iso_i3_f090: [800, 2000]
+    lat_iso_i3_f150: [800, 2000]
+    lat_iso_i4_f090: [800, 2000]
+    lat_iso_i4_f150: [800, 2000]
+    lat_iso_i6_f090: [800, 2000]
+    lat_iso_i6_f150: [800, 2000]
+
 compute_tf.py:
   surveys_to_calib:
     - lat_iso
@@ -20,13 +70,29 @@ compute_null_tests.py:
 
   multipole_range:
     lat_iso_i1_f090:
-      T: [600, 5000]
-      E: [600, 5000]
-      B: [600, 5000]
+      T: [800, 1500]
+      E: [800, 1500]
+      B: [800, 1500]
     lat_iso_i1_f150:
-      T: [600, 5000]
-      E: [600, 5000]
-      B: [600, 5000]
+      T: [800, 1500]
+      E: [800, 1500]
+      B: [800, 1500]
+    lat_iso_i3_f090:
+      T: [800, 1500]
+      E: [800, 1500]
+      B: [800, 1500]
+    lat_iso_i3_f150:
+      T: [800, 1500]
+      E: [800, 1500]
+      B: [800, 1500]
+    planck_f100:
+      T: [800, 1500]
+      E: [800, 1500]
+      B: [800, 1500]
+    planck_f143:
+      T: [800, 1500]
+      E: [800, 1500]
+      B: [800, 1500]
 
   l_pows:
     TT: 1
@@ -49,6 +115,8 @@ compute_null_tests.py:
     EB: [-0.01, 0.01]
     BE: [-0.01, 0.01]
     BB: [-0.01, 0.01]
+
+
 
 plot_everything.py:
   survey_cross: True

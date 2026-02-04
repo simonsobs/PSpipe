@@ -62,9 +62,8 @@ for sv in mask_infos['surveys_to_xtra_mask']:
 
             map_dir_fn, map_base_fn = os.path.split(map_fn)
             if d[f"src_free_maps_{sv}"] == True:
-                ivar_fn = map_fn.replace('_map_srcfree', '_ivar')
-            else:
-                ivar_fn = map_fn.replace('_map', '_ivar')   
+                map_fn = map_fn.replace('_srcfree', '')
+            ivar_fn = map_fn.replace('_map', '_ivar')
 
             # mask is based on the smoothed ivar map
             # only the pixels where the original ivar were nonzero though

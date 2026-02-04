@@ -26,37 +26,24 @@ binning_file = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/pspipe/binning/binning
 d = so_dict.so_dict()
 log = log.get_logger(**d)
 
-with open(f"python/plots_1019.yaml", "r") as f:
-    plot_info: dict = yaml.safe_load(f)
-
 # Define spectra path and template to read it
 try:
     d.read_from_file(sys.argv[1])
     spectra_path = d['spec_dir']
-    yaml_path = d['plot_yaml']
+    yaml_path = d['plots_yaml']
 except:
     spectra_path = "/pscratch/sd/m/merrydup/PSpipe_SO/spectra_1019_carlos_150"
     d.read_from_file(spectra_path + "/_paramfile.dict")
     yaml_path = "python/plots_1019.yaml"
 
 with open(yaml_path, "r") as f:
-    plot_info: dict = yaml.safe_load(f)
+    plot_info: dict = yaml.safe_load(f)['fit_noises.py']
 
 spectra_cross_template = spectra_path + "/Dl_{}x{}_cross.dat"
 spectra_auto_template = spectra_path + "/Dl_{}x{}_auto.dat"
 spectra_noise_template = spectra_path + "/Dl_{}x{}_noise.dat"
 
-# Define surveys and arrays to plot
-survey_A = "dr6"
-arrays_A = d[f"arrays_{survey_A}"]
-# arrays_A = ['pa5_f090']
-surveys_arrays_A = [f"{survey_A}_{ar}" for ar in arrays_A]
-
-survey_B = "SO"
-arrays_B = d[f"arrays_{survey_B}"]
-# = ['i1_f090', 'i1_f150']
-# arrays_B = ['i1_f090', 'i3_f090', 'i4_f090', 'i6_f090']
-surveys_arrays_B = [f"{survey_B}_{ar}" for ar in arrays_B]
+surveys_arrays = [f"{survey}_{ar}" for survey in d['surveys'] for ar in d[f'arrays_{survey}']]
 
 beams = {
     sv_ar: pspy_utils.naive_binning(
@@ -64,36 +51,27 @@ beams = {
         np.loadtxt(d[f"beam_T_{sv_ar}"]).T[1]
         / (max(np.loadtxt(d[f"beam_T_{sv_ar}"]).T[1])),
         d["binning_file"],
-        lmax=8000,
+        lmax=d['lmax'],
     )[1]
-    for sv_ar in surveys_arrays_B
+    for sv_ar in surveys_arrays
 }
 
-surveys = [survey_A, survey_B]
-surveys_arrays = surveys_arrays_A + surveys_arrays_B
-
 # Define where and what to plot
-
-save_path = spectra_path + "/plots/"
-os.makedirs(save_path, exist_ok=True)
-save_path_noises = save_path + "noises/"
+save_path_noises = d['plots_dir'] + '/noises/'
 os.makedirs(save_path_noises, exist_ok=True)
 
 # Load spectra
 Dls_cross = {}
 Dls_noise = {}
-for sv_ar1, sv_ar2 in itertools.combinations_with_replacement(surveys_arrays, r=2):
-    ls, Dls_cross[f"{sv_ar1}x{sv_ar2}"] = so_spectra.read_ps(
-        spectra_cross_template.format(sv_ar1, sv_ar2), spectra=spectra
-    )
+for sv_ar in surveys_arrays:
     try:
-        ls, Dls_noise[f"{sv_ar1}x{sv_ar2}"] = so_spectra.read_ps(
-            spectra_noise_template.format(sv_ar1, sv_ar2), spectra=spectra
+        ls, Dls_noise[f"{sv_ar}x{sv_ar}"] = so_spectra.read_ps(
+            spectra_noise_template.format(sv_ar, sv_ar), spectra=spectra
         )
     except:
-        pass
+        log.info(f'{sv_ar} noise not found')
 fac = ls * (ls + 1) / (2 * np.pi)
-clfile = "/pscratch/sd/m/merrydup/pipe0004_BN/spectra/LCDM_spectra.txt"
+clfile = "/global/cfs/cdirs/sobs/users/merrydup/deep56/proposal_plots/cmb.dat"
 l, ps_theory = so_spectra.read_ps(clfile, spectra=spectra)
 
 
@@ -134,6 +112,12 @@ def fit_nls(lb, Clb, spec, LMIN, LMAX):
     info = {}
     info["likelihood"] = {"my_like": logp}
 
+    lknee_priors = {
+        'TT': (-5, -2),
+        'EE': (-3, -1),
+        'BB': (-3, -1),
+    }
+    
     info["params"] = {
         "rms": {
             "prior": {
@@ -153,10 +137,10 @@ def fit_nls(lb, Clb, spec, LMIN, LMAX):
         },
         "alpha": {
             "prior": {
-                "min": -5.0,
-                "max": -1.0,
+                "min": lknee_priors[spec][0],
+                "max": lknee_priors[spec][1]
             },
-            "ref": -2.0,
+            "ref": -2.5,
             "proposal": 0.3,
         },
     }
@@ -179,14 +163,14 @@ def fit_nls(lb, Clb, spec, LMIN, LMAX):
 
 
 fit = True
-LMIN = 400
-LMAX = 8000
+LMIN = plot_info['lmin_fit']
+LMAX = plot_info['lmax_fit']
 if fit:
     log.info("FITS FOR RMS L_KNEE AND ALPHA")
     noise_best_fits = {}
     for f in spectra_auto:
         noise_best_fits[f] = {}
-        for sv_ar2 in surveys_arrays_B:
+        for sv_ar2 in surveys_arrays:
             log.info(f"FITTING {f}_{sv_ar2}")
             noise_best_fits[f][sv_ar2] = fit_nls(
                 ls,
@@ -202,7 +186,7 @@ else:
     with open(save_path_noises + "noise_best_fit.yaml", "r") as file:
         noise_best_fits: dict = yaml.safe_load(file)
 
-for i, sv_ar2 in enumerate(surveys_arrays_B):
+for i, sv_ar2 in enumerate(surveys_arrays):
     fig, ax = plt.subplots(dpi=150, figsize=(10, 4))
     # ax.plot(l, ps_theory[f], color="black", label="theory", alpha=0.4)
     for j, f in enumerate(spectra_auto):

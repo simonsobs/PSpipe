@@ -4,10 +4,12 @@ Goes from LAT_MF_bands.csv to tube-wide bandpsses by averaging over the UFMs.
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+import os
 
 cut_LF_noise = False
 cut_edges = True
-save_path = 'passbands/'
+save_path = 'passbands/lat/iso/'
+os.makedirs(save_path, exist_ok=True)
 
 df_MF = pd.read_csv('/global/cfs/cdirs/sobs/users/merrydup/protoISO_bossn/passbands/LAT_MF_bands.csv')
 frequency = df_MF['frequency']

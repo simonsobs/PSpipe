@@ -187,3 +187,6 @@ for task in subtasks:
                 file_name=f"{plot_dir}/windowed_maps/{sv}_{ar}_split{s}",
                 color_range=(300, 100, 100),
             )
+
+# Save the paramfile to keep track
+d.write_to_file(f'{window_dir}/_paramfile.dict')

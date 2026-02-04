@@ -16,7 +16,7 @@ mcms_dir = d['mcm_dir']
 spectra_dir = d['spec_dir']
 noise_dir = d['noise_model_dir']
 cov_dir = d['cov_dir']
-bestfit_dir = d["bestfits_dir"]
+bestfit_dir = d["best_fits_dir"]
 sq_win_alms_dir = d["sq_win_alms_dir"]
 
 pspy_utils.create_directory(cov_dir)
@@ -69,6 +69,9 @@ l, ps_all, nl_all = best_fits.get_all_best_fit(spec_name_list,
                                                spectra,
                                                nl_dict=nl_dict,
                                                bl_dict=bl_dict)
+
+# ps_all_zeros = {msa: {msb: {spec: np.zeros_like(ps) for spec, ps in db.items()} for msb, db in da.items()} for msa, da in ps_all.items()}
+ps_all_zeros = {k: np.zeros_like(v) for k, v in ps_all.items()}
 
 ncovs, na_list, nb_list, nc_list, nd_list = pspipe_list.get_covariances_list(d)
 
@@ -137,6 +140,19 @@ for task in subtasks:
                                                     binned_mcm=binned_mcm,
                                                     cov_T_E_only=cov_T_E_only,
                                                     dtype=np.float32)
+    
+    analytic_cov_nocv = so_cov.generalized_cov_spin0and2(coupling,
+                                                    [na, nb, nc, nd],
+                                                    n_splits,
+                                                    ps_all_zeros,
+                                                    nl_all,
+                                                    lmax,
+                                                    binning_file,
+                                                    mbb_inv_ab,
+                                                    mbb_inv_cd,
+                                                    binned_mcm=binned_mcm,
+                                                    cov_T_E_only=cov_T_E_only,
+                                                    dtype=np.float32)
 
     if apply_kspace_filter == True:
         # Some heuristic correction for the number of modes lost due to the transfer function
@@ -148,5 +164,7 @@ for task in subtasks:
         # sqrt(tf) is an approx for the number of modes masked in a given map so (2l+1)*fsky*sqrt(tf)
         # is our proxy for the number of modes
         analytic_cov /= np.outer(one_d_tf ** (1.0 / 4.0), one_d_tf ** (1.0 / 4.0))
+        analytic_cov_nocv /= np.outer(one_d_tf ** (1.0 / 4.0), one_d_tf ** (1.0 / 4.0))
 
     np.save(f"{cov_dir}/analytic_cov_{na_r}x{nb_r}_{nc_r}x{nd_r}.npy", analytic_cov)
+    np.save(f"{cov_dir}/analytic_cov_{na_r}x{nb_r}_{nc_r}x{nd_r}_nocv.npy", analytic_cov_nocv)

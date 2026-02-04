@@ -284,7 +284,7 @@ while True:
     # the next block. hopefully this happens most of the time
     single_block_set = False
     end_set_and_redo_block = False
-    if len(can_discon_com_4pts_and_optypes & this_block_can_discon_com_4pts_and_optypes) > coupling_cache_size:
+    if len(can_discon_com_4pts_and_optypes | this_block_can_discon_com_4pts_and_optypes) > coupling_cache_size:
         single_block_set = len(can_discon_com_4pts_and_optypes) == 0
         end_set_and_redo_block = len(can_discon_com_4pts_and_optypes) > 0
 
@@ -292,12 +292,12 @@ while True:
 
     if single_block_set:
         log.warning(f"[Rank {so_mpi.rank}, Task {task}] Number of couplings for cov block {cov_block} is "
-                    f"{len(this_block_can_discon_com_4pts_and_optypes)}, which excees the coupling cache "
+                    f"{len(this_block_can_discon_com_4pts_and_optypes)}, which exceeds the coupling cache "
                     f"size of {coupling_cache_size}. Adding to single-block-set, may result in OOM later.")
 
     if single_block_set or end_loop:
         cov_block_set.append(cov_block)
-        can_discon_com_4pts_and_optypes &= this_block_can_discon_com_4pts_and_optypes
+        can_discon_com_4pts_and_optypes.update(this_block_can_discon_com_4pts_and_optypes)
 
     if single_block_set or end_set_and_redo_block or end_loop:
         cov_block_sets2can_discon_com_4pts_and_optypes[tuple(cov_block_set)] = can_discon_com_4pts_and_optypes
@@ -314,7 +314,7 @@ while True:
             break
     else:
         cov_block_set.append(cov_block)
-        can_discon_com_4pts_and_optypes &= this_block_can_discon_com_4pts_and_optypes
+        can_discon_com_4pts_and_optypes.update(this_block_can_discon_com_4pts_and_optypes)
         i += 1
 
 log.info(f'[Rank {so_mpi.rank}] Loop over cov block sets in {(time.time() - t0):.3f} seconds')
@@ -362,7 +362,7 @@ if so_mpi.rank == 0:
     fig, ax1 = plt.subplots()
     ax1.hist(mem_per_set, histtype='step', bins=30, color='C0')
     ax1.semilogy()
-    mean = np.mean(mem_per_set)
+    mean = npy.mean(mem_per_set)
     ax1.axvline(mean, linestyle='--', color='C0', label = f'Mean memory (GB) per cov block set: {mean:0.3f}')
     ax1.tick_params(axis='x', color='C0', labelcolor='C0')
     ax1.set_xlabel('Memory (GB) per cov block set')
@@ -371,7 +371,7 @@ if so_mpi.rank == 0:
     ax2 = ax1.twiny()
     ax2.hist(num_calculated_couplings_per_set, histtype='step', bins=30, color='C1')
     ax2.semilogy()
-    mean = np.mean(num_calculated_couplings_per_set)
+    mean = npy.mean(num_calculated_couplings_per_set)
     ax2.axvline(mean, linestyle='--', color='C1', label = f'Mean number of couplings per cov block set: {mean:0.3f}')
     ax2.tick_params(axis='x', color='C1', labelcolor='C1')
     ax2.set_xlabel('Number of couplings per cov block set')

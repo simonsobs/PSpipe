@@ -13,6 +13,7 @@ spectra (and ultimately, couplings), that need to be produced."""
 import argparse
 from os.path import join as opj
 from itertools import product
+import time
 
 import numpy as np
 import numba
@@ -165,16 +166,16 @@ def calc_w4(w1, w2, w3, w4, pixsizemap):
 def calc_wl(w1, w2, w3, w4):
     walm12 = curvedsky.map2alm(enmap.samewcs(mult_2(w1, w2), w1), lmax=2*lmax)
     walm34 = curvedsky.map2alm(enmap.samewcs(mult_2(w3, w4), w3), lmax=2*lmax)
-    wl = curvedsky.alm2cl(walm12, walm34)
-    return wl.astype(np.float64, copy=False) # FIXME: use double accumulation instead
+    wl = curvedsky.alm2cl(walm12, walm34, dtype=np.float64)
+    return wl
 
 def calc_canonized_function(canonized_combos, subtasks, effective_window_dict, 
-                            func, func_takes_pixsizemap_arg):
+                            pixsizemap_dict, func, func_takes_pixsizemap_arg):
     canonized_wfs = {}
     for task in subtasks:
         can_com = canonized_combos[task]
         assert can_com not in canonized_wfs, \
-            f'{can_com} alread in canonized_wfs, this should not happen ' + \
+            f'{can_com} already in canonized_wfs, this should not happen ' + \
             'since sets should only hold unique items'
 
         effective_windows = [] # the arguments to func
@@ -183,7 +184,7 @@ def calc_canonized_function(canonized_combos, subtasks, effective_window_dict,
             effective_windows.append(effective_window)
 
         if func_takes_pixsizemap_arg:
-            template = effective_windows[-1]
+            template = effective_windows[-1] # FIXME: assumes this describes all maps in the combo
             pixsizemap_key = (template.shape, wcsutils.describe(template.wcs))
             pixsizemap = pixsizemap_dict[pixsizemap_key][1]
             wf = func(*effective_windows, pixsizemap)
@@ -272,7 +273,11 @@ for task in subtasks:
 canonized_connected_combos_2pt = so_mpi.gather_set_or_dict(canonized_connected_combos_2pt,
                                                            allgather=True,
                                                            overlap_allowed=True)
-canonized_connected_combos_2pt = list(canonized_connected_combos_2pt) # do set-to-list only once
+# do set-to-list only once
+# NOTE: careful: since the allgather updated a *set*, this list is not in the 
+# same order over different tasks. need to sort it to be sure
+canonized_connected_combos_2pt = sorted(list(canonized_connected_combos_2pt))
+
 
 canonized_sn_field_info2canonized_connected_combo_2pt = so_mpi.gather_set_or_dict(canonized_sn_field_info2canonized_connected_combo_2pt,
                                                                                   allgather=False,
@@ -305,7 +310,8 @@ effective_window_dict, pixsizemap_dict = load_effective_windows(signal_windows_t
 log.info(f"[Rank {so_mpi.rank}] Calculating w2s")
 
 canonized_w2s = calc_canonized_function(canonized_connected_combos_2pt,
-                                        subtasks, effective_window_dict, calc_w2, 
+                                        subtasks, effective_window_dict, 
+                                        pixsizemap_dict, calc_w2, 
                                         func_takes_pixsizemap_arg=True)
 
 canonized_w2s = so_mpi.gather_set_or_dict(canonized_w2s, allgather=True,
@@ -396,7 +402,11 @@ for task in subtasks:
 canonized_connected_combos_4pt = so_mpi.gather_set_or_dict(canonized_connected_combos_4pt,
                                                            allgather=True,
                                                            overlap_allowed=True)
-canonized_connected_combos_4pt = list(canonized_connected_combos_4pt) # do set-to-list only once
+
+# do set-to-list only once
+# NOTE: careful: since the allgather updated a *set*, this list is not in the 
+# same order over different tasks. need to sort it to be sure
+canonized_connected_combos_4pt = sorted(list(canonized_connected_combos_4pt))
 
 canonized_sn_field_info2canonized_connected_combo_4pt = so_mpi.gather_set_or_dict(canonized_sn_field_info2canonized_connected_combo_4pt,
                                                                                   allgather=False,
@@ -451,7 +461,8 @@ load_effective_windows(signal_windows_to_load, noise_windows_to_load,
 log.info(f"[Rank {so_mpi.rank}] Calculating w4s")
 
 canonized_w4s = calc_canonized_function(canonized_connected_combos_4pt,
-                                        subtasks, effective_window_dict, calc_w4, 
+                                        subtasks, effective_window_dict, 
+                                        pixsizemap_dict, calc_w4, 
                                         func_takes_pixsizemap_arg=True)
 
 canonized_w4s = so_mpi.gather_set_or_dict(canonized_w4s, allgather=True,
@@ -654,7 +665,11 @@ for task in subtasks:
 canonized_disconnected_combos_4pt = so_mpi.gather_set_or_dict(canonized_disconnected_combos_4pt,
                                                               allgather=True,
                                                               overlap_allowed=True)
-canonized_disconnected_combos_4pt = list(canonized_disconnected_combos_4pt) # do set-to-list only once
+
+# do set-to-list only once
+# NOTE: careful: since the allgather updated a *set*, this list is not in the 
+# same order over different tasks. need to sort it to be sure
+canonized_disconnected_combos_4pt = sorted(list(canonized_disconnected_combos_4pt))
 
 canonized_sn_field_info2canonized_disconnected_combo_4pt = so_mpi.gather_set_or_dict(canonized_sn_field_info2canonized_disconnected_combo_4pt,
                                                                                      allgather=False,
@@ -710,11 +725,15 @@ load_effective_windows(signal_windows_to_load, noise_windows_to_load,
                        effective_window_dict=effective_window_dict,
                        pixsizemap_dict=pixsizemap_dict)
 
+t0 = time.time()
 log.info(f"[Rank {so_mpi.rank}] Calculating window spectra")
 
 canonized_wls = calc_canonized_function(canonized_disconnected_combos_4pt,
-                                        subtasks, effective_window_dict, calc_wl, 
+                                        subtasks, effective_window_dict, 
+                                        pixsizemap_dict, calc_wl, 
                                         func_takes_pixsizemap_arg=False)
+
+log.info(f"[Rank {so_mpi.rank}] Calculated {len(subtasks)} spectra in {time.time() - t0} seconds")
 
 canonized_wls = so_mpi.gather_set_or_dict(canonized_wls, allgather=False, root=0,
                                           overlap_allowed=False)

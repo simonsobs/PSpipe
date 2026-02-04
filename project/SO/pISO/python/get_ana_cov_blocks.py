@@ -12,16 +12,13 @@ import time
 import numpy as npy
 import numba
 
-from pspipe_utils import log, pspipe_list, covariance, dict_utils
-from pspy import so_dict, so_mcm, so_mpi, so_spectra
+from pspipe_utils import log, pspipe_list, covariance, dict_utils, kspace
+from pspy import so_dict, so_mcm, so_mpi, so_spectra, so_map
 
 parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
-parser.add_argument('--coupling-cache-size', type=int, default=32,
-                    help='The maximum number of couplings to be calculated and '
-                    'stored at one time')
 args = parser.parse_args()
 
 # get needed info from paramfile
@@ -43,6 +40,21 @@ else:
     l_toeplitz = -1
     dl_band = -1
 
+apply_kspace_filter = d['apply_kspace_filter']
+binning_file = d["binning_file"]
+templates = {}
+filter_dicts = {}
+for sv in surveys:
+    maps = d[f'arrays_{sv}']
+    templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[0]}"])
+    if templates[sv].pixel == "CAR":
+        if apply_kspace_filter:
+            filter_dicts[sv] = d[f"k_filter_{sv}"]
+        else:
+            filter_dicts[sv] = None
+    else:
+        filter_dicts[sv] = None
+
 bestfit_dir = d["best_fits_dir"]
 noise_dir = opj(bestfit_dir, 'noise')
 mcm_dir = d['mcm_dir']
@@ -63,6 +75,7 @@ canonized_wls = npy.load(opj(cov_dir, 'canonized_wls.npy'), allow_pickle=True).i
 cov_block_sets2can_discon_com_4pts_and_optypes = npy.load(opj(cov_dir, 'cov_block_sets2can_discon_com_4pts_and_optypes.npy'), allow_pickle=True).item()
 cov_block2TEB_block2can_sn_alm_info2nterms = npy.load(opj(cov_dir, 'cov_block2TEB_block2can_sn_alm_info2nterms.npy'), allow_pickle=True).item()
 
+so_mpi.init(True)
 log.info(f'[Rank {so_mpi.rank}] Load metadata in {(time.time() - t0):.3f} seconds')
 
 optype2str = {
@@ -267,11 +280,12 @@ for task in subtasks:
         update_pseudospectra_dict((svj, mj, nj), (svp, mp, np), pseudospectra_dict=pseudospectra_dict)
                 
         pseudo_cov = npy.zeros((len(spectra) * (lmax - 2), len(spectra) * (lmax - 2)), dtype=npy.float32)
+        pseudo_cov_block = npy.zeros((lmax - 2, lmax - 2), dtype=npy.float32)
         TEB_block2can_sn_alm_info2nterms = cov_block2TEB_block2can_sn_alm_info2nterms[cov_block]
         total_nterms = 0
         for ridx, (TEBi, TEBj) in enumerate(spectra):
             for cidx, (TEBp, TEBq) in enumerate(spectra):
-                pseudo_cov_block = pseudo_cov[ridx*(lmax - 2):(ridx+1)*(lmax - 2), cidx*(lmax - 2):(cidx+1)*(lmax - 2)]
+                pseudo_cov_block_sel = npy.s_[ridx*(lmax - 2):(ridx+1)*(lmax - 2), cidx*(lmax - 2):(cidx+1)*(lmax - 2)]
 
                 can_sn_alm_info2nterms = TEB_block2can_sn_alm_info2nterms[TEBi, TEBj, TEBp, TEBq]
                 total_nterms += len(can_sn_alm_info2nterms)
@@ -325,9 +339,18 @@ for task in subtasks:
                     coupling = coups[coups_idx]
 
                     add_term_to_pseudo_cov_block(pseudo_cov_block, nterms, w4_1234,
-                                                w4_coupling, w2_12, w2_34, C12, C34,
-                                                coupling)
-
+                                                 w4_coupling, w2_12, w2_34, C12, C34,
+                                                 coupling)
+                    
+                    coupling = None
+                
+                # NOTE: doing it this way, with a temporary array, made garbage collection work.
+                # for some reason writing into a view into the array prevented garbage collection
+                pseudo_cov[pseudo_cov_block_sel] = pseudo_cov_block
+                pseudo_cov_block *= 0 # NOTE: reuse buffer!
+        
+        pseudo_cov_block = None
+        
         log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Added {total_nterms} terms to pseudo cov in {(time.time() - t0):.3f} seconds')
 
         # convert from pseudo to spec cov
@@ -337,6 +360,7 @@ for task in subtasks:
         # pseudo2datavec, we lose some accuracy, but this is all approximate anyway
         t0 = time.time()
 
+        # don't need to copy because just being used in math
         pseudo_cov = so_mcm.get_spec2spec_sparse_dict_mat_from_dense_mat(pseudo_cov, spectra, skip_empty=False)
 
         spec_name_ij = f"{svi}_{mi}x{svj}_{mj}"
@@ -353,10 +377,31 @@ for task in subtasks:
         ana_cov = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(ana_cov, pseudo2datavec_pq_T,
                                                                 dense=True, dtype=npy.float32)
         
-        # finalize: need to divide the split factor from each side and cast to double
+        # finalize: 
+        # 1. need to divide the split factor from each side and cast to double
+        # 2. apply kspace tf corrections if needed
         splits_cross_iterator_ij = pspipe_list.get_splits_cross_iterator(svi, nsplits[svi], svj, nsplits[svj])
         splits_cross_iterator_pq = pspipe_list.get_splits_cross_iterator(svp, nsplits[svp], svq, nsplits[svq]) 
         ana_cov /= (len(splits_cross_iterator_ij) * len(splits_cross_iterator_pq))
+
+        # FIXME: script assumes same spectra ordering as what made these matrices
+        if apply_kspace_filter:
+            _, tfij = kspace.build_analytic_kspace_filter_diag(svi, svj, lmax, templates, filter_dicts,
+                                                               dtype=npy.float32, binning_file=binning_file)
+            if npy.count_nonzero(tfij == 0):
+                log.info(f'WARNING: 0 in kspace_transfer_matrix {svi, svj}')
+            alphaij = (filter_dicts[svi]['analytic_cov_alpha'] + filter_dicts[svj]['analytic_cov_alpha'])/2 # multiplied exps in geom mean become arith mean
+            tfij = npy.tile(tfij ** alphaij, len(spectra))
+
+            _, tfpq = kspace.build_analytic_kspace_filter_diag(svp, svq, lmax, templates, filter_dicts,
+                                                               dtype=npy.float32, binning_file=binning_file)
+            if npy.count_nonzero(tfpq == 0):
+                log.info(f'WARNING: 0 in kspace_transfer_matrix {svp, svq}')
+            alphapq = (filter_dicts[svp]['analytic_cov_alpha'] + filter_dicts[svq]['analytic_cov_alpha'])/2 # multiplied exps in geom mean become arith mean
+            tfpq = npy.tile(tfpq ** alphapq, len(spectra))
+
+            ana_cov = tfij[:, None] * ana_cov * tfpq # NOTE: assume tf correction is diagonal
+
         ana_cov = ana_cov.astype(npy.float64, copy=False)
 
         log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Calculated pseudo-to-power-spectrum cov in {(time.time() - t0):.3f} seconds')

@@ -106,6 +106,19 @@ so_mpi.init(True)
 
 t0 = time.time()
 
+# shuffle the cov block order. perhaps there is something fancy/optimal, but this
+# should hopefully achieve load balanced tasks in the calculation (at least in
+# expectation).
+# NOTE: important that all tasks see the same cov order
+# NOTE: the typical cov order is a bet better at grouping shared couplings into
+# common sets, so the number of couplings per block will increase by a few, but
+# ducc is fast enough that this should be subdominant
+if so_mpi.rank == 0:
+    cov_order = npy.random.default_rng().permutation(n_covs)
+else:
+    cov_order = None
+cov_order = so_mpi.comm.bcast(cov_order, root=0)
+
 subtasks = so_mpi.taskrange(imin=0, imax=n_covs - 1)
 
 cov_block_sets2can_discon_com_4pts_and_optypes = {}
@@ -117,7 +130,7 @@ cov_block_set = []
 can_discon_com_4pts_and_optypes = set()
 i = 0
 while True:
-    task = subtasks[i]
+    task = cov_order[subtasks[i]] # get a random element (none overlap)
     svi, mi = ni_list[task].split('&') 
     svj, mj = nj_list[task].split('&')
     svp, mp = np_list[task].split('&')

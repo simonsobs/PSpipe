@@ -42,59 +42,6 @@ pspy_utils.create_directory(plot_dir)
 canonized_sn_field_info2canonized_disconnected_combo_4pt = npy.load(opj(cov_dir, 'canonized_sn_field_info2canonized_disconnected_combo_4pt.npy'), allow_pickle=True).item()
 reference_sn_field_info2reference_canonized_disconnected_combo_4pt = npy.load(opj(cov_dir, 'reference_sn_field_info2reference_canonized_disconnected_combo_4pt.npy'), allow_pickle=True).item()
 
-def TEB2pol(TEB):
-    if TEB == 'T':
-        return 'T'
-    elif TEB in ('E', 'B'):
-        return 'pol'
-    else:
-        raise ValueError('Only valid strs are T, E, or B')
-    
-def get_can_discon_com_4pt(snf1, snf2, snf3, snf4):
-    sv1, m1, pol1, split1 = snf1
-    sv2, m2, pol2, split2 = snf2
-    sv3, m3, pol3, split3 = snf3
-    sv4, m4, pol4, split4 = snf4
-    can_sn_field_info = pspipe_list.canonize_disconnected_4pt(snf1, snf2, snf3, snf4)
-    can = can_sn_field_info in canonized_sn_field_info2canonized_disconnected_combo_4pt
-
-    ref_split1, ref_split2, ref_split3, ref_split4 = covariance.get_4pt_sn_term_type(split1, split2, split3, split4)
-    ref_snf1 = (sv1, m1, pol1, ref_split1)
-    ref_snf2 = (sv2, m2, pol2, ref_split2)
-    ref_snf3 = (sv3, m3, pol3, ref_split3)
-    ref_snf4 = (sv4, m4, pol4, ref_split4)
-    ref_sn_field_info = (ref_snf1, ref_snf2, ref_snf3, ref_snf4)
-    ref = ref_sn_field_info in reference_sn_field_info2reference_canonized_disconnected_combo_4pt
-
-    if can and ref:
-        raise ValueError(
-            f'For sn_field_info {snf1, snf2, snf3, snf4}, the possible reference disconnected '
-            f'sn_field_info {ref_sn_field_info} is in '
-            'reference_sn_field_info2reference_canonized_disconnected_combo_4pt '
-            f'and canonized disconnected sn_field_info {can_sn_field_info} is in '
-            'canonized_sn_field_info2canonized_disconnected_combo_4pt'
-            )        
-
-    if can:
-        can_discon_com_4pt = canonized_sn_field_info2canonized_disconnected_combo_4pt[can_sn_field_info]
-    if ref:
-        can_discon_com_4pt = reference_sn_field_info2reference_canonized_disconnected_combo_4pt[ref_sn_field_info]
-    
-    return can_discon_com_4pt
-
-# NOTE: this function is insensitive to disconnected 4pt canonization
-def pols_disconnected_combo_4pt2ducc_optype(pol1, pol2, pol3, pol4):
-    if cov_spin00_coupling_only:
-        return 0 
-    else:
-        spin2_1 = int(pol1 == 'pol' and pol2 == 'pol')
-        spin2_2 = int(pol3 == 'pol' and pol4 == 'pol')
-
-        # if 0, then the spintype is 00, which is ducc optype 0
-        # if 1, then the spintype is 02 (or 20), which is ducc optype 1
-        # if 2, then the spintype is ++, which is ducc optype 2
-        return spin2_1 + spin2_2
-
 def update_ducc_inputs_and_nterms(sna1, sna2, sna3, sna4,
                                   this_block_can_discon_com_4pts_and_optypes,
                                   can_sn_alm_info2nterms):
@@ -104,20 +51,26 @@ def update_ducc_inputs_and_nterms(sna1, sna2, sna3, sna4,
     sv3, m3, TEB3, split3 = sna3
     sv4, m4, TEB4, split4 = sna4
 
-    pol1 = TEB2pol(TEB1)
-    pol2 = TEB2pol(TEB2)
-    pol3 = TEB2pol(TEB3)
-    pol4 = TEB2pol(TEB4)
+    pol1 = covariance.TEB2pol(TEB1)
+    pol2 = covariance.TEB2pol(TEB2)
+    pol3 = covariance.TEB2pol(TEB3)
+    pol4 = covariance.TEB2pol(TEB4)
 
     snf1 = (sv1, m1, pol1, split1)
     snf2 = (sv2, m2, pol2, split2)
     snf3 = (sv3, m3, pol3, split3)
     snf4 = (sv4, m4, pol4, split4)
-    can_discon_com_4pt = get_can_discon_com_4pt(snf1, snf2, snf3, snf4)
+    can_discon_com_4pt = covariance.get_can_discon_com_4pt(
+        snf1, snf2, snf3, snf4,
+        canonized_sn_field_info2canonized_disconnected_combo_4pt,
+        reference_sn_field_info2reference_canonized_disconnected_combo_4pt
+        )
 
     # NOTE: although using uncanonized pol1, pol2, pol3, pol4, the optype is
     # insensitive to disconnected 4pt canonization
-    optype = pols_disconnected_combo_4pt2ducc_optype(pol1, pol2, pol3, pol4)
+    optype = covariance.pols_disconnected_combo_4pt2ducc_optype(
+        pol1, pol2, pol3, pol4, cov_spin00_coupling_only
+        )
     
     # adding to set does nothing if already in set
     this_block_can_discon_com_4pts_and_optypes.add((can_discon_com_4pt, optype))

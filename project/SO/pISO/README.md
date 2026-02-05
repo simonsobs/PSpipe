@@ -365,7 +365,7 @@ pair, and beam.
     avoid calculating the mode-coupling matrices again in a separate script, we
     also calculate them here too.
 
-    - command: `sbatch --ntasks 14 --cpus-per-task 8 --mem-per-cpu 8G --time 10:00 --job-name get_mcm_bbl_and_pseudosignal /path/to/sbatch/script.slurm srun python -u /path/to/PSpipe/project/SO/pISO python/get_mcm_bbl_and_pseudosignal.py /path/to/PSpipe/project/SO/pISO/paramfiles/dr6xdeep56_20251119.dict`
+    - command: `sbatch --ntasks 14 --cpus-per-task 8 --mem-per-cpu 8G --time 10:00 --job-name get_mcm_bbl_and_pseudosignal /path/to/sbatch/script.slurm srun python -u /path/to/PSpipe/project/SO/pISO/python/get_mcm_bbl_and_pseudosignal.py /path/to/PSpipe/project/SO/pISO/paramfiles/dr6xdeep56_20251119.dict`
 4. The power spectra often deconvolve a kspace-filter matrix which is built (for
 now) at the bin-bin level. The inner product of the inverse kspace-filter matrix
 and the `mbl_inv` comprise the multiplicative part of the pseudo-to-power
@@ -583,16 +583,22 @@ After this point, the `data_dir` should look like:
 Notes:
 * Related to `mbl_inv`, `Bbl`, and `pseudo2datavec`, there are new functions in
 `pspy` that make applying spin-weighted matrices to spectra easier:
-    1. `so_mcm.get_spec2spec_array_from_spin2spin_array`, to take a `(5, ny, nx)`
-    shaped spin-weighted array and build the fully-populated `(9*ny, 9*nx)`
-    array for applying to per-ell spectra.
-    2. `so_spectra.spec_dict2vec`, to turn a `ps[pol_pair]` dictionary into a 
+    1. `so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array`, to take a
+    `(5, ny, nx)` shaped spin-weighted array and build the sparse `(9*ny, 9*nx)`
+    array for applying to per-ell spectra. The sparsity is preserved by
+    representing the non-zero blocks as a two-level, row-major dictionary.
+    2. `so_mcm.sparse_dict_mat_matmul_sparse_dict_mat` and
+    `so_mcm.sparse_dict_mat_matmul_sparse_dict_vec`, to apply a sparse block
+    matrix to a sparse block matrix or sparse block vector. The sparsity is
+    preserved by representing the non-zero blocks as a two-level, row-major
+    dictionary.
+    3. Convenience functions that combine 1 and 2 into one line,
+    `spin2spin_array_matmul_sparse_dict_mat` and 
+    `spin2spin_array_matmul_sparse_dict_vec`. The latter is how one would apply
+    `Bbl` to a vector, since they are represented on-disk as spin2spin arrays.
+    4. `so_spectra.spec_dict2vec`, to turn a `ps[pol_pair]` dictionary into a 
     1d array.
-    3. `so_spectra.vec2spec_dict`, the opposite of that.
-    4. `so_spectra.spin2spin_array_matmul_spec_dict`, to apply a `(5, ny, nx)`
-    shaped spin-weighted array to a `ps[pol_pair]` dictionary of spectra. Avoids
-    needing to fully populate the `(9*ny, 9*nx)` array and matmul it against the
-    1d array. Either option is how one would, e.g., apply `Bbl` to a vector!
+    5. `so_spectra.vec2spec_dict`, the opposite of that.
 * Other important new functions in `pspy` are:
     1. `so_mcm.ducc_couplings`, for fast couplings and mode-coupling matrices.
     2. `so_mcm.invert_mcm`, to use linalg tricks for fast inversion of 

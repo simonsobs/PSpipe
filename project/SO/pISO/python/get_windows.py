@@ -76,7 +76,8 @@ for task in subtasks:
     shape = shape[-2:]
     template_geom = (shape, wcs)
 
-    my_masks["baseline"] = so_map.from_enmap(enmap.ones(*template_geom, dtype=np.float32))
+    my_masks["baseline"] = so_map.car_template_from_shape_wcs(1, shape, wcs)
+    my_masks["baseline"].data = enmap.ones(*template_geom, dtype=np.float32)
 
     if d.get(f"extra_masks_{winname}") is not None:
         log.info(f"[{task}] apply extra masks")
@@ -153,7 +154,6 @@ for task in subtasks:
 
         my_masks[mask_type].write_map(f"{window_dir}/window_{winname}_{mask_type}.fits")
 
-    # FIXME: plotting stopped working for just this bit?
     for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
         print(f"{plot_dir}/window_{winname}_{mask_type}")

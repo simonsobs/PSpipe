@@ -118,7 +118,7 @@ for task in subtasks:
     # FIXME: put pixwin in mcm / forward model
     if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
         for row, col_dict in pseudo2datavec.items():
-            for col, arr in col_dict:
+            for col in col_dict:
                 pseudo2datavec[row][col] /= pixwins[sv1][:, None] # apply on the left
     if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
         for row, col_dict in pseudo2datavec.items():

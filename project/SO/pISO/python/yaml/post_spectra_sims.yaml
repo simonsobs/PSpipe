@@ -1,3 +1,50 @@
+get_calibs.py:
+  ref_map_sets:
+    lat_iso_i3_f090: "lat_iso_i1_f090"
+    lat_iso_i3_f150: "lat_iso_i1_f150"
+    lat_iso_i4_f090: "lat_iso_i1_f090"
+    lat_iso_i4_f150: "lat_iso_i1_f150"
+    # lat_iso_i6_f090: "lat_iso_i1_f090"
+    # lat_iso_i6_f150: "lat_iso_i1_f150"
+
+  planck_corr: False
+  subtract_bf_fg: False
+
+  ell_ranges:
+    lat_iso_i1_f090: [1400, 3000]
+    lat_iso_i1_f150: [1400, 3000]
+    lat_iso_i3_f090: [1400, 3000]
+    lat_iso_i3_f150: [1400, 3000]
+    lat_iso_i4_f090: [1400, 3000]
+    lat_iso_i4_f150: [1400, 3000]
+    lat_iso_i6_f090: [1400, 3000]
+    lat_iso_i6_f150: [1400, 3000]
+  
+  ylims: [100000, 4000000]
+
+  y_lims_plot_TT: [-300000, 500000]
+
+
+get_polar_eff_LCDM.py:
+  use_cal: True
+  # sets_to_measure: None # To measure all
+  sets_to_measure:
+    - lat_iso_i3_f090
+    - lat_iso_i3_f150
+    - lat_iso_i4_f090
+    - lat_iso_i4_f150
+    # - lat_iso_i6_f090
+    # - lat_iso_i6_f150
+  ell_ranges:
+    lat_iso_i1_f090: [500, 1500]
+    lat_iso_i1_f150: [500, 1500]
+    lat_iso_i3_f090: [500, 1500]
+    lat_iso_i3_f150: [500, 1500]
+    lat_iso_i4_f090: [500, 1500]
+    lat_iso_i4_f150: [500, 1500]
+    lat_iso_i6_f090: [500, 1500]
+    lat_iso_i6_f150: [500, 1500]
+
 compute_tf.py:
   surveys_to_calib:
     - lat_iso
@@ -13,20 +60,47 @@ compute_null_tests.py:
   pte_threshold: 0.01
   remove_first_bin: True
 
+  use_calib: True
+  use_poleff: True
+
   skip_pa4_pol: True
   skip_diff_freq_TT: True
   skip_EB: False
   fudge: False
 
   multipole_range:
-    lat_iso_i1_f090:
-      T: [600, 5000]
-      E: [600, 5000]
-      B: [600, 5000]
-    lat_iso_i1_f150:
-      T: [600, 5000]
-      E: [600, 5000]
-      B: [600, 5000]
+    # lat_iso_i1_f090:
+    #   T: [1500, 2800]
+    #   E: [1500, 2800]
+    #   B: [1500, 2800]
+    # lat_iso_i1_f150:
+    #   T: [1500, 2800]
+    #   E: [1500, 2800]
+    #   B: [1500, 2800]
+    lat_iso_i3_f090:
+      T: [1500, 2800]
+      E: [1500, 2800]
+      B: [1500, 2800]
+    lat_iso_i3_f150:
+      T: [1500, 2800]
+      E: [1500, 2800]
+      B: [1500, 2800]
+    lat_iso_i4_f090:
+      T: [1500, 2800]
+      E: [1500, 2800]
+      B: [1500, 2800]
+    lat_iso_i4_f150:
+      T: [1500, 2800]
+      E: [1500, 2800]
+      B: [1500, 2800]
+    # lat_iso_i6_f090:
+    #   T: [1500, 2800]
+    #   E: [1500, 2800]
+    #   B: [1500, 2800]
+    # lat_iso_i6_f150:
+    #   T: [1500, 2800]
+    #   E: [1500, 2800]
+    #   B: [1500, 2800]
 
   l_pows:
     TT: 1
@@ -40,7 +114,7 @@ compute_null_tests.py:
     BB: -1
 
   y_lims:
-    TT: [-100000, 75000]
+    TT: [-200000, 150000]
     TE: [-30, 30]
     TB: [-30, 30]
     ET: [-30, 30]

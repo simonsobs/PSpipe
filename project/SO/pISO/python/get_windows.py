@@ -9,7 +9,9 @@ MODIFIED VERSION, SKIP IVAR AND XLINK
 """
 
 import sys
+import os
 from os.path import join as opj
+import re
 
 import numpy as np
 from pixell import enmap
@@ -27,10 +29,10 @@ surveys = d["surveys"]
 apod_pts_source_degree = d["apod_pts_source_degree"]
 # the apodisation length of the final survey mask
 apod_survey_degree = d["apod_survey_degree"]
+apod_kspace_degree = d['apod_kspace_degree']
 
 # we will skip the edges of the survey where the noise is very difficult to model, the default is to skip 0.5 degree for
 # constructing the kspace mask and 2 degree for the final survey mask, this parameter can be used to rescale the default
-rescale = d["edge_skip_rescale"]
 
 window_dir = d["window_dir"]
 pspy_utils.create_directory(window_dir)
@@ -43,7 +45,7 @@ pspy_utils.create_directory(plot_dir)
 # d["arrays_SO"] = ['i1_f090']
 
 # here we list the different windows that need to be computed, we will then do a MPI loops over this list
-n_wins, sv_list, ar_list = pspipe_list.get_arrays_list(d)
+n_wins, winname_list = pspipe_list.get_windownames_list(d)
 
 log.info(f"number of windows to compute : {n_wins}")
 
@@ -53,68 +55,74 @@ so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_wins - 1)
 
 for task in subtasks:
-    sv, ar = sv_list[task], ar_list[task]
+    winname = winname_list[task]
 
-    log.info(f"[{task}] create windows for '{sv}' survey and '{ar}' array...")
+    log.info(f"[{task}] create windows for '{winname}'")
 
-    template_geom = enmap.read_map_geometry(d[f"maps_{sv}_{ar}"][0]) # first split
+    # need a template geometry to help load cutouts of masks. we get this by 
+    # looking for a map that will use this window
+    windowkey_pattern = 'window_(T|pol|kspace)_(.*)'
+    windowname_pattern = f'window_{winname}_(kspace|baseline)'
+    for k, v in d.items():
+        match_key = re.search(windowkey_pattern, k)
+        if match_key is not None: # this is a window key
+            windowname_text = os.path.splitext(os.path.basename(v))[0] # e.g. 'window_lat_iso_i1_kspace'
+            match_val = re.search(windowname_pattern, windowname_text) # this window key uses this window
+            if match_val is not None:
+                template_mapname = match_key.group(2) # this is the mapname in the window key
+                break
+    
+    shape, wcs = enmap.read_map_geometry(d[f"maps_{template_mapname}"][0]) # first split
+    shape = shape[-2:]
+    template_geom = (shape, wcs)
 
-    gal_mask = so_map.read_map(d[f"gal_mask_{sv}_{ar}"], geometry=template_geom)
+    my_masks["baseline"] = so_map.from_enmap(enmap.ones(*template_geom, dtype=np.float32))
 
-    my_masks["baseline"] = gal_mask.copy()
-    my_masks["baseline"].data[:] = 1
-    my_masks["baseline"].data = my_masks["baseline"].data.astype(np.float32, copy=False)
+    if d.get(f"extra_masks_{winname}") is not None:
+        log.info(f"[{task}] apply extra masks")
 
-    maps = d[f"maps_{sv}_{ar}"]
+        def sa(emap):
+            return np.sum(emap * emap.pixsizemap())/(4*np.pi)*41253
+        
+        extra_mask = 1
+        for extra_mask_fn in d[f"extra_masks_{winname}"]:
+            _extra_mask = enmap.read_map(extra_mask_fn, geometry=template_geom)
+            log.info(f"[{task}] extra mask {extra_mask_fn} solid angle: {sa(_extra_mask)}")
+            extra_mask *= _extra_mask
+        log.info(f"[{task}] joint extra mask solid angle: {sa(extra_mask)}")
+        my_masks["baseline"].data[:] *= extra_mask
 
-    # the first step is to iterate on the maps of a given array to identify pixels with zero values
-    # we will form a first survey mask as the union of all these split masks
-
-    log.info(f"[{task}] create survey mask from ivar maps")
-
-    for k, map in enumerate(maps):
-        if d[f"src_free_maps_{sv}"] == True:
-            index = map.find("map_srcfree.fits")
-        else:
-            index = map.find("map.fits")
-
-    if d[f"extra_mask_{sv}_{ar}"] is not None:
-        log.info(f"[{task}] apply extra mask")
-        extra_mask = so_map.read_map(d[f"extra_mask_{sv}_{ar}"], geometry=template_geom)
-        my_masks["baseline"].data[:] *= extra_mask.data[:]
-
-    log.info(
-        f"[{task}] compute distance to the edges and remove {0.5*rescale:.2f} degree from the edges"
-    )
     # compute the distance to the nearest 0
-    dist = so_window.get_distance(my_masks["baseline"], rmax=4 * rescale * np.pi / 180)
+    dist = so_window.get_distance(my_masks["baseline"], rmax=4 * np.pi / 180)
     # here we remove pixels near the edges in order to avoid pixels with very low hit count
     # note the hardcoded 0.5 degree value that can be rescale with the edge_skip_rescale argument in the dictfile.
-    my_masks["baseline"].data[dist.data < 0.5 * rescale] = 0
+    my_masks["baseline"].data[dist.data < d['extra_mask_edge_cut']] = 0
 
     # apply the galactic mask
     log.info(f"[{task}] apply galactic mask")
+
+    gal_mask = so_map.read_map(d[f"gal_mask_{winname}"], geometry=template_geom)
     my_masks["baseline"].data *= gal_mask.data
 
     # with this we can create the k space mask this will only be used for applying the kspace filter
     log.info(
-        f"[{task}] appodize kspace mask with {rescale:.2f} apod and write it to disk"
+        f"[{task}] appodize kspace mask with {apod_kspace_degree:.2f} apod and write it to disk"
     )
     my_masks["kspace"] = my_masks["baseline"].copy()
 
     # we apodize this k space mask with a 1 degree apodisation
 
     my_masks["kspace"] = so_window.create_apodization(
-        my_masks["kspace"], "C1", 1 * rescale, use_rmax=True
+        my_masks["kspace"], "C1", apod_kspace_degree, use_rmax=True
     )
     my_masks["kspace"].data = my_masks["kspace"].data.astype(np.float32)
-    my_masks["kspace"].write_map(f"{window_dir}/window_{sv}_{ar}_kspace.fits")
+    my_masks["kspace"].write_map(f"{window_dir}/window_{winname}_kspace.fits")
 
     # compare to the kspace mask we will skip for the nominal mask
     # an additional 2 degrees to avoid ringing from the filter
 
-    dist = so_window.get_distance(my_masks["baseline"], rmax=4 * rescale * np.pi / 180)
-    my_masks["baseline"].data[dist.data < 2 * rescale] = 0
+    dist = so_window.get_distance(my_masks["baseline"], rmax=4 * np.pi / 180)
+    my_masks["baseline"].data[dist.data < d['kspace_mask_edge_cut']] = 0
 
     for mask_type in ["baseline"]:
         # optionnaly apply a patch mask
@@ -130,33 +138,55 @@ for task in subtasks:
 
         log.info(f"[{task}] include ps mask")
 
-        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"], geometry=template_geom)
+        ps_mask = so_map.read_map(d[f"ps_mask_{winname}"], geometry=template_geom)
         ps_mask = so_window.create_apodization(
             ps_mask, "C1", apod_pts_source_degree, use_rmax=True
         )
         my_masks[mask_type].data *= ps_mask.data
 
-        my_masks[mask_type].data = my_masks[mask_type].data.astype(np.float32)
+        my_masks[mask_type].data = my_masks[mask_type].data.astype(np.float32, copy=False)
 
         if mask_type == "baseline":
             Omega = so_window.get_survey_solid_angle(my_masks[mask_type])
             Omega_srad = Omega / (4 * np.pi) * 41253
-            log.info(f"[{task}] {sv} {ar} baseline mask solid angle: {Omega_srad}")
+            log.info(f"[{task}] {winname} baseline mask solid angle: {Omega_srad}")
 
-        my_masks[mask_type].write_map(f"{window_dir}/window_{sv}_{ar}_{mask_type}.fits")
+        my_masks[mask_type].write_map(f"{window_dir}/window_{winname}_{mask_type}.fits")
 
+    # FIXME: plotting stopped working for just this bit?
     for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
-        mask.downgrade(4).plot(file_name=f"{plot_dir}/window_{sv}_{ar}_{mask_type}")
+        print(f"{plot_dir}/window_{winname}_{mask_type}")
+        mask.downgrade(4).plot(file_name=f"{plot_dir}/window_{winname}_{mask_type}")
 
+# for plotting maps
+n_maps, sv_list, ar_list = pspipe_list.get_arrays_list(d)
+
+subtasks = so_mpi.taskrange(imin=0, imax=n_maps - 1)
+
+if len(d["plot_windowed_maps"]) > 0:
+    pspy_utils.create_directory(f"{plot_dir}/windowed_maps")
+
+for task in subtasks:
+    sv, ar = sv_list[task], ar_list[task]
+    
     if f"{sv}_{ar}" in d["plot_windowed_maps"]:
-        pspy_utils.create_directory(f"{plot_dir}/windowed_maps")
+        window_T = enmap.read_map(d[f'window_T_{sv}_{ar}'])
+        if d[f'window_pol_{sv}_{ar}'] != d[f'window_T_{sv}_{ar}']:
+            window_pol = enmap.read_map(d[f'window_pol_{sv}_{ar}'])
+        else:
+            window_pol = window_T
+
         for s, sv_ar_split in enumerate(d[f"maps_{sv}_{ar}"]):
             maps_to_plot = so_map.read_map(sv_ar_split)
-            maps_to_plot.data *= my_masks["baseline"].data
+            maps_to_plot.data[0] *= window_T
+            maps_to_plot.data[1:] *= window_pol
             maps_to_plot.downgrade(4).calibrate(
                 cal=d[f"cal_{sv}_{ar}"], pol_eff=d[f"pol_eff_{sv}_{ar}"]
             ).plot(
                 file_name=f"{plot_dir}/windowed_maps/{sv}_{ar}_split{s}",
                 color_range=(300, 100, 100),
             )
+
+# Save the paramfile to keep track
+d.write_to_file(f'{window_dir}/_paramfile.dict')

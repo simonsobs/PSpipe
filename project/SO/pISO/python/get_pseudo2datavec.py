@@ -57,6 +57,7 @@ if apply_kspace_filter:
             raise NotImplementedError('can only kspace filter CAR maps')
 
     if kspace_tf_path == "analytical":
+        # FIXME: func assumes len(spectra) == 9
         kspace_transfer_matrix = kspace.build_analytic_kspace_filter_matrices(surveys, # FIXME: will break if any non-CAR survey
                                                                               maps,
                                                                               templates,
@@ -66,6 +67,8 @@ if apply_kspace_filter:
     else:
         kspace_transfer_matrix = {}
         for spec_name in spec_name_list:
+            # FIXME: func assumes len(spectra) == 9
+            # FIXME: script assumes (below) same spectra ordering as what made these matrices
             kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
 
     for k, v in kspace_transfer_matrix.items():
@@ -79,9 +82,9 @@ if apply_kspace_filter:
         if cov_T_E_only == True: one_d_tf = one_d_tf[:4 * n_bins]
         np.savetxt(f"{spec_dir}/one_dimension_kspace_tf_{spec_name}.dat", one_d_tf)
 
-if d[f"pixwin_{sv}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
-    pixwins = {}
-    for sv in surveys:
+pixwins = {}
+for sv in surveys:
+    if d[f"pixwin_{sv}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
         # this is a crude approximation. really, it would be something like
         # Bbl @ (pw_l)^2 C_l, so it can't be easily decoupled
         pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"])
@@ -101,31 +104,41 @@ for task in subtasks:
     log.info(f'[Rank {so_mpi.rank}] Calculating operators for {spec_name}')
     
     # get the mbl_inv for this array cross
-    prefix = opj(f"{mcm_dir}", spec_name)
-    mbl_inv = np.load(prefix + "_mode_coupling_inv.npy")
+    mbl_inv = np.load(opj(f"{mcm_dir}", f"{spec_name}_mode_coupling_inv.npy"))
 
-    # need to splice mbl_inv into spectra-ordered arrays
-    # TODO: consider disk-space, memory (could be sparse)
-    # FIXME: function assumes TT, TE, TB, ET, BT, EE, EB, BE, BB order
-    pseudo2datavec = so_mcm.get_spec2spec_array_from_spin2spin_array(mbl_inv, dense=True)
+    # need to splice mbl_inv into spectra-ordered arrays. pseudo2datavec is a 
+    # sparse, two-level dictionary of arrays, so the order of spectra also
+    # doesn't matter
+    #
+    # copy blocks for safety since we might modify individual blocks below
+    pseudo2datavec = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(mbl_inv, spectra, copy=True)
 
     # get the inv_kspace matrix for this array cross, if necessary
     if apply_kspace_filter:
         inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix[spec_name]) 
 
-        # apply the inv_kspace matrix to mbl_inv to get data operator
-        # FIXME: assumes inv_kspace_mat in TT, TE, TB, ET, BT, EE, EB, BE, BB order
-        pseudo2datavec = inv_kspace_mat @ pseudo2datavec
+        # apply the inv_kspace matrix to mbl_inv to get data operator. don't
+        # need to copy because just being used in math
+        # FIXME: script assumes same spectra ordering as what made these matrices
+        inv_kspace_mat = so_mcm.get_spec2spec_sparse_dict_mat_from_dense_mat(inv_kspace_mat, spectra)
+        pseudo2datavec = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(inv_kspace_mat, pseudo2datavec)
 
     # get the pixwin for healpix, if necessary
+    # FIXME: put pixwin in mcm / forward model
     if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
-        pseudo2datavec /= np.tile(pixwins[sv1], 9)[:, None] # apply on the left
+        for row, col_dict in pseudo2datavec.items():
+            for col, arr in col_dict:
+                pseudo2datavec[row][col] /= pixwins[sv1][:, None] # apply on the left
     if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
-        pseudo2datavec /= np.tile(pixwins[sv2], 9)[:, None] # apply on the left
+        for row, col_dict in pseudo2datavec.items():
+            for col in col_dict:
+                pseudo2datavec[row][col] /= pixwins[sv2][:, None] # apply on the left
 
     # save and plot
     np.save(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'), pseudo2datavec)
+    
     plt.figure(figsize=(10, 8))
+    pseudo2datavec = so_mcm.sparse_dict_mat2dense_array(pseudo2datavec, np.float32)
     plt.imshow(np.log(np.abs(pseudo2datavec)), aspect=100)
     plt.xticks([pseudo2datavec.shape[1] * (2 * i + 1) / 18 for i in range(9)], spectra)
     plt.yticks([pseudo2datavec.shape[0] * (2 * i + 1) / 18 for i in range(9)], spectra)

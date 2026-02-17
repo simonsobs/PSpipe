@@ -18,7 +18,9 @@ tf_infos = tf_dict['compute_tf.py']
 
 spec_dir = d['spec_dir']
 cov_dir = d['cov_dir']
-bestfir_dir = d['bestfits_dir']
+bestfir_dir = d['best_fits_dir']
+plots_dir = d['plots_dir'] + '/tf/'
+os.makedirs(plots_dir, exist_ok=True)
 
 tf_dir = d['tf_dir']
 
@@ -88,4 +90,4 @@ for sv in tf_infos["surveys_to_calib"]:
             np.savetxt(f"{output_dir}/tf_cov_{sv_ar}.dat", tf_cov)
 
 
-        tf_tools.plot_tf(lb_list, tf_list, tf_err_list, d[f"arrays_{sv}"], f"{output_dir}/tf_estimation.png")
+        tf_tools.plot_tf(lb_list, tf_list, tf_err_list, d[f"arrays_{sv}"], f"{plots_dir}/tf_estimation_{combin}.png")

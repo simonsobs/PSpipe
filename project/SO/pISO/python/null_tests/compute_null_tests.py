@@ -61,9 +61,8 @@ def check_freq_pair(f1, f2, f3, f4):
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 
-with open(d['null_test_yaml'], "r") as f:
+with open(d['nulls_yaml'], "r") as f:
     infos_dict: dict = yaml.safe_load(f)
-    
 null_infos = infos_dict['compute_null_tests.py']
 
 pte_threshold = null_infos['pte_threshold']
@@ -90,16 +89,19 @@ if skip_diff_freq_TT == True:
 
 spectra_dir = d["spec_dir"]
 cov_dir = d["cov_dir"]
-plot_dir = d["plots_dir"]
-bestfits_dir = d['bestfits_dir']
+plot_dir = d["plots_dir"] + '/nulls/'
+bestfits_dir = d['best_fits_dir']
 
-null_test_dir = d["null_test_dir"]
+null_test_dir = d["nulls_dir"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 pspy_utils.create_directory(null_test_dir)
 pspy_utils.create_directory(plot_dir)
-
+print('creating dirs')
+for spec in spectra:
+    pspy_utils.create_directory(plot_dir + f'{spec}/')
+print('created dirs')
 test_list = [
     {
         "name":  "test_1",
@@ -120,19 +122,27 @@ cov_type_list = list(dict.fromkeys(cov_type_list)) #remove doublon
 spec_dir_list = list(dict.fromkeys(spec_dir_list)) #remove doublon
 map_set_list = pspipe_list.get_map_set_list(d)
 
+calib_suffix = '_calib' if null_infos['use_calib'] else ''
+poleff_suffix = '_poleff' if null_infos['use_poleff'] else ''
 
+all_ps = {}
+for spec_dir in spec_dir_list:
+    cov_template = f"{cov_dir}/{cov_type_list[0]}" + "_{}x{}_{}x{}.npy"
+    ps_template = spec_dir + "/Dl_{}x{}" + f"_cross{calib_suffix}{poleff_suffix}.dat"
+    all_ps[spec_dir], _ = consistency.get_ps_and_cov_dict(map_set_list, ps_template, cov_template, spectra_order=spectra)
+    lb = all_ps[spec_dir]["ell"]
+del _
+print('loaded spec')
 all_cov = {}
-_ps_temp = spectra_dir + "/Dl_{}x{}_cross.dat"
+_ps_temp = spectra_dir + "/Dl_{}x{}" + f"_cross{calib_suffix}{poleff_suffix}.dat"
 for cov in cov_type_list:
     cov_template = f"{cov_dir}/{cov}" + "_{}x{}_{}x{}.npy"
     _, all_cov[cov] =  consistency.get_ps_and_cov_dict(map_set_list, _ps_temp, cov_template, spectra_order=spectra)
     
-all_ps = {}
-for spec_dir in spec_dir_list:
-    ps_template = spec_dir + "/Dl_{}x{}_cross.dat"
-    all_ps[spec_dir], _ = consistency.get_ps_and_cov_dict(map_set_list, ps_template, cov_template, spectra_order=spectra)
-    lb = all_ps[spec_dir]["ell"]
+print('loaded covs')
+del _
 
+# Apply calibration if needed
 
 # Load foreground best fits
 fg_file_name = f"{bestfits_dir}" + "fg_{}x{}.dat"
@@ -144,14 +154,14 @@ for label in label_list:
     pte_dict[label, "all"] = []
     for spec in spectra:
         pte_dict[label, spec] = []
-    
+pte_dict_for_plot = {}
+
 operations = {"diff": "ab-cd"}
 
 null_list = pspipe_list.get_null_list(d, spectra=spectra, remove_TT_diff_freq=False)
 
 for null in null_list:
 
-        
     mode, ms1, ms2, ms3, ms4 = null
     lmin, lmax = get_lmin_lmax(null, multipole_range)
 
@@ -223,7 +233,6 @@ for null in null_list:
         np.save(f"{null_test_dir}/ps_{label}_{fname}.npy", res_cov_dict[label] )
         np.savetxt(f"{null_test_dir}/cov_{label}_{fname}.npy", np.transpose([lb, res_ps_dict[label], sigma]))
 
-
     # Plot residual and get chi2
     lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
     plot_title = f"{ms1}x{ms2} - {ms3}x{ms4}"
@@ -236,15 +245,14 @@ for null in null_list:
 
     chi2_dict = consistency.plot_residual(lb, res_ps_dict, res_cov_dict, mode=mode,
                                           title=plot_title.replace("dr6_", ""),
-                                          file_name=f"{plot_dir}/{fname}",
+                                          file_name=f"{plot_dir}/{mode}/{fname}",
                                           expected_res=expected_res,
                                           lrange=lrange,
                                           overplot_theory_lines=(lb_fg, res_fg_b),
                                           l_pow=l_pows[mode],
                                           return_chi2=True,
                                           ylims=ylims)
-                                          
-                 
+    plt.close()
     
     if skip_pa4_pol == True:
         if ("pa4" in fname) & (mode != "TT"):
@@ -272,10 +280,14 @@ for null in null_list:
 
         if (pte <= pte_threshold) or (pte >= 1-pte_threshold):
             print(f"[{label}] [{plot_title} {mode}] PTE = {pte:.04f}")
+    pte_dict_for_plot[(mode, ms1, ms2, ms3, ms4)] = pte
 
 
 # Save pte to pickle
-pickle.dump(pte_dict, open(f"{plot_dir}/pte_dict.pkl", "wb"))
+with open(f"{plot_dir}/pte_dict.pkl", "wb") as f:
+    pickle.dump(pte_dict, f)
+with open(f"{plot_dir}/pte_dict_for_plot.pkl", "wb") as f:
+    pickle.dump(pte_dict_for_plot, f)
 
 if skip_EB == True:
     tested_spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "BB"]

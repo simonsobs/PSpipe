@@ -100,19 +100,41 @@ for task in subtasks:
     my_masks["baseline"].data[dist.data < d['extra_mask_edge_cut']] = 0
 
     # apply the galactic mask
-    log.info(f"[{task}] apply galactic mask")
 
-    gal_mask = so_map.read_map(d[f"gal_mask_{winname}"], geometry=template_geom)
-    my_masks["baseline"].data *= gal_mask.data
+    if d[f"gal_mask_{winname}"] is not None:
+        log.info(f"[{task}] apply galactic mask")
+        gal_mask = so_map.read_map(d[f"gal_mask_{winname}"], geometry=template_geom)
+        my_masks["baseline"].data *= gal_mask.data
+    else:
+        log.info(f"[{task}] no galactic mask applied")
+    
+    if "ra_range" in d:
+        log.info(f'Applying {d["ra_range"]} RA range')
+        ra_range_rad = np.deg2rad(d["ra_range"])
+        pos_map = my_masks["baseline"].data.posmap()
+        ra_map = pos_map[1]
+        ra_mask = (
+            (ra_map <= ra_range_rad[0]) | (ra_map >= ra_range_rad[1])
+        )
+        my_masks["baseline"].data[ra_mask] *= 0
 
+    if "dec_range" in d:
+        log.info(f'Applying {d["dec_range"]} DEC range')
+        dec_range_rad = np.deg2rad(d["dec_range"])
+        pos_map = my_masks["baseline"].data.posmap()
+        dec_map = pos_map[0]
+        dec_mask = (
+            (dec_map <= dec_range_rad[0]) | (dec_map >= dec_range_rad[1])
+        )
+        my_masks["baseline"].data[dec_mask] *= 0
+    
+    my_masks["kspace"] = my_masks["baseline"].copy()
     # with this we can create the k space mask this will only be used for applying the kspace filter
     log.info(
         f"[{task}] appodize kspace mask with {apod_kspace_degree:.2f} apod and write it to disk"
     )
-    my_masks["kspace"] = my_masks["baseline"].copy()
 
-    # we apodize this k space mask with a 1 degree apodisation
-
+    # we apodize this k space mask
     my_masks["kspace"] = so_window.create_apodization(
         my_masks["kspace"], "C1", apod_kspace_degree, use_rmax=True
     )
@@ -121,7 +143,6 @@ for task in subtasks:
 
     # compare to the kspace mask we will skip for the nominal mask
     # an additional 2 degrees to avoid ringing from the filter
-
     dist = so_window.get_distance(my_masks["baseline"], rmax=4 * np.pi / 180)
     my_masks["baseline"].data[dist.data < d['kspace_mask_edge_cut']] = 0
 
@@ -137,13 +158,15 @@ for task in subtasks:
 
         # create a point source mask and apodise it
 
-        log.info(f"[{task}] include ps mask")
-
-        ps_mask = so_map.read_map(d[f"ps_mask_{winname}"], geometry=template_geom)
-        ps_mask = so_window.create_apodization(
-            ps_mask, "C1", apod_pts_source_degree, use_rmax=True
-        )
-        my_masks[mask_type].data *= ps_mask.data
+        if d[f"ps_mask_{winname}"] is not None:
+            log.info(f"[{task}] include ps mask")
+            ps_mask = so_map.read_map(d[f"ps_mask_{winname}"], geometry=template_geom)
+            ps_mask = so_window.create_apodization(
+                ps_mask, "C1", apod_pts_source_degree, use_rmax=True
+            )
+            my_masks[mask_type].data *= ps_mask.data
+        else:
+            log.info(f"[{task}] no ps mask included")
 
         my_masks[mask_type].data = my_masks[mask_type].data.astype(np.float32, copy=False)
 
@@ -154,6 +177,7 @@ for task in subtasks:
 
         my_masks[mask_type].write_map(f"{window_dir}/window_{winname}_{mask_type}.fits")
 
+    # Plot baseline and kspace windows
     for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
         print(f"{plot_dir}/window_{winname}_{mask_type}")
@@ -185,7 +209,7 @@ for task in subtasks:
                 cal=d[f"cal_{sv}_{ar}"], pol_eff=d[f"pol_eff_{sv}_{ar}"]
             ).plot(
                 file_name=f"{plot_dir}/windowed_maps/{sv}_{ar}_split{s}",
-                color_range=(300, 100, 100),
+                color_range=(1000, 300, 300),
             )
 
 # Save the paramfile to keep track

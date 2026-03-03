@@ -144,7 +144,7 @@ for task in subtasks:
     # compare to the kspace mask we will skip for the nominal mask
     # an additional 2 degrees to avoid ringing from the filter
     dist = so_window.get_distance(my_masks["baseline"], rmax=4 * np.pi / 180)
-    my_masks["baseline"].data[dist.data < d['kspace_mask_edge_cut']] = 0
+    my_masks["baseline"].data[dist.data < d['kspace_to_baseline_edge_cut']] = 0
 
     for mask_type in ["baseline"]:
         # optionnaly apply a patch mask

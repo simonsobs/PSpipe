@@ -223,7 +223,7 @@ ps_and_gal_mask_dir = data_dir + 'mask/'
 mnms_mask_dir = '/home/zatkins/scratch/projects/mnms/masks/v20260201_skn_50cg_mask_obs/'
 
 extra_mask_edge_cut = 0
-kspace_mask_edge_cut = 2
+kspace_to_baseline_edge_cut = 2
 apod_kspace_degree = 1
 apod_pts_source_degree = 0.3
 apod_survey_degree = 2

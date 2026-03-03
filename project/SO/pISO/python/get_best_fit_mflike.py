@@ -133,12 +133,49 @@ for ps_name in spectra_list:
         if spec.lower() in d["fg_components"].keys():
             fg[spec] = fg_dict[spec.lower(), "all", name1, name2]
         else:
-            fg[spec] = fg_dict[spec.lower()[::-1], "all", name1, name2]
+            fg[spec] = fg_dict[spec.lower()[::-1], "all", name2, name1] # NOTE: differs from dr6, doesn't rely on T and P freq SED being same for a TP cross if also a name cross
         best_fit_dict[ps_name][spec] = ps_dict[spec] + fg[spec]
     so_spectra.write_ps(f"{bestfit_dir}/fg_{ps_name}.dat", l_th, fg, type, spectra=spectra)
     so_spectra.write_ps(f"{bestfit_dir}/cmb_and_fg_{ps_name}.dat", l_th, best_fit_dict[ps_name], type, spectra=spectra)
 
+# check that fg and cmb correlation matrices are valid, since possible to enter
+# invalid fgparams in paramfile (and maybe theory code for cmb can mess up)
+ps_mat = np.zeros((1, 3, 1, 3, max(l_th) + 1))
+fg_mat = np.zeros((len(map_set_list), 3, len(map_set_list), 3, max(l_th) + 1))
+lidx = l_th.astype(int)
+for p1, pol1 in enumerate('TEB'):
+    for p2, pol2 in enumerate('TEB'):
+        spec = pol1 + pol2 
+        ps_mat[0, p1, 0, p2, lidx] = ps_dict[spec]
+        for n1, name1 in enumerate(map_set_list):
+            for n2, name2 in enumerate(map_set_list):
+                try:
+                    fg_mat[n1, p1, n2, p2, lidx] = fg_dict[spec.lower(), "all", name1, name2]
+                except KeyError:
+                    fg_mat[n1, p1, n2, p2, lidx] = fg_dict[spec.lower()[::-1], "all", name2, name1]
 
+def is_mat_ok(mat):
+    mat = mat.reshape(mat.shape[0] * mat.shape[1], mat.shape[2] * mat.shape[3], -1)
+
+    # am i symmetric
+    assert np.max(np.abs(np.nan_to_num(2 * (mat - np.moveaxis(mat, (0, 1), (1, 0))) / (mat + np.moveaxis(mat, (0, 1), (1, 0)))))) < 1e-12, \
+        'Matrix is not symmetric'
+
+    D = np.diagonal(mat).T**0.5
+    assert not np.any(np.isnan(D))
+
+    # am i a valid correlation matrix
+    # NOTE: doesn't necessarily mean valid covariance matrix, would need to look
+    # at evals for that. unfort they can be numerically negative...
+    corr = np.nan_to_num((1/D[:, None]/D[None, :]) * mat)
+    if not np.max(np.abs(corr)) < 1:
+        assert np.allclose(np.max(np.abs(corr)), 1, rtol=0, atol=1e-12), \
+            'Correlation matrix is not valid'
+
+is_mat_ok(ps_mat)
+is_mat_ok(fg_mat)
+
+log.info("Plotting best fit spectra")
 for spec in spectra:
     plt.figure(figsize=(12, 12))
     if spec == "TT":
@@ -149,8 +186,6 @@ for spec in spectra:
     plt.savefig(f"{plot_dir}/best_fit_{spec}.png")
     plt.clf()
     plt.close()
-
-
 
 fg_components["tt"].remove("tSZ_and_CIB")
 for comp in ["tSZ", "cibc", "tSZxCIB"]:

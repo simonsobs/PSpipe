@@ -24,8 +24,8 @@ old_spec_dir =  data_dir + f"old_spectra/{run_name}/"
 spec_dir =  data_dir + f"spectra/{run_name}/"
 best_fits_dir =  data_dir + f"best_fits"
 plots_dir =  data_dir + f"plots/{run_name}/"
-noise_model_dir =  data_dir + f"noise_model/{run_name}/"
-sq_win_alms_dir =  data_dir + f"sq_win_alms/"
+#noise_model_dir =  data_dir + f"noise_model/{run_name}/"
+#sq_win_alms_dir =  data_dir + f"sq_win_alms/"
 cov_dir =  data_dir + f"covariances/{run_name}/"
 montecarlo_dir =  data_dir + f"montecarlo/{run_name}/"
 noise_alms_dir =  data_dir + f"noise_alms/{run_name}/"
@@ -37,7 +37,7 @@ spectra_leak_corr_planck_bias_corr_dir =  data_dir + f"spectra_leak_corr_planck_
 montecarlo_beam_leakage_dir =  data_dir + f"montecarlo_beam_leakage/{run_name}/"
 sim_spec_dir =  data_dir + f"sim_spectra/dust_binning_50/{run_name}/"
 
-k_filter_Planck = {'type': 'binary_cross', 'vk_mask': [-90, 90], 'hk_mask': [-50, 50], 'weighted': False}
+k_filter_Planck = {'type': 'binary_cross', 'vk_mask': [-90, 90], 'hk_mask': [-50, 50], 'weighted': False, 'analytic_cov_alpha': -0.4}
 kspace_tf_path = "analytical" 
 planck_source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
 
@@ -57,15 +57,25 @@ use_toeplitz_cov = True
 src_free_maps_Planck = True
 n_splits_Planck = 2
 
-l3_pad = 2000
+#l3_pad = 2000
 
 savgol_w = 300
 savgol_k = 4
 
-maps_Planck_f100 = [ f"{maps_dir_planck}/legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f100_map_deep56_patch_srcfree.fits" % i for i in [1,2]]
-maps_Planck_f143 = [ f"{maps_dir_planck}/legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f143_map_deep56_patch_srcfree.fits" % i for i in [1,2]]
-maps_Planck_f217 = [ f"{maps_dir_planck}/legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f217_map_deep56_patch_srcfree.fits" % i for i in [1,2]]
-maps_Planck_f353 = [ f"{maps_dir_planck}/legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f353_map_deep56_patch_srcfree.fits" % i for i in [1,2]]
+cov_correlation_by_noise_model = True
+cov_use_median_ssnn_nnss_coupling_per_block = True
+cov_use_median_nnnn_coupling_per_block = True
+cov_spin00_coupling_only = True
+use_toeplitz_cov = True
+l_exact = 1000
+l_toeplitz = 3000
+dl_band = 2000
+
+
+maps_Planck_f100 = [ f"{maps_dir_planck}/legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f100_deep56_patch_map_srcfree.fits" % i for i in [1,2]]
+maps_Planck_f143 = [ f"{maps_dir_planck}/legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f143_deep56_patch_map_srcfree.fits" % i for i in [1,2]]
+maps_Planck_f217 = [ f"{maps_dir_planck}/legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f217_deep56_patch_map_srcfree.fits" % i for i in [1,2]]
+maps_Planck_f353 = [ f"{maps_dir_planck}/legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f353_deep56_patch_map_srcfree.fits" % i for i in [1,2]]
 
 cal_Planck_f100 = 1.0
 cal_Planck_f143 = 1.0
@@ -157,6 +167,24 @@ bandpass_shift_Planck_f100 = 0.0
 bandpass_shift_Planck_f143 = 0.0
 bandpass_shift_Planck_f217 = 0.0
 bandpass_shift_Planck_f353 = 0.0
+
+#sim
+#not sure we need this
+
+sim_pixwin_apod_deg = .2
+add_white_noise_above_lmax = True
+white_noise_ell_taper_width = 500
+keep_noise_models_in_memory = False
+
+noise_model_Planck_f100 = {'qids': ['p04']}
+noise_model_Planck_f143 = {'qids': ['p05']}
+noise_model_Planck_f217 = {'qids': ['p06']}
+noise_model_Planck_f353 = {'qids': ['p07']}
+
+noise_info_Planck_f100 = {'qid': 'p04'}
+noise_info_Planck_f143 = {'qid': 'p05'}
+noise_info_Planck_f217 = {'qid': 'p06'}
+noise_info_Planck_f353 = {'qid': 'p07'}
 
 seed_sims = False
 iStart = 0

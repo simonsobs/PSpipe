@@ -493,7 +493,8 @@ for iii in mapset_iterator:
     for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
         pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'), allow_pickle=True).item()            
-            
+
+
         # first measure the raw per-split spectra. NOTE: redundant computation
         # is performed when sv1==sv2 and m1==m2, but the code is cleaner
         #

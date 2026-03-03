@@ -118,7 +118,7 @@ for task in subtasks:
     # FIXME: put pixwin in mcm / forward model
     if d[f"pixwin_{sv1}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
         for row, col_dict in pseudo2datavec.items():
-            for col, arr in col_dict:
+            for col in col_dict:
                 pseudo2datavec[row][col] /= pixwins[sv1][:, None] # apply on the left
     if d[f"pixwin_{sv2}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
         for row, col_dict in pseudo2datavec.items():
@@ -130,7 +130,8 @@ for task in subtasks:
     
     plt.figure(figsize=(10, 8))
     pseudo2datavec = so_mcm.sparse_dict_mat2dense_array(pseudo2datavec, np.float32)
-    plt.imshow(np.log(np.abs(pseudo2datavec)), aspect=100)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        plt.imshow(np.log(pseudo2datavec), aspect=100)
     plt.xticks([pseudo2datavec.shape[1] * (2 * i + 1) / 18 for i in range(9)], spectra)
     plt.yticks([pseudo2datavec.shape[0] * (2 * i + 1) / 18 for i in range(9)], spectra)
     plt.colorbar()

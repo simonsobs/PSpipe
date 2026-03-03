@@ -23,7 +23,7 @@ from os.path import join as opj
 import numpy as np
 import healpy as hp
 
-from pixell import enmap
+from pixell import enmap, enplot
 from pspipe_utils import kspace, log, pspipe_list, dict_utils, misc
 from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 
@@ -97,6 +97,7 @@ binning_file = d["binning_file"]
 binned_mcm = d["binned_mcm"]
 mcm_dir = d['mcm_dir']
 bestfit_dir = d["best_fits_dir"]
+plot_maps = False if "plot_maps" not in d else d["plot_maps"]
 
 if which == 'sims':
     sim_pixwin_apod_deg = d['sim_pixwin_apod_deg']
@@ -115,6 +116,10 @@ if which == 'data':
     spec_dir = d['spec_dir']
     pspy_utils.create_directory(alms_dir)
     pspy_utils.create_directory(spec_dir)
+    if plot_maps:
+        maps_plot_dir = d["plots_dir"] + "/maps/"
+        pspy_utils.create_directory(maps_plot_dir)
+    
 else:
     spec_dir = d['sim_spec_dir']
     pspy_utils.create_directory(spec_dir)
@@ -361,7 +366,12 @@ for iii in mapset_iterator:
                 if which == 'data':
                     map_fn = d[f"maps_{sv}_{m}"][split_idx]
                     split = so_map.read_map(map_fn, geometry=win_T.data.geometry)
-
+                    if plot_maps:
+                        plot = enplot.get_plots(
+                            split.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
+                        )
+                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}", plot)
+                    
                     if d[f"src_free_maps_{sv}"] == True:
                         ps_map_fn = map_fn.replace("_srcfree.fits", ".fits")
                         if ps_map_fn == map_fn:
@@ -397,21 +407,42 @@ for iii in mapset_iterator:
                 if apply_kspace_filter and (deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR"):
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}")
+                    if plot_maps:
+                        plot = enplot.get_plots(
+                            split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
+                        )
+                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_before_filter", plot)
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
                                               inv_pixwin=inv_pwin,
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
+                    if plot_maps:
+                        plot = enplot.get_plots(
+                            split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
+                        )
+                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_after_filter", plot)
                 elif apply_kspace_filter:
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv}, {m}")
+                    if plot_maps:
+                        plot = enplot.get_plots(
+                            split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
+                        )
+                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_before_filter", plot)
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
                                               inv_pixwin=None,
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
+                    if plot_maps:
+                        if plot_maps:
+                            plot = enplot.get_plots(
+                                split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
+                            )
+                            enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_after_filter", plot)
 
                 elif deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR":
                     if k == 0:

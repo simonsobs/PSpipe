@@ -168,6 +168,7 @@ parser.add_argument("-m", "--mode", type=str, required=True)
 parser.add_argument("--leak-corr", action="store_true", default=False)
 parser.add_argument("--sample_beta", action="store_true", default=False)
 parser.add_argument("--beta_value", type=float, default=2.2)
+parser.add_argument("--no-mc-cov", action="store_true", default=False) 
 args, dict_file = parser.parse_known_args()
 
 mode = args.mode
@@ -180,13 +181,20 @@ binning_file = d["binning_file"]
 do_bandpass_integration = d["do_bandpass_integration"]
 Rminus1_stop = 0.05
 Rminus1_cl_stop = 0.1
-mc_cov = True
+if not args.no_mc_cov:
+    mc_cov = True
+else:
+    mc_cov = False
 
 result_dir = d["chain_dir"] + f"/dust_from_planck353_{mode}" 
 plot_dir = d["plots_dir"] + f"/dust_from_planck353_{mode}" 
 if args.leak_corr:
     result_dir += "_leak_corr"
     plot_dir += "_leak_corr"
+if args.no_mc_cov:
+    result_dir += "_no_mc_cov"
+    plot_dir += "_no_mc_cov"
+
 
 chain_name = f"{result_dir}/dust"
 

@@ -8,14 +8,21 @@ set -e  # Exit on error
 # --- Configuration ---
 COMPILE_ARRAY_OPS=${1:-false} # Default to False unless "true" is passed as the first arg
 PYTHON_VERSION="3.12"
-BASE_DIR=$(pwd)
+BASE_DIR=$(realpath ..)
 REPO_DIR="$BASE_DIR/repos"
 INSTALL_DIR="$BASE_DIR/install"
+
+# 0. Get auxiliary files
+cd "$INSTALL_DIR"
+curl -s https://api.github.com/repos/simonsobs/PSpipe/contents/project/SO/pISO/install?ref=zach_piso | \
+grep "download_url" | \
+grep -v "install.sh" | \
+cut -d '"' -f 4 | \
+xargs -n 1 wget
 
 echo "Checking out branches and prepping repositories..."
 
 # 1. Clone local requirements
-cd "$INSTALL_DIR"
 bash clone_local_requirements.sh
 
 # 2. Organize enlib and switch branches

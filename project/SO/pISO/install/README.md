@@ -26,5 +26,8 @@ can change where your project will live (it doesn't have to be in `~/projects`)
 and what it's called (it doesn't have to be `PSpipe_dev`), but for now we just
 use this as an example.
 
-### first do
-this
+### prepare install
+Download these files into `~/projects/PSpipe_dev/install`:
+```
+mkdir -p ~/projects/PSpipe_dev/install
+cd ~/projects/PSpipe_dev/install

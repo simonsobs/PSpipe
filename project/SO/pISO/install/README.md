@@ -26,8 +26,18 @@ can change where your project will live (it doesn't have to be in `~/projects`)
 and what it's called (it doesn't have to be `PSpipe_dev`), but for now we just
 use this as an example.
 
+### prepare module
+Before making the project venv, we need a module file. This will help set 
+compilers and environment variables needed for installation and some runtime 
+behavior of packages in the environment.
+
 ### prepare install
-Download these files into `~/projects/PSpipe_dev/install`:
+Activate the module:
+
+
+Download `install.sh` into your project's `install` directory:
 ```
 mkdir -p ~/projects/PSpipe_dev/install
 cd ~/projects/PSpipe_dev/install
+wget https://raw.githubusercontent.com/simonsobs/PSpipe/zach_piso/project/SO/pISO/install/install.sh
+```

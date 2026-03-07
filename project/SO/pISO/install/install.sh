@@ -12,7 +12,7 @@ BASE_DIR=$(realpath ..)
 REPO_DIR="$BASE_DIR/repos"
 INSTALL_DIR="$BASE_DIR/install"
 
-# 0. Get auxiliary files
+# 1. Get auxiliary files
 cd "$INSTALL_DIR"
 curl -s https://api.github.com/repos/simonsobs/PSpipe/contents/project/SO/pISO/install?ref=zach_piso | \
 grep "download_url" | \
@@ -20,12 +20,20 @@ grep -v "install.sh" | \
 cut -d '"' -f 4 | \
 xargs -n 1 wget
 
+# 2. Create and activate Module
+echo "Creating and loading tiger3/250723 Module"
+
+mv tiger_module_250723 ~/Modules/modulefiles/tiger3/250723
+sed -i "18s|_ENLIB_PATH|$REPO_DIR/_enlib|" ~/Modules/modulefiles/tiger3/250723
+module purge
+module load tiger3/250723
+
+# 3. Clone local requirements
 echo "Checking out branches and prepping repositories..."
 
-# 1. Clone local requirements
 bash clone_local_requirements.sh
 
-# 2. Organize enlib and switch branches
+# 4. Organize enlib and switch branches
 cd "$REPO_DIR"
 mkdir -p _enlib
 if [ -d "enlib" ]; then
@@ -45,12 +53,12 @@ for repo in "${!branches[@]}"; do
     git checkout "${branches[$repo]}"
 done
 
-# 3. Virtual Environment Setup
+# 5. Virtual Environment Setup
 cd "$BASE_DIR"
 uv venv --python "$PYTHON_VERSION"
 ln -sf .venv/bin/activate activate
 
-# 4. Installation Phase
+# 6. Installation Phase
 echo "Starting installation..."
 
 # NumPy 1.x is required for ducc/pixell compatibility here
@@ -63,7 +71,7 @@ uv pip install ../repos/ducc --no-binary ducc0 --no-cache-dir
 # Bulk install from requirements.in
 uv pip install -r requirements.in 
 
-# 5. Specialized Package Builds
+# 7. Specialized Package Builds
 uv pip install ../repos/optweight --no-build-isolation
 
 # Dynamic Compilation: enlib array_ops
@@ -82,13 +90,13 @@ fi
 # Build pspy
 uv pip install ../repos/pspy --no-build-isolation
 
-# 6. Editable Installs
+# 8. Editable Installs
 echo "Installing local packages in editable mode..."
 uv pip install -e ../repos/sofind
 uv pip install -e ../repos/mnms
 uv pip install -e ../repos/pspipe_utils
 
-# 7. Final Cleanup
+# 9. Final Cleanup
 cd "$BASE_DIR"
 mkdir -p slurm_output
 

@@ -5,12 +5,21 @@
 
 set -e  # Exit on error
 
-# --- Configuration ---
-COMPILE_ARRAY_OPS=${1:-false} # Default to False unless "true" is passed as the first arg
+# --- 1. Argument Handling ---
+# Check if at least one argument (the enlib flag) is provided
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 [true/false: compile array_ops] [optional: email address]"
+    exit 1
+fi
+
+COMPILE_ARRAY_OPS=$1        # Required: must be true or false
+USER_EMAIL=$2               # Optional: email address
 PYTHON_VERSION="3.12"
 BASE_DIR=$(realpath ..)
 REPO_DIR="$BASE_DIR/repos"
 INSTALL_DIR="$BASE_DIR/install"
+
+echo "Running setup in: $BASE_DIR"
 
 # 1. Get auxiliary files
 cd "$INSTALL_DIR"
@@ -23,16 +32,10 @@ xargs -n 1 wget
 # 2. Create and activate Module
 echo "Creating and loading tiger3/250723 Module"
 
-# Initialize the module command (This mimics what /etc/bashrc does)
-if [ -f /usr/share/Modules/init/bash ]; then
-    source /usr/share/Modules/init/bash
-elif [ -f /etc/profile.d/modules.sh ]; then
-    source /etc/profile.d/modules.sh
-fi
-
-mv tiger_module_250723 ~/Modules/modulefiles/tiger3/250723
-sed -i "18s|_ENLIB_PATH|$REPO_DIR/_enlib|" ~/Modules/modulefiles/tiger3/250723
-module purge
+# from talking with Gemini, it's important to not "module purge" here or else
+# the script will hang
+cp tiger_module_250723 ~/Modules/modulefiles/tiger3/250723
+sed -i "s|_ENLIB_PATH|$REPO_DIR/_enlib|g" ~/Modules/modulefiles/tiger3/250723
 module load tiger3/250723
 
 # VERIFICATION: Check if the module actually loaded
@@ -109,7 +112,29 @@ uv pip install -e ../repos/sofind
 uv pip install -e ../repos/mnms
 uv pip install -e ../repos/pspipe_utils
 
-# 9. Final Cleanup
+# 9. Modify Slurm Template
+echo "Configuring Slurm template at $REPO_DIR/PSpipe/project/SO/pISO/slurm/tiger.slurm"
+SLURM_FILE="$REPO_DIR/PSpipe/project/SO/pISO/slurm/tiger.slurm"
+
+# A. Expand $BASE_DIR on the output line
+# We look for the literal string '$BASE_DIR' and replace it with the actual path
+sed -i "s|BASE_DIR|$BASE_DIR|g" "$SLURM_FILE"
+
+# B. Handle Email logic
+if [ -n "$USER_EMAIL" ]; then
+    echo "Adding email notifications for: $USER_EMAIL"
+    
+    # We create a block of text to insert
+    EMAIL_BLOCK="#SBATCH --mail-type=begin        # send email when job begins\n#SBATCH --mail-type=end          # send email when job ends\n#SBATCH --mail-user=$USER_EMAIL"
+    
+    # Insert the block after the account line
+    # 'a' command in sed appends text after the match
+    sed -i "/#SBATCH --account=simonsobs/a $EMAIL_BLOCK" "$SLURM_FILE"
+fi
+
+[ -n "$USER_EMAIL" ] && echo "Slurm notifications set to: $USER_EMAIL"
+
+# 10. Final Cleanup
 cd "$BASE_DIR"
 mkdir -p slurm_output
 

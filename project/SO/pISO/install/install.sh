@@ -23,10 +23,23 @@ xargs -n 1 wget
 # 2. Create and activate Module
 echo "Creating and loading tiger3/250723 Module"
 
+# Initialize the module command (This mimics what /etc/bashrc does)
+if [ -f /usr/share/Modules/init/bash ]; then
+    source /usr/share/Modules/init/bash
+elif [ -f /etc/profile.d/modules.sh ]; then
+    source /etc/profile.d/modules.sh
+fi
+
 mv tiger_module_250723 ~/Modules/modulefiles/tiger3/250723
 sed -i "18s|_ENLIB_PATH|$REPO_DIR/_enlib|" ~/Modules/modulefiles/tiger3/250723
 module purge
 module load tiger3/250723
+
+# VERIFICATION: Check if the module actually loaded
+if ! module list 2>&1 | grep -q "tiger3/250723"; then
+    echo "Error: Failed to load tiger3/250723 module."
+    exit 1
+fi
 
 # 3. Clone local requirements
 echo "Checking out branches and prepping repositories..."

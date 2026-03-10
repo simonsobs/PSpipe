@@ -88,9 +88,9 @@ for task in subtasks:
         extra_mask = 1
         for extra_mask_fn in d[f"extra_masks_{winname}"]:
             _extra_mask = enmap.read_map(extra_mask_fn, geometry=template_geom)
-            log.info(f"[{task}] extra mask {extra_mask_fn} solid angle: {sa(_extra_mask)}")
+            log.info(f"[{task}] extra mask {extra_mask_fn} solid angle: {sa(_extra_mask):.3f}")
             extra_mask *= _extra_mask
-        log.info(f"[{task}] joint extra mask solid angle: {sa(extra_mask)}")
+        log.info(f"[{task}] joint extra mask solid angle: {sa(extra_mask):.3f}")
         my_masks["baseline"].data[:] *= extra_mask
 
     # compute the distance to the nearest 0
@@ -173,14 +173,13 @@ for task in subtasks:
         if mask_type == "baseline":
             Omega = so_window.get_survey_solid_angle(my_masks[mask_type])
             Omega_srad = Omega / (4 * np.pi) * 41253
-            log.info(f"[{task}] {winname} baseline mask solid angle: {Omega_srad}")
+            log.info(f"[{task}] {winname} baseline mask solid angle: {Omega_srad:.3f}")
 
         my_masks[mask_type].write_map(f"{window_dir}/window_{winname}_{mask_type}.fits")
 
     # Plot baseline and kspace windows
     for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
-        print(f"{plot_dir}/window_{winname}_{mask_type}")
         mask.downgrade(4).plot(file_name=f"{plot_dir}/window_{winname}_{mask_type}")
 
 # for plotting maps

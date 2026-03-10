@@ -334,7 +334,7 @@ for iii in mapset_iterator:
 
     for sv, m in zip(sv_iterator, map_iterator, strict=True):
 
-        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Computing alm for survey '{sv}' and map '{m}'")
+        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Computing alm for {sv}, {m}")
         t0 = time.time()
 
         win_T = so_map.read_map(d[f"window_T_{sv}_{m}"])
@@ -368,7 +368,7 @@ for iii in mapset_iterator:
                     split = so_map.read_map(map_fn, geometry=win_T.data.geometry)
                     if plot_maps:
                         plot = enplot.get_plots(
-                            split.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
+                            split.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
                         )
                         enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}", plot)
                     
@@ -409,7 +409,7 @@ for iii in mapset_iterator:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}")
                     if plot_maps:
                         plot = enplot.get_plots(
-                            split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
+                            split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
                         )
                         enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_before_filter", plot)
                     split = kspace.filter_map(split,
@@ -420,7 +420,7 @@ for iii in mapset_iterator:
                                               use_ducc_rfft=True)
                     if plot_maps:
                         plot = enplot.get_plots(
-                            split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
+                            split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
                         )
                         enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_after_filter", plot)
                 elif apply_kspace_filter:
@@ -428,7 +428,7 @@ for iii in mapset_iterator:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv}, {m}")
                     if plot_maps:
                         plot = enplot.get_plots(
-                            split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
+                            split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
                         )
                         enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_before_filter", plot)
                     split = kspace.filter_map(split,
@@ -492,7 +492,7 @@ for iii in mapset_iterator:
         window_tuple = None
         win_kspace = None
 
-        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Survey '{sv}' and map '{m}' alm execution time: {(time.time() - t0):.3f} seconds")
+        log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] {sv}, {m} alm execution time: {(time.time() - t0):.3f} seconds")
 
     # compute the power spectra
     
@@ -629,7 +629,7 @@ for iii in mapset_iterator:
 
     master_alms = None
 
-    log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Spectra computation time: {time.time() - t0} seconds")
+    log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Spectra computation time: {(time.time() - t0):.3f} seconds")
 
     if which == 'data':
         spec_name_all = f"{type}_all_sn_cross_data"

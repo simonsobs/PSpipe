@@ -39,9 +39,12 @@ except:
 with open(yaml_path, "r") as f:
     plot_info: dict = yaml.safe_load(f)['fit_noises.py']
 
-spectra_cross_template = spectra_path + "/Dl_{}x{}_cross.dat"
-spectra_auto_template = spectra_path + "/Dl_{}x{}_auto.dat"
-spectra_noise_template = spectra_path + "/Dl_{}x{}_noise.dat"
+
+calib_suffix = '_calib' if plot_info['use_cal'] else ''
+
+spectra_cross_template = spectra_path + "/Dl_{}x{}_cross"+f"{calib_suffix}.dat"
+spectra_auto_template = spectra_path + "/Dl_{}x{}_auto"+f"{calib_suffix}.dat"
+spectra_noise_template = spectra_path + "/Dl_{}x{}_noise"+f"{calib_suffix}.dat"
 
 surveys_arrays = [f"{survey}_{ar}" for survey in d['surveys'] for ar in d[f'arrays_{survey}']]
 
@@ -122,14 +125,14 @@ def fit_nls(lb, Clb, spec, LMIN, LMAX):
         "rms": {
             "prior": {
                 "min": 2.0,
-                "max": 100.0,
+                "max": 400.0,
             },
             "ref": 20.0,
             "proposal": 2.0,
         },
         "l_knee": {
             "prior": {
-                "min": LMIN,
+                "min": 200,
                 "max": 5000,
             },
             "ref": 800.0,
@@ -163,7 +166,7 @@ def fit_nls(lb, Clb, spec, LMIN, LMAX):
 
 
 fit = True
-LMIN = plot_info['lmin_fit']
+LMIN_dict = plot_info['lmin_fit']
 LMAX = plot_info['lmax_fit']
 if fit:
     log.info("FITS FOR RMS L_KNEE AND ALPHA")
@@ -176,7 +179,7 @@ if fit:
                 ls,
                 Dls_noise[f"{sv_ar2}x{sv_ar2}"][f] / fac * beams[sv_ar2] ** 2,
                 spec=f,
-                LMIN=LMIN,
+                LMIN=LMIN_dict[f],
                 LMAX=LMAX,
             )
     file = open(save_path_noises + "noise_best_fit.yaml", "w")
@@ -218,7 +221,7 @@ for i, sv_ar2 in enumerate(surveys_arrays):
             label=fr'{f} best-fit $rms=${rms:.1f}arcmin.$\mu$K, $\ell_{{knee}}=${l_knee:.0f}, $\alpha=${alpha:.2f}',
         )
 
-    ax.fill_betweenx([0, 1e3], 0, LMIN, color='grey', alpha=0.4, zorder=-10)
+        ax.fill_betweenx([0, 1e3], 0, LMIN_dict[f], color='grey', alpha=0.15, zorder=-10)
     ax.fill_betweenx([0, 1e3],LMAX, 10000, color='grey', alpha=0.4, zorder=-10)
     ax.set_xlabel(r"$\ell$", fontsize=18)
     ax.set_ylabel(rf"$N^{{{f}}}_\ell$", fontsize=18)

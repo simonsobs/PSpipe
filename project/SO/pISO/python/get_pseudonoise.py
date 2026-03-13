@@ -171,6 +171,7 @@ for task in subtasks:
         spec_name1 = f"{sv}_{m1}x{sv}_{m1}" # auto for m1
         spec_name2 = f"{sv}_{m2}x{sv}_{m2}" # auto for m2
     
+    nsplits = d[f"n_splits_{sv}"]
     for k in range(nsplits):
         _, inp_noise_model = so_spectra.read_ps_matrix(opj(noise_dir, f'raw_pseudo_noise_{spec_name}_set{k}.dat'),
                                                        spectra=spectra,

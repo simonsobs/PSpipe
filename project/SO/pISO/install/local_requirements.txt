@@ -1,0 +1,8 @@
+AdriJD/optweight
+amaurea/enlib
+mreineck/ducc
+simonsobs/mnms
+simonsobs/PSpipe
+simonsobs/pspipe_utils
+simonsobs/pspy
+simonsobs/sofind

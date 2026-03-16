@@ -1,0 +1,28 @@
+#%Module
+
+# Built on 2025/07/23 for tiger3
+
+# pre-shipped git=2.47.1
+# pre-shipped cmake=3.26.5
+# pre-shipped gcc=11.5.0 20240719 (Red Hat 11.5.0-5)
+
+module purge
+module load intel/2024.2
+module load intel-mkl/2024.2
+module load openmpi/gcc/4.1.8
+
+# enlib lives inside _enlib, enlib is both a package and a module, and also 
+# needs to be "installed" by adding to the PYTHONPATH. this is a silly hack on-
+# disk to make the enlib module look like it exists in the "_enlib" package, 
+# which is what we add to the PYTHONPATH
+append-path             PYTHONPATH      _ENLIB_PATH
+
+# for compiling enlib on tiger. NOTE: the install.sh script overwrites some 
+# default compilers here to make it work
+setenv                  ENLIB_COMP      tiger
+
+# to avoid pixell mpi interfering with our own mpi
+setenv                  DISABLE_MPI     1
+
+# to find products in sofind
+setenv                  SOFIND_SYSTEM   tiger

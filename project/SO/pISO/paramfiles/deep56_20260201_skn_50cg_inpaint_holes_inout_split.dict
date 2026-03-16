@@ -1,4 +1,4 @@
-run_name = 'dr6xdeep56_20260201_skn_50cg_inpaint_holes'
+run_name = 'deep56_20260201_skn_50cg_inpaint_holes_inout_split'
 data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/'
 yaml_dir = '/home/zatkins/projects/PSpipe_dev/repos/PSpipe/project/SO/pISO/python/yaml/'
 

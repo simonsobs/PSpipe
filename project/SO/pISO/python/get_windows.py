@@ -140,7 +140,7 @@ for task in subtasks:
             baseline_mask = so_window.create_apodization(
                 baseline_mask, "C1", baseline_apod, use_rmax=True
             )
-        my_masks["baseline"].data[:] *= baseline_mask.data
+            my_masks["baseline"].data[:] *= baseline_mask.data
 
     my_masks["baseline"].data = my_masks["baseline"].data.astype(np.float32, copy=False)
     my_masks["baseline"].write_map(f"{window_dir}/window_{winname}_{"baseline"}.fits")

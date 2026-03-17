@@ -139,7 +139,8 @@ for task in subtasks:
     
     plt.figure(figsize=(10, 8))
     pseudo2datavec = so_mcm.sparse_dict_mat2dense_array(pseudo2datavec, np.float32)
-    plt.imshow(np.log(np.abs(pseudo2datavec)), aspect=100)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        plt.imshow(np.log(pseudo2datavec), aspect=100)
     plt.xticks([pseudo2datavec.shape[1] * (2 * i + 1) / 18 for i in range(9)], spectra)
     plt.yticks([pseudo2datavec.shape[0] * (2 * i + 1) / 18 for i in range(9)], spectra)
     plt.colorbar()

@@ -381,8 +381,12 @@ for iii in mapset_iterator:
                         
                         # TODO: would be cleaner if could just make ps_map with
                         # cutoff instead of relying on the mask
-                        ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{m}"], geometry=win_T.data.geometry)
-                        ps_map.data *= ps_mask.data
+                        winname = dict_utils.get_winname_from_map(d, f'{sv}_{m}', 'T')
+                        if winname != dict_utils.get_winname_from_map(d, f'{sv}_{m}', 'pol'):
+                            raise NotImplementedError('Cannot currently mask srcs if T mask != pol mask')
+
+                        for maskfn in d[f'baseline_masks_{winname}']: # TODO: could also preserve specificity of ps_mask but this is all excluded from window anyway
+                            ps_map.data *= enmap.read_map(maskfn, geometry=win_T.data.geometry).astype(bool, copy=False) # cast to bool
                         split.data += ps_map.data
 
                         # TODO: why not kspace filter with *all* srcs subtracted

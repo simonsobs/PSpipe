@@ -117,24 +117,25 @@ else:
     bls = []
     for task in subtasks:
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
+        mapnames = ((sv1, m1), (sv2, m2))
+        pols = ('T', 'pol')
 
-        # for now, save some i/o and map2alm for likely case that pol is T
-        win1_T = so_map.read_map(d[f"window_T_{sv1}_{m1}"])
-        if d[f'window_pol_{sv1}_{m1}'] != d[f'window_T_{sv1}_{m1}']:
-            win1_pol = so_map.read_map(d[f'window_pol_{sv1}_{m1}'])
-        else:
-            win1_pol = win1_T
-
-        win2_T = so_map.read_map(d[f"window_T_{sv2}_{m2}"])
-        if d[f'window_pol_{sv2}_{m2}'] != d[f'window_T_{sv2}_{m2}']:
-            win2_pol = so_map.read_map(d[f'window_pol_{sv2}_{m2}'])
-        else:
-            win2_pol = win2_T
         log.info(f"[Rank {so_mpi.rank}, {task:02d}]: Preparing data for {sv1}_{m1} x {sv2}_{m2}")
+
+        # only calculate the stuff we need to avoid numerical differences
+        m2win_fn = {}
+        for (sv, m) in mapnames:
+            for pol in pols:
+                m2win_fn[sv, m, pol] = d[f"window_{pol}_{sv}_{m}"] # no repeated keys
+
+        win_fn2win = {}
+        for win_fn in m2win_fn.values():
+            if win_fn not in win_fn2win:
+                win_fn2win[win_fn] = so_map.read_map(win_fn) # no repeated computation (or keys)
 
         # TODO: make DRY code with so_mcm for preparing inputs
         lmax_limit = np.inf
-        for win in (win1_T, win1_pol, win2_T, win2_pol):
+        for win in win_fn2win.values():
             _lmax_limit = win.get_lmax_limit() * 2 # this is OK
             if _lmax_limit < lmax_limit:
                 lmax_limit = _lmax_limit
@@ -142,31 +143,35 @@ else:
             raise ValueError("the requested lmax is too high with respect to the map pixellisation")
         maxl = np.minimum(2*lmax, lmax_limit).astype(int)
 
-        win1_alm_T = sph_tools.map2alm(win1_T, niter=niter, lmax=maxl, dtype=np.complex128)
-        if win1_pol is not win1_T: # tests object equivalence
-            win1_alm_P = sph_tools.map2alm(win1_pol, niter=niter, lmax=maxl, dtype=np.complex128)
-        else:
-            win1_alm_P = win1_alm_T
-        win1 = (win1_alm_T, win1_alm_P)
+        win_fn2walm = {}
+        for win_fn, win in win_fn2win.items():
+            if win_fn not in win_fn2walm:
+                win_fn2walm[win_fn] = sph_tools.map2alm(win, niter=niter, lmax=maxl, dtype=np.complex128) # no repeated computation (or keys)
 
-        win2_alm_T = sph_tools.map2alm(win2_T, niter=niter, lmax=maxl, dtype=np.complex128)
-        if win2_pol is not win2_T: # tests object equivalence
-            win2_alm_P = sph_tools.map2alm(win2_pol, niter=niter, lmax=maxl, dtype=np.complex128)
-        else:
-            win2_alm_P = win2_alm_T
-        win2 = (win2_alm_T, win2_alm_P)
+        can_win_fn_2pt2cl = {}
+        for win_fn1, walm1 in win_fn2walm.items():
+            for win_fn2, walm2 in win_fn2walm.items():
+                can_win_fn_2pt = pspipe_list.canonize_connected_2pt(win_fn1, win_fn2)
+                if can_win_fn_2pt not in can_win_fn_2pt2cl:
+                    can_win_fn_2pt2cl[can_win_fn_2pt] = curvedsky.alm2cl(walm1, walm2, dtype=np.float64) # no repeated computation (or keys)
 
+        # beams have no numerical differences due to multithreading
         _, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
         _, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
         
         bl1 = (bl1["T"], bl1["E"])
         bl2 = (bl2["T"], bl2["E"])
 
+        # tabulate inputs for ducc, avoid numerical differences in specs_for_ducc
         spec_for_ducc = []
         bl = []
         for i in range(2):
             for j in range(2):
-                spec_for_ducc.append(curvedsky.alm2cl(win1[i], win2[j]))
+                (svi, mi), (svj, mj) = mapnames[i], mapnames[j]
+                poli, polj = pols[i], pols[j]
+                win_fni, win_fnj = m2win_fn[svi, mi, poli], m2win_fn[svj, mj, polj]
+                can_win_fn_2pt_ij = pspipe_list.canonize_connected_2pt(win_fni, win_fnj)
+                spec_for_ducc.append(can_win_fn_2pt2cl[can_win_fn_2pt])
                 bl.append(bl1[i][2:lmax] * bl2[j][2:lmax]) # TODO: reconsider pspipe conventions
         specs_for_ducc.append(spec_for_ducc)
         bls.append(bl)
@@ -177,7 +182,7 @@ else:
     bls = np.repeat(bls, (1, 1, 1, 2), axis=1) # (nspec, 4, nl) -> (nspec, 5, nl)
     bls = bls[..., None, :] # (nspec, 5, nl) -> (nspec, 5, 1, nl)
 
-    mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, len(subtasks)*[0, 1, 2, 4],
+    mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, len(subtasks)*[0, 1, 1, 4], # 00, 02, 02, ++, --
                                  dtype=np.float64, coupling=False,
                                  pspy_index_convention=True)
     mcms = mcms.reshape(len(subtasks), 5, lmax-2, lmax-2) # (nspec*5, nl, nl) -> (nspec, 5, nl, nl)

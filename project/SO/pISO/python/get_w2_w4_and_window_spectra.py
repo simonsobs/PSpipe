@@ -117,28 +117,28 @@ def load_effective_windows(signal_windows_to_load, noise_windows_to_load,
                 signal_window = enmap.read_map(signal_window_path)
                 effective_window_dict[window_set] = signal_window
 
+                # also load the pixsizemap and sqrt_pixsizemaps (we do it on-the-fly
+                # rather than pre-computing the unique set because there should be 
+                # very few of these)
+                pixsizemap_key = (signal_window.shape, wcsutils.describe(signal_window.wcs))
+                if pixsizemap_key not in pixsizemap_dict:
+                    pixsizemap = signal_window.pixsizemap()
+                    
+                    pixsizemap_dict[pixsizemap_key] = {}
+                    pixsizemap_dict[pixsizemap_key][1] = pixsizemap
+                    pixsizemap_dict[pixsizemap_key][0.5] = pixsizemap ** 0.5
+
             elif len(window_set) == 2: # noise_window 
-                # we did signal first, so this should never have KeyError   
+                # we did signal first, so this should never have KeyErrors  
                 signal_window = effective_window_dict[(signal_window_path,)]
+                pixsizemap_key = (signal_window.shape, wcsutils.describe(signal_window.wcs))
+                sqrt_pixsizemap = pixsizemap_dict[pixsizemap_key][0.5]
 
                 # unless doing isotropy test, an ivar will never be loaded again 
                 # (e.g., with a different signal window) after being stored in an
                 # effective window
                 ivar_window_path = window_set[1]
                 ivar_window = enmap.read_map(ivar_window_path)
-                
-                # also load the pixsizemap and sqrt_pixsizemaps (we do it on-the-fly
-                # rather than pre-computing the unique set because there should be 
-                # very few of these)
-                pixsizemap_key = (ivar_window.shape, wcsutils.describe(ivar_window.wcs))
-                if pixsizemap_key not in pixsizemap_dict:
-                    pixsizemap = ivar_window.pixsizemap()
-                    
-                    pixsizemap_dict[pixsizemap_key] = {}
-                    pixsizemap_dict[pixsizemap_key][1] = pixsizemap
-                    pixsizemap_dict[pixsizemap_key][0.5] = pixsizemap ** 0.5
-
-                sqrt_pixsizemap = pixsizemap_dict[pixsizemap_key][0.5]
 
                 noise_window = prep_noise_window(signal_window, ivar_window, sqrt_pixsizemap)
                 effective_window_dict[window_set] = enmap.samewcs(noise_window, ivar_window)

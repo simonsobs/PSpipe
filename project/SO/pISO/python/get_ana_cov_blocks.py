@@ -39,6 +39,9 @@ else:
     l_exact = -1
     l_toeplitz = -1
     dl_band = -1
+cov_prebin_size = d['cov_prebin_size']
+if cov_prebin_size < 1:
+    cov_prebin_size = 1
 
 apply_kspace_filter = d['apply_kspace_filter']
 binning_file = d["binning_file"]
@@ -104,22 +107,25 @@ def update_pseudospectra_dict(f1, f2, pseudospectra_dict=None):
     for split, dir, fn_template in zip(split_iterator, dir_iterator, fn_template_iterator):
         try:
             spec_name = f"{sv1}_{m1}x{sv2}_{m2}" 
-            _, ps_dict = so_spectra.read_ps(opj(dir, fn_template.format(spec_name=spec_name)),
+            l, ps_dict = so_spectra.read_ps(opj(dir, fn_template.format(spec_name=spec_name)),
                                             spectra, return_type='Cl',
                                             return_dtype=npy.float32)
         except FileNotFoundError:
             spec_name = f"{sv2}_{m2}x{sv1}_{m1}" # E T
-            _, ps_dict = so_spectra.read_ps(opj(dir, fn_template.format(spec_name=spec_name)),
+            l, ps_dict = so_spectra.read_ps(opj(dir, fn_template.format(spec_name=spec_name)),
                                             spectra, return_type='Cl',
                                             return_dtype=npy.float32)
             ps_dict = {spec[::-1]: val for spec, val in ps_dict.items()} # TE -> ET
         
+        assert l[0] == 2, f'Bestfit spectra assumed to start at l=2, got l={l[0]}'
         for (TEB1, TEB2), val in ps_dict.items():
             sna1 = sv1, m1, TEB1, split
             sna2 = sv2, m2, TEB2, split 
             can_sn_alm_info = pspipe_list.canonize_connected_2pt(sna1, sna2)
             
             if can_sn_alm_info not in pseudospectra_dict:
+                if cov_prebin_size > 1:
+                    val = so_mcm.parallel_bin(val, cov_prebin_size, op='mean')
                 pseudospectra_dict[can_sn_alm_info] = val
         
     return pseudospectra_dict
@@ -181,7 +187,8 @@ for task in subtasks:
 
     coups = so_mcm.ducc_couplings(specs_for_ducc, lmax, optypes_for_ducc, dtype=npy.float32,
                                   l_exact=l_exact, l_toeplitz=l_toeplitz, dl_band=dl_band,
-                                  log=log, coupling=True, pspy_index_convention=True)
+                                  log=log, coupling=True, pspy_index_convention=True,
+                                  bin_size=cov_prebin_size)
 
     optype_counts = {}
     for optype in optypes_for_ducc:
@@ -226,13 +233,18 @@ for task in subtasks:
         update_pseudospectra_dict((svi, mi, ni), (svq, mq, nq), pseudospectra_dict=pseudospectra_dict)
         update_pseudospectra_dict((svj, mj, nj), (svp, mp, np), pseudospectra_dict=pseudospectra_dict)
                 
-        pseudo_cov = npy.zeros((len(spectra) * (lmax - 2), len(spectra) * (lmax - 2)), dtype=npy.float32)
-        pseudo_cov_block = npy.zeros((lmax - 2, lmax - 2), dtype=npy.float32)
+        pseudo_cov = npy.zeros((len(spectra) * (lmax - 2) // cov_prebin_size,
+                                len(spectra) * (lmax - 2) // cov_prebin_size),
+                                dtype=npy.float32)
+        pseudo_cov_block = npy.zeros(((lmax - 2) // cov_prebin_size,
+                                      (lmax - 2) // cov_prebin_size),
+                                      dtype=npy.float32)
         TEB_block2can_sn_alm_info2nterms = cov_block2TEB_block2can_sn_alm_info2nterms[cov_block]
         total_nterms = 0
         for ridx, (TEBi, TEBj) in enumerate(spectra):
             for cidx, (TEBp, TEBq) in enumerate(spectra):
-                pseudo_cov_block_sel = npy.s_[ridx*(lmax - 2):(ridx+1)*(lmax - 2), cidx*(lmax - 2):(cidx+1)*(lmax - 2)]
+                pseudo_cov_block_sel = npy.s_[ridx*(lmax - 2) // cov_prebin_size:(ridx+1)*(lmax - 2) // cov_prebin_size,
+                                              cidx*(lmax - 2) // cov_prebin_size:(cidx+1)*(lmax - 2) // cov_prebin_size]
 
                 can_sn_alm_info2nterms = TEB_block2can_sn_alm_info2nterms[TEBi, TEBj, TEBp, TEBq]
                 total_nterms += len(can_sn_alm_info2nterms)
@@ -319,10 +331,16 @@ for task in subtasks:
         spec_name_ij = f"{svi}_{mi}x{svj}_{mj}"
         pseudo2datavec_ij = npy.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name_ij}.npy'), allow_pickle=True).item()
         pseudo2datavec_ij = so_mcm.sparse_dict_mat_astype(pseudo2datavec_ij, npy.float32)
+        if cov_prebin_size > 1:
+            # bin along rows
+            pseudo2datavec_ij = so_mcm.sparse_dict_mat_bin(pseudo2datavec_ij, (1, cov_prebin_size), op='sum')
 
         spec_name_pq = f"{svp}_{mp}x{svq}_{mq}"
         pseudo2datavec_pq_T = npy.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name_pq}.npy'), allow_pickle=True).item()
         pseudo2datavec_pq_T = so_mcm.sparse_dict_mat_astype(pseudo2datavec_pq_T, npy.float32)
+        if cov_prebin_size > 1:
+            # bin along rows
+            pseudo2datavec_pq_T = so_mcm.sparse_dict_mat_bin(pseudo2datavec_pq_T, (1, cov_prebin_size), op='sum')
         pseudo2datavec_pq_T = so_mcm.sparse_dict_mat_transpose(pseudo2datavec_pq_T)
 
         # do sparse math. we want the dense array in the end
@@ -353,11 +371,11 @@ for task in subtasks:
             alphapq = (filter_dicts[svp]['analytic_cov_alpha'] + filter_dicts[svq]['analytic_cov_alpha'])/2 # multiplied exps in geom mean become arith mean
             tfpq = npy.tile(tfpq ** alphapq, len(spectra))
 
-            ana_cov = tfij[:, None] * ana_cov * tfpq # NOTE: assume tf correction is diagonal
+            ana_cov = tfij[:, None] * ana_cov * tfpq # NOTE: assumes tf correction is diagonal
 
         ana_cov = ana_cov.astype(npy.float64, copy=False)
 
-        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Calculated pseudo-to-power-spectrum cov in {(time.time() - t0):.3f} seconds')
+        log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Applied pseudo-to-power-spectrum transformation in {(time.time() - t0):.3f} seconds')
         
         npy.save(opj(cov_dir, f'analytic_cov_{spec_name_ij}_{spec_name_pq}.npy'), ana_cov)
         log.info(f'[Rank {so_mpi.rank}, Task {task}, Block {i}] Calculated ana. cov. for {svi}_{mi}x{svj}_{mj}, {svp}_{mp}x{svq}_{mq} in {(time.time() - t_block):.3f} seconds')

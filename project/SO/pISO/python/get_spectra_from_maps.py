@@ -427,7 +427,7 @@ for iii in mapset_iterator:
                     if snk == 'so_noB':                    
                         split[2] *= 0
                         split_nofilt = np.copy(split)
-                    if 'n' in snk:
+                    if 'n' in snk and not for_kspace:
                         split = data_model.get_noise_sim(f'{sv}_{m}', split_idx, iii)
 
                     # possibly save raw map sim
@@ -534,6 +534,8 @@ for iii in mapset_iterator:
                     master_alms[sv, m, snk, "nofilter"] = sph_tools.get_alms(split_nofilt, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
 
             split = None
+            if for_kspace:
+                split_nofilt = None
 
         win_T = None
         win_pol = None

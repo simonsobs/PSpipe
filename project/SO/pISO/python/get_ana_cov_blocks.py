@@ -233,9 +233,10 @@ for task in subtasks:
         update_pseudospectra_dict((svi, mi, ni), (svq, mq, nq), pseudospectra_dict=pseudospectra_dict)
         update_pseudospectra_dict((svj, mj, nj), (svp, mp, np), pseudospectra_dict=pseudospectra_dict)
                 
-        pseudo_cov = npy.zeros((len(spectra) * (lmax - 2) // cov_prebin_size,
-                                len(spectra) * (lmax - 2) // cov_prebin_size),
+        pseudo_cov = npy.zeros((len(spectra) * ((lmax - 2) // cov_prebin_size),
+                                len(spectra) * ((lmax - 2) // cov_prebin_size)),
                                 dtype=npy.float32)
+        log.info(pseudo_cov.shape)
         pseudo_cov_block = npy.zeros(((lmax - 2) // cov_prebin_size,
                                       (lmax - 2) // cov_prebin_size),
                                       dtype=npy.float32)
@@ -243,8 +244,8 @@ for task in subtasks:
         total_nterms = 0
         for ridx, (TEBi, TEBj) in enumerate(spectra):
             for cidx, (TEBp, TEBq) in enumerate(spectra):
-                pseudo_cov_block_sel = npy.s_[ridx*(lmax - 2) // cov_prebin_size:(ridx+1)*(lmax - 2) // cov_prebin_size,
-                                              cidx*(lmax - 2) // cov_prebin_size:(cidx+1)*(lmax - 2) // cov_prebin_size]
+                pseudo_cov_block_sel = npy.s_[ridx*((lmax - 2) // cov_prebin_size):(ridx+1)*((lmax - 2) // cov_prebin_size),
+                                              cidx*((lmax - 2) // cov_prebin_size):(cidx+1)*((lmax - 2) // cov_prebin_size)]
 
                 can_sn_alm_info2nterms = TEB_block2can_sn_alm_info2nterms[TEBi, TEBj, TEBp, TEBq]
                 total_nterms += len(can_sn_alm_info2nterms)

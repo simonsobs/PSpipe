@@ -24,7 +24,7 @@ import numpy as np
 import healpy as hp
 
 from pixell import enmap, enplot
-from pspipe_utils import kspace, log, pspipe_list, dict_utils, misc
+from pspipe_utils import kspace, log, pspipe_list, dict_utils, misc, io
 from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 
 parser = argparse.ArgumentParser(description=description,
@@ -768,9 +768,20 @@ for iii in mapset_iterator:
             np.save(f"{spec_dir}" + f"{spec_name_all}.npy", ps_dict_all)
 
     else:
-        spec_name_all = f"{type}{tag}_all_sn_cross_{iii:05d}"
+        if not for_kspace:
+            spec_name_all = f"{type}{tag}_all_sn_cross_{iii:05d}"
+            
+            # each process has separate maps in its mapset
+            np.save(f"{spec_dir}" + f"{spec_name_all}.npy", ps_dict_all)
+        else:
+            spec_name_all = f"{type}{tag}_all_s_cross_filter_{iii:05d}"
+            spec_name_all_nofilt = f"{type}{tag}_all_s_cross_nofilter_{iii:05d}"
         
-        # each process has separate maps in its mapset
-        np.save(f"{spec_dir}" + f"{spec_name_all}.npy", ps_dict_all)
-    
+            # each process has separate maps in its mapset
+            io.save_hdf5(f"{spec_dir}" + f"{spec_name_all}.h5", ps_dict_all)
+            io.save_hdf5(f"{spec_dir}" + f"{spec_name_all_nofilt}.h5", ps_dict_all_nofilt)
+
+
     ps_dict_all = None
+    if for_kspace:
+        ps_dict_all_nofilt = None

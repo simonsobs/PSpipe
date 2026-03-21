@@ -54,6 +54,7 @@ use_toeplitz_cov = True
 l_exact = 1000
 l_toeplitz = 3000
 dl_band = 2000
+dl_window_spectra = 3000
 cov_prebin_size = 5
 
 # maps
@@ -96,18 +97,18 @@ pol_eff_dr6_pa5_f150 = 1.0
 pol_eff_dr6_pa6_f090 = 1.0
 pol_eff_dr6_pa6_f150 = 1.0
 
-cal_lat_iso_i1_f090 = 1.
-cal_lat_iso_i1_f150 = 1.
-cal_lat_iso_i3_f090 = 1.
-cal_lat_iso_i3_f150 = 1.
-cal_lat_iso_i4_f090 = 1.
-cal_lat_iso_i4_f150 = 1.
-cal_lat_iso_i6_f090 = 1.
-cal_lat_iso_i6_f150 = 1.
-cal_lat_iso_c1_f220 = 1.
-cal_lat_iso_c1_f280 = 1.
-cal_lat_iso_i5_f220 = 1.
-cal_lat_iso_i5_f280 = 1.
+cal_lat_iso_i1_f090 = 0.7994418419933011
+cal_lat_iso_i1_f150 = 0.8864425622105765
+cal_lat_iso_i3_f090 = 0.8228523446886682
+cal_lat_iso_i3_f150 = 0.8859469925472443
+cal_lat_iso_i4_f090 = 0.8181621398010599
+cal_lat_iso_i4_f150 = 0.9152864258661412
+cal_lat_iso_i6_f090 = 0.8445296797641012
+cal_lat_iso_i6_f150 = 0.8816926295853729
+cal_lat_iso_c1_f220 = 0.9620063998837832
+cal_lat_iso_c1_f280 = 0.9705715801442246
+cal_lat_iso_i5_f220 = 0.9286829707995147
+cal_lat_iso_i5_f280 = 0.8950161172081941
 
 pol_eff_lat_iso_i1_f090 = 1.
 pol_eff_lat_iso_i1_f150 = 1.

@@ -150,7 +150,6 @@ for task in subtasks:
     # Plot baseline and kspace windows
     for mask_type, mask in my_masks.items():
         log.info(f"[{task}] downgrade and plot {mask_type} ")
-        print(f"{plot_dir}/window_{winname}_{mask_type}")
         mask.downgrade(4).plot(file_name=f"{plot_dir}/window_{winname}_{mask_type}")
 
 # for plotting maps

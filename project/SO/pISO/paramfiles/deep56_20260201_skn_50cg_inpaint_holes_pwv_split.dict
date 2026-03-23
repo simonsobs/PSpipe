@@ -55,6 +55,7 @@ use_toeplitz_cov = True
 l_exact = 1000
 l_toeplitz = 3000
 dl_band = 2000
+dl_window_spectra = 3000
 cov_prebin_size = 5
 
 # maps

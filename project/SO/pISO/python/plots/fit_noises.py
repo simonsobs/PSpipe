@@ -6,7 +6,7 @@ from pspy import so_spectra, pspy_utils, so_cov, so_map, so_window, so_dict
 from math import pi
 import numpy as np
 import healpy as hp
-
+import scipy as sp
 # import pylab as plt
 from matplotlib import pyplot as plt
 import os
@@ -133,7 +133,7 @@ def fit_nls(lb, Clb, spec, LMIN, LMAX):
         "l_knee": {
             "prior": {
                 "min": 200,
-                "max": 5000,
+                "max": 6000,
             },
             "ref": 800.0,
             "proposal": 50.0,
@@ -164,6 +164,30 @@ def fit_nls(lb, Clb, spec, LMIN, LMAX):
     }
     return best_fit_dict
 
+def fit_nls_sp(lb, Clb, spec, LMIN, LMAX):
+    l_mask_data = (LMIN <= lb) & (lb < LMAX)
+    Clb = Clb[l_mask_data]
+    
+    def model_wrapper(lb, rms, lknee, alpha):
+        l, nl = compute_Nls(rms, lknee, alpha, binning_file=binning_file, spec=spec)
+        l_mask_model = (LMIN <= l) & (l < LMAX)
+        return nl[l_mask_model]
+    popt, _ = sp.optimize.curve_fit(
+                model_wrapper,
+                lb[l_mask_data], 
+                Clb, 
+                sigma=Clb*(2*lb[l_mask_data] + 1)**0.5, 
+                p0=[60, 2000, -3.5], 
+                bounds=(
+                    [1, 200, -6], 
+                    [600, 7000, 0]
+                    )
+                )
+    best_fit_dict = {
+        param: float(popt[i]) for i, param in enumerate(["rms", "l_knee", "alpha"])
+    }
+    return best_fit_dict
+
 
 fit = True
 LMIN_dict = plot_info['lmin_fit']
@@ -175,7 +199,7 @@ if fit:
         noise_best_fits[f] = {}
         for sv_ar2 in surveys_arrays:
             log.info(f"FITTING {f}_{sv_ar2}")
-            noise_best_fits[f][sv_ar2] = fit_nls(
+            noise_best_fits[f][sv_ar2] = fit_nls_sp(
                 ls,
                 Dls_noise[f"{sv_ar2}x{sv_ar2}"][f] / fac * beams[sv_ar2] ** 2,
                 spec=f,
@@ -216,7 +240,7 @@ for i, sv_ar2 in enumerate(surveys_arrays):
                 binning_file=binning_file,
             ),
             color=f'C{j}',
-            lw=3,
+            lw=1.5,
             zorder=0,
             label=fr'{f} best-fit $rms=${rms:.1f}arcmin.$\mu$K, $\ell_{{knee}}=${l_knee:.0f}, $\alpha=${alpha:.2f}',
         )

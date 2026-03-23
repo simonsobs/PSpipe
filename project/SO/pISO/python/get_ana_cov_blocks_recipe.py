@@ -34,6 +34,20 @@ coupling_cache_size = args.coupling_cache_size
 surveys = d["surveys"]
 cov_correlation_by_noise_model = d['cov_correlation_by_noise_model']
 cov_spin00_coupling_only = d['cov_spin00_coupling_only']
+cov_prebin_size = d['cov_prebin_size']
+if cov_prebin_size < 1:
+    cov_prebin_size = 1
+lmax = d['lmax']
+binning_file = d["binning_file"]
+
+# raise an issue if the remainder elements that dont get binned in the prebinning
+# actually cut into the highest ell bin, thus getting a wrong answer in that bin
+lremain = (lmax - 2) % cov_prebin_size
+_, bin_hi, _, _ = pspy_utils.read_binning_file(binning_file, lmax)
+if bin_hi[-1] >= lmax - lremain:
+    raise ValueError(f'{lmax=}-2 with {cov_prebin_size=} leaves a remainder of {lremain=}. '
+                     f'But, lmax-lremain={lmax - lremain}, which cuts into the highest '
+                     f'lbin with {bin_hi[-1]=}. Please increase lmax.')
 
 cov_dir = d['cov_dir']
 plot_dir = opj(d['plots_dir'], 'covariances')
@@ -314,9 +328,9 @@ if so_mpi.rank == 0:
         num_calculated_couplings_per_set.append(len(can_discon_com_4pts_and_optypes))
 
         # FIXME: get actual lmaxs
-        lmax1, lmax2 = d['lmax'], d['lmax']
-        mem = len(can_discon_com_4pts_and_optypes) * (lmax1+1)*(lmax2+1) * 4
-        mem += 81 * (lmax1+1)*(lmax2+1) * 4
+        lmax1, lmax2 = lmax, lmax
+        mem = len(can_discon_com_4pts_and_optypes) * (lmax1+1)*(lmax2+1) * 4 # TODO: cant divide by prebin here since all the coups get made full-res for now before binning
+        mem += (81 + 1) * (lmax1+1)*(lmax2+1) * 4 / cov_prebin_size**2 # +1 for the intermediate buffer
         mem /= 1e9
         mem_per_set.append(mem)
 
@@ -324,6 +338,16 @@ if so_mpi.rank == 0:
     num_calculated_couplings_per_set = npy.array(num_calculated_couplings_per_set)
     mem_per_set = npy.array(mem_per_set)
     num_cov_blocks_per_set = npy.array(num_cov_blocks_per_set)
+
+    _ = plt.hist(num_cov_blocks_per_set, histtype='step', bins=30)
+    plt.semilogy()
+    mean = npy.mean(num_cov_blocks_per_set)
+    plt.axvline(mean, linestyle='--', color='C0', label = f'Mean number of cov blocks per cov block set: {mean:0.3f}\nTotal number of cov block sets: {num_cov_blocks_per_set.size}')
+    plt.legend()
+    plt.xlabel('Number of cov blocks')
+    plt.ylabel('Number of cov block sets')
+    plt.savefig(opj(plot_dir, 'num_cov_blocks_per_cov_block_set.png'))
+    plt.close()
 
     fig, ax1 = plt.subplots()
     ax1.hist(mem_per_set, histtype='step', bins=30, color='C0')

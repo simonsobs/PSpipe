@@ -1,0 +1,360 @@
+run_name = 'deep56_20260201_skn_50cg_inpaint_holes'
+data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/'
+yaml_dir = '/home/zatkins/projects/PSpipe_dev/repos/PSpipe/project/SO/pISO/python/yaml/'
+
+# define paths for scripts in advance. this is the most flexible way for now
+# to allow products to be reused across different paramfiles 
+
+alms_dir = data_dir + f'alms/{run_name}/'
+best_fits_dir = data_dir + f'best_fits/{run_name}/'
+mask_dir = data_dir + f'mask/{run_name}/'
+mcm_dir = data_dir + f'mcms/{run_name}/'
+plots_dir = data_dir + f'plots/{run_name}/'
+sim_maps_dir = data_dir + f'sims/maps/{run_name}/'
+sim_spec_dir = data_dir + f'sims/spectra/{run_name}/'
+spec_dir = data_dir + f'spectra/{run_name}/'
+cov_dir = data_dir + f'covariances/{run_name}/'
+window_dir = data_dir + f'windows/{run_name}/'
+
+# surveys = ['dr6', 'planck', 'lat_iso']
+# surveys = ['dr6', 'lat_iso']
+surveys = ['lat_iso']
+arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
+arrays_planck = ['f100', 'f143', 'f217', 'f353']
+arrays_lat_iso = ['i1_f090', 'i1_f150', 'i3_f090', 'i3_f150', 'i4_f090', 'i4_f150', 'i6_f090', 'i6_f150', 'c1_f220', 'c1_f280', 'i5_f220', 'i5_f280']
+
+deconvolve_pixwin = True
+pixwin_dr6 = {'pix': 'CAR', 'order': 0}
+pixwin_planck = {'pix': 'HEALPIX', 'nside': 2048}
+pixwin_lat_iso = {'pix': 'CAR', 'order': 1}
+
+apply_kspace_filter = True
+kspace_tf_path = 'analytical'
+k_filter_dr6 = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
+k_filter_planck = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
+k_filter_lat_iso = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
+
+binning_file = data_dir + 'binning/binning_50.dat'
+niter = 0
+remove_mean = False
+binned_mcm = True # because mask too small
+lmax = 8002 # TODO: how handle different lmax (and possibly binning) for mixed-resolution surveys, cross-spectra. +2 so operations work on nice numbered arrays (8000)
+type = 'Dl'
+use_toeplitz_mcm  = False # TODO: deprecate this
+# l3_pad = 2000 # TODO: consider increasing this
+
+savgol_w = 300
+savgol_k = 4
+
+cov_T_E_only = False # TODO: incorporate this
+cov_correlation_by_noise_model = True
+cov_use_median_ssnn_nnss_coupling_per_block = True
+cov_use_median_nnnn_coupling_per_block = True
+cov_spin00_coupling_only = True
+use_toeplitz_cov = True
+l_exact = 1000
+l_toeplitz = 3000
+dl_band = 2000
+dl_window_spectra = 3000
+cov_prebin_size = 5
+
+# maps
+src_free_maps_dr6 = True
+src_free_maps_planck = True
+src_free_maps_lat_iso = True
+
+maps_dir_dr6 = '/scratch/gpfs/ACT/data/act_dr6/dr6.02/maps/published/'
+maps_dr6_pa4_f220 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa4_f220_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa5_f090 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa5_f090_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa5_f150 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa5_f150_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa6_f090 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa6_f090_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+maps_dr6_pa6_f150 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa6_f150_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
+n_splits_dr6 = len(maps_dr6_pa4_f220) # TODO: clean this up
+
+maps_dir_lat_iso = '/scratch/gpfs/SIMONSOBS/lat-iso/phase2/deep56/20260201_inpaint_holes/'
+maps_lat_iso_i1_f090 = [maps_dir_lat_iso + 'deep56_full_i1_4way_0%d_f090_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_i1_f150 = [maps_dir_lat_iso + 'deep56_full_i1_4way_0%d_f150_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_i3_f090 = [maps_dir_lat_iso + 'deep56_full_i3_4way_0%d_f090_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_i3_f150 = [maps_dir_lat_iso + 'deep56_full_i3_4way_0%d_f150_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_i4_f090 = [maps_dir_lat_iso + 'deep56_full_i4_4way_0%d_f090_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_i4_f150 = [maps_dir_lat_iso + 'deep56_full_i4_4way_0%d_f150_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_i6_f090 = [maps_dir_lat_iso + 'deep56_full_i6_4way_0%d_f090_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_i6_f150 = [maps_dir_lat_iso + 'deep56_full_i6_4way_0%d_f150_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_c1_f220 = [maps_dir_lat_iso + 'deep56_full_c1_4way_0%d_f220_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_c1_f280 = [maps_dir_lat_iso + 'deep56_full_c1_4way_0%d_f280_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_i5_f220 = [maps_dir_lat_iso + 'deep56_full_i5_4way_0%d_f220_sky_map_srcfree.fits' % (i) for i in range(4)]
+maps_lat_iso_i5_f280 = [maps_dir_lat_iso + 'deep56_full_i5_4way_0%d_f280_sky_map_srcfree.fits' % (i) for i in range(4)] 
+n_splits_lat_iso = len(maps_lat_iso_i1_f090) # TODO: clean this up
+
+cal_dr6_pa4_f220 = 1.0
+cal_dr6_pa5_f090 = 1.0
+cal_dr6_pa5_f150 = 1.0
+cal_dr6_pa6_f090 = 1.0
+cal_dr6_pa6_f150 = 1.0
+
+pol_eff_dr6_pa4_f220 = 1.0
+pol_eff_dr6_pa5_f090 = 1.0
+pol_eff_dr6_pa5_f150 = 1.0
+pol_eff_dr6_pa6_f090 = 1.0
+pol_eff_dr6_pa6_f150 = 1.0
+
+cal_lat_iso_i1_f090 = 1.
+cal_lat_iso_i1_f150 = 1.
+cal_lat_iso_i3_f090 = 1.
+cal_lat_iso_i3_f150 = 1.
+cal_lat_iso_i4_f090 = 1.
+cal_lat_iso_i4_f150 = 1.
+cal_lat_iso_i6_f090 = 1.
+cal_lat_iso_i6_f150 = 1.
+cal_lat_iso_c1_f220 = 1.
+cal_lat_iso_c1_f280 = 1.
+cal_lat_iso_i5_f220 = 1.
+cal_lat_iso_i5_f280 = 1.
+
+pol_eff_lat_iso_i1_f090 = 1.
+pol_eff_lat_iso_i1_f150 = 1.
+pol_eff_lat_iso_i3_f090 = 1.
+pol_eff_lat_iso_i3_f150 = 1.
+pol_eff_lat_iso_i4_f090 = 1.
+pol_eff_lat_iso_i4_f150 = 1.
+pol_eff_lat_iso_i6_f090 = 1.
+pol_eff_lat_iso_i6_f150 = 1.
+pol_eff_lat_iso_c1_f220 = 1.
+pol_eff_lat_iso_c1_f280 = 1.
+pol_eff_lat_iso_i5_f220 = 1.
+pol_eff_lat_iso_i5_f280 = 1.
+
+do_bandpass_integration = True
+passband_dir_dr6 = '/scratch/gpfs/SIMONSOBS/lat-iso/passbands/dr6/'
+freq_info_dr6_pa4_f220 = {'freq_tag': 220, 'passband': passband_dir_dr6 + 'passband_dr6_pa4_f220.dat'}
+freq_info_dr6_pa5_f090 = {'freq_tag': 90, 'passband': passband_dir_dr6 + 'passband_dr6_pa5_f090.dat'}
+freq_info_dr6_pa5_f150 = {'freq_tag': 150, 'passband': passband_dir_dr6 + 'passband_dr6_pa5_f150.dat'}
+freq_info_dr6_pa6_f090 = {'freq_tag': 90, 'passband': passband_dir_dr6 + 'passband_dr6_pa6_f090.dat'}
+freq_info_dr6_pa6_f150 = {'freq_tag': 150, 'passband': passband_dir_dr6 + 'passband_dr6_pa6_f150.dat'}
+
+passband_dir_lat_iso = '/scratch/gpfs/SIMONSOBS/lat-iso/passbands/lat/iso/'
+freq_info_lat_iso_i1_f090 = {'freq_tag': 90, 'passband': passband_dir_lat_iso + 'bandpass_mean_f090.dat'}
+freq_info_lat_iso_i1_f150 = {'freq_tag': 150, 'passband': passband_dir_lat_iso + 'bandpass_mean_f150.dat'}
+freq_info_lat_iso_i3_f090 = {'freq_tag': 90, 'passband': passband_dir_lat_iso + 'bandpass_mean_f090.dat'}
+freq_info_lat_iso_i3_f150 = {'freq_tag': 150, 'passband': passband_dir_lat_iso + 'bandpass_mean_f150.dat'}
+freq_info_lat_iso_i4_f090 = {'freq_tag': 90, 'passband': passband_dir_lat_iso + 'bandpass_mean_f090.dat'}
+freq_info_lat_iso_i4_f150 = {'freq_tag': 150, 'passband': passband_dir_lat_iso + 'bandpass_mean_f150.dat'}
+freq_info_lat_iso_i6_f090 = {'freq_tag': 90, 'passband': passband_dir_lat_iso + 'bandpass_mean_f090.dat'}
+freq_info_lat_iso_i6_f150 = {'freq_tag': 150, 'passband': passband_dir_lat_iso + 'bandpass_mean_f150.dat'}
+freq_info_lat_iso_c1_f220 = {'freq_tag': 220, 'passband': passband_dir_lat_iso + 'bandpass_mean_f220.dat'}
+freq_info_lat_iso_c1_f280 = {'freq_tag': 280, 'passband': passband_dir_lat_iso + 'bandpass_mean_f280.dat'}
+freq_info_lat_iso_i5_f220 = {'freq_tag': 220, 'passband': passband_dir_lat_iso + 'bandpass_mean_f220.dat'}
+freq_info_lat_iso_i5_f280 = {'freq_tag': 280, 'passband': passband_dir_lat_iso + 'bandpass_mean_f280.dat'}
+
+include_beam_chromaticity_effect_in_best_fit = False
+beam_dir_dr6 = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/dr6/main_beams/'
+beam_T_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_T_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+beam_pol_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_pol_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+beam_dir_lat_iso_instantaneous = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/instantaneous/20260210/profiles_v1r1/data/tube_slot+band/'
+beam_dir_lat_iso_jitter = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/jitter/20260309_jitter/'
+beam_T_lat_iso_i1_f090 = beam_dir_lat_iso_jitter + 'beam_i1_f090_cmb_tform.txt'
+beam_T_lat_iso_i1_f150 = beam_dir_lat_iso_jitter + 'beam_i1_f150_cmb_tform.txt'
+beam_T_lat_iso_i3_f090 = beam_dir_lat_iso_jitter + 'beam_i3_f090_cmb_tform.txt'
+beam_T_lat_iso_i3_f150 = beam_dir_lat_iso_jitter + 'beam_i3_f150_cmb_tform.txt'
+beam_T_lat_iso_i4_f090 = beam_dir_lat_iso_jitter + 'beam_i4_f090_cmb_tform.txt'
+beam_T_lat_iso_i4_f150 = beam_dir_lat_iso_jitter + 'beam_i4_f150_cmb_tform.txt'
+beam_T_lat_iso_i6_f090 = beam_dir_lat_iso_jitter + 'beam_i6_f090_cmb_tform.txt'
+beam_T_lat_iso_i6_f150 = beam_dir_lat_iso_jitter + 'beam_i6_f150_cmb_tform.txt'
+beam_T_lat_iso_c1_f220 = beam_dir_lat_iso_instantaneous + 'c1+f220/model_window_c1+f220_1756699200_20000000000.txt'
+beam_T_lat_iso_c1_f280 = beam_dir_lat_iso_instantaneous + 'c1+f280/model_window_c1+f280_1756699200_20000000000.txt'
+beam_T_lat_iso_i5_f220 = beam_dir_lat_iso_instantaneous + 'i5+f220/model_window_i5+f220_1756699200_20000000000.txt'
+beam_T_lat_iso_i5_f280 = beam_dir_lat_iso_instantaneous + 'i5+f280/model_window_i5+f280_1756699200_20000000000.txt'
+
+beam_pol_lat_iso_i1_f090 = beam_dir_lat_iso_jitter + 'beam_i1_f090_cmb_tform.txt'
+beam_pol_lat_iso_i1_f150 = beam_dir_lat_iso_jitter + 'beam_i1_f150_cmb_tform.txt'
+beam_pol_lat_iso_i3_f090 = beam_dir_lat_iso_jitter + 'beam_i3_f090_cmb_tform.txt'
+beam_pol_lat_iso_i3_f150 = beam_dir_lat_iso_jitter + 'beam_i3_f150_cmb_tform.txt'
+beam_pol_lat_iso_i4_f090 = beam_dir_lat_iso_jitter + 'beam_i4_f090_cmb_tform.txt'
+beam_pol_lat_iso_i4_f150 = beam_dir_lat_iso_jitter + 'beam_i4_f150_cmb_tform.txt'
+beam_pol_lat_iso_i6_f090 = beam_dir_lat_iso_jitter + 'beam_i6_f090_cmb_tform.txt'
+beam_pol_lat_iso_i6_f150 = beam_dir_lat_iso_jitter + 'beam_i6_f150_cmb_tform.txt'
+beam_pol_lat_iso_c1_f220 = beam_dir_lat_iso_instantaneous + 'c1+f220/model_window_c1+f220_1756699200_20000000000.txt'
+beam_pol_lat_iso_c1_f280 = beam_dir_lat_iso_instantaneous + 'c1+f280/model_window_c1+f280_1756699200_20000000000.txt'
+beam_pol_lat_iso_i5_f220 = beam_dir_lat_iso_instantaneous + 'i5+f220/model_window_i5+f220_1756699200_20000000000.txt'
+beam_pol_lat_iso_i5_f280 = beam_dir_lat_iso_instantaneous + 'i5+f280/model_window_i5+f280_1756699200_20000000000.txt'
+
+leakage_dir_dr6 = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/dr6/leakage_beams/'
+leakage_beam_dr6_pa4_f220_TE = leakage_dir_dr6 + 'pa4_f220_gamma_t2e.txt'
+leakage_beam_dr6_pa5_f090_TE = leakage_dir_dr6 + 'pa5_f090_gamma_t2e.txt'
+leakage_beam_dr6_pa5_f150_TE = leakage_dir_dr6 + 'pa5_f150_gamma_t2e.txt'
+leakage_beam_dr6_pa6_f090_TE = leakage_dir_dr6 + 'pa6_f090_gamma_t2e.txt'
+leakage_beam_dr6_pa6_f150_TE = leakage_dir_dr6 + 'pa6_f150_gamma_t2e.txt'
+
+leakage_beam_dr6_pa4_f220_TB = leakage_dir_dr6 + 'pa4_f220_gamma_t2b.txt'
+leakage_beam_dr6_pa5_f090_TB = leakage_dir_dr6 + 'pa5_f090_gamma_t2b.txt'
+leakage_beam_dr6_pa5_f150_TB = leakage_dir_dr6 + 'pa5_f150_gamma_t2b.txt'
+leakage_beam_dr6_pa6_f090_TB = leakage_dir_dr6 + 'pa6_f090_gamma_t2b.txt'
+leakage_beam_dr6_pa6_f150_TB = leakage_dir_dr6 + 'pa6_f150_gamma_t2b.txt'
+
+# leakage_dir_lat_iso = data_dir + 'beams/lat/iso/leakage_beams/'
+# leakage_beam_lat_iso_i1_f090_TE = leakage_dir_lat_iso + 'gamma_t2e_i1.txt'
+# leakage_beam_lat_iso_i1_f150_TE = leakage_dir_lat_iso + 'gamma_t2e_i1.txt'
+# leakage_beam_lat_iso_i3_f090_TE = leakage_dir_lat_iso + 'gamma_t2e_i3.txt'
+# leakage_beam_lat_iso_i3_f150_TE = leakage_dir_lat_iso + 'gamma_t2e_i3.txt'
+# leakage_beam_lat_iso_i4_f090_TE = leakage_dir_lat_iso + 'gamma_t2e_i4.txt'
+# leakage_beam_lat_iso_i4_f150_TE = leakage_dir_lat_iso + 'gamma_t2e_i4.txt'
+# leakage_beam_lat_iso_i6_f090_TE = leakage_dir_lat_iso + 'gamma_t2e_i6.txt'
+# leakage_beam_lat_iso_i6_f150_TE = leakage_dir_lat_iso + 'gamma_t2e_i6.txt'
+# leakage_beam_lat_iso_c1_f220_TE = leakage_dir_lat_iso + 'gamma_t2e_c1.txt'
+# leakage_beam_lat_iso_c1_f280_TE = leakage_dir_lat_iso + 'gamma_t2e_c1.txt'
+# leakage_beam_lat_iso_i5_f220_TE = leakage_dir_lat_iso + 'gamma_t2e_i5.txt'
+# leakage_beam_lat_iso_i5_f280_TE = leakage_dir_lat_iso + 'gamma_t2e_i5.txt'
+# 
+# leakage_beam_lat_iso_i1_f090_TB = leakage_dir_lat_iso + 'gamma_t2b_i1.txt'
+# leakage_beam_lat_iso_i1_f150_TB = leakage_dir_lat_iso + 'gamma_t2b_i1.txt'
+# leakage_beam_lat_iso_i3_f090_TB = leakage_dir_lat_iso + 'gamma_t2b_i3.txt'
+# leakage_beam_lat_iso_i3_f150_TB = leakage_dir_lat_iso + 'gamma_t2b_i3.txt'
+# leakage_beam_lat_iso_i4_f090_TB = leakage_dir_lat_iso + 'gamma_t2b_i4.txt'
+# leakage_beam_lat_iso_i4_f150_TB = leakage_dir_lat_iso + 'gamma_t2b_i4.txt'
+# leakage_beam_lat_iso_i6_f090_TB = leakage_dir_lat_iso + 'gamma_t2b_i6.txt'
+# leakage_beam_lat_iso_i6_f150_TB = leakage_dir_lat_iso + 'gamma_t2b_i6.txt'
+# leakage_beam_lat_iso_c1_f220_TB = leakage_dir_lat_iso + 'gamma_t2b_c1.txt'
+# leakage_beam_lat_iso_c1_f280_TB = leakage_dir_lat_iso + 'gamma_t2b_c1.txt'
+# leakage_beam_lat_iso_i5_f220_TB = leakage_dir_lat_iso + 'gamma_t2b_i5.txt'
+# leakage_beam_lat_iso_i5_f280_TB = leakage_dir_lat_iso + 'gamma_t2b_i5.txt'
+
+xtra_mask_yaml = yaml_dir + 'xtra_mask.yaml'
+xlink_downgrade = 8 
+ps_and_gal_mask_dir = data_dir + 'mask/'
+mnms_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/mbs/mnms_products/masks/v20260201_skn_50cg_mask_obs/'
+
+plot_windowed_maps = ['lat_iso_i1_f090', 'lat_iso_i1_f150', 'lat_iso_i3_f090', 'lat_iso_i3_f150', 'lat_iso_i4_f090', 'lat_iso_i4_f150', 'lat_iso_i6_f090', 'lat_iso_i6_f150', 'lat_iso_c1_f220', 'lat_iso_c1_f280', 'lat_iso_i5_f220', 'lat_iso_i5_f280']
+
+template_geometry_intersect = maps_lat_iso_i1_f090[0]
+
+kspace_mask_edge_cut = 0
+apod_kspace_degree = 1
+kspace_to_baseline_edge_cut = 1.5
+apod_survey_degree = 2
+
+kspace_masks_intersect = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_intersect.fits', mask_dir + 'xtra_xlink_mask_intersect.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i1a_i1b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i3a_i3b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i4a_i4b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i6a_i6b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_c1a_c1b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i5a_i5b.fits']
+baseline_masks_intersect = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
+baseline_apods_intersect = [0.3]
+
+window_kspace_lat_iso_i1_f090 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i1_f090 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i1_f090 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_i1_f150 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i1_f150 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i1_f150 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_i3_f090 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i3_f090 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i3_f090 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_i3_f150 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i3_f150 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i3_f150 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_i4_f090 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i4_f090 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i4_f090 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_i4_f150 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i4_f150 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i4_f150 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_i6_f090 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i6_f090 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i6_f090 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_i6_f150 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i6_f150 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i6_f150 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_c1_f220 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_c1_f220 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_c1_f220 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_c1_f280 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_c1_f280 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_c1_f280 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_i5_f220 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i5_f220 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i5_f220 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_lat_iso_i5_f280 = window_dir + 'window_intersect_kspace.fits'
+window_T_lat_iso_i5_f280 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_lat_iso_i5_f280 =  window_dir + 'window_intersect_baseline.fits'
+
+# best fit params (only used for sim generation and covariances computation)
+# this from best-fits of p-act lcdm chains
+cosmo_params = {'cosmomc_theta': 1.040727759e-02, 'logA': 3.050789144e+00, 'ombh2': 2.248927912e-02, 'omch2': 1.194830705e-01, 'ns': 9.700695084e-01, 'tau': 5.719987087e-02}          
+accuracy_params = {'lens_potential_accuracy': 8, 'lens_margin': 2050, 'AccuracyBoost': 2.0, 'lSampleBoost': 2.0, 'lAccuracyBoost': 2.0, 'kmax': 10, 'k_per_logint': 130, 'nonlinear': True, 'DoLateRadTruncation': False, 'min_l_logl_sampling': 6000}
+
+fg_norm = {'nu_0': 150.0, 'ell_0': 3000, 'T_CMB': 2.725}
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
+
+fg_params = {'a_tSZ': 3.352350745e+00, 'alpha_tSZ':-6.501443802e-01, 'a_kSZ': 2.016949764e+00, 'a_p': 7.594274444e+00, 'beta_p': 1.902934700e+00, 'a_c': 3.684264620e+00, 'beta_c':  1.902934700e+00, 'a_s': 2.810617983e+00, 'beta_s':-2.810871948e+00, 'xi': 7.733078253e-02, 'a_gtt': 3.62, 'a_gte': 0.331, 'a_gtb': 0.073, 'a_gee': 0.088, 'a_gbb': 0.065, 'a_pste': -2.597454946e-02, 'a_pstb': 0, 'a_psee': 1.356848002e-02, 'a_psbb': 0, 'alpha_s':1.0, 'T_d': 9.60, 'T_effd':19.6, 'beta_d':1.5, 'alpha_dT':-0.6, 'alpha_dE':-0.4, 'alpha_p':1.}
+
+bandpass_shift_dr6_pa4_f220  =  7.5
+bandpass_shift_dr6_pa5_f090  = -0.06
+bandpass_shift_dr6_pa5_f150  = -0.92
+bandpass_shift_dr6_pa6_f090  =  0.5
+bandpass_shift_dr6_pa6_f150  = -0.19
+
+bandpass_shift_lat_iso_i1_f090  = 0.
+bandpass_shift_lat_iso_i1_f150  = 0.
+bandpass_shift_lat_iso_i3_f090  = 0.
+bandpass_shift_lat_iso_i3_f150  = 0.
+bandpass_shift_lat_iso_i4_f090  = 0.
+bandpass_shift_lat_iso_i4_f150  = 0.
+bandpass_shift_lat_iso_i6_f090  = 0.
+bandpass_shift_lat_iso_i6_f150  = 0.
+bandpass_shift_lat_iso_c1_f220  = 0.
+bandpass_shift_lat_iso_c1_f280  = 0.
+bandpass_shift_lat_iso_i5_f220  = 0.
+bandpass_shift_lat_iso_i5_f280  = 0.
+
+# sim
+sim_pixwin_apod_deg = .2
+add_white_noise_above_lmax = True
+white_noise_ell_taper_width = 500
+keep_noise_models_in_memory = False
+
+noise_model_pa4 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa4a', 'pa4b'], 'lmax': 5400} # can add 'subproduct_kwargs': value if needed, where value e.g. {'inout_split': ['inout1', 'inout2']}
+noise_model_pa5 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa5a', 'pa5b'], 'lmax': 5400}
+noise_model_pa6 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask_ivfwhm2', 'qids': ['pa6a', 'pa6b'], 'lmax': 5400}
+
+noise_model_i1 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['i1a', 'i1b'], 'lmax': 5400}
+noise_model_i3 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['i3a', 'i3b'], 'lmax': 5400}
+noise_model_i4 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['i4a', 'i4b'], 'lmax': 5400}
+noise_model_i6 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['i6a', 'i6b'], 'lmax': 5400}
+noise_model_c1 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['c1a', 'c1b'], 'lmax': 5400}
+noise_model_i5 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['i5a', 'i5b'], 'lmax': 5400}
+
+noise_info_dr6_pa4_f220 = {'qid': 'pa4b'} # can add 'subproduct_kwargs': value if needed, where value e.g. {'inout_split': 'inout1'}
+noise_info_dr6_pa5_f090 = {'qid': 'pa5a'}
+noise_info_dr6_pa5_f150 = {'qid': 'pa5b'}
+noise_info_dr6_pa6_f090 = {'qid': 'pa6a'}
+noise_info_dr6_pa6_f150 = {'qid': 'pa6b'}
+
+noise_info_lat_iso_i1_f090 = {'qid': 'i1a'}
+noise_info_lat_iso_i1_f150 = {'qid': 'i1b'}
+noise_info_lat_iso_i3_f090 = {'qid': 'i3a'}
+noise_info_lat_iso_i3_f150 = {'qid': 'i3b'}
+noise_info_lat_iso_i4_f090 = {'qid': 'i4a'}
+noise_info_lat_iso_i4_f150 = {'qid': 'i4b'}
+noise_info_lat_iso_i6_f090 = {'qid': 'i6a'}
+noise_info_lat_iso_i6_f150 = {'qid': 'i6b'}
+noise_info_lat_iso_c1_f220 = {'qid': 'c1a'}
+noise_info_lat_iso_c1_f280 = {'qid': 'c1b'}
+noise_info_lat_iso_i5_f220 = {'qid': 'i5a'}
+noise_info_lat_iso_i5_f280 = {'qid': 'i5b'}

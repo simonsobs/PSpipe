@@ -38,6 +38,9 @@ lmax = d["lmax"]
 cov_correlation_by_noise_model = d['cov_correlation_by_noise_model']
 cov_use_median_ssnn_nnss_coupling_per_block = d['cov_use_median_ssnn_nnss_coupling_per_block']
 cov_use_median_nnnn_coupling_per_block = d['cov_use_median_nnnn_coupling_per_block']
+dl_window_spectra = d['dl_window_spectra']
+if dl_window_spectra > lmax:
+    raise ValueError(f'{dl_window_spectra=} must be <= {lmax=}')
 
 cov_dir = d['cov_dir']
 pspy_utils.create_directory(cov_dir)
@@ -103,7 +106,7 @@ def load_effective_windows(signal_windows_to_load, noise_windows_to_load,
         # load signal first so they are in memory for noise. 
         # TODO: evaluate trade-off of doing s and n separately (spends memory to speed
         # up loading)
-        # TODO: if worth-it, rewrite so noise_windows are batched by "uneeded" 
+        # TODO: if worth it, rewrite so noise_windows are batched by "uneeded" 
         # signal_windows, and those signal_windows are deleted after their "child"
         # noise_windows are loaded
         for window_set in windows_to_load:
@@ -117,28 +120,28 @@ def load_effective_windows(signal_windows_to_load, noise_windows_to_load,
                 signal_window = enmap.read_map(signal_window_path)
                 effective_window_dict[window_set] = signal_window
 
-            elif len(window_set) == 2: # noise_window 
-                # we did signal first, so this should never have KeyError   
-                signal_window = effective_window_dict[(signal_window_path,)]
-
-                # unless doing isotropy test, an ivar will never be loaded again 
-                # (e.g., with a different signal window) after being stored in an
-                # effective window
-                ivar_window_path = window_set[1]
-                ivar_window = enmap.read_map(ivar_window_path)
-                
                 # also load the pixsizemap and sqrt_pixsizemaps (we do it on-the-fly
                 # rather than pre-computing the unique set because there should be 
                 # very few of these)
-                pixsizemap_key = (ivar_window.shape, wcsutils.describe(ivar_window.wcs))
+                pixsizemap_key = (signal_window.shape, wcsutils.describe(signal_window.wcs))
                 if pixsizemap_key not in pixsizemap_dict:
-                    pixsizemap = ivar_window.pixsizemap()
+                    pixsizemap = signal_window.pixsizemap()
                     
                     pixsizemap_dict[pixsizemap_key] = {}
                     pixsizemap_dict[pixsizemap_key][1] = pixsizemap
                     pixsizemap_dict[pixsizemap_key][0.5] = pixsizemap ** 0.5
 
+            elif len(window_set) == 2: # noise_window 
+                # we did signal first, so this should never have KeyErrors  
+                signal_window = effective_window_dict[(signal_window_path,)]
+                pixsizemap_key = (signal_window.shape, wcsutils.describe(signal_window.wcs))
                 sqrt_pixsizemap = pixsizemap_dict[pixsizemap_key][0.5]
+
+                # unless doing isotropy test, an ivar will never be loaded again 
+                # (e.g., with a different signal window) after being stored in an
+                # effective window
+                ivar_window_path = window_set[1]
+                ivar_window = enmap.read_map(ivar_window_path, geometry=signal_window.geometry)
 
                 noise_window = prep_noise_window(signal_window, ivar_window, sqrt_pixsizemap)
                 effective_window_dict[window_set] = enmap.samewcs(noise_window, ivar_window)
@@ -164,8 +167,8 @@ def calc_w4(w1, w2, w3, w4, pixsizemap):
     return np.sum(w1 * w2 * w3 * w4 * pixsizemap)/(4*np.pi)
 
 def calc_wl(w1, w2, w3, w4):
-    walm12 = curvedsky.map2alm(enmap.samewcs(mult_2(w1, w2), w1), lmax=2*lmax)
-    walm34 = curvedsky.map2alm(enmap.samewcs(mult_2(w3, w4), w3), lmax=2*lmax)
+    walm12 = curvedsky.map2alm(enmap.samewcs(mult_2(w1, w2), w1), lmax=lmax + dl_window_spectra)
+    walm34 = curvedsky.map2alm(enmap.samewcs(mult_2(w3, w4), w3), lmax=lmax + dl_window_spectra)
     wl = curvedsky.alm2cl(walm12, walm34, dtype=np.float64)
     return wl
 

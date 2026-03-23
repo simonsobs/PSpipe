@@ -24,7 +24,7 @@ lmax = d["lmax"]
 n_min_sims = 500
 
 
-mcm_dir = d["mcms_dir"]
+mcm_dir = d["mcm_dir"]
 spec_dir = d['sim_spec_for_tf_dir']
 tf_dir = d["kspace_tf_dir"]
 bestfit_dir = d["best_fits_dir"]

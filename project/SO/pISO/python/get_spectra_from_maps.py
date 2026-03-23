@@ -340,7 +340,11 @@ if which == 'sims':
                                 white_noise_ell_taper_width=white_noise_ell_taper_width,
                                 keep_model=keep_noise_models_in_memory)
     else:
-        noise_model_args = None
+        noise_model_args = (mapnames2minfos, modeltags2modelinfos)
+        #noise_model_kwargs = dict(add_white_noise_above_lmax=False,
+        #                        white_noise_ell_taper_width=0,
+        #                        keep_model=False)
+       
         noise_model_kwargs = None
     
     data_model = simulation.DataModel(signal_model_args, noise_model_args, 

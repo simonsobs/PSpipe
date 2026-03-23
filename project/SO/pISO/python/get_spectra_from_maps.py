@@ -133,7 +133,7 @@ else:
         spec_dir = d['sim_spec_for_tf_dir']
         pspy_utils.create_directory(spec_dir)
         scenarios = ["standard", "noE", "noB"]
-        filter_opt = ["filter", "nofilter"]
+        #filter_opt = ["filter", "nofilter"]
 
     if write_sim_map_start >= 0:
         sim_map_dir = d['sim_maps_dir']

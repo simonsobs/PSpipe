@@ -775,12 +775,15 @@ for iii in mapset_iterator:
             spec_name_all = f"{type}{tag}_all_sn_cross_{iii:05d}"
             
             # each process has separate maps in its mapset
+            ps_dict_all['l'] = lb
             io.save_hdf5(f"{spec_dir}" + f"{spec_name_all}.h5", ps_dict_all)
         else:
             spec_name_all = f"{type}{tag}_all_s_cross_filter_{iii:05d}"
             spec_name_all_nofilt = f"{type}{tag}_all_s_cross_nofilter_{iii:05d}"
         
             # each process has separate maps in its mapset
+            ps_dict_all['l'] = lb
+            ps_dict_all_nofilt['l'] = lb
             io.save_hdf5(f"{spec_dir}" + f"{spec_name_all}.h5", ps_dict_all)
             io.save_hdf5(f"{spec_dir}" + f"{spec_name_all_nofilt}.h5", ps_dict_all_nofilt)
 

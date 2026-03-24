@@ -754,7 +754,7 @@ for iii in mapset_iterator:
                 else:
                     ps_dict_all[(sv1, m1), (sv2, m2), 'nn'] = ps_dict_nn_mean
 
-        master_alms = None
+    master_alms = None
 
     log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Spectra computation time: {(time.time() - t0):.3f} seconds")
 

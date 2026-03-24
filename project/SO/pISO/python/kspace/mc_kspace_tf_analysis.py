@@ -6,7 +6,7 @@ correction for TE taking into account that tf_TE is not exactly sqrt(tf_TT * tf_
 import matplotlib
 matplotlib.use("Agg")
 from pspy import pspy_utils, so_dict, so_spectra, so_mcm
-from pspipe_utils import pspipe_list, best_fits, kspace, log
+from pspipe_utils import pspipe_list, best_fits, kspace, log, io
 import numpy as np
 import pylab as plt
 import sys
@@ -54,6 +54,11 @@ ps_list = {}
 for sid, spec in enumerate(spec_list):
     log.info(f"Read all {spec} sim power spectra")
 
+    # breaking down the strings in spec
+    lspec = spec.split("x")
+    sv1, m1, = lspec[0].split("_")
+    sv2, m2, = lspec[1].split("_")
+
     ps_list[spec] = {}
     for scenario in scenarios:
         for iii in range(iStart, iStop + 1):
@@ -62,9 +67,10 @@ for sid, spec in enumerate(spec_list):
                 ps_list[spec]["nofilter", scenario] = []
                 ps_list[spec]["filter", scenario] = []
 
-            lb, ps_nofilt = so_spectra.read_ps(spec_dir + f"/{type}_{spec}_nofilter_{scenario}_{iii:05d}.dat", spectra=spectra)
-            lb, ps_filt = so_spectra.read_ps(spec_dir + f"/{type}_{spec}_filter_{scenario}_{iii:05d}.dat", spectra=spectra)
-
+            lb = io.load_hdf5(spec_dir + f"{type}_for_kspace_all_s_filter_{iii:05d}", path="/l")
+            ps_filt = io.load_hdf5(spec_dir + f"{type}_for_kspace_all_s_filter_{iii:05d}", path=f"/({sv1}, {m1}), ({sv2}, {m2}), so_{scenario}")
+            ps_nofilt = io.load_hdf5(spec_dir + f"{type}_for_kspace_all_s_nofilter_{iii:05d}", path=f"/({sv1}, {m1}), ({sv2}, {m2}), so_{scenario}")
+            
             ps_list[spec]["nofilter", scenario] += [ps_nofilt]
             ps_list[spec]["filter", scenario] += [ps_filt]
 

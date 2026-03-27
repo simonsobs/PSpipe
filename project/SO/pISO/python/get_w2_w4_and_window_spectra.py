@@ -166,6 +166,8 @@ def calc_w2(w1, w2, pixsizemap):
 def calc_w4(w1, w2, w3, w4, pixsizemap):
     return np.sum(w1 * w2 * w3 * w4 * pixsizemap)/(4*np.pi)
 
+# TODO: test if storing some walms helps speed without hurting memory too much, since
+# this appears to be the bottleneck when going to large maps
 def calc_wl(w1, w2, w3, w4):
     walm12 = curvedsky.map2alm(enmap.samewcs(mult_2(w1, w2), w1), lmax=lmax + dl_window_spectra)
     walm34 = curvedsky.map2alm(enmap.samewcs(mult_2(w3, w4), w3), lmax=lmax + dl_window_spectra)

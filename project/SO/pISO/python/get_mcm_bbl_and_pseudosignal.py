@@ -117,16 +117,15 @@ else:
     bls = []
     for task in subtasks:
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
-        mapnames = ((sv1, m1), (sv2, m2))
         pols = ('T', 'pol')
 
         log.info(f"[Rank {so_mpi.rank}, {task:02d}]: Preparing data for {sv1}_{m1} x {sv2}_{m2}")
 
         # only calculate the stuff we need to avoid numerical differences
         m2win_fn = {}
-        for (sv, m) in mapnames:
-            for pol in pols:
-                m2win_fn[sv, m, pol] = d[f"window_{pol}_{sv}_{m}"] # no repeated keys
+        for pol in pols:
+            m2win_fn[sv1, m1, pol] = d[f"window_{pol}_{sv1}_{m1}"]
+            m2win_fn[sv2, m2, pol] = d[f"window_{pol}_{sv2}_{m2}"] # no repeated keys
 
         win_fn2win = {}
         for win_fn in m2win_fn.values():
@@ -149,12 +148,17 @@ else:
                 win_fn2walm[win_fn] = sph_tools.map2alm(win, niter=niter, lmax=maxl, dtype=np.complex128) # no repeated computation (or keys)
 
         can_win_fn_2pt2cl = {}
-        for win_fn1, walm1 in win_fn2walm.items():
-            for win_fn2, walm2 in win_fn2walm.items():
-                can_win_fn_2pt = pspipe_list.canonize_connected_2pt(win_fn1, win_fn2)
-                if can_win_fn_2pt not in can_win_fn_2pt2cl:
-                    can_win_fn_2pt2cl[can_win_fn_2pt] = curvedsky.alm2cl(walm1, walm2, dtype=np.float64) # no repeated computation (or keys)
+        for poli in pols:
+            win_fni = m2win_fn[sv1, m1, poli]
+            walmi = win_fn2walm[win_fni]
+            for polj in pols:
+                win_fnj = m2win_fn[sv2, m2, polj]
+                walmj = win_fn2walm[win_fnj]
 
+                can_win_fn_2pt_ij = pspipe_list.canonize_connected_2pt(win_fni, win_fnj)
+                if can_win_fn_2pt_ij not in can_win_fn_2pt2cl:
+                    can_win_fn_2pt2cl[can_win_fn_2pt_ij] = curvedsky.alm2cl(walmi, walmj, dtype=np.float64) # no repeated computation (or keys)
+                
         # beams have no numerical differences due to multithreading
         _, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
         _, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
@@ -167,11 +171,10 @@ else:
         bl = []
         for i in range(2):
             for j in range(2):
-                (svi, mi), (svj, mj) = mapnames[i], mapnames[j]
                 poli, polj = pols[i], pols[j]
-                win_fni, win_fnj = m2win_fn[svi, mi, poli], m2win_fn[svj, mj, polj]
+                win_fni, win_fnj = m2win_fn[sv1, m1, poli], m2win_fn[sv2, m2, polj]
                 can_win_fn_2pt_ij = pspipe_list.canonize_connected_2pt(win_fni, win_fnj)
-                spec_for_ducc.append(can_win_fn_2pt2cl[can_win_fn_2pt])
+                spec_for_ducc.append(can_win_fn_2pt2cl[can_win_fn_2pt_ij])
                 bl.append(bl1[i][2:lmax] * bl2[j][2:lmax]) # TODO: reconsider pspipe conventions
         specs_for_ducc.append(spec_for_ducc)
         bls.append(bl)

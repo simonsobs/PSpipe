@@ -1,7 +1,6 @@
 surveys = ["spt"]
 arrays_spt = ["095", "150", "220"]
-#release_dir = "/global/cfs/cdirs/sobs/users/tlouis/spt_data/"
-release_dir = "/Users/louisthibaut/Desktop/projects/spt_fun/"
+release_dir = "/global/cfs/cdirs/sobs/users/tlouis/spt_data/"
 
 alm_conv_spt = "IAU"
 

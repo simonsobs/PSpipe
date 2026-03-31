@@ -1,0 +1,80 @@
+surveys = ["spt"]
+arrays_spt = ["095", "150", "220"]
+release_dir = "/global/cfs/cdirs/sobs/users/tlouis/spt_data/"
+alm_conv_spt = "IAU"
+
+
+binning_file = release_dir + "binning_spt.dat"
+apply_kspace_filter  = False
+
+deconvolve_pixwin = True
+pixwin_spt = {"pix": 'HEALPIX', "nside": 8192} #should be replaced with the more accurate pixel window that is provided
+
+
+apply_alm_mask = True
+lmax_mask = 4000
+alm_mask_spt_095 = release_dir + "ancillary_products/specific_to_c25/alm_mask_095ghz.fits"
+alm_mask_spt_150 = release_dir + "ancillary_products/specific_to_c25/alm_mask_150ghz.fits"
+alm_mask_spt_220 = release_dir + "ancillary_products/specific_to_c25/alm_mask_220ghz.fits"
+
+niter = 0
+remove_mean = True
+binned_mcm = True
+lmax = 3500
+type = 'Dl'
+write_splits_spectra = True
+cov_T_E_only = False
+use_toeplitz_mcm  = False
+use_toeplitz_cov  = True
+
+# maps
+
+src_free_maps_spt = False
+
+
+freq_info_spt_095 = {"freq_tag": 95, "passband": "dummy.dat"}
+freq_info_spt_150 = {"freq_tag": 150, "passband": "dummy.dat"}
+freq_info_spt_220 = {"freq_tag": 220, "passband":  "dummy.dat"}
+
+
+n_splits_spt = 2
+maps_spt_095 = [release_dir + "real_data_maps/half/half_bundle%d_095ghz_inpainted.fits" % (i) for i in range(n_splits_spt)]
+maps_spt_150 = [release_dir + "real_data_maps/half/half_bundle%d_150ghz_inpainted.fits" % (i) for i in range(n_splits_spt)]
+maps_spt_220 = [release_dir + "real_data_maps/half/half_bundle%d_220ghz_inpainted.fits" % (i) for i in range(n_splits_spt)]
+
+
+# these number are just the one associated with their beam at l=0
+# in act we use the convention that bl(l=0)=1, they don't do this in spt
+cal_spt_095 = 1 / 1.09647802
+cal_spt_150 = 1 / 1.06827578
+cal_spt_220 = 1 / 1.11338355
+
+pol_eff_spt_095 = 1.0
+pol_eff_spt_150 = 1.0
+pol_eff_spt_220 = 1.0
+
+beam_file_dir = release_dir + "ancillary_products/specific_to_c25/"
+
+beam_T_spt_095 = beam_file_dir + "beam_c25_bl_095ghz.txt"
+beam_T_spt_150 = beam_file_dir + "beam_c25_bl_150ghz.txt"
+beam_T_spt_220 = beam_file_dir + "beam_c25_bl_220ghz.txt"
+
+beam_pol_spt_095 = beam_file_dir + "beam_c25_bl_095ghz.txt"
+beam_pol_spt_150 = beam_file_dir + "beam_c25_bl_150ghz.txt"
+beam_pol_spt_220 = beam_file_dir + "beam_c25_bl_220ghz.txt"
+
+window_dir =  release_dir + "ancillary_products/generally_applicable/"
+
+window_T_spt_095 =  window_dir + "pixel_mask_apodized_borders_only.fits"
+window_pol_spt_095 =  window_dir + "pixel_mask_apodized_borders_only.fits"
+
+window_T_spt_150 =  window_dir + "pixel_mask_apodized_borders_only.fits"
+window_pol_spt_150 =  window_dir + "pixel_mask_apodized_borders_only.fits"
+
+window_T_spt_220 = window_dir + "pixel_mask_apodized_borders_only.fits"
+window_pol_spt_220 = window_dir + "pixel_mask_apodized_borders_only.fits"
+
+
+cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
+
+

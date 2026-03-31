@@ -18,4 +18,4 @@ Running the main pipeline
 
 You can then compare with the spt released spectra by running spt_plot_spectra.py, note that you need to install candl and spt_candl_data first.
 The pipeline take roughly 30 minutes, all time is spent doing map2alms since spt has 30 splits per frequency.
-An alternative dict file using half-missing is provided that allow for much faster investigation 
+An alternative dictfile using half-missions is provided that allows for much faster investigations.

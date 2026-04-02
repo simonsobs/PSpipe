@@ -30,7 +30,6 @@ def correct_spt_transfer_function(lb, ps, spec_name, Bbl):
     
     name = spec_name.replace("spt_", "")
     fa, fb = name.split("x")
-    print(fa, fb)
     
     tf = {}
     for mode in ["tt", "te", "et", "ee"]:
@@ -57,7 +56,6 @@ def correct_spt_additive_bias(lb, ps, spec_name, Bbl):
     
     name = spec_name.replace("spt_", "")
     fa, fb = name.split("x")
-    print(fa, fb)
     
     additive_bias = {}
     for mode in ["tt", "te", "et", "ee"]:
@@ -118,16 +116,16 @@ l_th, ps_th = pspy_utils.ps_from_params(cosmo_params, type, lmax + 500)
 
 for spec in ["TB", "EB", "BB"]:
     for spec_name in spec_name_list:
-       plt.plot(l_th[:3500], ps_th[spec][:3500], color="black")
-       plt.plot(lb, Db_dict_bias_tf_corr[spec_name][spec], label=f"{spec} {spec_name} (uncorrected)")
-       plt.legend()
-       plt.savefig(f"{plot_dir}/{spec_name}_{spec}.png", bbox_inches="tight")
-       plt.clf()
-       plt.close()
-    
+        plt.plot(l_th[:3500], ps_th[spec][:3500], color="black")
+        plt.plot(lb, Db_dict_bias_tf_corr[spec_name][spec], label=f"{spec} {spec_name} (uncorrected)")
+        plt.legend()
+        plt.savefig(f"{plot_dir}/{spec_name}_{spec}.png", bbox_inches="tight")
+        plt.clf()
+        plt.close()
 
 for spec in ["TT", "TE", "EE"]:
     for spec_name in spec_name_list:
+        fig, ax = plt.subplots(3, sharex=True, figsize=(9, 8), gridspec_kw={'hspace':0.1})
 
         spec_to_plot = f"{spec} {camphuis_conv[spec_name]}"
         ix_of_spec = candl_like.spec_order.index(spec_to_plot)
@@ -143,30 +141,31 @@ for spec in ["TT", "TE", "EE"]:
         lb_redo, Db_redo = lb[id_redo], Db_dict[spec_name][spec][id_redo]
         Db_redo_tf_corr, Db_redo_bias_tf_corr = Db_dict_tf_corr[spec_name][spec][id_redo], Db_dict_bias_tf_corr[spec_name][spec][id_redo]
 
-        plt.figure(figsize=(12,8))
-        
-        plt.subplot(311)
         if spec in ["TT", "EE"]:
-            plt.semilogy()
-        plt.errorbar(l_spt, Db, sigmab, lw=0.5, marker="o", ms=3, elinewidth=1, label=f"SPT {spec_name}")
-        plt.xlabel(r"$\ell$", fontsize=14)
-        plt.ylabel(r"$D_\ell$", fontsize=14)
-        plt.plot(lb_redo, Db_redo_bias_tf_corr, label=f"SPT redo  {spec_name}, bias tf corrected")
+            ax[0].semilogy()
+        ax[0].errorbar(l_spt, Db, sigmab, lw=0.5, marker="o", ms=3, elinewidth=1, label=f"SPT {spec_name}")
+        ax[0].set_xlabel(r"$\ell$", fontsize=14)
+        ax[0].set_ylabel(r"$D_\ell$", fontsize=14)
+        ax[0].plot(lb_redo, Db_redo_bias_tf_corr, label=f"SPT redo  {spec_name}, bias tf corrected")
+        ax[0].legend()
+        
+        try:
+            l_res, dl_res = np.loadtxt(f"mcms/res_bbl_{spec}_{camphuis_conv[spec_name]}.txt").T
+            ax[1].plot(l_res, dl_res, label="Res Bbls", color='red')
+        except:
+            log.info(f"Couldn't plot {spec_to_plot} Bbl res")
 
-        plt.legend()
-        plt.subplot(312)
-        plt.errorbar(l_spt, l_spt*0)
-        plt.errorbar(l_spt, Db-Db_redo_bias_tf_corr, sigmab, lw=0.5, marker="o", ms=3, elinewidth=1, label=f"SPT - SPT redo, bias tf corrected {spec_name}")
-        plt.legend()
-        plt.xlabel(r"$\ell$", fontsize=14)
-        plt.ylabel(r"$D_\ell - D^{\rm redo}_\ell$", fontsize=14)
+        ax[1].errorbar(l_spt, l_spt*0)
+        ax[1].errorbar(l_spt, Db-Db_redo_bias_tf_corr, sigmab, lw=0.5, marker="o", ms=3, elinewidth=1, label=f"SPT - SPT redo, bias tf corrected {spec_name}")
+        ax[1].legend()
+        ax[1].set_xlabel(r"$\ell$", fontsize=14)
+        ax[1].set_ylabel(r"$D_\ell - D^{\rm redo}_\ell$", fontsize=14)
 
-        plt.subplot(313)
-        plt.errorbar(l_spt, Db/Db_redo_bias_tf_corr, lw=0.5, marker="o", ms=3, elinewidth=1, label=f"SPT/ SPT redo {spec_name}")
-        plt.xlabel(r"$\ell$", fontsize=14)
-        plt.ylabel(r"$D_\ell / D^{\rm redo}_\ell$", fontsize=14)
+        ax[2].errorbar(l_spt, Db/Db_redo_bias_tf_corr, lw=0.5, marker="o", ms=3, elinewidth=1, label=f"SPT/ SPT redo {spec_name}")
+        ax[2].set_xlabel(r"$\ell$", fontsize=14)
+        ax[2].set_ylabel(r"$D_\ell / D^{\rm redo}_\ell$", fontsize=14)
 
-        plt.ylim(0.95, 1.05)
+        ax[2].set_ylim(0.95, 1.05)
         plt.savefig(f"{plot_dir}/{spec_name}_{spec}.png", bbox_inches="tight")
         plt.clf()
         plt.close()

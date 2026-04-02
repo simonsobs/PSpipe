@@ -375,7 +375,7 @@ if which == 'sims':
         #                        keep_model=False)
        
         noise_model_kwargs = None
-    
+   
     data_model = simulation.DataModel(signal_model_args, noise_model_args, 
                                       signal_model_kwargs=signal_model_kwargs,
                                       noise_model_kwargs=noise_model_kwargs)

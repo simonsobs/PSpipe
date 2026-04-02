@@ -8,6 +8,8 @@ from pspipe_utils import log, pspipe_list, kspace
 import healpy as hp
 from os.path import join as opj
 import argparse
+import matplotlib
+matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)

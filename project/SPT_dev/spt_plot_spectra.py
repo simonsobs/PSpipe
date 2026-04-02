@@ -85,7 +85,7 @@ def correct_spt_additive_bias(lb, ps, spec_name, Bbl):
     return lb, ps_corrected
     
     
-def get_binned_theory(lth, psth, spec_name, spec, Bbl, lb_pspy, lb_spt):
+def get_binned_theory(lth, psth, spec_name, spec, Bbl, lb_pspy, lb_spt, plot_Bbl=False):
 
     """
     get binned theory both from pspy and spt
@@ -103,12 +103,25 @@ def get_binned_theory(lth, psth, spec_name, spec, Bbl, lb_pspy, lb_spt):
     lmax_spt = window_function.shape[0]
     Db_spt =  np.dot(window_function[:,:].T, ps_th[spec][:lmax_spt])
     
+    if plot_Bbl == True:
+        for i, bin in enumerate(lb):
+            plt.plot(Bbl_dict[spec.lower()][i], color="gray")
+        for i, bin in enumerate(lb_spt):
+            plt.plot(window_function[:,:].T[i], linestyle="--", color="black")
+
+        plt.xlim(400, 1000)
+        plt.ylim(-0.002, 0.03)
+        plt.ylabel(r"$B_{b\ell}$", fontsize=20)
+        plt.xlabel(r"$\ell$", fontsize=20)
+        plt.title("Band power window function")
+        plt.show()
+        
+    
     return lb_pspy, Db_pspy, lb_spt, Db_spt
     
 
     
 candl_like = candl.Like(spt_candl_data.SPT3G_D1_TnE)
-
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -119,7 +132,6 @@ camphuis_conv["spt_095xspt_220"] = "90x220"
 camphuis_conv["spt_150xspt_150"] = "150x150"
 camphuis_conv["spt_150xspt_220"] = "150x220"
 camphuis_conv["spt_220xspt_220"] = "220x220"
-
 
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
@@ -167,7 +179,7 @@ for spec in ["TT", "TE", "EE"]:
 
 
         # get binned theory for both pipeline
-        _, Db_th_redo, _, Db_th = get_binned_theory(l_th, ps_th, spec_name, spec, Bbl[spec_name], lb, l_spt)
+        _, Db_th_redo, _, Db_th = get_binned_theory(l_th, ps_th, spec_name, spec, Bbl[spec_name], lb, l_spt, plot_Bbl=False)
         
 
         l_spt, Db, sigmab, Db_th = l_spt[id_spt], Db[id_spt], sigmab[id_spt], Db_th[id_spt]

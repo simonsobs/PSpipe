@@ -79,3 +79,6 @@ window_pol_spt_220 = window_dir + "pixel_mask_apodized_borders_only.fits"
 cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
 
 
+iStart = 0
+iStop = 15
+

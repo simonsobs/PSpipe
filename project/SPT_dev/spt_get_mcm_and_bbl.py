@@ -1,23 +1,41 @@
 """
 This script computes the mode coupling matrices and the binning matrices Bbl
-for the different surveys and arrays.
+for the different surveys and arrays. Note that unlike in old pspipe, we also include pixwin in the mcms here.
+We do 3 runs because the data and simulation have different beams :(, also the out sims are convolved with pixwin to the third power.
+It is a bit wasteful but here we go
 """
 
 import sys
 
 from pspipe_utils import log, pspipe_list, misc
 from pspy import pspy_utils, so_dict, so_mcm, so_mpi, so_map
+import numpy as np
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+
+def apply_pixwin_to_beam(l, bl, l_pw, pw, pow=1):
+    """
+    include pixwin effect in the beam
+    """
+    id_pw = np.where(l_pw <= l[-1]) #truncate pixwin to max beam multipole
+    bl["T"] *= pw[id_pw] ** pow
+    bl["E"] *= pw[id_pw] ** pow
+    return bl
+
+
 mcm_dir = "mcms"
 pspy_utils.create_directory(mcm_dir)
+
 
 surveys = d["surveys"]
 lmax = d["lmax"]
 binned_mcm = d["binned_mcm"]
+
+l_pw, pw = np.loadtxt(d["pixwin_spt_file"], unpack=True)
+
 
 if d["use_toeplitz_mcm"] == True:
     log.info("we will use the toeplitz approximation")
@@ -36,26 +54,50 @@ for task in subtasks:
 
     log.info(f"[{task:02d}] mcm matrix for {sv1}_{ar1} x {sv2}_{ar2}")
 
-    l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}"], d[f"beam_pol_{sv1}_{ar1}"])
 
     win1_T = so_map.read_map(d[f"window_T_{sv1}_{ar1}"])
     win1_pol = so_map.read_map(d[f"window_pol_{sv1}_{ar1}"])
-
-    l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}"], d[f"beam_pol_{sv2}_{ar2}"])
-
     win2_T = so_map.read_map(d[f"window_T_{sv2}_{ar2}"])
     win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{ar2}"])
 
-    mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(win1_T, win1_pol),
-                                                win2=(win2_T, win2_pol),
-                                                bl1=(bl1["T"], bl1["E"]),
-                                                bl2=(bl2["T"], bl2["E"]),
-                                                binning_file=d["binning_file"],
-                                                niter=d["niter"],
-                                                lmax=d["lmax"],
-                                                type=d["type"],
-                                                l_exact=l_exact,
-                                                l_band=l_band,
-                                                l_toep=l_toep,
-                                                binned_mcm=binned_mcm,
-                                                save_file=f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}")
+
+    runs = ["data_run", "sim_in_run", "sim_out_run"]
+    
+    for run in runs:
+
+        if run == "data_run":
+        
+            file_name = f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}"
+            l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}"], d[f"beam_pol_{sv1}_{ar1}"])
+            l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}"], d[f"beam_pol_{sv2}_{ar2}"])
+            bl1 = apply_pixwin_to_beam(l, bl1, l_pw, pw, pow=1)
+            bl2 = apply_pixwin_to_beam(l, bl2, l_pw, pw, pow=1)
+        
+        if run == "sim_in_run":
+    
+            file_name = f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}_sim_in"
+            mcm_dir_run = mcm_dir + "_sim_in"
+            l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}_sim"], d[f"beam_pol_{sv1}_{ar1}_sim"])
+            l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}_sim"], d[f"beam_pol_{sv2}_{ar2}_sim"])
+    
+        if run == "sim_out_run":
+    
+            file_name = f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}_sim_out"
+            l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}_sim"], d[f"beam_pol_{sv1}_{ar1}_sim"])
+            l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}_sim"], d[f"beam_pol_{sv2}_{ar2}_sim"])
+            bl1 = apply_pixwin_to_beam(l, bl1, l_pw, pw, pow=3)
+            bl2 = apply_pixwin_to_beam(l, bl2, l_pw, pw, pow=3)
+
+        mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(win1_T, win1_pol),
+                                                    win2=(win2_T, win2_pol),
+                                                    bl1=(bl1["T"], bl1["E"]),
+                                                    bl2=(bl2["T"], bl2["E"]),
+                                                    binning_file=d["binning_file"],
+                                                    niter=d["niter"],
+                                                    lmax=d["lmax"],
+                                                    type=d["type"],
+                                                    l_exact=l_exact,
+                                                    l_band=l_band,
+                                                    l_toep=l_toep,
+                                                    binned_mcm=binned_mcm,
+                                                    save_file=file_name)

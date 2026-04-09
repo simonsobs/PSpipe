@@ -8,8 +8,7 @@ alm_conv_spt = "IAU"
 binning_file = release_dir + "binning_spt.dat"
 apply_kspace_filter  = False
 
-deconvolve_pixwin = True
-pixwin_spt = {"pix": 'HEALPIX', "nside": 8192} #should be replaced with the more accurate pixel window that is provided
+pixwin_spt_file = release_dir + "ancillary_products/generally_applicable/pixel_window_function.txt"
 
 
 apply_alm_mask = True
@@ -44,15 +43,7 @@ maps_spt_150 = [release_dir + "real_data_maps/one_thirtieth/one_thirtieth_bundle
 maps_spt_220 = [release_dir + "real_data_maps/one_thirtieth/one_thirtieth_bundle%02d_220ghz_inpainted.fits" % (i) for i in range(n_splits_spt)]
 
 
-# these number are just the one associated with their beam at l=0
-# in act we use the convention that bl(l=0)=1, they don't do this in spt
-cal_spt_095 = 1 / 1.09647802
-cal_spt_150 = 1 / 1.06827578
-cal_spt_220 = 1 / 1.11338355
 
-pol_eff_spt_095 = 1.0
-pol_eff_spt_150 = 1.0
-pol_eff_spt_220 = 1.0
 
 beam_file_dir = release_dir + "ancillary_products/specific_to_c25/"
 
@@ -63,6 +54,38 @@ beam_T_spt_220 = beam_file_dir + "beam_c25_bl_220ghz.txt"
 beam_pol_spt_095 = beam_file_dir + "beam_c25_bl_095ghz.txt"
 beam_pol_spt_150 = beam_file_dir + "beam_c25_bl_150ghz.txt"
 beam_pol_spt_220 = beam_file_dir + "beam_c25_bl_220ghz.txt"
+
+# these number are just the one associated with their beam at l=0
+# in act we use the convention that bl(l=0)=1, they don't do this in spt
+cal_spt_095 = 1 / 1.09647802
+cal_spt_150 = 1 / 1.06827578
+cal_spt_220 = 1 / 1.11338355
+
+pol_eff_spt_095 = 1.0
+pol_eff_spt_150 = 1.0
+pol_eff_spt_220 = 1.0
+
+
+beam_file_dir_sim = release_dir + "simulated_maps/input_maps/"
+
+beam_T_spt_095_sim = beam_file_dir_sim + "input_beam_bl_095ghz.txt"
+beam_T_spt_150_sim = beam_file_dir_sim + "input_beam_bl_150ghz.txt"
+beam_T_spt_220_sim = beam_file_dir_sim + "input_beam_bl_220ghz.txt"
+
+beam_pol_spt_095_sim = beam_file_dir_sim + "input_beam_bl_095ghz.txt"
+beam_pol_spt_150_sim = beam_file_dir_sim + "input_beam_bl_150ghz.txt"
+beam_pol_spt_220_sim = beam_file_dir_sim + "input_beam_bl_220ghz.txt"
+
+# these number are just the one associated with their beam at l=0
+# in act we use the convention that bl(l=0)=1, they don't do this in spt
+cal_spt_095_sim = 1 / 1.10236904
+cal_spt_150_sim = 1 / 1.08330642
+cal_spt_220_sim = 1 / 1.12568902
+
+pol_eff_spt_095_sim = 1.0
+pol_eff_spt_150_sim = 1.0
+pol_eff_spt_220_sim = 1.0
+
 
 window_dir =  release_dir + "ancillary_products/generally_applicable/"
 
@@ -80,5 +103,5 @@ cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omc
 
 
 iStart = 0
-iStop = 15
+iStop = 95
 

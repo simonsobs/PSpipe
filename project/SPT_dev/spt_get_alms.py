@@ -1,7 +1,6 @@
 """
 This script compute all alms write them to disk.
-It uses the window function provided in the dictionnary file.
-Optionally, it applies a calibration to the maps, a kspace filter and deconvolve the CAR pixel window function.
+It uses the window function provided in the dictionnary file and optionnaly applies an alm mask.
 """
 
 import sys
@@ -10,7 +9,7 @@ import time
 import numpy as np
 import healpy as hp
 from pixell import enmap
-from pspipe_utils import kspace, log, misc, pspipe_list
+from pspipe_utils import log, pspipe_list
 from pspy import pspy_utils, so_dict, so_mpi, sph_tools, so_map
 
 
@@ -20,9 +19,7 @@ log = log.get_logger(**d)
 
 surveys = d["surveys"]
 lmax = d["lmax"]
-deconvolve_pixwin = d["deconvolve_pixwin"]
 niter = d["niter"]
-apply_kspace_filter = d["apply_kspace_filter"]
 apply_alm_mask = d["apply_alm_mask"]
 
 alms_dir = "alms"
@@ -46,63 +43,13 @@ for task in subtasks:
     
     window_tuple = (win_T, win_pol)
 
-
-    if win_T.pixel == "CAR":
-        win_kspace = so_map.read_map(d[f"window_kspace_{sv}_{ar}"])
-
-        if apply_kspace_filter:
-            ks_f = d[f"k_filter_{sv}"]
-            filter = kspace.get_kspace_filter(win_T, ks_f)
-
-        inv_pixwin_lxly = None
-        if deconvolve_pixwin:
-            if d[f"pixwin_{sv}"]["pix"] == "CAR":
-                # compute the CAR pixel function in fourier space
-                wy, wx = enmap.calc_window(win_T.data.shape, order=d[f"pixwin_{sv}"]["order"])
-                inv_pixwin_lxly = (wy[:,None] * wx[None,:]) ** (-1)
-
-
     maps = d[f"maps_{sv}_{ar}"]
     cal, pol_eff = d[f"cal_{sv}_{ar}"], d[f"pol_eff_{sv}_{ar}"]
 
     t0 = time.time()
     for k, map in enumerate(maps):
 
-        if win_T.pixel == "CAR":
-            split = so_map.read_map(map, geometry=win_T.data.geometry)
-
-            if d[f"src_free_maps_{sv}"] == True:
-                ps_map_name = map.replace("_srcfree.fits", ".fits")
-                if ps_map_name == map:
-                    raise ValueError("name should contain srcfree, check map names!")
-                ps_map =  so_map.read_map(ps_map_name, geometry=win_T.data.geometry)
-                ps_map.data -= split.data
-                
-                
-                ps_mask = so_map.read_map(d[f"ps_mask_{sv}_{ar}"])
-                ps_map.data *= ps_mask.data
-                split.data += ps_map.data
-
-            if apply_kspace_filter:
-                log.info(f"[{task}] apply kspace filter on {map}")
-                split = kspace.filter_map(split,
-                                          filter,
-                                          win_kspace,
-                                          inv_pixwin=inv_pixwin_lxly,
-                                          weighted_filter=ks_f["weighted"],
-                                          use_ducc_rfft=True)
-                        
-            else:
-                log.info(f"[{task}] WARNING: no kspace filter is applied")
-                if (deconvolve_pixwin) & (inv_pixwin_lxly is not None):
-                    split = so_map.fourier_convolution(split,
-                                                       inv_pixwin_lxly,
-                                                       window=win_kspace,
-                                                       use_ducc_rfft=True)
-                         
-        elif win_T.pixel == "HEALPIX":
-            split = so_map.read_map(map)
-
+        split = so_map.read_map(map)
         split = split.calibrate(cal=cal, pol_eff=pol_eff)
 
         if d["remove_mean"] == True:

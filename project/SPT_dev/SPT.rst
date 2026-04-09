@@ -24,31 +24,3 @@ An alternative dictfile using half-missions is provided that allows for much fas
 You can then compare with the spt released spectra by running spt_plot_spectra.py and spt_plot_noise_spectra.py, note that you need to install candl and spt_candl_data first.
 Another useful routine to modify spt alm mask (and reduce E-> B leakage) is provided in spt_modify_alm_mask.py.
 
-Simulations
--------------------------------------------------------
-
-SPT provides 500 unfiltered simulations and 500 filtered simulations, allowing us to estimate the transfer function.
-We have written script to do both 2d transfer function analysis
-
-.. code:: shell
-
-    salloc --nodes 4 --qos interactive --time 02:00:00 --constraint cpu
-    OMP_NUM_THREADS=16 srun -n 16 -c 64 --cpu-bind=cores python spt_mc_get_tf2d.py global_spt.dict
-    
-and one dimensional transfer function analysis
-
-.. code:: shell
-
-    salloc --nodes 4 --qos interactive --time 02:00:00 --constraint cpu
-    OMP_NUM_THREADS=16 srun -n 16 -c 64 --cpu-bind=cores python spt_mc_get_tf_spectra.py global_spt.dict
-
-
-
-.. code:: shell
-
-    pip install candl-like
-    git clone https://github.com/SouthPoleTelescope/spt_candl_data.git
-    cd spt_candl_data
-    pip install .
-
-

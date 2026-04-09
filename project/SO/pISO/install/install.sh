@@ -71,6 +71,7 @@ done
 
 # 5. Virtual Environment Setup
 cd "$BASE_DIR"
+uv cache clean
 uv venv --python "$PYTHON_VERSION"
 ln -sf .venv/bin/activate activate
 
@@ -78,7 +79,7 @@ ln -sf .venv/bin/activate activate
 echo "Starting installation..."
 
 # NumPy 1.x is required for ducc/pixell compatibility here
-uv pip install "numpy<2"
+uv pip install "numpy<2" --no-binary numpy --no-cache-dir -Csetup-args=-Dblas=mkl-dynamic-ilp64-iomp -Csetup-args=-Dlapack=mkl-dynamic-ilp64-iomp -Csetup-args=-Duse-ilp64=true
 
 # Install ducc from source (optimized local wheel)
 cd "$INSTALL_DIR"
@@ -88,7 +89,7 @@ uv pip install ../repos/ducc --no-binary ducc0 --no-cache-dir
 uv pip install -r requirements.in 
 
 # 7. Specialized Package Builds
-uv pip install ../repos/optweight --no-build-isolation
+uv pip install ../repos/optweight --no-cache-dir --no-build-isolation
 
 # Dynamic Compilation: enlib array_ops
 if [ "$COMPILE_ARRAY_OPS" = "true" ]; then
@@ -104,13 +105,13 @@ else
 fi
 
 # Build pspy
-uv pip install ../repos/pspy --no-build-isolation
+uv pip install ../repos/pspy --no-cache-dir --no-build-isolation
 
 # 8. Editable Installs
 echo "Installing local packages in editable mode..."
-uv pip install -e ../repos/sofind
-uv pip install -e ../repos/mnms
-uv pip install -e ../repos/pspipe_utils
+uv pip install -e ../repos/sofind --no-cache-dir
+uv pip install -e ../repos/mnms --no-cache-dir
+uv pip install -e ../repos/pspipe_utils --no-cache-dir
 
 # 9. Modify Slurm Template
 echo "Configuring Slurm template at $REPO_DIR/PSpipe/project/SO/pISO/slurm/tiger.slurm"

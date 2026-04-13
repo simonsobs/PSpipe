@@ -492,6 +492,13 @@ for iii in mapset_iterator:
                                               inv_pixwin=inv_pwin,
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
+                    
+                    if for_kspace:
+                        split_nofilt = so_map.fourier_convolution(split_nofilt,
+                                                       inv_pwin,
+                                                       window=win_kspace,
+                                                       use_ducc_rfft=True)
+
                     if plot_maps:
                         plot = enplot.get_plots(
                             split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
@@ -511,6 +518,13 @@ for iii in mapset_iterator:
                                               inv_pixwin=None,
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
+                    
+                    if for_kspace:
+                        split_nofilt = so_map.fourier_convolution(split_nofilt,
+                                                       inv_pwin = None,
+                                                       window=win_kspace,
+                                                       use_ducc_rfft=True)
+
                     if plot_maps:
                         if plot_maps:
                             plot = enplot.get_plots(

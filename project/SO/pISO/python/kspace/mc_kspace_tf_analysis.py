@@ -11,6 +11,7 @@ import numpy as np
 import pylab as plt
 import sys
 import argparse
+from os.path import join as opj
 
 parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -145,13 +146,16 @@ plt.close()
 for spec in spec_list:
     log.info(f"plot uncorrected vs corrected mean for {spec} ")
 
-
-    prefix= f"{mcm_dir}/{spec}"
-
-    mbb_inv, Bbl = so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
-
+    Bbl = np.load(opj(f"{mcm_dir}", spec + "_Bbl.npy"))
     n1, n2 = spec.split("x")
-    bin_theory = so_mcm.apply_Bbl(Bbl, cmb_and_fg_dict[n1, n2], spectra=spectra)
+    bin_theory = so_mcm.spin2spin_array_matmul_sparse_dict_vec(Bbl, spectra, cmb_and_fg_dict[n1, n2])
+
+    #prefix= f"{mcm_dir}/{spec}"
+
+    #mbb_inv, Bbl = so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
+
+    #n1, n2 = spec.split("x")
+    #bin_theory = so_mcm.apply_Bbl(Bbl, cmb_and_fg_dict[n1, n2], spectra=spectra)
 
 
 
@@ -167,7 +171,7 @@ for spec in spec_list:
         for filt in ["filter", "nofilter"]:
 
             my_list = []
-            for iii in range(iStart, iStop + 1):
+            for iii in mapset_iterator:
                 my_list += [ps_list[spec][filt, "standard"][iii][spectrum]]
 
             mean[filt] = np.mean(my_list, axis=0)

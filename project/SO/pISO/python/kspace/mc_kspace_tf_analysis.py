@@ -84,7 +84,6 @@ sv2_iterator = sv2_list
 m2_iterator = m2_list
 
 spec_list = pspipe_list.get_spec_name_list(d, delimiter="_")
-#_, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 array_list = [f"{sv}_{ar}" for (sv, ar) in zip(sv_list, map_list)]
 lth, cmb_and_fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat",
                                                     array_list,
@@ -102,7 +101,6 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
 
     ps_list[spec] = {}
     for scenario in scenarios:
-        #for iii in range(iStart, iStop + 1):
         for iii in mapset_iterator: 
  
             if iii == 0:
@@ -149,15 +147,6 @@ for spec in spec_list:
     Bbl = np.load(opj(f"{mcm_dir}", spec + "_Bbl.npy"))
     n1, n2 = spec.split("x")
     bin_theory = so_mcm.spin2spin_array_matmul_sparse_dict_vec(Bbl, spectra, cmb_and_fg_dict[n1, n2])
-
-    #prefix= f"{mcm_dir}/{spec}"
-
-    #mbb_inv, Bbl = so_mcm.read_coupling(prefix=prefix,spin_pairs=spin_pairs)
-
-    #n1, n2 = spec.split("x")
-    #bin_theory = so_mcm.apply_Bbl(Bbl, cmb_and_fg_dict[n1, n2], spectra=spectra)
-
-
 
     for iii in mapset_iterator:
         lb, ps_list[spec]["filter", "standard"][iii] = kspace.deconvolve_kspace_filter_matrix(lb,

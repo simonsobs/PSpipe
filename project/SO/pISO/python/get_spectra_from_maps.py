@@ -373,12 +373,17 @@ for iii in mapset_iterator:
                         enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}", plot)
                     
                     if d[f"src_free_maps_{sv}"] == True:
-                        ps_map_fn = map_fn.replace("_srcfree.fits", ".fits")
+                        try:
+                            ps_map_fn = map_fn.replace("_srcfree.fits", "_srcs.fits")
+                            ps_map = so_map.read_map(ps_map_fn, geometry=win_T.data.geometry)
+                        except FileNotFoundError:
+                            ps_map_fn = map_fn.replace("_srcfree.fits", ".fits")
+                            ps_map = so_map.read_map(ps_map_fn, geometry=win_T.data.geometry)
+                            ps_map.data -= split.data
+                            
                         if ps_map_fn == map_fn:
                             raise ValueError(f"{ps_map_fn} should contain srcfree, check map names!")
-                        ps_map =  so_map.read_map(ps_map_fn, geometry=win_T.data.geometry)
-                        ps_map.data -= split.data
-                        
+
                         # TODO: would be cleaner if could just make ps_map with
                         # cutoff instead of relying on the mask
                         winname = dict_utils.get_winname_from_map(d, f'{sv}_{m}', 'T')

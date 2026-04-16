@@ -16,6 +16,11 @@ We first need to project SPT masks and maps to CAR so dory can read these.
 
 The code is not working very well (it gets lot of duplicate around super bright sources) but that is the best we have
 
+.. code:: shell
+
+    salloc --nodes 1 --qos interactive --time  04:00:00 --constraint cpu
+    sh spt_find_source.sh
+
 
 You can then generate the mask and check if it does what you want
 

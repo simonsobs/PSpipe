@@ -16,7 +16,7 @@ spec_dir = data_dir + f'spectra/{run_name}/'
 cov_dir = data_dir + f'covariances/{run_name}/'
 window_dir = data_dir + f'windows/{run_name}/'
 
-# surveys = ['dr6', 'planck', 'lat_iso']
+# surveys = ['dr6', 'legacy', 'lat_iso']
 # surveys = ['dr6', 'lat_iso']
 surveys = ['lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
@@ -34,7 +34,7 @@ k_filter_dr6 = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50],
 k_filter_planck = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 k_filter_lat_iso = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 
-binning_file = data_dir + 'binning/binning_50.dat'
+binning_file = '/scratch/gpfs/SIMONSOBS/lat-iso/ps/binning/binning_50.dat'
 niter = 0
 remove_mean = False
 binned_mcm = True # because mask too small
@@ -302,10 +302,11 @@ leakage_beam_dr6_pa6_f150_TB = leakage_dir_dr6 + 'pa6_f150_gamma_t2b.txt'
 
 xtra_mask_yaml = yaml_dir + 'xtra_mask_flip_pwv.yaml'
 xlink_downgrade = 8 
-ps_and_gal_mask_dir = data_dir + 'mask/'
+ps_and_gal_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/ps/masks/'
 mnms_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/mbs/mnms_products/masks/v20260201_skn_50cg_mask_obs/'
 
 plot_windowed_maps = ['lat_iso_i1_f090_pwv0', 'lat_iso_i1_f090_pwv1', 'lat_iso_i1_f150_pwv0', 'lat_iso_i1_f150_pwv1', 'lat_iso_i3_f090_pwv0', 'lat_iso_i3_f090_pwv1', 'lat_iso_i3_f150_pwv0', 'lat_iso_i3_f150_pwv1', 'lat_iso_i4_f090_pwv0', 'lat_iso_i4_f090_pwv1', 'lat_iso_i4_f150_pwv0', 'lat_iso_i4_f150_pwv1', 'lat_iso_i6_f090_pwv0', 'lat_iso_i6_f090_pwv1', 'lat_iso_i6_f150_pwv0', 'lat_iso_i6_f150_pwv1', 'lat_iso_c1_f220_pwv0', 'lat_iso_c1_f220_pwv1', 'lat_iso_c1_f280_pwv0', 'lat_iso_c1_f280_pwv1', 'lat_iso_i5_f220_pwv0', 'lat_iso_i5_f220_pwv1', 'lat_iso_i5_f280_pwv0', 'lat_iso_i5_f280_pwv1']
+plot_maps = True
 
 template_geometry_intersect = maps_lat_iso_i1_f090_pwv0[0]
 

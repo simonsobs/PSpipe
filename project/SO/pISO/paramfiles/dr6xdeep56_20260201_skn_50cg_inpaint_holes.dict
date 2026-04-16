@@ -16,8 +16,9 @@ spec_dir = data_dir + f'spectra/{run_name}/'
 cov_dir = data_dir + f'covariances/{run_name}/'
 window_dir = data_dir + f'windows/{run_name}/'
 
-# surveys = ['dr6', 'planck', 'lat_iso']
+# surveys = ['dr6', 'legacy', 'lat_iso']
 surveys = ['dr6', 'lat_iso']
+# surveys = ['lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
 arrays_planck = ['f100', 'f143', 'f217', 'f353']
 arrays_lat_iso = ['i1_f090', 'i1_f150', 'i3_f090', 'i3_f150', 'i4_f090', 'i4_f150', 'i6_f090', 'i6_f150', 'c1_f220', 'c1_f280', 'i5_f220', 'i5_f280']
@@ -33,7 +34,7 @@ k_filter_dr6 = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50],
 k_filter_planck = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 k_filter_lat_iso = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 
-binning_file = data_dir + 'binning/binning_50.dat'
+binning_file = '/scratch/gpfs/SIMONSOBS/lat-iso/ps/binning/binning_50.dat'
 niter = 0
 remove_mean = False
 binned_mcm = True # because mask too small
@@ -97,18 +98,18 @@ pol_eff_dr6_pa5_f150 = 1.0
 pol_eff_dr6_pa6_f090 = 1.0
 pol_eff_dr6_pa6_f150 = 1.0
 
-cal_lat_iso_i1_f090 = 0.7994418419933011
-cal_lat_iso_i1_f150 = 0.8864425622105765
-cal_lat_iso_i3_f090 = 0.8228523446886682
-cal_lat_iso_i3_f150 = 0.8859469925472443
-cal_lat_iso_i4_f090 = 0.8181621398010599
-cal_lat_iso_i4_f150 = 0.9152864258661412
-cal_lat_iso_i6_f090 = 0.8445296797641012
-cal_lat_iso_i6_f150 = 0.8816926295853729
-cal_lat_iso_c1_f220 = 0.9620063998837832
-cal_lat_iso_c1_f280 = 0.9705715801442246
-cal_lat_iso_i5_f220 = 0.9286829707995147
-cal_lat_iso_i5_f280 = 0.8950161172081941
+cal_lat_iso_i1_f090 = 1.
+cal_lat_iso_i1_f150 = 1.
+cal_lat_iso_i3_f090 = 1.
+cal_lat_iso_i3_f150 = 1.
+cal_lat_iso_i4_f090 = 1.
+cal_lat_iso_i4_f150 = 1.
+cal_lat_iso_i6_f090 = 1.
+cal_lat_iso_i6_f150 = 1.
+cal_lat_iso_c1_f220 = 1.
+cal_lat_iso_c1_f280 = 1.
+cal_lat_iso_i5_f220 = 1.
+cal_lat_iso_i5_f280 = 1.
 
 pol_eff_lat_iso_i1_f090 = 1.
 pol_eff_lat_iso_i1_f150 = 1.
@@ -229,19 +230,13 @@ leakage_beam_dr6_pa6_f150_TB = leakage_dir_dr6 + 'pa6_f150_gamma_t2b.txt'
 
 xtra_mask_yaml = yaml_dir + 'xtra_mask.yaml'
 xlink_downgrade = 8 
-ps_and_gal_mask_dir = data_dir + 'mask/'
+ps_and_gal_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/ps/masks/'
 mnms_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/mbs/mnms_products/masks/v20260201_skn_50cg_mask_obs/'
 
 plot_windowed_maps = ['lat_iso_i1_f090', 'lat_iso_i1_f150', 'lat_iso_i3_f090', 'lat_iso_i3_f150', 'lat_iso_i4_f090', 'lat_iso_i4_f150', 'lat_iso_i6_f090', 'lat_iso_i6_f150', 'lat_iso_c1_f220', 'lat_iso_c1_f280', 'lat_iso_i5_f220', 'lat_iso_i5_f280']
+plot_maps = True
 
 template_geometry_intersect = maps_lat_iso_i1_f090[0]
-template_geometry_union = maps_lat_iso_i1_f090[0]
-template_geometry_lat_iso_i1 = maps_lat_iso_i1_f090[0]
-template_geometry_lat_iso_i3 = maps_lat_iso_i3_f090[0]
-template_geometry_lat_iso_i4 = maps_lat_iso_i4_f090[0]
-template_geometry_lat_iso_i6 = maps_lat_iso_i6_f090[0]
-template_geometry_lat_iso_c1 = maps_lat_iso_c1_f220[0]
-template_geometry_lat_iso_i5 = maps_lat_iso_i5_f220[0]
 
 kspace_mask_edge_cut = 0
 apod_kspace_degree = 1
@@ -251,34 +246,6 @@ apod_survey_degree = 2
 kspace_masks_intersect = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_intersect.fits', mask_dir + 'xtra_xlink_mask_intersect.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i1a_i1b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i3a_i3b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i4a_i4b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i6a_i6b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_c1a_c1b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i5a_i5b.fits']
 baseline_masks_intersect = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
 baseline_apods_intersect = [0.3]
-
-kspace_masks_union = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_union.fits', mask_dir + 'xtra_xlink_mask_union.fits']
-baseline_masks_union = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
-baseline_apods_union = [0.3]
-
-kspace_masks_lat_iso_i1 = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i1_f090.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i1_f150.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i1_f090.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i1_f150.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i1a_i1b.fits']
-baseline_masks_lat_iso_i1 = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
-baseline_apods_lat_iso_i1 = [0.3]
-
-kspace_masks_lat_iso_i3 = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i3_f090.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i3_f150.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i3_f090.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i3_f150.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i3a_i3b.fits']
-baseline_masks_lat_iso_i3 = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
-baseline_apods_lat_iso_i3 = [0.3]
-
-kspace_masks_lat_iso_i4 = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i4_f090.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i4_f150.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i4_f090.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i4_f150.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i4a_i4b.fits']
-baseline_masks_lat_iso_i4 = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
-baseline_apods_lat_iso_i4 = [0.3]
-
-kspace_masks_lat_iso_i6 = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i6_f090.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i6_f150.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i6_f090.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i6_f150.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i6a_i6b.fits']
-baseline_masks_lat_iso_i6 = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
-baseline_apods_lat_iso_i6 = [0.3]
-
-kspace_masks_lat_iso_c1 = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_lat_iso_c1_f220.fits', mask_dir + 'xtra_ivar_mask_lat_iso_c1_f280.fits', mask_dir + 'xtra_xlink_mask_lat_iso_c1_f220.fits', mask_dir + 'xtra_xlink_mask_lat_iso_c1_f280.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_c1a_c1b.fits']
-baseline_masks_lat_iso_c1 = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
-baseline_apods_lat_iso_c1 = [0.3]
-
-kspace_masks_lat_iso_i5 = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i5_f220.fits', mask_dir + 'xtra_ivar_mask_lat_iso_i5_f280.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i5_f220.fits', mask_dir + 'xtra_xlink_mask_lat_iso_i5_f280.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_i5a_i5b.fits']
-baseline_masks_lat_iso_i5 = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
-baseline_apods_lat_iso_i5 = [0.3]
 
 window_kspace_dr6_pa4_f220 = window_dir + 'window_intersect_kspace.fits'
 window_T_dr6_pa4_f220 =  window_dir + 'window_intersect_baseline.fits'

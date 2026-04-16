@@ -311,13 +311,13 @@ for task in subtasks:
                 axs[0, 0].loglog(l, raw_y, alpha=0.3, label='raw')
                 axs[0, 0].loglog(l, fit_y, alpha=1, label='fit')
                 axs[0, 0].scatter(l[red_mask], fit_y[red_mask], alpha=1, c='r')
-                axs[0, 0].set_ylabel('$N_{\ell}$', fontsize=12)
+                axs[0, 0].set_ylabel(r'$N_{\ell}$', fontsize=12)
                 axs[0, 0].legend()
                 axs[0, 0].grid()
 
                 axs[1, 0].semilogx(l, (fit_y / raw_y), alpha=1, color='k')
                 axs[1, 0].scatter(l[red_mask], (fit_y / raw_y)[red_mask], alpha=1, c='r')
-                axs[1, 0].set_xlabel('$\ell$', fontsize=12)
+                axs[1, 0].set_xlabel(r'$\ell$', fontsize=12)
                 axs[1, 0].set_ylabel('fit / raw', fontsize=12)
                 axs[1, 0].grid()
 
@@ -329,7 +329,7 @@ for task in subtasks:
 
                 axs[1, 1].plot(l, (fit_y / raw_y), alpha=1, color='k')
                 axs[1, 1].scatter(l[red_mask], (fit_y / raw_y)[red_mask], alpha=1, c='r')
-                axs[1, 1].set_xlabel('$\ell$', fontsize=12)
+                axs[1, 1].set_xlabel(r'$\ell$', fontsize=12)
                 axs[1, 1].grid()
 
                 pol1, pol2 = 'TEB'[p1], 'TEB'[p2]
@@ -352,13 +352,13 @@ for task in subtasks:
                     axs[0, 0].semilogx(l, raw_y, alpha=0.3, label='raw')
                     axs[0, 0].semilogx(l, fit_y, alpha=1, label='fit')
                     axs[0, 0].scatter(l[red_mask], fit_y[red_mask], alpha=1, c='r')
-                    axs[0, 0].set_ylabel(['$r_{\ell}$', '$N_{\ell}$'][i], fontsize=12)
+                    axs[0, 0].set_ylabel([r'$r_{\ell}$', r'$N_{\ell}$'][i], fontsize=12)
                     axs[0, 0].legend()
                     axs[0, 0].grid()
 
                     axs[1, 0].semilogx(l, (fit_y - raw_y), alpha=1, color='k')
                     axs[1, 0].scatter(l[red_mask], (fit_y - raw_y)[red_mask], alpha=1, c='r')
-                    axs[1, 0].set_xlabel('$\ell$', fontsize=12)
+                    axs[1, 0].set_xlabel(r'$\ell$', fontsize=12)
                     axs[1, 0].set_ylabel('fit - raw', fontsize=12)
                     axs[1, 0].grid()
 
@@ -371,7 +371,7 @@ for task in subtasks:
 
                     axs[1, 1].plot(l, (fit_y - raw_y), alpha=1, color='k')
                     axs[1, 1].scatter(l[red_mask], (fit_y - raw_y)[red_mask], alpha=1, c='r')
-                    axs[1, 1].set_xlabel('$\ell$', fontsize=12)
+                    axs[1, 1].set_xlabel(r'$\ell$', fontsize=12)
                     axs[1, 1].grid()
 
                     pol1, pol2 = 'TEB'[p1], 'TEB'[p2]

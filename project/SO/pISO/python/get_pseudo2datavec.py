@@ -89,7 +89,7 @@ for sv in surveys:
     if d[f"pixwin_{sv}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
         # this is a crude approximation. really, it would be something like
         # Bbl @ (pw_l)^2 C_l, so it can't be easily decoupled
-        pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"])
+        pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"], datapath='/scratch/gpfs/SIMONSOBS/lat-iso/')
         _, pw_b = pspy_utils.naive_binning(np.arange(len(pw_l)), pw_l, binning_file, lmax)
         pixwins[sv] = pw_b
 

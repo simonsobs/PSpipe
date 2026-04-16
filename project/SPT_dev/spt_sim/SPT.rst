@@ -18,14 +18,14 @@ We have written script to do both 2d transfer function analysis
 .. code:: shell
 
     salloc --nodes 4 --qos interactive --time 02:00:00 --constraint cpu
-    OMP_NUM_THREADS=16 srun -n 16 -c 64 --cpu-bind=cores python spt_mc_get_tf2d.py global_spt.dict
+    OMP_NUM_THREADS=16 srun -n 16 -c 64 --cpu-bind=cores python spt_sim_get_tf2d.py global_spt.dict
     
 and one dimensional transfer function analysis
 
 .. code:: shell
 
     salloc --nodes 4 --qos interactive --time 04:00:00 --constraint cpu
-    OMP_NUM_THREADS=8 srun -n 8 -c 128 --cpu-bind=cores python spt_mc_get_tf_spectra.py global_spt.dict
+    OMP_NUM_THREADS=8 srun -n 8 -c 128 --cpu-bind=cores python spt_sim_get_tf_spectra.py global_spt.dict
 
 
 We have written three scripts to analyse these simulation

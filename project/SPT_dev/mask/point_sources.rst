@@ -18,7 +18,9 @@ The code is not working very well (it gets lot of duplicate around super bright 
 
 
 You can then generate the mask and check if it does what you want
+
 .. code:: shell
+
     salloc --nodes 1 --qos interactive --time  01:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python generate_source_mask.py mask.dict
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python check_source_mask.py mask.dict

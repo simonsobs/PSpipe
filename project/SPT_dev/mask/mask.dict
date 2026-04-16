@@ -1,0 +1,12 @@
+release_dir = "/global/cfs/cdirs/sobs/users/tlouis/spt_data/"
+box = [[-77, -62],[-35,60]]
+
+surveys = ["spt"]
+freqs_spt = ["095", "150", "220"]
+
+n_tops = [10, 20, 40]
+point_source_radius_arcmin = 12
+apo_radius_degree = 0.3
+apo_type = "C1"
+
+xtra_sources_ra_dec = [[49.1, -65.6]]

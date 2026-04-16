@@ -35,7 +35,10 @@ print(f"Project on geometry: {shape=}, {wcs=}")
 spt_maps_read_dir = f"{release_dir}/real_data_maps"
 spt_full_maps_fn_list = [opj(spt_maps_read_dir, f"full/full_{freq}ghz.fits") for freq in freqs]
 
-for spt_maps_fn in spt_full_maps_fn_list: 
+
+i_var_norm = [0.2638, 0.3865, 0.0308] # From  Wei Quan email, unit are 1/(\mu K^{2}/Hz)
+
+for count, spt_maps_fn in enumerate(spt_full_maps_fn_list):
     # Project maps
     maps_so = so_map.read_map(spt_maps_fn, fields_healpix=(0, 1, 2))
     maps = maps_so.data
@@ -49,10 +52,8 @@ for spt_maps_fn in spt_full_maps_fn_list:
     )
     enplot.write(opj(spt_maps_dir, os.path.basename(spt_maps_fn)[:-5] + "_CAR"), plot)
     
-    # We also need ivar, we use a fudge factor to get close to the real ivar: here I use 1e-2 which corresponds to 5uk.arcmin depth
-    fudge_ivar = 1e-2
     maps_so = so_map.read_map(spt_maps_fn, fields_healpix=(3))
-    maps = maps_so.data * fudge_ivar
+    maps = maps_so.data * i_var_norm[count]
 
     maps_proj = reproject.healpix2map(maps, shape, wcs, method="spline")
     # check if there is negative pixel

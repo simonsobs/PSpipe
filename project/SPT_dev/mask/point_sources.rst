@@ -9,8 +9,6 @@ We first need to project SPT masks and maps to CAR so dory can read these.
 .. code:: shell
     salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
     OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python project_maps_SPT_patch.py mask.dict
-"
-You can now get dory by cloning ``tenki``, to run it
 
 .. code:: shell
     salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu

@@ -22,7 +22,7 @@ point_source_radius_arcmin = d["point_source_radius_arcmin"]
 apo_radius_degree = d["apo_radius_degree"]
 apo_type = d["apo_type"]
 
-binar_dir =  release_dir + "ancillary_products/generally_applicable/"
+binary_dir =  release_dir + "ancillary_products/generally_applicable/"
 
 columns = ["ra", "dec", "SNR", "Tamp", "dTamp", "Qamp", "dQamp", "Uamp", "dUamp",
            "Tflux", "dTflux", "Qflux", "dQflux", "Uflux", "dUflux", "npix", "status"]
@@ -38,7 +38,7 @@ pspy_utils.create_directory(mask_dir)
 
 for n_top in n_tops:
 
-    edge_map = so_map.read_map(binar_dir + "pixel_mask_binary_borders_only.fits")
+    edge_map = so_map.read_map(binary_dir + "pixel_mask_apodized_borders_only.fits")
     binary = edge_map.copy()
     binary.data[:] = 1
 

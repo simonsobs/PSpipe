@@ -1,7 +1,7 @@
 run_name = 'deep56_20260201_skn_50cg_inpaint_holes_el_split'
-data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/'
-yaml_dir = '/home/zatkins/projects/PSpipe_dev/repos/PSpipe/project/SO/pISO/python/yaml/'
-
+# ! CHANGE THESE
+data_dir = 'path/to/your/datadir/'
+yaml_dir = 'path/to/your/yamldir/'
 # define paths for scripts in advance. this is the most flexible way for now
 # to allow products to be reused across different paramfiles 
 
@@ -22,6 +22,51 @@ surveys = ['lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
 arrays_planck = ['f100', 'f143', 'f217', 'f353']
 arrays_lat_iso = ['i1_f090_el0', 'i1_f090_el1', 'i1_f150_el0', 'i1_f150_el1', 'i3_f090_el0', 'i3_f090_el1', 'i3_f150_el0', 'i3_f150_el1', 'i4_f090_el0', 'i4_f090_el1', 'i4_f150_el0', 'i4_f150_el1', 'i6_f090_el0', 'i6_f090_el1', 'i6_f150_el0', 'i6_f150_el1', 'c1_f220_el0', 'c1_f220_el1', 'c1_f280_el0', 'c1_f280_el1', 'i5_f220_el0', 'i5_f220_el1', 'i5_f280_el0', 'i5_f280_el1']
+
+# TODO: make this also work for cov
+# ! for now you need to remove one null split from arrays_lat_iso to compute cov, use these :
+# arrays_lat_iso = ['i1_f090_el0', 'i1_f150_el0', 'i3_f090_el0', 'i3_f150_el0', 'i4_f090_el0', 'i4_f150_el0', 'i6_f090_el0', 'i6_f150_el0', 'c1_f220_el0', 'c1_f280_el0', 'i5_f220_el0', 'i5_f280_el0']
+# arrays_lat_iso = ['i1_f090_el1', 'i1_f150_el1', 'i3_f090_el1', 'i3_f150_el1', 'i4_f090_el1', 'i4_f150_el1', 'i6_f090_el1', 'i6_f150_el1', 'c1_f220_el1', 'c1_f280_el1', 'i5_f220_el1', 'i5_f280_el1']
+# TODO: modify pspipe_list so you just don't put (sv1, sv2) here instead of (sv1, sv2) : None
+combination_args = {('planck', 'planck'): None, ('planck', 'lat_iso'): None, ('lat_iso', 'lat_iso'): ['null_split']}
+
+# TODO: make these optionnal if empty
+tags_planck_f100 = {}
+tags_planck_f143 = {}
+tags_planck_f217 = {}
+tags_planck_f353 = {}
+
+tags_dr6_pa4_f220 = {}
+tags_dr6_pa5_f090 = {}
+tags_dr6_pa5_f150 = {}
+tags_dr6_pa6_f090 = {}
+tags_dr6_pa6_f150 = {}
+
+tags_lat_iso_i1_f090_el0 = {'null_split': '0'}
+tags_lat_iso_i1_f150_el0 = {'null_split': '0'}
+tags_lat_iso_i3_f090_el0 = {'null_split': '0'}
+tags_lat_iso_i3_f150_el0 = {'null_split': '0'}
+tags_lat_iso_i4_f090_el0 = {'null_split': '0'}
+tags_lat_iso_i4_f150_el0 = {'null_split': '0'}
+tags_lat_iso_i6_f090_el0 = {'null_split': '0'}
+tags_lat_iso_i6_f150_el0 = {'null_split': '0'}
+tags_lat_iso_c1_f220_el0 = {'null_split': '0'}
+tags_lat_iso_c1_f280_el0 = {'null_split': '0'}
+tags_lat_iso_i5_f220_el0 = {'null_split': '0'}
+tags_lat_iso_i5_f280_el0 = {'null_split': '0'}
+
+tags_lat_iso_i1_f090_el1 = {'null_split': '1'}
+tags_lat_iso_i1_f150_el1 = {'null_split': '1'}
+tags_lat_iso_i3_f090_el1 = {'null_split': '1'}
+tags_lat_iso_i3_f150_el1 = {'null_split': '1'}
+tags_lat_iso_i4_f090_el1 = {'null_split': '1'}
+tags_lat_iso_i4_f150_el1 = {'null_split': '1'}
+tags_lat_iso_i6_f090_el1 = {'null_split': '1'}
+tags_lat_iso_i6_f150_el1 = {'null_split': '1'}
+tags_lat_iso_c1_f220_el1 = {'null_split': '1'}
+tags_lat_iso_c1_f280_el1 = {'null_split': '1'}
+tags_lat_iso_i5_f220_el1 = {'null_split': '1'}
+tags_lat_iso_i5_f280_el1 = {'null_split': '1'}
 
 deconvolve_pixwin = True
 pixwin_dr6 = {'pix': 'CAR', 'order': 0}
@@ -59,9 +104,16 @@ dl_window_spectra = 3000
 cov_prebin_size = 5
 
 # maps
-src_free_maps_dr6 = True
 src_free_maps_planck = True
+src_free_maps_dr6 = True
 src_free_maps_lat_iso = True
+
+maps_dir_planck =  '/scratch/gpfs/SIMONSOBS/lat-iso/phase2/deep56/planck/'
+maps_planck_f100 = [maps_dir_planck + "legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f100_map_srcfree.fits" % i for i in [1,2]]
+maps_planck_f143 = [maps_dir_planck + "legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f143_map_srcfree.fits" % i for i in [1,2]]
+maps_planck_f217 = [maps_dir_planck + "legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f217_map_srcfree.fits" % i for i in [1,2]]
+maps_planck_f353 = [maps_dir_planck + "legacy/HFI_SkyMap_2048_R3.01_halfmission-%d_f353_map_srcfree.fits" % i for i in [1,2]]
+n_splits_planck = len(maps_planck_f100)
 
 maps_dir_dr6 = '/scratch/gpfs/ACT/data/act_dr6/dr6.02/maps/published/'
 maps_dr6_pa4_f220 = [maps_dir_dr6 + 'act_dr6.02_std_AA_night_pa4_f220_4way_set%d_map_srcfree.fits' % (i) for i in range(4)]
@@ -97,6 +149,17 @@ maps_lat_iso_i5_f220_el1 = [maps_dir_lat_iso + 'deep56_el1_i5_4way_%02d_f220_sky
 maps_lat_iso_i5_f280_el0 = [maps_dir_lat_iso + 'deep56_el0_i5_4way_%02d_f280_sky_map_srcfree.fits' % (i) for i in range(4)]
 maps_lat_iso_i5_f280_el1 = [maps_dir_lat_iso + 'deep56_el1_i5_4way_%02d_f280_sky_map_srcfree.fits' % (i) for i in range(4)] 
 n_splits_lat_iso = len(maps_lat_iso_i1_f090_el0) # TODO: clean this up
+
+
+cal_planck_f100 = 1.0
+cal_planck_f143 = 1.0
+cal_planck_f217 = 1.0
+cal_planck_f353 = 1.0
+
+pol_eff_planck_f100 = 1.0
+pol_eff_planck_f143 = 1.0
+pol_eff_planck_f217 = 1.0
+pol_eff_planck_f353 = 1.0
 
 cal_dr6_pa4_f220 = 1.0
 cal_dr6_pa5_f090 = 1.0
@@ -161,6 +224,13 @@ pol_eff_lat_iso_i5_f280_el0 = 1.
 pol_eff_lat_iso_i5_f280_el1 = 1.
 
 do_bandpass_integration = True
+
+passband_dir_planck = '/scratch/gpfs/SIMONSOBS/lat-iso/passbands/planck/'
+freq_info_planck_f100 = {'freq_tag': 100, 'passband': passband_dir_planck + 'passband_npipe_f100.dat'}
+freq_info_planck_f143 = {'freq_tag': 143, 'passband': passband_dir_planck + 'passband_npipe_f143.dat'}
+freq_info_planck_f217 = {'freq_tag': 217, 'passband': passband_dir_planck + 'passband_npipe_f217.dat'}
+freq_info_planck_f353 = {'freq_tag': 353, 'passband': passband_dir_planck + 'passband_npipe_f353.dat'}
+
 passband_dir_dr6 = '/scratch/gpfs/SIMONSOBS/lat-iso/passbands/dr6/'
 freq_info_dr6_pa4_f220 = {'freq_tag': 220, 'passband': passband_dir_dr6 + 'passband_dr6_pa4_f220.dat'}
 freq_info_dr6_pa5_f090 = {'freq_tag': 90, 'passband': passband_dir_dr6 + 'passband_dr6_pa5_f090.dat'}
@@ -195,6 +265,18 @@ freq_info_lat_iso_i5_f280_el0 = {'freq_tag': 280, 'passband': passband_dir_lat_i
 freq_info_lat_iso_i5_f280_el1 = {'freq_tag': 280, 'passband': passband_dir_lat_iso + 'bandpass_mean_f280.dat'}
 
 include_beam_chromaticity_effect_in_best_fit = False
+
+beam_dir_planck = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/planck/legacy/main_beams/'
+beam_T_planck_f100 = beam_dir_planck + "bl_T_legacy_100hm1x100hm2.dat"
+beam_T_planck_f143 = beam_dir_planck + "bl_T_legacy_143hm1x143hm2.dat"
+beam_T_planck_f217 = beam_dir_planck + "bl_T_legacy_217hm1x217hm2.dat"
+beam_T_planck_f353 = beam_dir_planck + "bl_T_legacy_353hm1x353hm2.dat"
+
+beam_pol_planck_f100 = beam_dir_planck + "bl_pol_legacy_100hm1x100hm2.dat"
+beam_pol_planck_f143 = beam_dir_planck + "bl_pol_legacy_143hm1x143hm2.dat"
+beam_pol_planck_f217 = beam_dir_planck + "bl_pol_legacy_217hm1x217hm2.dat"
+beam_pol_planck_f353 = beam_dir_planck + "bl_pol_legacy_353hm1x353hm2.dat"
+
 beam_dir_dr6 = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/dr6/main_beams/'
 beam_T_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
 beam_T_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
@@ -300,12 +382,13 @@ leakage_beam_dr6_pa6_f150_TB = leakage_dir_dr6 + 'pa6_f150_gamma_t2b.txt'
 # leakage_beam_lat_iso_i5_f220_TB = leakage_dir_lat_iso + 'gamma_t2b_i5.txt'
 # leakage_beam_lat_iso_i5_f280_TB = leakage_dir_lat_iso + 'gamma_t2b_i5.txt'
 
-xtra_mask_yaml = yaml_dir + 'xtra_mask_el_pwv.yaml'
+xtra_mask_yaml = yaml_dir + 'xtra_mask.yaml'
 xlink_downgrade = 8 
 ps_and_gal_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/ps/masks/'
 mnms_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/mbs/mnms_products/masks/v20260201_skn_50cg_mask_obs/'
 
-plot_windowed_maps = ['lat_iso_i1_f090_el0', 'lat_iso_i1_f090_el1', 'lat_iso_i1_f150_el0', 'lat_iso_i1_f150_el1', 'lat_iso_i3_f090_el0', 'lat_iso_i3_f090_el1', 'lat_iso_i3_f150_el0', 'lat_iso_i3_f150_el1', 'lat_iso_i4_f090_el0', 'lat_iso_i4_f090_el1', 'lat_iso_i4_f150_el0', 'lat_iso_i4_f150_el1', 'lat_iso_i6_f090_el0', 'lat_iso_i6_f090_el1', 'lat_iso_i6_f150_el0', 'lat_iso_i6_f150_el1', 'lat_iso_c1_f220_el0', 'lat_iso_c1_f220_el1', 'lat_iso_c1_f280_el0', 'lat_iso_c1_f280_el1', 'lat_iso_i5_f220_el0', 'lat_iso_i5_f220_el1', 'lat_iso_i5_f280_el0', 'lat_iso_i5_f280_el1']
+# plot_windowed_maps = ['lat_iso_i1_f090_el0', 'lat_iso_i1_f090_el1', 'lat_iso_i1_f150_el0', 'lat_iso_i1_f150_el1', 'lat_iso_i3_f090_el0', 'lat_iso_i3_f090_el1', 'lat_iso_i3_f150_el0', 'lat_iso_i3_f150_el1', 'lat_iso_i4_f090_el0', 'lat_iso_i4_f090_el1', 'lat_iso_i4_f150_el0', 'lat_iso_i4_f150_el1', 'lat_iso_i6_f090_el0', 'lat_iso_i6_f090_el1', 'lat_iso_i6_f150_el0', 'lat_iso_i6_f150_el1', 'lat_iso_c1_f220_el0', 'lat_iso_c1_f220_el1', 'lat_iso_c1_f280_el0', 'lat_iso_c1_f280_el1', 'lat_iso_i5_f220_el0', 'lat_iso_i5_f220_el1', 'lat_iso_i5_f280_el0', 'lat_iso_i5_f280_el1']
+plot_windowed_maps = []
 plot_maps = True
 
 template_geometry_intersect = maps_lat_iso_i1_f090_el0[0]
@@ -317,11 +400,23 @@ apod_survey_degree = 2
 
 kspace_masks_intersect = [ps_and_gal_mask_dir + 'HFI_Mask_GalPlane-apo0_2048_R2.00_GAL070_fejer1.fits', mask_dir + 'xtra_ivar_mask_intersect.fits', '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/mask/dr6xdeep56_20260201_skn_50cg_inpaint_holes/xtra_xlink_mask_intersect.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el0_i1a_i1b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el1_i1a_i1b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el0_i3a_i3b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el1_i3a_i3b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el0_i4a_i4b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el1_i4a_i4b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el0_i6a_i6b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el1_i6a_i6b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el0_c1a_c1b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el1_c1a_c1b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el0_i5a_i5b.fits', mnms_mask_dir + 'v20260201_skn_50cg_mask_obs_el1_i5a_i5b.fits']
 baseline_masks_intersect = [ps_and_gal_mask_dir + 'source_mask_15mJy_and_dust_rad12.fits']
-baseline_apods_intersect = [0.3]
+baseline_apods_intersect = [0.3 for _ in baseline_masks_intersect]
 
-window_kspace_lat_iso_i1_f090_el0 = window_dir + 'window_intersect_kspace.fits'
-window_T_lat_iso_i1_f090_el0 =  window_dir + 'window_intersect_baseline.fits'
-window_pol_lat_iso_i1_f090_el0 =  window_dir + 'window_intersect_baseline.fits'
+window_kspace_planck_f100 = window_dir + 'window_intersect_kspace.fits'
+window_T_planck_f100 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_planck_f100 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_planck_f143 = window_dir + 'window_intersect_kspace.fits'
+window_T_planck_f143 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_planck_f143 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_planck_f217 = window_dir + 'window_intersect_kspace.fits'
+window_T_planck_f217 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_planck_f217 =  window_dir + 'window_intersect_baseline.fits'
+
+window_kspace_planck_f353 = window_dir + 'window_intersect_kspace.fits'
+window_T_planck_f353 =  window_dir + 'window_intersect_baseline.fits'
+window_pol_planck_f353 =  window_dir + 'window_intersect_baseline.fits'
 
 window_kspace_lat_iso_i1_f090_el1 = window_dir + 'window_intersect_kspace.fits'
 window_T_lat_iso_i1_f090_el1 =  window_dir + 'window_intersect_baseline.fits'
@@ -425,11 +520,16 @@ fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['
 
 fg_params = {'a_tSZ': 3.352350745e+00, 'alpha_tSZ':-6.501443802e-01, 'a_kSZ': 2.016949764e+00, 'a_p': 7.594274444e+00, 'beta_p': 1.902934700e+00, 'a_c': 3.684264620e+00, 'beta_c':  1.902934700e+00, 'a_s': 2.810617983e+00, 'beta_s':-2.810871948e+00, 'xi': 7.733078253e-02, 'a_gtt': 3.62, 'a_gte': 0.331, 'a_gtb': 0.073, 'a_gee': 0.088, 'a_gbb': 0.065, 'a_pste': -2.597454946e-02, 'a_pstb': 0, 'a_psee': 1.356848002e-02, 'a_psbb': 0, 'alpha_s':1.0, 'T_d': 9.60, 'T_effd':19.6, 'beta_d':1.5, 'alpha_dT':-0.6, 'alpha_dE':-0.4, 'alpha_p':1.}
 
-bandpass_shift_dr6_pa4_f220  =  7.5
-bandpass_shift_dr6_pa5_f090  = -0.06
-bandpass_shift_dr6_pa5_f150  = -0.92
-bandpass_shift_dr6_pa6_f090  =  0.5
-bandpass_shift_dr6_pa6_f150  = -0.19
+bandpass_shift_planck_f100  = 0.
+bandpass_shift_planck_f143  = 0.
+bandpass_shift_planck_f217  = 0.
+bandpass_shift_planck_f353  = 0.
+
+bandint_shift_dr6_pa4_f220 = 5.544125003
+bandint_shift_dr6_pa5_f090 = 0.1592497071
+bandint_shift_dr6_pa5_f150 = -1.159111141
+bandint_shift_dr6_pa6_f090 = 0.7731299635
+bandint_shift_dr6_pa6_f150 = -0.4757717247
 
 bandpass_shift_lat_iso_i1_f090_el0  = 0.
 bandpass_shift_lat_iso_i1_f090_el1  = 0.
@@ -462,6 +562,11 @@ add_white_noise_above_lmax = True
 white_noise_ell_taper_width = 500
 keep_noise_models_in_memory = False
 
+noise_model_pl100 = {'qids': ['pl100']}
+noise_model_pl143 = {'qids': ['pl143']}
+noise_model_pl217 = {'qids': ['pl217']}
+noise_model_pl353 = {'qids': ['pl353']}
+
 noise_model_pa4 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa4a', 'pa4b'], 'lmax': 5400} # can add 'subproduct_kwargs': value if needed, where value e.g. {'inout_split': ['inout1', 'inout2']}
 noise_model_pa5 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa5a', 'pa5b'], 'lmax': 5400}
 noise_model_pa6 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask_ivfwhm2', 'qids': ['pa6a', 'pa6b'], 'lmax': 5400}
@@ -478,6 +583,11 @@ noise_model_c1_el0 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg_el_sp
 noise_model_c1_el1 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg_el_split', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['c1a', 'c1b'], 'subproduct_kwargs': {'el_split': ['el1']}, 'lmax': 5400}
 noise_model_i5_el0 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg_el_split', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['i5a', 'i5b'], 'subproduct_kwargs': {'el_split': ['el0']}, 'lmax': 5400}
 noise_model_i5_el1 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg_el_split', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['i5a', 'i5b'], 'subproduct_kwargs': {'el_split': ['el1']}, 'lmax': 5400}
+
+noise_info_planck_f100 = {'qid': 'pl100'}
+noise_info_planck_f143 = {'qid': 'pl143'}
+noise_info_planck_f217 = {'qid': 'pl217'}
+noise_info_planck_f353 = {'qid': 'pl353'}
 
 noise_info_dr6_pa4_f220 = {'qid': 'pa4b'} # can add 'subproduct_kwargs': value if needed, where value e.g. {'inout_split': 'inout1'}
 noise_info_dr6_pa5_f090 = {'qid': 'pa5a'}

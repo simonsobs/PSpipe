@@ -2,11 +2,8 @@ import pylab as plt
 import numpy as np
 import healpy as hp
 import sys
-
-from pspy import pspy_utils, so_dict, so_mcm, so_spectra
-from pspipe_utils import log, pspipe_list
-import candl
-import spt_candl_data
+from pspy import pspy_utils, so_dict
+from pspipe_utils import log
 
 def show_alm_triangle(
         alms, lmax, vmin, vmax, real=True, cmap="seismic",
@@ -33,8 +30,6 @@ def show_alm_triangle(
     title: str
      title, if multiple alm, will appended an integer number 0,1,2...
     """
-    
-
     import warnings
     warnings.filterwarnings("ignore")
     
@@ -76,8 +71,6 @@ def show_alm_triangle(
         triangle_plot(alms, lmax, vmin, vmax, title=title)
 
 
-
-
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
@@ -86,21 +79,28 @@ survey = "spt"
 tf_dir = "tf2d"
 arrays_spt = d["arrays_spt"]
 
-tf_dir = "tf2d"
 plot_dir = "plots/tf2d"
-
 pspy_utils.create_directory(plot_dir)
-
 
 vmax = {}
 vmax["TT"] = 6000
 vmax["EE"] = 60
 vmax["BB"] = 0.2
 
+ps_2d_list = {}
+for iii in range(d["iStart"], d["iStop"] + 1):
+    for ar in arrays_spt:
+        for i, comp in enumerate(["TT", "EE", "BB"]):
+            for filt in [ "nofilter", "filter"]:
+            
+                if iii == 0: ps_2d_list[ar, comp, filt] = []
+                
+                ps_2d = np.load(f"{tf_dir}/tf2d_{comp}_{ar}_{filt}_{iii:05d}.npy")
+                ps_2d_list[ar, comp, filt] += [ps_2d]
+
 for ar in arrays_spt:
     for i, comp in enumerate(["TT", "EE", "BB"]):
         for filt in [ "nofilter", "filter"]:
-            ps_2d = np.load(f"{tf_dir}/tf2d_{comp}_{ar}_{filt}.npy")
-
-            show_alm_triangle(ps_2d, d["lmax"], 0, vmax[comp], xlims=[0,2000], ylims=[0,2000], title=f"{ar} {comp} {filt}", fig_file = f"{plot_dir}/{ar}_{comp}_{filt}.png" )
-
+        
+            ps_2d_mean = np.mean(ps_2d_list[ar, comp, filt], axis=0)
+            show_alm_triangle(ps_2d_mean, d["lmax"], 0, vmax[comp], xlims=[0,2000], ylims=[0,2000], title=f"{ar} {comp} {filt}", fig_file = f"{plot_dir}/{ar}_{comp}_{filt}.png" )

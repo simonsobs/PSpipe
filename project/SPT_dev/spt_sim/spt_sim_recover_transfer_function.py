@@ -77,8 +77,10 @@ also_masking_no = True
 
 
 mcm_dir = "mcms"
+plot_dir = "plots_sim"
 tf_dir = "sim_spectra_for_tf"
 
+pspy_utils.create_directory(plot_dir)
 pspy_utils.create_directory(tf_dir)
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
@@ -148,5 +150,6 @@ for i_spec in range(n_spec):
                     plt.plot(l, tf_camphuis, label="camphuis")
 
                 plt.legend()
-                plt.show()
-
+                plt.savefig(f"{plot_dir}/transfer_function_{case}_{spec}_{spec_name}.png", bbox_inches="tight")
+                plt.clf()
+                plt.close()

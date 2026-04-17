@@ -80,4 +80,6 @@ for spec_name in spec_name_list:
         plt.plot(lb, additive_bias_no_alm_mask[mode.upper()], label= "additive bias (no alm mask)")
         plt.plot(lb, additive_bias_alm_mask[mode.upper()], label= "additive bias (alm mask)")
         plt.legend()
-        plt.show()
+        plt.savefig(f"{plot_dir}/additive_bias_{mode}_{spec_name}.png", bbox_inches="tight")
+        plt.clf()
+        plt.close()

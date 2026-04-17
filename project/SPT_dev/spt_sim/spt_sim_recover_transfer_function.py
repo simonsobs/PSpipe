@@ -153,3 +153,44 @@ for i_spec in range(n_spec):
                 plt.savefig(f"{plot_dir}/transfer_function_{case}_{spec}_{spec_name}.png", bbox_inches="tight")
                 plt.clf()
                 plt.close()
+
+
+# overplot TT, EE, BB
+for i_spec in range(n_spec):
+    sv1, ar1, sv2, ar2 = sv1_list[i_spec], ar1_list[i_spec], sv2_list[i_spec], ar2_list[i_spec]
+    spec_name = f"{sv1}_{ar1}x{sv2}_{ar2}"
+
+    for case in cases:
+    
+        plt.figure(figsize=(12,8))
+        for spec in ["TT", "EE", "BB"]:
+            mean = np.mean(tf[case, spec_name, spec], axis=0)
+            std = np.std(tf[case, spec_name, spec], axis=0)
+            
+            plt.errorbar(lb[id], mean, std, fmt=".", label=f"{spec_name} {spec} {case}")
+
+        plt.legend()
+        plt.savefig(f"{plot_dir}/all_spec_transfer_function_{case}_{spec_name}.png", bbox_inches="tight")
+        plt.clf()
+        plt.close()
+
+
+# overplot all cases
+for i_spec in range(n_spec):
+    sv1, ar1, sv2, ar2 = sv1_list[i_spec], ar1_list[i_spec], sv2_list[i_spec], ar2_list[i_spec]
+    spec_name = f"{sv1}_{ar1}x{sv2}_{ar2}"
+
+    for spec in spectra:
+        plt.figure(figsize=(12,8))
+
+        for case in cases:
+
+            mean = np.mean(tf[case, spec_name, spec], axis=0)
+            std = np.std(tf[case, spec_name, spec], axis=0)
+            
+            plt.errorbar(lb[id], mean, std, fmt=".", label=f"{spec_name} {spec} {case}")
+
+        plt.legend()
+        plt.savefig(f"{plot_dir}/all_case_transfer_function_{spec}_{spec_name}.png", bbox_inches="tight")
+        plt.clf()
+        plt.close()

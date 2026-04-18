@@ -92,4 +92,4 @@ for n_top in n_tops:
     binary.data *= edge_map.data
 
     binary.data[binary.data == 0] = hp.UNSEEN
-    hp.fitsfunc.write_map(f"{mask_dir}/spt_source_mask_top{n_top}_apod.fits", binary.data, partial=True, dtype=np.float32, overwrite=True)
+    hp.fitsfunc.write_map(f"{mask_dir}/spt_source_mask_top{n_top}_apod.fits", binary.data, partial=True, overwrite=True)

@@ -19,13 +19,14 @@ The baseline is therefore "masking_yes", "masking_no" can be used to understand 
 
 """
 
-from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi
+from pspy import pspy_utils, so_dict, so_map, sph_tools, so_mcm, so_spectra, so_mpi, so_window
 from pspipe_utils import pspipe_list, log
 import numpy as np
 import healpy as hp
 import sys
 import time
 import gc
+import sph_tools_mod
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
@@ -40,6 +41,7 @@ binned_mcm = d["binned_mcm"]
 release_dir = d["release_dir"]
 alm_conv = d[f"alm_conv_{survey}"]
 also_masking_no = True
+pure = d["pure"]
 
 mcm_dir = "mcms"
 sim_spec_dir = "sim_spectra_for_tf"
@@ -58,6 +60,16 @@ if also_masking_no == True:
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=d["iStart"], imax=d["iStop"])
+
+
+if pure == True:
+    # precompute spinned_windows
+    spinned_windows = {}
+    for ar in arrays_spt:
+        win_pol = so_map.read_map(d[f"window_pol_{survey}_{ar}"])
+        spinned_windows[ar] = so_window.get_spinned_windows(win_pol, lmax, niter=niter)
+
+
 
 for iii in subtasks:
     log.info(f"Simulation n° {iii:05d}/{d['iStop']:05d}")
@@ -84,8 +96,14 @@ for iii in subtasks:
 
         window_tuple = (win_T, win_pol)
 
-        master_alms[survey, ar, "nofilter"] = sph_tools.get_alms(sim_in, window_tuple, niter, lmax, alm_conv=alm_conv)
-        master_alms[survey, ar, "filter_masking_yes"] = sph_tools.get_alms(sim_out_masking_yes, window_tuple, niter, lmax, alm_conv=alm_conv)
+
+        if pure == False:
+            master_alms[survey, ar, "nofilter"] = sph_tools.get_alms(sim_in, window_tuple, niter, lmax, alm_conv=alm_conv)
+            master_alms[survey, ar, "filter_masking_yes"] = sph_tools.get_alms(sim_out_masking_yes, window_tuple, niter, lmax, alm_conv=alm_conv)
+        else:
+            master_alms[survey, ar, "nofilter"] = sph_tools_mod.get_pure_alms(sim_in, window_tuple, spinned_windows[ar], niter, lmax, alm_conv=alm_conv)
+            master_alms[survey, ar, "filter_masking_yes"] = sph_tools_mod.get_pure_alms(sim_out_masking_yes, window_tuple, spinned_windows[ar], niter, lmax, alm_conv=alm_conv)
+
     
         alm_mask = hp.read_alm(d[f"alm_mask_{survey}_{ar}"], hdu=1)
         alm_mask = hp.sphtfunc.resize_alm(alm_mask, d["lmax_mask"], d["lmax_mask"], lmax, lmax)
@@ -100,8 +118,13 @@ for iii in subtasks:
             sim_out_masking_no = so_map.read_map(f"{release_dir}/simulated_maps/output_maps/masking_no/output_maps_masking_no_realization{iii:03d}_{ar}ghz.fits")
             sim_out_masking_no = sim_out_masking_no.calibrate(cal=cal, pol_eff=pol_eff)
         
-            master_alms[survey, ar, "filter_masking_no"] = sph_tools.get_alms(sim_out_masking_no, window_tuple, niter, lmax, alm_conv=alm_conv)
+            if pure == False:
+                master_alms[survey, ar, "filter_masking_no"] = sph_tools.get_alms(sim_out_masking_no, window_tuple, niter, lmax, alm_conv=alm_conv)
+            else:
+                master_alms[survey, ar, "filter_masking_no"] = sph_tools_mod.get_pure_alms(sim_out_masking_no, window_tuple, spinned_windows[ar], niter, lmax, alm_conv=alm_conv)
+
             master_alms[survey, ar, "filter_masking_no_alm_mask"] = master_alms[survey, ar, "filter_masking_no"] * alm_mask
+
 
     _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
         

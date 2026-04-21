@@ -33,6 +33,7 @@ pspy_utils.create_directory(mcm_dir)
 surveys = d["surveys"]
 lmax = d["lmax"]
 binned_mcm = d["binned_mcm"]
+pure = d["pure"]
 
 l_pw, pw = np.loadtxt(d["pixwin_spt_file"], unpack=True)
 
@@ -59,8 +60,7 @@ for task in subtasks:
     win1_pol = so_map.read_map(d[f"window_pol_{sv1}_{ar1}"])
     win2_T = so_map.read_map(d[f"window_T_{sv2}_{ar2}"])
     win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{ar2}"])
-
-
+    
     runs = ["data_run", "sim_in_run", "sim_out_run"]
     
     for run in runs:
@@ -100,4 +100,5 @@ for task in subtasks:
                                                     l_band=l_band,
                                                     l_toep=l_toep,
                                                     binned_mcm=binned_mcm,
-                                                    save_file=file_name)
+                                                    save_file=file_name,
+                                                    pure=pure)

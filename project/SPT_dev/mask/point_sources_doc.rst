@@ -18,7 +18,7 @@ Then you run dory using the following shell script
     salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
     sh spt_find_source.sh
 
-The code is not working very well (it gets lot of duplicate around super bright sources) but that is the best we have.
+The code is not working very well (it gets lot of duplicates around super bright sources) but that is the best we have.
 You can then generate the mask and check if it does what you want
 
 .. code:: shell

@@ -10,7 +10,10 @@ import numpy as np
 import healpy as hp
 from pixell import enmap
 from pspipe_utils import log, pspipe_list
-from pspy import pspy_utils, so_dict, so_mpi, sph_tools, so_map
+from pspy import pspy_utils, so_dict, so_mpi, sph_tools, so_map, so_window
+import sph_tools_mod
+
+
 
 
 d = so_dict.so_dict()
@@ -21,15 +24,21 @@ surveys = d["surveys"]
 lmax = d["lmax"]
 niter = d["niter"]
 apply_alm_mask = d["apply_alm_mask"]
+pure = d["pure"]
+
 
 alms_dir = "alms"
 pspy_utils.create_directory(alms_dir)
+if pure == True:
+    plot_dir = "plots"
+    pspy_utils.create_directory(plot_dir)
 
 n_ar, sv_list, ar_list = pspipe_list.get_arrays_list(d)
 
 log.info(f"number of arrays for the mpi loop : {n_ar}")
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_ar-1)
+
 
 for task in subtasks:
     task = int(task)
@@ -40,6 +49,15 @@ for task in subtasks:
 
     win_T = so_map.read_map(d[f"window_T_{sv}_{ar}"])
     win_pol = so_map.read_map(d[f"window_pol_{sv}_{ar}"])
+    
+    if pure == True:
+        spinned_windows = so_window.get_spinned_windows(win_pol, lmax, niter=niter)
+        w1_plus, w1_minus, w2_plus, w2_minus = spinned_windows
+        w1_plus.plot(file_name=f"{plot_dir}/win_spin1_a_{sv}_{ar}")
+        w1_minus.plot(file_name=f"{plot_dir}/win_spin1_b_{sv}_{ar}")
+        w2_plus.plot(file_name=f"{plot_dir}/win_spin2_a_{sv}_{ar}")
+        w2_minus.plot(file_name=f"{plot_dir}/win_spin2_b_{sv}_{ar}")
+
     
     window_tuple = (win_T, win_pol)
 
@@ -55,7 +73,11 @@ for task in subtasks:
         if d["remove_mean"] == True:
             split = split.subtract_mean(window_tuple)
 
-        master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax, alm_conv=alm_conv)
+        if pure == False:
+            master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax, alm_conv=alm_conv)
+        else:
+            master_alms = sph_tools_mod.get_pure_alms(split, window_tuple, spinned_windows, niter, lmax, alm_conv=alm_conv)
+
         
         if apply_alm_mask == True:
             alm_mask = hp.read_alm(d[f"alm_mask_{sv}_{ar}"], hdu=1)

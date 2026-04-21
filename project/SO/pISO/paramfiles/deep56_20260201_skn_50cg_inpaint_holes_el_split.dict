@@ -382,7 +382,7 @@ leakage_beam_dr6_pa6_f150_TB = leakage_dir_dr6 + 'pa6_f150_gamma_t2b.txt'
 # leakage_beam_lat_iso_i5_f220_TB = leakage_dir_lat_iso + 'gamma_t2b_i5.txt'
 # leakage_beam_lat_iso_i5_f280_TB = leakage_dir_lat_iso + 'gamma_t2b_i5.txt'
 
-xtra_mask_yaml = yaml_dir + 'xtra_mask.yaml'
+xtra_mask_yaml = yaml_dir + 'xtra_mask_el.yaml'
 xlink_downgrade = 8 
 ps_and_gal_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/ps/masks/'
 mnms_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/mbs/mnms_products/masks/v20260201_skn_50cg_mask_obs/'

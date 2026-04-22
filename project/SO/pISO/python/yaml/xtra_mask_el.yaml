@@ -1,0 +1,9 @@
+get_xtra_mask.py:
+  surveys_to_xtra_mask:
+    - lat_iso
+  save_plot_mask: true
+  save_plot_maps_ivar: true
+  ivar_smooth_deg: 0.5
+  ivar_quantile: 0.075
+  xlink_smooth_deg: 1
+  xlink_quantile: 0.6

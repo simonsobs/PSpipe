@@ -19,19 +19,17 @@ pspy_utils.create_directory(out_dir)
 n_split_in = 30
 id_split = np.arange(n_split_in)
 n_split_out = 6
-n_group = n_split_in // n_split_out
-nsplit_per_group = n_split_in // n_group
+nsplit_per_group = n_split_in // n_split_out
 
 groups = np.split(id_split, n_split_out)
 
-print("n_group", n_group)
 print("nsplit_per_group", nsplit_per_group)
 print("groups", groups)
 print("")
 
 template = so_map.read_map(release_dir + "real_data_maps/one_thirtieth/one_thirtieth_bundle00_095ghz.fits")
 
-for g in groups:
+for count, g in enumerate(groups):
 
     for ar in arrays_spt:
     
@@ -44,4 +42,4 @@ for g in groups:
             
         print("")
         template.data[:] /= nsplit_per_group
-        hp.write_map(f"{out_dir}/one_sixth_bundle{iii:02d}_{ar}ghz.fits", template.data[:], overwrite=True, partial=True)
+        hp.write_map(f"{out_dir}/one_sixth_bundle{count}_{ar}ghz.fits", template.data[:], overwrite=True, partial=True)

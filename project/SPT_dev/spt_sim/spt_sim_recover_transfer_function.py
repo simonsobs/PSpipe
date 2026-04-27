@@ -30,7 +30,7 @@ def correct_spt_additive_bias(lb, ps, spec_name, Bbl):
 
     ps_corrected = deepcopy(ps)
     
-    tf_dir = f"{release_dir}/ancillary_products/specific_to_c25/"
+    tf_dir_camphuis_dir = f"{release_dir}/ancillary_products/specific_to_c25/"
     
     name = spec_name.replace("spt_", "")
     fa, fb = name.split("x")
@@ -39,7 +39,7 @@ def correct_spt_additive_bias(lb, ps, spec_name, Bbl):
 
     additive_bias = {}
     for mode in ["tt", "te", "et", "ee"]:
-        filter_artefact_bias_file = f"{tf_dir}/filtering_artifact_bias_{fa}ghz{fb}ghz_{mode}.txt"
+        filter_artefact_bias_file = f"{tf_dir_camphuis_dir}/filtering_artifact_bias_{fa}ghz{fb}ghz_{mode}.txt"
         l,  filter_artefact_bias = np.loadtxt(filter_artefact_bias_file, unpack=True)
         additive_bias[mode] = (filter_artefact_bias) * l * (l + 1) / (2 * np.pi) #corrections are in Cl
         additive_bias[mode] =  np.dot(Bbl_dict[mode], additive_bias[mode][:lmax])
@@ -78,10 +78,12 @@ also_masking_no = True
 
 mcm_dir = "mcms"
 plot_dir = "plots_sim"
-tf_dir = "sim_spectra_for_tf"
+sim_spec_dir = "sim_spectra_for_tf"
+tf_dir = "transfer_functions"
 
 pspy_utils.create_directory(plot_dir)
 pspy_utils.create_directory(tf_dir)
+
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
@@ -99,7 +101,7 @@ if also_masking_no == True:
 
 
 
-for iii in range(d["iStart"], d["iStop"]+1):
+for iii in range(d["iStart"], d["iStop"] + 1):
     print(iii)
     log.info(f"Simulation n° {iii:05d}/{d['iStop']:05d}")
     log.info(f"-------------------------")
@@ -113,13 +115,13 @@ for iii in range(d["iStart"], d["iStop"]+1):
 
         for spec in spectra:
 
-            lb, ps_nofilter = so_spectra.read_ps(tf_dir + f"/Dl_{spec_name}_nofilter_{iii:05d}.dat", spectra=spectra)
+            lb, ps_nofilter = so_spectra.read_ps(sim_spec_dir + f"/Dl_{spec_name}_nofilter_{iii:05d}.dat", spectra=spectra)
             id = np.where(lb>=400)
 
             for case in cases:
             
                 if iii == 0: tf[case, spec_name, spec] = []
-                lb, ps = so_spectra.read_ps(tf_dir + f"/Dl_{spec_name}_{case}_{iii:05d}.dat", spectra=spectra)
+                lb, ps = so_spectra.read_ps(sim_spec_dir + f"/Dl_{spec_name}_{case}_{iii:05d}.dat", spectra=spectra)
                 lb, ps = correct_spt_additive_bias(lb, ps, spec_name, Bbl)
                 tf[case, spec_name, spec] += [ps[spec][id]/ps_nofilter[spec][id]]
 
@@ -143,7 +145,7 @@ for i_spec in range(n_spec):
                 plt.plot(ell, Dell)
                 plt.errorbar(lb[id], mean, std, fmt=".", label=f"{spec_name} {spec} {case}")
                 
-                if (case in ["filter_masking_yes_alm_mask", "filter_masking_no_alm_mask"]) & (spec in ["TT", "TE", "ET", "EE"]):
+                if (case in ["filter_masking_yes_alm_mask", "filter_masking_no_alm_mask"]) & (spec in ["TT", "EE"]):
                 
                     tf_file = f"{camp_dir}/filter_transfer_function_c25_v1_{fa}ghz{fb}ghz_{spec.lower()}.txt"
                     l, tf_camphuis = np.loadtxt(tf_file, unpack=True)
@@ -154,6 +156,7 @@ for i_spec in range(n_spec):
                 plt.clf()
                 plt.close()
 
+                np.savetxt(f"{tf_dir}/transfer_function_{case}_{spec}_{spec_name}.dat", np.transpose([lb[id], mean, std]))
 
 # overplot TT, EE, BB
 for i_spec in range(n_spec):

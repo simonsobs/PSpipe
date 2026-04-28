@@ -38,7 +38,14 @@ pspy_utils.create_directory(mask_dir)
 
 for n_top in n_tops:
 
-    edge_map = so_map.read_map(binary_dir + "pixel_mask_apodized_borders_only.fits")
+    if use_camphuis_apodisation:
+        edge_map = so_map.read_map(binary_dir + "pixel_mask_apodized_borders_only.fits")
+        suffix = "camp_apod"
+    else:
+        binary = so_map.read_map(binary_dir + "pixel_mask_binary_borders_only.fits")
+        edge_map = so_window.create_apodization(binary, apo_type=apo_type, apo_radius_degree=2)
+        suffix = "my_apod"
+
     binary = edge_map.copy()
     binary.data[:] = 1
 
@@ -92,4 +99,4 @@ for n_top in n_tops:
     binary.data *= edge_map.data
 
     binary.data[binary.data == 0] = hp.UNSEEN
-    hp.fitsfunc.write_map(f"{mask_dir}/spt_source_mask_top{n_top}_apod.fits", binary.data, partial=True, overwrite=True)
+    hp.fitsfunc.write_map(f"{mask_dir}/spt_source_mask_top{n_top}_apod_edges_{suffix}.fits", binary.data, partial=True, overwrite=True)

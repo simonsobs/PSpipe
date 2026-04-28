@@ -38,7 +38,7 @@ pspy_utils.create_directory(mask_dir)
 
 for n_top in n_tops:
 
-    if use_camphuis_apodisation:
+    if d["use_camphuis_apodisation"]:
         edge_map = so_map.read_map(binary_dir + "pixel_mask_apodized_borders_only.fits")
         suffix = "camp_apod"
     else:

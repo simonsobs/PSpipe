@@ -36,15 +36,25 @@ mask_dir = "my_masks"
 pspy_utils.create_directory(mask_dir)
 
 
+if d["use_camphuis_apodisation"] and d["downgrade_2048"]:
+    raise ValueError("if 'use_camphuis_apodisation' is True, 'downgrade_2048' should be False, otherwise it will be ignored")
+    
+
 for n_top in n_tops:
 
     if d["use_camphuis_apodisation"]:
-        edge_map = so_map.read_map(binary_dir + "pixel_mask_apodized_borders_only.fits")
         suffix = "camp_apod"
+        edge_map = so_map.read_map(binary_dir + "pixel_mask_apodized_borders_only.fits")
     else:
-        binary = so_map.read_map(binary_dir + "pixel_mask_binary_borders_only.fits")
-        edge_map = so_window.create_apodization(binary, apo_type=apo_type, apo_radius_degree=2)
         suffix = "my_apod"
+        binary = so_map.read_map(binary_dir + "pixel_mask_binary_borders_only.fits")
+        if d["downgrade_2048"] == True:
+            suffix = "my_apod_downgraded"
+            binary = binary.downgrade(4)
+            binary.data[binary.data > 0.5] = 1
+            binary.data[binary.data < 0.5] = 0
+
+        edge_map = so_window.create_apodization(binary, apo_type=apo_type, apo_radius_degree=2)
 
     binary = edge_map.copy()
     binary.data[:] = 1

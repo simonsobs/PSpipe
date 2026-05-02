@@ -12,6 +12,7 @@ from pixell import enmap, enplot
 import numpy as np
 import yaml
 
+import re
 import os
 from os.path import join as opj
 import sys
@@ -71,7 +72,7 @@ for sv in mask_infos['surveys_to_xtra_mask']:
             # mix-in 0's from the splits
             if d[f"src_free_maps_{sv}"] == True:
                 map_fn = map_fn.replace('_srcfree', '')
-            ivar_fn = map_fn.replace('_map', '_ivar')
+            ivar_fn = re.sub(r'_map\d*', '_ivar', map_fn)
 
             # mask is based on the smoothed ivar map
             # only the pixels where the original ivar were nonzero though
@@ -120,7 +121,7 @@ for sv in mask_infos['surveys_to_xtra_mask']:
             coadd_map_fn = map_fns[0].replace('_00_', '_coadd_')
             if d[f"src_free_maps_{sv}"] == True:
                 coadd_map_fn = coadd_map_fn.replace('_srcfree', '')
-            coadd_xlink_fn = coadd_map_fn.replace('_map', '_xlink')
+            coadd_xlink_fn = re.sub(r'_map\d*', '_xlink', coadd_map_fn)
         
             xlink_downgrade = d['xlink_downgrade']
             xlink = enmap.read_map(coadd_xlink_fn).upgrade(xlink_downgrade)

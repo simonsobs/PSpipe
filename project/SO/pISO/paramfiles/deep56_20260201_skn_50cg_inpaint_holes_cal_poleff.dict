@@ -1,5 +1,7 @@
-run_name = 'deep56_20260201_skn_50cg_inpaint_holes'
-data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/'
+run_name = 'deep56_20260201_skn_50cg_inpaint_holes_cal_poleff'
+# ! CHANGE THESE
+data_dir = 'path/to/your/datadir/'
+yaml_dir = 'path/to/your/yamldir/'
 yaml_dir = '/home/zatkins/projects/PSpipe_dev/repos/PSpipe/project/SO/pISO/python/yaml/'
 
 # define paths for scripts in advance. this is the most flexible way for now

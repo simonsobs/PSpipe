@@ -234,16 +234,18 @@ for task in subtasks:
         ax[0].set_title(f"{ms1}x{ms2} - {ms3}x{ms4}")
         plt.savefig(f"{plot_dir}/{mode}/ALL/diff_{mode}_{ms1}x{ms2}_{ms3}x{ms4}.png")
         plt.close()
-    pte_comment = '!' * int(-np.log10(min(min(pte_list), 1-max(pte_list)))) # I love this line
+    try:
+        pte_comment = '!' * int(-np.log10(min(min(pte_list), 1-max(pte_list)))) # I love this line
+    except:
+        pte_comment = 'inf or 0'
     log.info(f"[Rank {so_mpi.rank}] {" ".join(null)} PTEs: {" ".join([f"{pte:.5f}" for pte in pte_list])} {pte_comment}")
-
 
 so_mpi.barrier()
 chi2_dict = so_mpi.gather_set_or_dict(chi2_dict, allgather=False,
                                                 root=0, overlap_allowed=False)
 
 if so_mpi.rank == 0:
-
+    log.info("Save PTEs")
     # create pte dicts and filter given combinations and duplicates for plot
     pte_dict = {}
     for (name, (mode, ms1, ms2, ms3, ms4)), chi2_ndof_pte in chi2_dict.items():

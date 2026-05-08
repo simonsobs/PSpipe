@@ -100,6 +100,8 @@ pspy_utils.create_directory(null_test_dir)
 pspy_utils.create_directory(plot_dir)
 for spec in spectra:
     pspy_utils.create_directory(plot_dir + f'{spec}/')
+    pspy_utils.create_directory(plot_dir + f'{spec}/ALL')
+    pspy_utils.create_directory(plot_dir + f'{spec}/per_spec')
 test_infos = null_infos['test_infos']   # {name: {spec_dir:..., cov_dir:..., cov_correction:...}, name2:{...}}
 
 null_list = pspipe_list.get_null_list_from_cov_list(d, spectra=spectra, remove_TT_diff_freq=True)
@@ -151,8 +153,6 @@ for task in subtasks:
     if remove_first_bins:
         lb_fg, res_fg_b = lb_fg[remove_first_bins:], res_fg_b[remove_first_bins:]
 
-    fname = f"diff_{mode}_{ms1}x{ms2}_{ms3}x{ms4}"
-
     # ZACH YOU MAY WANT TO UNCOMMENT THAT FOR THE INTERACTIVE NULLS TABLE
     # for name, test in test_infos.items():
     #     spec_dir = test["spec_dir"]
@@ -182,43 +182,70 @@ for task in subtasks:
 
     if plot_all:
         colors = ["navy", "red", "forestgreen", "darkorange"]
-        fig, ax = plt.subplots(2, figsize=(8, 8), sharex=True, gridspec_kw={'height_ratios':(2, 1), "hspace": 0}, dpi=200)
+        fig, ax = plt.subplots(4, figsize=(8, 12), sharex=True, gridspec_kw={'height_ratios':(1.5, 2, 1, 1), "hspace": 0}, dpi=200)
         ellshift = np.linspace(-3, 3, len(test_infos))
         for i, (name, infos) in enumerate(test_infos.items()):
-            ax[0].errorbar(lb+ellshift[i], res_ps[name] * lb ** l_pows[mode],
+            ax[0].errorbar(lb+ellshift[i], all_ps[name][ms1, ms2, mode][remove_first_bins:],
+                yerr=np.sqrt(all_cov[name][(ms1, ms2, mode), (ms1, ms2, mode)].diagonal()[remove_first_bins:]),
+                ls="-", marker = ".", ecolor = colors[i], lw=.4,
+                color=colors[i], alpha=.8,
+                label=fr"{name} {ms1}x{ms2}"
+            )
+            ax[0].errorbar(lb+ellshift[i], all_ps[name][ms3, ms4, mode][remove_first_bins:],
+                yerr=np.sqrt(all_cov[name][(ms3, ms4, mode), (ms3, ms4, mode)].diagonal()[remove_first_bins:]),
+                ls="None", marker = ".", ecolor = colors[i],
+                color=colors[i], alpha=.8, mfc='white',
+                label=fr"{name} {ms3}x{ms4}"
+            )
+            ax[1].errorbar(lb+ellshift[i], res_ps[name] * lb ** l_pows[mode],
                 yerr=np.sqrt(res_cov[name].diagonal()) * lb ** l_pows[mode],
                 ls="None", marker = ".", ecolor = colors[i],
                 color=colors[i], alpha=.8,
                 label=fr"{name} [$\chi^2 = {{{chi2_dict[name, tuple(null)]["chi2"]:.1f}}}/{{{chi2_dict[name, tuple(null)]["ndof"]}}}$ (${{{chi2_dict[name, tuple(null)]["pte"]:.4f}}}$)]"
             )
-            ax[1].errorbar(lb+ellshift[i], res_ps[name] / np.sqrt(res_cov[name].diagonal()),
+            ax[2].errorbar(lb+ellshift[i], res_ps[name] / np.sqrt(res_cov[name].diagonal()),
                 yerr=np.ones_like(lb),
                 ls="None", marker = ".", ecolor = colors[i],
                 color=colors[i], alpha=.8,
             )
-            for a in range(2):
+            ax[3].plot(lb+ellshift[i], all_ps[name][ms1, ms2, mode][remove_first_bins:] / all_ps[name][ms3, ms4, mode][remove_first_bins:],
+                ls="-",
+                color=colors[i], alpha=.8,
+            )
+            for a in range(4):
                 ax[a].axvspan(xmin=0, xmax=lmin[name],
                         color=colors[i], alpha=0.15)
                 ax[a].axvspan(xmin=lmax[name], xmax=10000,
                         color=colors[i], alpha=0.15)
+        ax[-1].set_xlabel(r"$\ell$", fontsize=15)
+        ax[0].set_ylabel(r"$D_\ell$", fontsize=15)
+        ax[1].set_ylabel(fr"$\Delta D_\ell\ \ell^{{{l_pows[mode]}}}$", fontsize=15)
+        ax[2].set_ylabel(r"$\Delta D_\ell / \sigma_{D_\ell}$", fontsize=15)
+        ax[3].set_ylabel(r"$D_\ell ratio$", fontsize=15)
 
-        for a in range(2):
-            ax[a].axhline(0., color='black', ls='--', zorder=-10)
+        ax[1].axhline(0., color='black', ls='--', zorder=-10, lw=.5)
+        ax[2].axhline(0., color='black', ls='--', zorder=-10, lw=.5)
+        ax[3].axhline(1., color='black', ls='--', zorder=-10, lw=.5)
         
-        ax[0].set_xlim(50, d["lmax"])
+        ax[0].set_xlim(lb[0]-40, lb[-1] + 50)
+        ax[3].set_ylim(.5, 1.5)
         ax[0].legend()
-        plt.savefig(f"{plot_dir}/{mode}/{fname}.png")
+        ax[1].legend()
+        ax[0].set_title(f"{ms1}x{ms2} - {ms3}x{ms4}")
+        plt.savefig(f"{plot_dir}/{mode}/ALL/diff_{mode}_{ms1}x{ms2}_{ms3}x{ms4}.png")
         plt.close()
-    pte_comment = '!' * int(-np.log10(min(min(pte_list), 1-max(pte_list)))) # I love this line
+    try:
+        pte_comment = '!' * int(-np.log10(min(min(pte_list), 1-max(pte_list)))) # I love this line
+    except:
+        pte_comment = 'inf or 0'
     log.info(f"[Rank {so_mpi.rank}] {" ".join(null)} PTEs: {" ".join([f"{pte:.5f}" for pte in pte_list])} {pte_comment}")
-
 
 so_mpi.barrier()
 chi2_dict = so_mpi.gather_set_or_dict(chi2_dict, allgather=False,
                                                 root=0, overlap_allowed=False)
 
 if so_mpi.rank == 0:
-
+    log.info("Save PTEs")
     # create pte dicts and filter given combinations and duplicates for plot
     pte_dict = {}
     for (name, (mode, ms1, ms2, ms3, ms4)), chi2_ndof_pte in chi2_dict.items():
@@ -236,17 +263,17 @@ if so_mpi.rank == 0:
     else:
         tested_spectra = spectra
 
-    # Plot PTE histogram for each cov type
-    for name in test_infos.keys():
-        pte_list = pte_dict[name, 'all']
-        log.info(f"{name} Worse PTE: min {np.min(pte_list)}, max {np.max(pte_list)}")
-        n_bins = 14
-        file_name = f"{plot_dir}/pte_hist_all_{name}{hist_label}.png"
-        pte_histo(pte_list, file_name, n_bins)
-        for mode in tested_spectra:
-            pte_list = pte_dict[name, mode]
-            log.info(f"{len(pte_list)} test for mode {mode}")
-            n_bins = 8
-            file_name = f"{plot_dir}/pte_hist_{mode}_{name}{hist_label}.png"
-            pte_histo(pte_list, file_name, n_bins)
+    # # Plot PTE histogram for each cov type
+    # for name in test_infos.keys():
+    #     pte_list = pte_dict[name, 'all']
+    #     log.info(f"{name} Worse PTE: min {np.min(pte_list)}, max {np.max(pte_list)}")
+    #     n_bins = 14
+    #     file_name = f"{plot_dir}/pte_hist_all_{name}{hist_label}.png"
+    #     pte_histo(pte_list, file_name, n_bins)
+    #     for mode in tested_spectra:
+    #         pte_list = pte_dict[name, mode]
+    #         log.info(f"{len(pte_list)} test for mode {mode}")
+    #         n_bins = 8
+    #         file_name = f"{plot_dir}/pte_hist_{mode}_{name}{hist_label}.png"
+    #         pte_histo(pte_list, file_name, n_bins)
 

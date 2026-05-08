@@ -2,6 +2,7 @@ run_name = 'deep56_20260201_skn_50cg_inpaint_holes_el_split'
 # ! CHANGE THESE
 data_dir = 'path/to/your/datadir/'
 yaml_dir = 'path/to/your/yamldir/'
+
 # define paths for scripts in advance. this is the most flexible way for now
 # to allow products to be reused across different paramfiles 
 

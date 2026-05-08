@@ -25,9 +25,9 @@ sacc_fname = d["sacc_fname"] #read from dictionary
 binned_mcm = d["binned_mcm"]
 
 # Set covariance file name
-mcm_dir = cvt.get_mcms_dir()
-cov_dir = cvt.get_covariances_dir()
-sacc_dir = cvt.get_sacc_dir(create=True)
+mcm_dir = d["mcm_dir"]
+cov_dir = d["cov_dir"] 
+sacc_dir = d["sacc_dir"]
 
 spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, delimiter="_", return_nu_tag=True)
 
@@ -117,9 +117,12 @@ common_kwargs = dict(
 if sacc_fname in ["simu_sacc", "simu_w_syst_sacc"]:
 
     spec_dir = d["sim_spec_dir"]
-    cov_name = "final_cov_sim"
+#    cov_name = "final_cov_sim"
+#    cov = np.load(f"{cov_dir}/x_ar_{cov_name}_gp.npy")
 
-    cov = np.load(f"{cov_dir}/x_ar_{cov_name}_gp.npy")
+    # fix this string if we want to include mc corrections too
+    cov_name = "analytic_cov"
+    cov = np.load(f"{cov_dir}/x_ar_{cov_name}.npy")
 
     if sacc_fname == "simu_w_syst_sacc":
         assert "_syst" in sim_spec_dir
@@ -137,7 +140,7 @@ if sacc_fname in ["simu_sacc", "simu_w_syst_sacc"]:
 
         # Reading the flat data vector
         data_vec = covariance.read_x_ar_spectra_vec(
-            spec_dir, spec_name_list, f"cross_{iii:05d}", spectra_order=spectra_order, type=d["type"]
+            spec_dir, spec_name_list, f"all_sn_cross_{iii:05d}", spectra_order=spectra_order, type=d["type"], file_extension = ".h5"
         )
 
         # Let's store covariance and bbl in one extra file
@@ -148,11 +151,12 @@ if sacc_fname in ["simu_sacc", "simu_w_syst_sacc"]:
                 cov=cov,
                 bbls=bbls,
                 sacc_file_name=os.path.join(sacc_dir, f"{cov_name}_and_Bbl.fits"),
+                binned_mcm = binned_mcm
             )
 
         sacc_file_name = os.path.join(sacc_dir, f"{'_'.join(d['surveys'])}_{sacc_fname}_{iii:05d}.fits")
         io.port2sacc(
-            **common_kwargs, data_vec=data_vec, cov=None, bbls=None, sacc_file_name=sacc_file_name
+            **common_kwargs, data_vec=data_vec, cov=None, bbls=None, sacc_file_name=sacc_file_name, binned_mcm = binned_mcm
         )
 
 else:
@@ -170,7 +174,8 @@ else:
 
     # Reading the flat data vector
     data_vec = covariance.read_x_ar_spectra_vec(
-        spec_dir, spec_name_list, "cross", spectra_order=spectra_order, type=d["type"]
+        spec_dir, spec_name_list, "all_sn_cross_data", spectra_order=spectra_order, type=d["type"],
+        file_extension = ".h5"
     )
 
     sacc_file_name = os.path.join(sacc_dir, f"{'_'.join(d['surveys'])}_{sacc_fname}.fits")

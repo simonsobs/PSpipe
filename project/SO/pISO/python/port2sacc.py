@@ -50,7 +50,9 @@ for map_set in map_set_list:
     else:
         nu_ghz, passband = np.array([freq_info["freq_tag"]]), np.array([1.0])
 
-    passbands[f"{map_set}"] = [nu_ghz, passband]
+    mask = np.where(passband > 0)[0]
+    # saving only relevant datapoints
+    passbands[f"{map_set}"] = [nu_ghz[mask], passband[mask]]
 
 log.debug(f"Passband information: {passbands} \n")
 

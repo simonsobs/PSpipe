@@ -2,10 +2,12 @@
 This script performs array null tests and plot residual power spectra and a summary PTE distribution
 """
 
-from pspy import so_dict, pspy_utils, so_cov, so_spectra
-from pspipe_utils import consistency, best_fits, covariance, pspipe_list
+from pspy import so_dict, pspy_utils, so_cov, so_spectra, so_mpi
+from pspipe_utils import consistency, best_fits, log, pspipe_list
 import pickle
 import scipy.stats as ss
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
@@ -60,26 +62,24 @@ def check_freq_pair(f1, f2, f3, f4):
 
 d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
+log = log.get_logger(**d)
 
 with open(d['nulls_yaml'], "r") as f:
     infos_dict: dict = yaml.safe_load(f)
 null_infos = infos_dict['compute_null_tests.py']
 
 pte_threshold = null_infos['pte_threshold']
-remove_first_bin = null_infos['remove_first_bin']
-skip_pa4_pol = null_infos['skip_pa4_pol']
+remove_first_bins = null_infos['remove_first_bins']
 skip_diff_freq_TT = null_infos['skip_diff_freq_TT']
 skip_EB = null_infos['skip_EB']
 fudge = null_infos['fudge']
+plot_all = True
 
 multipole_range = null_infos['multipole_range']     # This was previously in null_info.py
-y_lims = null_infos['y_lims']
 l_pows = null_infos['l_pows']
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 hist_label = ""
-if skip_pa4_pol == True:
-    hist_label += "skip_pa4pol"
 if fudge == True:
     hist_label += "_fudge"
 if skip_EB == True:
@@ -98,213 +98,182 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 pspy_utils.create_directory(null_test_dir)
 pspy_utils.create_directory(plot_dir)
-print('creating dirs')
 for spec in spectra:
     pspy_utils.create_directory(plot_dir + f'{spec}/')
-print('created dirs')
-test_list = [
-    {
-        "name":  "test_1",
-        "spec_dir": spectra_dir,
-        "cov_correction": [],
-    },
-]
+    pspy_utils.create_directory(plot_dir + f'{spec}/ALL')
+    pspy_utils.create_directory(plot_dir + f'{spec}/per_spec')
+test_infos = null_infos['test_infos']   # {name: {spec_dir:..., cov_dir:..., cov_correction:...}, name2:{...}}
 
-spec_dir_list = []
-cov_type_list = ["analytic_cov"]
-label_list = []
-for test in test_list:
-    spec_dir_list = np.append(spec_dir_list, test["spec_dir"])
-    cov_type_list = np.append(cov_type_list, test["cov_correction"])
-    label_list += [test["name"]]
-
-cov_type_list = list(dict.fromkeys(cov_type_list)) #remove doublon
-spec_dir_list = list(dict.fromkeys(spec_dir_list)) #remove doublon
-map_set_list = pspipe_list.get_map_set_list(d)
-
-calib_suffix = '_calib' if null_infos['use_calib'] else ''
-poleff_suffix = '_poleff' if null_infos['use_poleff'] else ''
-
+null_list = pspipe_list.get_null_list_from_cov_list(d, spectra=spectra, remove_TT_diff_freq=True)
+n_nulls = len(null_list)
+spec_list = pspipe_list.get_spectra_list(d)
 all_ps = {}
-for spec_dir in spec_dir_list:
-    cov_template = f"{cov_dir}/{cov_type_list[0]}" + "_{}x{}_{}x{}.npy"
-    ps_template = spec_dir + "/Dl_{}x{}" + f"_cross{calib_suffix}{poleff_suffix}.dat"
-    all_ps[spec_dir], _ = consistency.get_ps_and_cov_dict(map_set_list, ps_template, cov_template, spectra_order=spectra)
-    lb = all_ps[spec_dir]["ell"]
-del _
-print('loaded spec')
 all_cov = {}
-_ps_temp = spectra_dir + "/Dl_{}x{}" + f"_cross{calib_suffix}{poleff_suffix}.dat"
-for cov in cov_type_list:
-    cov_template = f"{cov_dir}/{cov}" + "_{}x{}_{}x{}.npy"
-    _, all_cov[cov] =  consistency.get_ps_and_cov_dict(map_set_list, _ps_temp, cov_template, spectra_order=spectra)
-    
-print('loaded covs')
-del _
-
-# Apply calibration if needed
+chi2_dict = {}
+for name, infos in test_infos.items():
+    cov_template = f"{infos['cov_dir']}" + "/analytic_cov_{}x{}_{}x{}.npy"
+    ps_template = f"{infos['spec_dir']}" + "/Dl_{}x{}" + f"_cross.dat"
+    all_ps[name], all_cov[name] = consistency.get_nulls_ps_and_cov_dict(null_list, ps_template, cov_template, spectra_order=spectra)
+    lb = all_ps[name]["ell"]
+# all_ps is a dict such as all_ps = {test_name: {(sv_ar1, sv_ar2, spec): 1D np.ndarray}}
+# all_cov is a dict such as all_cov = {test_name: {(sv_ar1, sv_ar2, spec12), (sv_ar3, sv_ar4, spec34): 2D np.ndarray}}
 
 # Load foreground best fits
 fg_file_name = f"{bestfits_dir}" + "fg_{}x{}.dat"
-l_fg, fg_dict = best_fits.fg_dict_from_files(fg_file_name, map_set_list, d["lmax"], spectra=spectra)
+l_fg, fg_dict = best_fits.fg_dict_from_files_and_spec_list(fg_file_name, spec_list, d["lmax"], spectra=spectra)
 
-# Define PTE dict
-pte_dict = {}
-for label in label_list:
-    pte_dict[label, "all"] = []
-    for spec in spectra:
-        pte_dict[label, spec] = []
-pte_dict_for_plot = {}
+so_mpi.init(True)
+subtasks = so_mpi.taskrange(imin=0, imax=n_nulls - 1)
+log.info(f"[Rank {so_mpi.rank}] number of cross-map pairs to compute: {len(subtasks)} / {n_nulls}")
 
-operations = {"diff": "ab-cd"}
-
-null_list = pspipe_list.get_null_list(d, spectra=spectra, remove_TT_diff_freq=False)
-
-for null in null_list:
-
+for task in subtasks:
+    null = null_list[task]
+    
     mode, ms1, ms2, ms3, ms4 = null
-    lmin, lmax = get_lmin_lmax(null, multipole_range)
+
+    lmin, lmax = {}, {}
 
     res_ps, res_cov = {}, {}
 
-    for spec_dir in spec_dir_list:
-        lb, res_ps[spec_dir], _,  = consistency.compare_spectra([ms1, ms2, ms3, ms4],
+    for name, infos in test_infos.items():
+        lmin[name], lmax[name] = get_lmin_lmax(null, multipole_range[name])
+        lb, res_ps[name], res_cov[name],  = consistency.compare_spectra([ms1, ms2, ms3, ms4],
                                                                 "ab-cd",
-                                                                all_ps[spec_dir],
-                                                                all_cov["analytic_cov"],
+                                                                all_ps[name],
+                                                                all_cov[name],
                                                                 mode = mode,
                                                                 return_chi2=False)
-        if remove_first_bin:
-            res_ps[spec_dir] = res_ps[spec_dir][1:]
-            
-            
-    for cov in cov_type_list:
-        lb, _, res_cov[cov] = consistency.compare_spectra([ms1, ms2, ms3, ms4],
-                                                          "ab-cd",
-                                                          all_ps[spec_dir_list[0]],
-                                                          all_cov[cov],
-                                                          mode = mode,
-                                                          return_chi2=False)
-        if remove_first_bin:
-            lb, res_cov[cov] = lb[1:], res_cov[cov][1:,1:]
-            
+        
+        if remove_first_bins:
+            lb, res_ps[name], res_cov[name] = lb[remove_first_bins:], res_ps[name][remove_first_bins:], res_cov[name][remove_first_bins:,remove_first_bins:]
 
     res_fg = fg_dict[ms1, ms2][mode] - fg_dict[ms3, ms4][mode]
     lb_fg, res_fg_b = pspy_utils.naive_binning(l_fg, res_fg, d["binning_file"], d["lmax"])
     
-    if remove_first_bin:
-        lb_fg, res_fg_b = lb_fg[1:], res_fg_b[1:]
+    if remove_first_bins:
+        lb_fg, res_fg_b = lb_fg[remove_first_bins:], res_fg_b[remove_first_bins:]
 
-    
-    res_ps_dict = {}
-    res_cov_dict = {}
-    
-    fname = f"diff_{mode}_{ms1}x{ms2}_{ms3}x{ms4}"
-
-    for test in test_list:
-        spec_dir = test["spec_dir"]
-        cov_correction = test["cov_correction"]
-        label = test["name"]
-
-
-        res_ps_dict[label] = res_ps[spec_dir]
-        res_cov_dict[label] = res_cov["analytic_cov"]
+    # ZACH YOU MAY WANT TO UNCOMMENT THAT FOR THE INTERACTIVE NULLS TABLE
+    # for name, test in test_infos.items():
+    #     spec_dir = test["spec_dir"]
+    #     cov_correction = test["cov_correction"]
         
-        if "mc_cov" in cov_correction:
-            res_cov_dict[label] = covariance.correct_analytical_cov(res_cov_dict[label],
-                                                                    res_cov["mc_cov"],
-                                                                    only_diag_corrections=True,
-                                                                    use_max_error=False)
-        if "beam_cov" in cov_correction:
-            res_cov_dict[label] += res_cov["beam_cov"]
-            
-        if "leakage_cov" in cov_correction:
-            res_cov_dict[label] += res_cov["leakage_cov"]
-            
-        if fudge:
-            ind = np.diag_indices_from(res_cov_dict[label])
-            print("WARNING FUDGE FACTOR")
-            fudge_error = 1.02
-            res_cov_dict[label][ind] *= fudge_error ** 2
+    #     sigma = np.sqrt(np.diagonal(res_cov[name]))
         
-        sigma = np.sqrt(np.diagonal(res_cov_dict[label]))
-        
-
-        np.save(f"{null_test_dir}/ps_{label}_{fname}.npy", res_cov_dict[label] )
-        np.savetxt(f"{null_test_dir}/cov_{label}_{fname}.npy", np.transpose([lb, res_ps_dict[label], sigma]))
+    #     np.save(f"{null_test_dir}/ps_{label}_{fname}.npy", res_ps[name] )
+    #     np.savetxt(f"{null_test_dir}/cov_{label}_{fname}.npy", np.transpose([lb, res_cov[name], sigma]))
 
     # Plot residual and get chi2
-    lrange = np.where((lb >= lmin) & (lb <= lmax))[0]
     plot_title = f"{ms1}x{ms2} - {ms3}x{ms4}"
     expected_res = 0.
     
-    
-    ylims = y_lims[mode]
-    if "pa4" in fname:
-        ylims = (y_lims[mode][0] * 10,  y_lims[mode][1] * 10)
+    lb_th, res_th = lb_fg, res_fg_b
+    assert len(lb) == len(lb_th), "Mismatch between expected residual and data"
 
-    chi2_dict = consistency.plot_residual(lb, res_ps_dict, res_cov_dict, mode=mode,
-                                          title=plot_title.replace("dr6_", ""),
-                                          file_name=f"{plot_dir}/{mode}/{fname}",
-                                          expected_res=expected_res,
-                                          lrange=lrange,
-                                          overplot_theory_lines=(lb_fg, res_fg_b),
-                                          l_pow=l_pows[mode],
-                                          return_chi2=True,
-                                          ylims=ylims)
-    plt.close()
-    
-    if skip_pa4_pol == True:
-        if ("pa4" in fname) & (mode != "TT"):
-            print(f"skip {ms1}x{ms2}- {ms3}x{ms4} {mode}, we don't use pa4 in pol")
+    pte_list = []
+    for i, (name, infos) in enumerate(test_infos.items()):
+        lrange = np.where((lb >= lmin[name]) & (lb <= lmax[name]))[0]
+        chi2 = (res_ps[name][lrange] - res_th[lrange]) @ np.linalg.inv(res_cov[name][np.ix_(lrange, lrange)]) @ (res_ps[name][lrange] - res_th[lrange])
+        ndof = len(lb[lrange])
 
-            continue
-    if (skip_EB == True) & (mode in ["EB", "BE"]):
-        print(f"skip {ms1}x{ms2}- {ms3}x{ms4} {mode}, EB is used as a test of the polarisation angle")
-        continue
-    if (ms1 == ms2) & (ms3 == ms4) & (mode in ["ET", "BT", "BE"]) :
-        print(f"skip {ms1}x{ms2}- {ms3}x{ms4} {mode} since it's a doublon of {mode[::-1]}")
-        continue
-    f1, f2 = d[f"freq_info_{ms1}"]["freq_tag"],  d[f"freq_info_{ms2}"]["freq_tag"]
-    f3, f4 = d[f"freq_info_{ms3}"]["freq_tag"],  d[f"freq_info_{ms4}"]["freq_tag"]
-    if (mode == "TT") & (skip_diff_freq_TT == True) & (check_freq_pair(f1, f2, f3, f4) == False):
-        print(f"skip {ms1}x{ms2}- {ms3}x{ms4} {mode} since TT has different frequencies")
+        pte = 1 - ss.chi2(ndof).cdf(chi2)
+        chi2_dict[name, tuple(null)] = {"chi2": chi2, "ndof": ndof, "pte" : pte}
+        pte_list.append(pte)
 
-        continue
-    
-    # Fill pte_dict
-    for label in label_list:
-        pte = 1-ss.chi2(chi2_dict[label]["ndof"]).cdf(chi2_dict[label]["chi2"])
-        pte_dict[label, mode].append(pte)
-        pte_dict[label, "all"].append(pte)
+    if plot_all:
+        colors = ["navy", "red", "forestgreen", "darkorange"]
+        fig, ax = plt.subplots(4, figsize=(8, 12), sharex=True, gridspec_kw={'height_ratios':(1.5, 2, 1, 1), "hspace": 0}, dpi=200)
+        ellshift = np.linspace(-3, 3, len(test_infos))
+        for i, (name, infos) in enumerate(test_infos.items()):
+            ax[0].errorbar(lb+ellshift[i], all_ps[name][ms1, ms2, mode][remove_first_bins:],
+                yerr=np.sqrt(all_cov[name][(ms1, ms2, mode), (ms1, ms2, mode)].diagonal()[remove_first_bins:]),
+                ls="-", marker = ".", ecolor = colors[i], lw=.4,
+                color=colors[i], alpha=.8,
+                label=fr"{name} {ms1}x{ms2}"
+            )
+            ax[0].errorbar(lb+ellshift[i], all_ps[name][ms3, ms4, mode][remove_first_bins:],
+                yerr=np.sqrt(all_cov[name][(ms3, ms4, mode), (ms3, ms4, mode)].diagonal()[remove_first_bins:]),
+                ls="None", marker = ".", ecolor = colors[i],
+                color=colors[i], alpha=.8, mfc='white',
+                label=fr"{name} {ms3}x{ms4}"
+            )
+            ax[1].errorbar(lb+ellshift[i], res_ps[name] * lb ** l_pows[mode],
+                yerr=np.sqrt(res_cov[name].diagonal()) * lb ** l_pows[mode],
+                ls="None", marker = ".", ecolor = colors[i],
+                color=colors[i], alpha=.8,
+                label=fr"{name} [$\chi^2 = {{{chi2_dict[name, tuple(null)]["chi2"]:.1f}}}/{{{chi2_dict[name, tuple(null)]["ndof"]}}}$ (${{{chi2_dict[name, tuple(null)]["pte"]:.4f}}}$)]"
+            )
+            ax[2].errorbar(lb+ellshift[i], res_ps[name] / np.sqrt(res_cov[name].diagonal()),
+                yerr=np.ones_like(lb),
+                ls="None", marker = ".", ecolor = colors[i],
+                color=colors[i], alpha=.8,
+            )
+            ax[3].plot(lb+ellshift[i], all_ps[name][ms1, ms2, mode][remove_first_bins:] / all_ps[name][ms3, ms4, mode][remove_first_bins:],
+                ls="-",
+                color=colors[i], alpha=.8,
+            )
+            for a in range(4):
+                ax[a].axvspan(xmin=0, xmax=lmin[name],
+                        color=colors[i], alpha=0.15)
+                ax[a].axvspan(xmin=lmax[name], xmax=10000,
+                        color=colors[i], alpha=0.15)
+        ax[-1].set_xlabel(r"$\ell$", fontsize=15)
+        ax[0].set_ylabel(r"$D_\ell$", fontsize=15)
+        ax[1].set_ylabel(fr"$\Delta D_\ell\ \ell^{{{l_pows[mode]}}}$", fontsize=15)
+        ax[2].set_ylabel(r"$\Delta D_\ell / \sigma_{D_\ell}$", fontsize=15)
+        ax[3].set_ylabel(r"$D_\ell ratio$", fontsize=15)
 
-        if (pte <= pte_threshold) or (pte >= 1-pte_threshold):
-            print(f"[{label}] [{plot_title} {mode}] PTE = {pte:.04f}")
-    pte_dict_for_plot[(mode, ms1, ms2, ms3, ms4)] = pte
+        ax[1].axhline(0., color='black', ls='--', zorder=-10, lw=.5)
+        ax[2].axhline(0., color='black', ls='--', zorder=-10, lw=.5)
+        ax[3].axhline(1., color='black', ls='--', zorder=-10, lw=.5)
+        
+        ax[0].set_xlim(lb[0]-40, lb[-1] + 50)
+        ax[3].set_ylim(.5, 1.5)
+        ax[0].legend()
+        ax[1].legend()
+        ax[0].set_title(f"{ms1}x{ms2} - {ms3}x{ms4}")
+        plt.savefig(f"{plot_dir}/{mode}/ALL/diff_{mode}_{ms1}x{ms2}_{ms3}x{ms4}.png")
+        plt.close()
+    try:
+        pte_comment = '!' * int(-np.log10(min(min(pte_list), 1-max(pte_list)))) # I love this line
+    except:
+        pte_comment = 'inf or 0'
+    log.info(f"[Rank {so_mpi.rank}] {" ".join(null)} PTEs: {" ".join([f"{pte:.5f}" for pte in pte_list])} {pte_comment}")
+
+so_mpi.barrier()
+chi2_dict = so_mpi.gather_set_or_dict(chi2_dict, allgather=False,
+                                                root=0, overlap_allowed=False)
+
+if so_mpi.rank == 0:
+    log.info("Save PTEs")
+    # create pte dicts and filter given combinations and duplicates for plot
+    pte_dict = {}
+    for (name, (mode, ms1, ms2, ms3, ms4)), chi2_ndof_pte in chi2_dict.items():
+        pte_dict[(name, (mode, ms1, ms2, ms3, ms4))] = chi2_ndof_pte["pte"]
 
 
-# Save pte to pickle
-with open(f"{plot_dir}/pte_dict.pkl", "wb") as f:
-    pickle.dump(pte_dict, f)
-with open(f"{plot_dir}/pte_dict_for_plot.pkl", "wb") as f:
-    pickle.dump(pte_dict_for_plot, f)
+    # Save pte to pickle
+    with open(f"{plot_dir}/chi2_dict.pkl", "wb") as f:
+        pickle.dump(chi2_dict, f)
+    with open(f"{plot_dir}/pte_dict.pkl", "wb") as f:
+        pickle.dump(pte_dict, f)
 
-if skip_EB == True:
-    tested_spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "BB"]
-else:
-    tested_spectra = spectra
+    if skip_EB == True:
+        tested_spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "BB"]
+    else:
+        tested_spectra = spectra
 
-# Plot PTE histogram for each cov type
-for label in label_list:
-    pte_list = pte_dict[label, "all"]
-    print(f"{label} Worse PTE: min {np.min(pte_list)}, max {np.max(pte_list)}")
-    n_bins = 14
-    file_name = f"{plot_dir}/pte_hist_all_{label}{hist_label}.png"
-    pte_histo(pte_list, file_name, n_bins)
-    for mode in tested_spectra:
-        pte_list = pte_dict[label, mode]
-        print(f"{len(pte_list)} test for mode {mode}")
-        n_bins = 8
-        file_name = f"{plot_dir}/pte_hist_{mode}_{label}{hist_label}.png"
-        pte_histo(pte_list, file_name, n_bins)
+    # # Plot PTE histogram for each cov type
+    # for name in test_infos.keys():
+    #     pte_list = pte_dict[name, 'all']
+    #     log.info(f"{name} Worse PTE: min {np.min(pte_list)}, max {np.max(pte_list)}")
+    #     n_bins = 14
+    #     file_name = f"{plot_dir}/pte_hist_all_{name}{hist_label}.png"
+    #     pte_histo(pte_list, file_name, n_bins)
+    #     for mode in tested_spectra:
+    #         pte_list = pte_dict[name, mode]
+    #         log.info(f"{len(pte_list)} test for mode {mode}")
+    #         n_bins = 8
+    #         file_name = f"{plot_dir}/pte_hist_{mode}_{name}{hist_label}.png"
+    #         pte_histo(pte_list, file_name, n_bins)
 

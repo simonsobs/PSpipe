@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Viewer</title>
+    
+    <link href="https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_SVG"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        
+        #controls-container { display: flex; flex-wrap: wrap; gap: 40px; margin-bottom: 20px; padding: 15px; background: #eee; border-radius: 8px; }       
+        #plots-container { display: flex; gap: 10px; margin-bottom: 20px; height: 370px; }
+        .plot-div { border: 1px solid #ddd; background: #fafafa; }
+
+        /* Compressed table padding and font size */
+        #map-settings-table-t th, #map-settings-table-t td,
+        #map-settings-table-p th, #map-settings-table-p td { border: 1px solid #ccc; padding: 3px 6px; text-align: left; font-size: 12px; }
+        
+        /* Force all dropdowns inside the tables to be tiny */
+        #map-settings-table-t select, #map-settings-table-p select { font-size: 11px; padding: 1px; }
+
+        .tabulator-row.tabulator-selected, 
+        .tabulator-row.tabulator-selected:hover { 
+            background-color: #9abce3 !important; 
+            color: #000 !important; 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="controls-container" style="padding: 10px 15px; gap: 30px; margin-bottom: 15px;">
+        <div class="control-section" style="font-size: 12px;">
+            <label style="font-weight: bold; margin-bottom: 2px;">Compare By:</label>
+            <select id="compare-select" style="padding: 2px; font-size: 12px;">
+                <option value="none">None</option>
+                <option value="scenario">Scenario</option>
+                <option value="spec">Spec</option>
+                <option value="nullgroup">Nullgroup</option>
+                <option value="leg1">Leg 1</option>
+                <option value="leg2">Leg 2</option>
+            </select>
+        </div>
+
+        <div class="control-section" style="font-size: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                <label style="font-weight: bold;">Limits (T):</label>
+                <div style="display: flex; gap: 4px; align-items: center; font-size: 11px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">
+                    <span style="font-weight: bold; color: #333;">set all:</span>
+                    <select id="master-lmin-t" style="font-size: 11px; padding: 1px;"><option value="" disabled selected>Set Min...</option></select>
+                    <select id="master-lmax-t" style="font-size: 11px; padding: 1px;"><option value="" disabled selected>Set Max...</option></select>
+                </div>
+            </div>
+            <table id="map-settings-table-t">
+                <thead><tr><th>Tested Map</th><th>lb min</th><th>lb max</th></tr></thead>
+                <tbody id="map-settings-body-t"></tbody>
+            </table>
+        </div>
+
+        <div class="control-section" style="font-size: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                <label style="font-weight: bold;">Limits (P - E/B):</label>
+                <div style="display: flex; gap: 4px; align-items: center; font-size: 11px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">
+                    <span style="font-weight: bold; color: #333;">set all:</span>
+                    <select id="master-lmin-p" style="font-size: 11px; padding: 1px;"><option value="" disabled selected>Set Min...</option></select>
+                    <select id="master-lmax-p" style="font-size: 11px; padding: 1px;"><option value="" disabled selected>Set Max...</option></select>
+                </div>
+            </div>
+            <table id="map-settings-table-p">
+                <thead><tr><th>Tested Map</th><th>lb min</th><th>lb max</th></tr></thead>
+                <tbody id="map-settings-body-p"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="plots-container">
+        <div id="plot-chi" class="plot-div" style="flex: 1; min-height: 0;"></div>
+        
+        <div id="plot-chi2" class="plot-div" style="flex: 1; min-height: 0;"></div>
+        
+        <div id="data-plot-wrapper" class="plot-div" style="flex: 2; display: flex; flex-direction: column;">
+            <div id="plot-data" style="flex: 1; min-height: 0;"></div>
+            <div style="padding: 5px; text-align: center; background: #eee; border-top: 1px solid #ddd; font-size: 13px; display: flex; justify-content: center; align-items: center;">
+                <label style="font-weight: bold; margin-right: 5px;">Y-Scale:</label>
+                <select id="yscale-select">
+                    <option value="-1">-1</option>
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="sigma">sigma</option>
+                </select>
+                <label style="font-weight: bold; margin-left: 15px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <input type="checkbox" id="show-param-null" style="margin: 0;"> Parametric Null Band
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div id="data-table"></div>
+
+    <script>
+        let table;
+        let indexData = [];
+        
+        let mapSettingsT = {}; 
+        let mapSettingsP = {}; 
+    
+        let currentHistMetric = "chi2"; // Defaults to Chi2
+        let availableLmins = [];
+        let availableLmaxs = [];
+        let lminMap = {};
+        let lmaxMap = {};
+        let currentSelectedRow = null; 
+        
+        // Added uniqueSurveysArray
+        let uScenarios = [], uSpecs = [], uNullgroups = [], uLeg1 = [], uLeg2 = [];
+        let uniqueSurveysArray = [], uniqueMapsArray = [], uniquePairsArray = [];     
+
+        let uniqueMapCombos = [];      
+        let activeLimitCache = {};     
+        let loadedPTEFiles = {};       
+
+        function formatSci(v) {
+            if (v === null || v === undefined || isNaN(v)) return "N/A";
+            return Number(v).toExponential(5);
+        }
+
+        function getMapLimits(mapName, dict) {
+            if (!mapName) return { lmin: -Infinity, lmax: Infinity };
+            const cleanName = String(mapName).trim();
+            if (dict[cleanName]) return dict[cleanName];
+            
+            console.error(`STRICT MODE: Map name '${cleanName}' not found in Limit Dictionary.`);
+            return { lmin: -Infinity, lmax: Infinity }; 
+        }
+
+        function getActiveChi(row) {
+            if (!row._limit_key) return null;
+            const targetKey = activeLimitCache[row._limit_key];
+            if (!targetKey || !loadedPTEFiles[targetKey]) return null;
+            return loadedPTEFiles[targetKey].chi[row._orig_index];
+        }
+
+        function getActiveChi2(row) {
+            if (!row._limit_key) return null;
+            const targetKey = activeLimitCache[row._limit_key];
+            if (!targetKey || !loadedPTEFiles[targetKey]) return null;
+            return loadedPTEFiles[targetKey].chi2[row._orig_index];
+        }
+
+        function getEffectiveLimits(leg1, leg2, spec) {
+            if (!leg1 || !leg2) return { effLmin: -Infinity, effLmax: Infinity };
+            
+            const s = spec;
+            const charA = s[0].toUpperCase();
+            const charB = (s.length > 1) ? s[1].toUpperCase() : charA;
+            
+            const setA = (charA === 'T') ? mapSettingsT : mapSettingsP;
+            const setB = (charB === 'T') ? mapSettingsT : mapSettingsP;
+            
+            const leg1Maps = leg1.split('x').map(m => m.trim());
+            const map1A = leg1Maps[0];
+            const map1B = leg1Maps.length > 1 ? leg1Maps[1] : map1A;
+
+            const leg2Maps = leg2.split('x').map(m => m.trim());
+            const map2A = leg2Maps[0];
+            const map2B = leg2Maps.length > 1 ? leg2Maps[1] : map2A;
+
+            const lim1A = getMapLimits(map1A, setA);
+            const lim1B = getMapLimits(map1B, setB);
+            const lim2A = getMapLimits(map2A, setA);
+            const lim2B = getMapLimits(map2B, setB);
+
+            return { 
+                effLmin: Math.max(lim1A.lmin, lim1B.lmin, lim2A.lmin, lim2B.lmin), 
+                effLmax: Math.min(lim1A.lmax, lim1B.lmax, lim2A.lmax, lim2B.lmax) 
+            };
+        }
+
+        function applyLimitsAndRedraw() {
+            uniqueMapCombos.forEach(combo => {
+                const s = combo.spec;
+                const charA = s[0].toUpperCase();
+                const charB = s[1].toUpperCase();
+                
+                const setA = (charA === 'T') ? mapSettingsT : mapSettingsP;
+                const setB = (charB === 'T') ? mapSettingsT : mapSettingsP;
+
+                const leg1Maps = combo.leg1.split('x').map(m => m.trim());
+                const map1A = leg1Maps[0];
+                const map1B = leg1Maps.length > 1 ? leg1Maps[1] : map1A;
+
+                const leg2Maps = combo.leg2.split('x').map(m => m.trim());
+                const map2A = leg2Maps[0];
+                const map2B = leg2Maps.length > 1 ? leg2Maps[1] : map2A;
+
+                const lim1A = getMapLimits(map1A, setA);
+                const lim1B = getMapLimits(map1B, setB);
+                const lim2A = getMapLimits(map2A, setA);
+                const lim2B = getMapLimits(map2B, setB);
+
+                const effLmin = Math.max(lim1A.lmin, lim1B.lmin, lim2A.lmin, lim2B.lmin);
+                const effLmax = Math.min(lim1A.lmax, lim1B.lmax, lim2A.lmax, lim2B.lmax);
+                
+                const minStr = lminMap[effLmin];
+                const maxStr = lmaxMap[effLmax];
+                const dictKey = (minStr !== undefined && maxStr !== undefined) ? `${minStr}_${maxStr}` : null;
+                
+                activeLimitCache[combo.key] = dictKey;
+            });
+
+            const requiredKeys = [...new Set(Object.values(activeLimitCache).filter(k => k !== null))];
+
+            const fetchPromises = requiredKeys
+                .filter(k => !loadedPTEFiles[k])
+                .map(k => {
+                    return fetch(`null_ptes/null_ptes_${k}.json?nocache=${new Date().getTime()}`)
+                        .then(res => {
+                            if (!res.ok) throw new Error(`STRICT MODE FETCH FAILED: Missing ${k}`);
+                            return res.json();
+                        })
+                        .then(data => { loadedPTEFiles[k] = data; })
+                        .catch(err => console.error("Fetch failed for key:", k, err));
+                });
+
+            Promise.all(fetchPromises).then(() => {
+                if (table) table.redraw(true); 
+                drawHistograms();
+                if (currentSelectedRow) drawDataPlot(currentSelectedRow);
+            });
+        }
+        
+        fetch('index.json?nocache=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                indexData = data.rows; 
+                const sampleKeys = data.lmin_lmax_keys;
+                const lmins = new Set(); const lmaxs = new Set();
+                
+                sampleKeys.forEach((key) => {
+                    const parts = key.split('_');
+                    const numMin = parseFloat(parts[0]);
+                    const numMax = parseFloat(parts[1]);
+                    lmins.add(numMin); lmaxs.add(numMax);
+                    lminMap[numMin] = parts[0]; lmaxMap[numMax] = parts[1];
+                });
+                
+                availableLmins = [...lmins].sort((a, b) => a - b);
+                availableLmaxs = [...lmaxs].sort((a, b) => a - b);
+                
+                const sScen = new Set(), sSpec = new Set(), sNull = new Set(), sL1 = new Set(), sL2 = new Set();
+                const sSurv = new Set(), uniqueMaps = new Set(), uniquePairs = new Set();
+                const comboSet = new Set();
+                
+                const ensureArray = (val) => {
+                    if (!val) return [];
+                    if (Array.isArray(val)) return val.map(s => String(s).trim());
+                    if (typeof val === 'string') return val.split(',').map(s => s.trim());
+                    return [String(val).trim()];
+                };
+
+                indexData.forEach(row => {
+                    // Strictly trim the leg strings
+                    row.leg1 = String(row.leg1).trim();
+                    row.leg2 = String(row.leg2).trim();
+
+                    sScen.add(row.scenario); sSpec.add(row.spec); sNull.add(row.nullgroup);
+                    sL1.add(row.leg1); sL2.add(row.leg2);
+                    
+                    row.tested_surveys = ensureArray(row.tested_surveys);
+                    row.tested_surveys.forEach(s => sSurv.add(s));
+
+                    row.tested_maps = ensureArray(row.tested_maps);
+                    row.tested_maps.forEach(m => uniqueMaps.add(m));
+
+                    row.tested_mpairs = ensureArray(row.tested_mpairs);
+                    row.tested_mpairs.forEach(p => uniquePairs.add(p));
+
+                    const specStr = row.spec;
+                    row._limit_key = `${row.leg1}_${row.leg2}_${specStr}`; 
+                    
+                    if (!comboSet.has(row._limit_key)) {
+                        comboSet.add(row._limit_key);
+                        uniqueMapCombos.push({ 
+                            key: row._limit_key, 
+                            leg1: row.leg1, 
+                            leg2: row.leg2, 
+                            spec: specStr 
+                        });
+                    }
+                });
+                
+                uScenarios = [...sScen].sort(); uSpecs = [...sSpec].sort(); 
+                uNullgroups = [...sNull].sort(); uLeg1 = [...sL1].sort(); uLeg2 = [...sL2].sort();
+                uniqueSurveysArray = [...sSurv].sort();
+                uniqueMapsArray = [...uniqueMaps].sort(); 
+                uniquePairsArray = [...uniquePairs].sort();
+                
+                buildMapSettingsUI(uniqueMapsArray);
+                initTabulator(); 
+                applyLimitsAndRedraw(); 
+            });
+
+        function buildMapSettingsUI(maps) {
+            const tbodyT = document.getElementById('map-settings-body-t');
+            const tbodyP = document.getElementById('map-settings-body-p');
+            
+            const maxLmax = availableLmaxs[availableLmaxs.length - 1];
+            
+            const lminOptions = availableLmins.map(v => `<option value="${v}">${v}</option>`).join('');
+            const lmaxRowOptions = availableLmaxs.map(v => `<option value="${v}" ${v === maxLmax ? 'selected' : ''}>${v}</option>`).join('');
+            const lmaxMasterOptions = availableLmaxs.map(v => `<option value="${v}">${v}</option>`).join('');
+            
+            document.getElementById('master-lmin-t').innerHTML += lminOptions;
+            document.getElementById('master-lmax-t').innerHTML += lmaxMasterOptions;
+            document.getElementById('master-lmin-p').innerHTML += lminOptions;
+            document.getElementById('master-lmax-p').innerHTML += lmaxMasterOptions;
+
+            maps.forEach(map => {
+                mapSettingsT[map] = { lmin: availableLmins[0], lmax: maxLmax };
+                mapSettingsP[map] = { lmin: availableLmins[0], lmax: maxLmax };
+                
+                const trT = document.createElement('tr');
+                trT.innerHTML = `
+                    <td>${map}</td>
+                    <td><select class="lmin-trigger-t" data-map="${map}">${lminOptions}</select></td>
+                    <td><select class="lmax-trigger-t" data-map="${map}">${lmaxRowOptions}</select></td>
+                `;
+                tbodyT.appendChild(trT);
+
+                const trP = document.createElement('tr');
+                trP.innerHTML = `
+                    <td>${map}</td>
+                    <td><select class="lmin-trigger-p" data-map="${map}">${lminOptions}</select></td>
+                    <td><select class="lmax-trigger-p" data-map="${map}">${lmaxRowOptions}</select></td>
+                `;
+                tbodyP.appendChild(trP);
+            });
+            
+            document.querySelectorAll('.lmin-trigger-t, .lmax-trigger-t').forEach(select => {
+                select.addEventListener('change', function(e) {
+                    const mapName = e.target.getAttribute('data-map');
+                    const isLmin = e.target.classList.contains('lmin-trigger-t');
+                    if (isLmin) mapSettingsT[mapName].lmin = parseFloat(e.target.value);
+                    else mapSettingsT[mapName].lmax = parseFloat(e.target.value);
+                    applyLimitsAndRedraw(); 
+                });
+            });
+
+            document.querySelectorAll('.lmin-trigger-p, .lmax-trigger-p').forEach(select => {
+                select.addEventListener('change', function(e) {
+                    const mapName = e.target.getAttribute('data-map');
+                    const isLmin = e.target.classList.contains('lmin-trigger-p');
+                    if (isLmin) mapSettingsP[mapName].lmin = parseFloat(e.target.value);
+                    else mapSettingsP[mapName].lmax = parseFloat(e.target.value);
+                    applyLimitsAndRedraw(); 
+                });
+            });
+
+            document.getElementById('master-lmin-t').addEventListener('change', function(e) {
+                const val = parseFloat(e.target.value);
+                Object.keys(mapSettingsT).forEach(map => mapSettingsT[map].lmin = val);
+                document.querySelectorAll('.lmin-trigger-t').forEach(select => select.value = val);
+                applyLimitsAndRedraw(); e.target.value = ""; 
+            });
+            document.getElementById('master-lmax-t').addEventListener('change', function(e) {
+                const val = parseFloat(e.target.value);
+                Object.keys(mapSettingsT).forEach(map => mapSettingsT[map].lmax = val);
+                document.querySelectorAll('.lmax-trigger-t').forEach(select => select.value = val);
+                applyLimitsAndRedraw(); e.target.value = ""; 
+            });
+
+            document.getElementById('master-lmin-p').addEventListener('change', function(e) {
+                const val = parseFloat(e.target.value);
+                Object.keys(mapSettingsP).forEach(map => mapSettingsP[map].lmin = val);
+                document.querySelectorAll('.lmin-trigger-p').forEach(select => select.value = val);
+                applyLimitsAndRedraw(); e.target.value = ""; 
+            });
+            document.getElementById('master-lmax-p').addEventListener('change', function(e) {
+                const val = parseFloat(e.target.value);
+                Object.keys(mapSettingsP).forEach(map => mapSettingsP[map].lmax = val);
+                document.querySelectorAll('.lmax-trigger-p').forEach(select => select.value = val);
+                applyLimitsAndRedraw(); e.target.value = ""; 
+            });
+        }
+
+        // --- NEW: CUSTOM HEADER FILTER FOR ARRAYS ---
+        function buildCustomArrayFilter(cell, onRendered, success, cancel, filterParams) {
+            const container = document.createElement("div");
+            container.style.display = "flex";
+            container.style.flexDirection = "column";
+            container.style.gap = "4px";
+            container.style.padding = "2px 0";
+
+            // Logic UI
+            const logicWrap = document.createElement("div");
+            logicWrap.style.display = "flex";
+            logicWrap.style.gap = "4px";
+            logicWrap.style.alignItems = "center";
+            logicWrap.innerHTML = `
+                <select class="logic-op" style="font-size:11px; padding:1px; flex:1; cursor:pointer;">
+                    <option value="OR">OR</option>
+                    <option value="AND">AND</option>
+                    <option value="XOR">XOR</option>
+                </select>
+                <label style="font-size:11px; display:flex; align-items:center; cursor:pointer;">
+                    <input type="checkbox" class="logic-not" style="margin:0 2px 0 0;"> NOT
+                </label>
+            `;
+            container.appendChild(logicWrap);
+
+            // Dropdown Trigger Button
+            const dropBtn = document.createElement("button");
+            dropBtn.innerHTML = "Select... &#x25BC;";
+            dropBtn.style.fontSize = "11px";
+            dropBtn.style.padding = "2px 4px";
+            dropBtn.style.cursor = "pointer";
+            dropBtn.style.textAlign = "left";
+            dropBtn.style.width = "100%";
+            dropBtn.style.boxSizing = "border-box";
+            
+            // NEW: Prevents long selections from breaking the column width
+            dropBtn.style.overflow = "hidden";
+            dropBtn.style.textOverflow = "ellipsis";
+            dropBtn.style.whiteSpace = "nowrap";
+            
+            container.appendChild(dropBtn);
+
+            // Checkbox List
+            const fieldName = cell.getField();
+            const existingList = document.getElementById("drop-" + fieldName);
+            if (existingList) existingList.remove(); 
+
+            const listWrap = document.createElement("div");
+            listWrap.id = "drop-" + fieldName;
+            listWrap.className = "custom-array-dropdown";
+            listWrap.style.display = "none";
+            listWrap.style.position = "absolute";
+            listWrap.style.backgroundColor = "#fff";
+            listWrap.style.border = "1px solid #ccc";
+            listWrap.style.boxShadow = "0px 4px 6px rgba(0,0,0,0.1)";
+            listWrap.style.maxHeight = "200px";
+            listWrap.style.overflowY = "auto";
+            listWrap.style.zIndex = "99999";
+
+            const checkboxes = [];
+            filterParams.values.forEach(val => {
+                const lbl = document.createElement("label");
+                lbl.style.display = "flex";
+                lbl.style.alignItems = "center";
+                lbl.style.padding = "4px 8px";
+                lbl.style.fontSize = "12px";
+                lbl.style.cursor = "pointer";
+                lbl.style.borderBottom = "1px solid #eee";
+                lbl.style.margin = "0";
+
+                const cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.value = val;
+                cb.style.margin = "0 6px 0 0";
+                cb.style.cursor = "pointer";
+
+                checkboxes.push(cb);
+                lbl.appendChild(cb);
+                lbl.appendChild(document.createTextNode(val));
+
+                lbl.addEventListener("click", e => e.stopPropagation());
+                cb.addEventListener("click", e => e.stopPropagation());
+
+                listWrap.appendChild(lbl);
+            });
+
+            document.body.appendChild(listWrap);
+
+            function positionList() {
+                const rect = dropBtn.getBoundingClientRect();
+                listWrap.style.top = (rect.bottom + window.scrollY) + "px";
+                listWrap.style.left = (rect.left + window.scrollX) + "px";
+                listWrap.style.minWidth = rect.width + "px";
+            }
+
+            dropBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const isVisible = listWrap.style.display === "block";
+                
+                document.querySelectorAll(".custom-array-dropdown").forEach(el => el.style.display = "none");
+                
+                if (!isVisible) {
+                    positionList();
+                    listWrap.style.display = "block";
+                }
+            });
+
+            const logicSelect = logicWrap.querySelector('.logic-op');
+            const notCheck = logicWrap.querySelector('.logic-not');
+
+            function triggerFilter() {
+                const selectedVals = checkboxes.filter(c => c.checked).map(c => c.value);
+                
+                // NEW: Update button text with selections, or default to "Select..."
+                if (selectedVals.length === 0) {
+                    dropBtn.innerHTML = "Select... &#x25BC;";
+                    dropBtn.title = ""; // clear hover tooltip
+                } else {
+                    const textStr = selectedVals.join(", ");
+                    dropBtn.innerHTML = textStr + " &#x25BC;";
+                    dropBtn.title = textStr; // Adds a tooltip so you can hover to see hidden overflow items
+                }
+
+                success({
+                    logic: logicSelect.value,
+                    not: notCheck.checked,
+                    values: selectedVals
+                });
+            }
+
+            logicSelect.addEventListener("change", (e) => { e.stopPropagation(); triggerFilter(); });
+            notCheck.addEventListener("change", (e) => { e.stopPropagation(); triggerFilter(); });
+            checkboxes.forEach(cb => cb.addEventListener("change", triggerFilter));
+
+            // CRITICAL: Swallows all clicks to prevent Tabulator from sorting while interacting
+            container.addEventListener("click", e => e.stopPropagation());
+            container.addEventListener("mousedown", e => e.stopPropagation());
+            container.addEventListener("mouseup", e => e.stopPropagation());
+            logicWrap.addEventListener("click", e => e.stopPropagation());
+
+            document.addEventListener("click", (e) => {
+                if (!container.contains(e.target) && !listWrap.contains(e.target)) {
+                    listWrap.style.display = "none";
+                }
+            });
+
+            return container;
+        }
+
+        function initTabulator() {
+            // UPGRADED: Math engine now handles Strings AND Arrays uniformly
+            const universalMatchFilter = (headerValue, rowValue) => {
+                if (!headerValue || !headerValue.values || headerValue.values.length === 0) return true; 
+
+                // Auto-convert plain strings into arrays so the math engine treats everything equally
+                let rowVals = [];
+                if (Array.isArray(rowValue)) rowVals = rowValue;
+                else if (rowValue !== null && rowValue !== undefined) rowVals = [String(rowValue)];
+
+                let matches = 0;
+                headerValue.values.forEach(val => {
+                    if (rowVals.includes(val)) matches++;
+                });
+
+                let pass = false;
+                if (headerValue.logic === "OR") pass = matches > 0;
+                else if (headerValue.logic === "AND") pass = matches === headerValue.values.length;
+                else if (headerValue.logic === "XOR") pass = matches === 1; 
+
+                if (headerValue.not) pass = !pass;
+
+                return pass;
+            };
+
+            table = new Tabulator("#data-table", {
+                height: "500px", 
+                layout: "fitColumns", 
+                selectableRows: 1, 
+                data: indexData,
+                columns: [
+                    { 
+                        title: "Scenario", field: "scenario", widthGrow: 1, 
+                        headerFilter: buildCustomArrayFilter, headerFilterParams: {values: uScenarios}, 
+                        headerFilterFunc: universalMatchFilter 
+                    },
+                    { 
+                        title: "Spec", field: "spec", width: 80, 
+                        headerFilter: buildCustomArrayFilter, headerFilterParams: {values: uSpecs}, 
+                        headerFilterFunc: universalMatchFilter 
+                    },
+                    { 
+                        title: "Nullgroup", field: "nullgroup", width: 110, 
+                        headerFilter: buildCustomArrayFilter, headerFilterParams: {values: uNullgroups}, 
+                        headerFilterFunc: universalMatchFilter 
+                    },
+                    { 
+                        title: "Leg 1", field: "leg1", widthGrow: 1, 
+                        headerFilter: buildCustomArrayFilter, headerFilterParams: {values: uLeg1}, 
+                        headerFilterFunc: universalMatchFilter 
+                    },
+                    { 
+                        title: "Leg 2", field: "leg2", widthGrow: 1, 
+                        headerFilter: buildCustomArrayFilter, headerFilterParams: {values: uLeg2}, 
+                        headerFilterFunc: universalMatchFilter 
+                    },
+                    {
+                        title: "Tested Surveys", field: "tested_surveys", width: 130, 
+                        headerFilter: buildCustomArrayFilter, headerFilterParams: {values: uniqueSurveysArray},
+                        headerFilterFunc: universalMatchFilter, formatter: "array" 
+                    },
+                    {
+                        title: "Tested Maps", field: "tested_maps", width: 130, 
+                        headerFilter: buildCustomArrayFilter, headerFilterParams: {values: uniqueMapsArray},
+                        headerFilterFunc: universalMatchFilter, formatter: "array" 
+                    },
+                    {
+                        title: "Tested MPairs", field: "tested_mpairs", width: 130, 
+                        headerFilter: buildCustomArrayFilter, headerFilterParams: {values: uniquePairsArray},
+                        headerFilterFunc: universalMatchFilter, formatter: "array" 
+                    },
+                    {
+                        title: "Chi PTE", field: "active_chi", 
+                        formatter: cell => { const v = getActiveChi(cell.getData()); return (v !== null && v !== undefined) ? formatSci(v) : "N/A"; },
+                        sorter: (a, b, aRow, bRow) => (getActiveChi(aRow.getData()) || -1) - (getActiveChi(bRow.getData()) || -1)
+                    },
+                    {
+                        title: "Chi2 PTE", field: "active_chi2", 
+                        formatter: cell => { const v = getActiveChi2(cell.getData()); return (v !== null && v !== undefined) ? formatSci(v) : "N/A"; },
+                        sorter: (a, b, aRow, bRow) => (getActiveChi2(aRow.getData()) || -1) - (getActiveChi2(bRow.getData()) || -1)
+                    }
+                ]
+            });
+
+            table.on("dataFiltered", function(filters, rows) {
+                const freshlyFilteredData = rows.map(row => row.getData());
+                drawHistograms(freshlyFilteredData);
+            });
+            
+            table.on("rowClick", function(e, row){
+                table.deselectRow(); 
+                row.select();        
+                currentSelectedRow = row.getData();
+                drawDataPlot(currentSelectedRow);
+            });
+        }
+
+        function drawHistograms(providedData) {
+            if (!table) return; 
+            
+            const activeRows = providedData || table.getData("active");
+            const compareCol = document.getElementById('compare-select').value;
+            let tracesChi = []; let tracesChi2 = [];
+
+            const createStepTrace = (data, name, colorIndex) => {
+                const colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2'];
+                const cleanData = data.filter(d => d !== null && !isNaN(d));
+                if (cleanData.length === 0) return {x: [], y: [], type: 'scatter', name: name};
+
+                const bins = 30;
+                const min = Math.min(...cleanData);
+                const max = Math.max(...cleanData) + 1e-9; 
+                const binWidth = (max - min) / bins;
+
+                let counts = new Array(bins).fill(0);
+                cleanData.forEach(v => {
+                    let idx = Math.floor((v - min) / binWidth);
+                    if(idx >= 0 && idx < bins) counts[idx]++;
+                });
+
+                const area = cleanData.length * binWidth;
+                const pdf = counts.map(c => area > 0 ? c / area : 0);
+
+                let x = [min]; let y = [0];
+                for(let i=0; i<bins; i++) {
+                    x.push(min + i * binWidth); y.push(pdf[i]); 
+                    x.push(min + (i+1) * binWidth); y.push(pdf[i]); 
+                }
+                x.push(max); y.push(0); 
+
+                return {
+                    x: x, y: y, type: 'scatter', mode: 'lines',
+                    line: { shape: 'hvh', color: colors[colorIndex % colors.length], width: 2 },
+                    name: name, fill: 'tozeroy', fillcolor: 'rgba(0,0,0,0)' 
+                };
+            };
+
+            if (compareCol === "none") {
+                tracesChi.push(createStepTrace(activeRows.map(r => getActiveChi(r)), 'All', 0));
+                tracesChi2.push(createStepTrace(activeRows.map(r => getActiveChi2(r)), 'All', 0));
+            } else {
+                let groups = {};
+                activeRows.forEach(r => {
+                    const key = r[compareCol];
+                    if (!groups[key]) groups[key] = { chi: [], chi2: [] };
+                    groups[key].chi.push(getActiveChi(r));
+                    groups[key].chi2.push(getActiveChi2(r));
+                });
+                let i = 0;
+                for (const [key, vals] of Object.entries(groups)) {
+                    tracesChi.push(createStepTrace(vals.chi, key, i));
+                    tracesChi2.push(createStepTrace(vals.chi2, key, i));
+                    i++;
+                }
+            }
+
+            // UPGRADED: Includes logic (OR/AND) and NOT status in the subtitle
+            const activeFilters = table.getHeaderFilters();
+            let filterStr = activeFilters.map(f => {
+                const fieldName = f.field;
+                const val = f.value;
+
+                if (val && typeof val === 'object' && val.values) {
+                    const logicOp = val.logic || "OR";
+                    const notPrefix = val.not ? "NOT " : "";
+                    const valueList = val.values.join(', ');
+                    
+                    // Format: field = NOT AND [value1, value2]
+                    return `${fieldName} = ${notPrefix}${logicOp} [${valueList}]`;
+                }
+                
+                // Fallback for simple/standard filters
+                return `${fieldName} = ${val}`;
+            }).join(' | ');
+            
+            if (!filterStr) filterStr = "None";
+
+            const chiData = activeRows.map(r => getActiveChi(r)).filter(v => v !== null && !isNaN(v));
+            const chi2Data = activeRows.map(r => getActiveChi2(r)).filter(v => v !== null && !isNaN(v));
+            
+            // Stacked the text slightly so it fits better in narrow 25% columns
+            const formatStats = (arr) => {
+                if (arr.length === 0) return "N: 0 | Min: N/A | Max: N/A";
+                return `N: ${arr.length}<br>Min: ${formatSci(Math.min(...arr))} | Max: ${formatSci(Math.max(...arr))}`;
+            };
+
+            const baseLayout = { barmode: 'overlay', margin: {t: 75, b: 30, l: 30, r: 10} };
+
+            Plotly.react('plot-chi', tracesChi, {
+                ...baseLayout, 
+                title: { text: `$\\chi\\text{ PTE}$`, font: { size: 14 }, y: 0.96 }, 
+                annotations: [{ 
+                    text: `Filters: ${filterStr}<br>${formatStats(chiData)}`, 
+                    xref: 'paper', yref: 'paper', 
+                    x: 0.5, y: 1.0, 
+                    xanchor: 'center', yanchor: 'bottom', 
+                    yshift: 5, showarrow: false, font: {size: 10, color: 'gray'} 
+                }]
+            });
+            
+            Plotly.react('plot-chi2', tracesChi2, {
+                ...baseLayout, 
+                title: { text: `$\\chi^2\\text{ PTE}$`, font: { size: 14 }, y: 0.96 },
+                annotations: [{ 
+                    text: `Filters: ${filterStr}<br>${formatStats(chi2Data)}`, 
+                    xref: 'paper', yref: 'paper', 
+                    x: 0.5, y: 1.0, 
+                    xanchor: 'center', yanchor: 'bottom', 
+                    yshift: 5, showarrow: false, font: {size: 10, color: 'gray'} 
+                }]
+            });
+        }
+
+        function drawDataPlot(selectedRow) {
+            const compareCol = document.getElementById('compare-select').value;
+            const allData = table.getData();
+            let rowsToPlot = [];
+
+            // 1. Identify which rows to overlay based on "Compare By"
+            if (compareCol === "none") {
+                rowsToPlot.push(selectedRow);
+            } else {
+                const coreCols = ["scenario", "spec", "nullgroup", "leg1", "leg2"];
+                rowsToPlot = allData.filter(row => {
+                    let isSibling = true;
+                    coreCols.forEach(col => { if (col !== compareCol && row[col] !== selectedRow[col]) isSibling = false; });
+                    return isSibling;
+                });
+            }
+
+            // 2. Fetch all required JSON files
+            const promises = rowsToPlot.map(row => {
+                const url = `${row.scenario}_${row.spec}_${row.nullgroup}/${row.leg1}/${row.leg2}.json`;
+                return fetch(url).then(res => res.json()).then(fileData => ({ metadata: row, plotData: fileData }));
+            });
+
+            Promise.all(promises).then(results => {
+                let traces = []; 
+                let maxDataX = 0; 
+                const yscale = document.getElementById('yscale-select').value;
+                const showParam = document.getElementById('show-param-null').checked;
+                const limits = getEffectiveLimits(selectedRow.leg1, selectedRow.leg2, selectedRow.spec);
+                
+                let globalMinY = Infinity;
+                let globalMaxY = -Infinity;
+                
+                // Color palette and helper for transparent bands
+                const defaultColors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+                const hexToRgba = (hex, alpha) => {
+                    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+                    return `rgba(${r},${g},${b},${alpha})`;
+                };
+                
+                results.forEach((res, index) => {
+                    const pData = res.plotData;
+                    const traceColor = defaultColors[index % defaultColors.length];
+                    const bandColor = '#444444'; 
+                    const traceName = compareCol === "none" ? res.metadata.id : res.metadata[compareCol];
+
+                    let xVals = [], yVals = [], errVals = [];
+                    let pUpper = [], pLower = []; 
+
+                    pData.forEach(d => {
+                        let x = d[0]; 
+                        let y = d[1]; 
+                        let err = d[2];
+                        
+                        // Safety Net: Check if columns 4 and 5 exist
+                        let hasParam = d.length >= 5;
+                        let pVal = hasParam ? d[3] : null;
+                        let pErr = hasParam ? d[4] : null;
+
+                        xVals.push(x);
+                        if (x > maxDataX) maxDataX = x;
+                        
+                        let y_scaled, err_scaled;
+                        if (yscale === "sigma") { 
+                            y_scaled = y / err; err_scaled = 1.0; 
+                        } else { 
+                            const factor = Math.pow(x, parseInt(yscale)); 
+                            y_scaled = y * factor; err_scaled = err * factor; 
+                        }
+                        
+                        yVals.push(y_scaled);
+                        errVals.push(err_scaled);
+
+                        // Only process and push band data if it exists in the JSON
+                        if (hasParam && pVal !== null && pErr !== null) {
+                            let pVal_scaled, pErr_scaled;
+                            if (yscale === "sigma") {
+                                pVal_scaled = pVal / err;
+                                pErr_scaled = pErr / err;
+                            } else {
+                                const factor = Math.pow(x, parseInt(yscale));
+                                pVal_scaled = pVal * factor;
+                                pErr_scaled = pErr * factor;
+                            }
+                            pUpper.push(pVal_scaled + pErr_scaled);
+                            pLower.push(pVal_scaled - pErr_scaled);
+
+                            // Update global Y limits for the band if within white region
+                            if (showParam && x > limits.effLmin && x < limits.effLmax) {
+                                if (pVal_scaled - pErr_scaled < globalMinY) globalMinY = pVal_scaled - pErr_scaled;
+                                if (pVal_scaled + pErr_scaled > globalMaxY) globalMaxY = pVal_scaled + pErr_scaled;
+                            }
+                        }
+
+                        if (x > limits.effLmin && x < limits.effLmax) {
+                            if (y_scaled - err_scaled < globalMinY) globalMinY = y_scaled - err_scaled;
+                            if (y_scaled + err_scaled > globalMaxY) globalMaxY = y_scaled + err_scaled;
+                        }
+                    });
+                    
+                    // 1. DATA LINE
+                    traces.push({ 
+                        x: xVals, y: yVals, type: 'scatter', mode: 'lines', 
+                        name: traceName, 
+                        showlegend: false, 
+                        line: { color: hexToRgba(traceColor, 0.5), width: 2 },
+                        error_y: { type: 'data', array: errVals, visible: true, opacity: 0.5, color: traceColor } 
+                    });
+
+                    // 2. PARAMETRIC BAND: Only added if we actually found pUpper/pLower data
+                    if (showParam && pUpper.length > 0) {
+                        traces.push({
+                            x: xVals, y: pUpper, type: 'scatter', mode: 'lines',
+                            line: { width: 0 }, showlegend: false, hoverinfo: 'skip'
+                        });
+                        traces.push({
+                            x: xVals, y: pLower, type: 'scatter', mode: 'lines',
+                            name: `${traceName} (Null)`,
+                            line: { width: 0 }, 
+                            fill: 'tonexty', 
+                            fillcolor: hexToRgba(bandColor, 0.45), 
+                            showlegend: false, 
+                            hoverinfo: 'skip'
+                        });
+                    }
+                });
+                
+                // Metadata for annotations
+                const activeChiStr = formatSci(getActiveChi(selectedRow));
+                const activeChi2Str = formatSci(getActiveChi2(selectedRow));
+
+                let yAxisTitle = `$\\Delta D_{\\ell}\\ \\text{${selectedRow.spec}}$`;
+                if (yscale === "1") yAxisTitle = `$\\ell_b \\Delta D_{\\ell}\\ \\text{${selectedRow.spec}}$`;
+                if (yscale === "-1") yAxisTitle = `$\\ell_b^{-1} \\Delta D_{\\ell}\\ \\text{${selectedRow.spec}}$`;
+                if (yscale === "sigma") yAxisTitle = `$\\Delta D_{\\ell} / \\sigma\\ \\text{${selectedRow.spec}}$`;
+
+                let yAxisConfig = { title: yAxisTitle };
+                if (globalMinY !== Infinity && globalMaxY !== -Infinity) {
+                    const padding = (globalMaxY - globalMinY) === 0 ? 1 : (globalMaxY - globalMinY) * 0.15;
+                    yAxisConfig.range = [globalMinY - padding, globalMaxY + padding];
+                }
+
+                Plotly.react('plot-data', traces, {
+                    showlegend: false, // Turn off legend
+                    title: { text: `${selectedRow.leg1} -<br>${selectedRow.leg2}`, font: { size: 13 }, pad: { b: 15 }, y: 0.96 }, 
+                    margin: {t: 55, b: 40, l: 60, r: 20}, 
+                    xaxis: { title: '$\\ell_b$', range: [0, maxDataX * 1.01] }, // X-limit + 1%
+                    yaxis: yAxisConfig, 
+                    annotations: [{ 
+                        text: `$\\chi\\text{ PTE: } ${activeChiStr} \\quad \\chi^2\\text{ PTE: } ${activeChi2Str}$`, 
+                        xref: 'paper', yref: 'paper', x: 1.0, y: 1.0, 
+                        xanchor: 'right', yanchor: 'bottom', yshift: 5, 
+                        showarrow: false, font: {size: 11, color: '#333'} 
+                    }],
+                    shapes: [
+                        { type: 'rect', xref: 'x', yref: 'paper', x0: 0, x1: limits.effLmin, y0: 0, y1: 1, fillcolor: '#d3d3d3', opacity: 0.5, line: {width: 0}, layer: 'below' },
+                        { type: 'rect', xref: 'x', yref: 'paper', x0: limits.effLmax, x1: maxDataX * 1.01, y0: 0, y1: 1, fillcolor: '#d3d3d3', opacity: 0.5, line: {width: 0}, layer: 'below' }
+                    ]
+                });
+            });
+        }
+
+        document.getElementById('yscale-select').addEventListener('change', () => { if (currentSelectedRow) drawDataPlot(currentSelectedRow); });
+        document.getElementById('compare-select').addEventListener('change', () => { drawHistograms(); if (currentSelectedRow) drawDataPlot(currentSelectedRow); });
+
+        document.getElementById('show-param-null').addEventListener('change', () => {
+            if (currentSelectedRow) drawDataPlot(currentSelectedRow);
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                if (!table) return;
+
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                
+                const selectedRows = table.getSelectedRows();
+                if (selectedRows.length === 0) {
+                    const activeRows = table.getRows("active");
+                    if (activeRows.length > 0) {
+                        activeRows[0].select();
+                        currentSelectedRow = activeRows[0].getData();
+                        drawDataPlot(currentSelectedRow);
+                    }
+                    return;
+                }
+
+                const current = selectedRows[0];
+                const next = (e.key === "ArrowDown") ? current.getNextRow() : current.getPrevRow();
+                
+                if (next) { 
+                    table.deselectRow(); 
+                    next.select(); 
+                    next.scrollTo(); 
+                    
+                    currentSelectedRow = next.getData(); 
+                    drawDataPlot(currentSelectedRow); 
+                }
+            }
+        }, true); 
+    </script>
+</body>
+</html>

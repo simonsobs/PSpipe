@@ -32,7 +32,7 @@ apply_kspace_filter = d["apply_kspace_filter"]
 kspace_tf_path = d["kspace_tf_path"]
 deconvolve_pixwin = d["deconvolve_pixwin"] # FIXME: this might not be one thing for all surveys etc.
 
-spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_", from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 spin_pairs = ('spin0xspin0', 'spin0xspin2', 'spin2xspin0', 'spin2xspin2_diag', 'spin2xspin2_off')
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"] # FIXME: block order assume spectra order
 
@@ -83,7 +83,7 @@ for sv in surveys:
         pixwins[sv] = pw_b
 
 # now get the operators
-nspec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
+nspec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d, from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=nspec - 1)

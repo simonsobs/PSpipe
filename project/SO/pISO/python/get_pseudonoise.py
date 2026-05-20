@@ -49,7 +49,7 @@ pspy_utils.create_directory(plot_dir)
 # we want all the possible cross-spectra, even between tubes where we expect the
 # noise correlation to be small (however, we skip survey crosses). later, when
 # adding blocks, we can opt to not include tube-tube correlations
-_, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
+_, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d, from_spec_nullgroups=False) # potentially need all crosses for cov
 sv1_list = np.array(sv1_list)
 m1_list = np.array(m1_list)
 sv2_list = np.array(sv2_list)

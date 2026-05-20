@@ -67,7 +67,7 @@ if d["use_toeplitz_mcm"] == True:
 else:
     l_exact, l_band, l_toep = None, None, None
 
-n_mcms, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
+n_mcms, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d, from_spec_nullgroups=False) # need all crosses for cov
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_mcms - 1)

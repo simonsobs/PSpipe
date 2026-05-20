@@ -142,7 +142,7 @@ else:
 # this sets up iteration over mapsets, surveys, and maps such that the code is
 # the same for data and sims
 n_map, sv_list, map_list = pspipe_list.get_arrays_list(d)
-n_spec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
+n_spec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d, from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 
 # convert to arrays to support advanced indexing
 sv_list = np.array(sv_list)
@@ -247,7 +247,7 @@ for sv in surveys:
         filters[sv] = None
 
 # get spectrum-level auxiliary data products
-spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_", from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 
 if apply_kspace_filter and kspace_tf_path != "analytical":
     TE_corr = {}

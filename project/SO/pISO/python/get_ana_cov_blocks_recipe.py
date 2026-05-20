@@ -102,7 +102,7 @@ def update_ducc_inputs_and_nterms(sna1, sna2, sna3, sna4,
 # ellxell intermediate products to disk; rather, we want the entire
 # 9xell x 9xell pseudocov block that we can immediately sandwich between two
 # pseudo2datavec operators.
-n_covs, ni_list, nj_list, np_list, nq_list = pspipe_list.get_covariances_list(d)
+n_covs, ni_list, nj_list, np_list, nq_list = pspipe_list.get_covariances_list(d, from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 if cov_correlation_by_noise_model:

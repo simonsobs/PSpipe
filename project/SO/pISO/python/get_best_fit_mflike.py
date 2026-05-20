@@ -123,7 +123,7 @@ fg_dict = best_fits.get_foreground_dict(l_th,
                                         beams=beams)
 
 log.info("Writing best fit spectra")
-spectra_list = pspipe_list.get_spec_name_list(d, delimiter = "_")
+spectra_list = pspipe_list.get_spec_name_list(d, delimiter="_", from_spec_nullgroups=False) # need all crosses for cov
 best_fit_dict = {}
 for ps_name in spectra_list:
     fg = {}

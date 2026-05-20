@@ -8,6 +8,7 @@ from pspipe_utils import best_fits
 import matplotlib.pyplot as plt
 import getdist.plots as gdplt
 from cobaya.run import run
+import pickle
 import numpy as np
 import sys
 import yaml
@@ -25,7 +26,8 @@ calib_infos: dict = calib_dict['get_polar_eff_LCDM.py']
 spec_dir = d['spec_dir']
 cov_dir = d['cov_dir']
 bestfit_dir = d['best_fits_dir']
-mcm_dir = f'old_cov/mcm/'
+# mcm_dir = f'old_cov/mcm/'
+mcm_dir = d['mcm_dir']
 planck_corr = False
 use_leakage_cov = False
 
@@ -33,7 +35,9 @@ if planck_corr:
     spec_dir = "spectra_leak_corr_planck_bias_corr"
 
 output_dir = d['poleff_dir']
+chains_dir = f"{output_dir}/chains"
 pspy_utils.create_directory(output_dir)
+pspy_utils.create_directory(chains_dir)
 plots_dir = d['plots_dir'] + '/poleff/'
 pspy_utils.create_directory(plots_dir)
 
@@ -135,9 +139,12 @@ for sv_ar in sets_to_measure:
             spin_pair = "spin2xspin2" if spectrum == "EE" else ("spin0xspin2" if spectrum == "TE" else None)
             if spin_pair is None:
                 raise ValueError("spectrum must be set to either 'EE' or 'TE'")
-            Bbl = np.load(f"{mcm_dir}/{spec_name}_Bbl_{spin_pair}.npy")
-            Bbl = Bbl[:n_bins, :lmax_paramfile]
-
+            Bbl = np.load(f"{mcm_dir}/{spec_name}_Bbl.npy")
+            if d["binned_mcm"]:
+                Bbl = Bbl[3, :n_bins, :lmax_paramfile]      # ? Bbl is 00, 02, 20, ++, -- so we take ++ ?
+            else:
+                Bbl = Bbl[:n_bins, :lmax_paramfile]      # ? Bbl is 00, 02, 20, ++, -- so we take ++ ?
+                
             # Get theory
             cmb_th = ps_th[spectrum][:lmax_paramfile]
             fg_th = fg_dict[spectrum.lower(), "dust", f"{sv_ar}", f"{sv_ar}"][:lmax_paramfile]
@@ -148,7 +155,7 @@ for sv_ar in sets_to_measure:
                 residual = ps - theory
                 chi2 = residual @ invcov @ residual
                 return -0.5 * chi2
-
+            
             loc, scale = dust_priors[spectrum]["loc"], dust_priors[spectrum]["scale"]
 
             # Prepare MCMC sampling
@@ -162,7 +169,7 @@ for sv_ar in sets_to_measure:
                             "min": 0.5,
                             "max": 1.5
                         },
-                        "latex": r"\epsilon_\mathrm{pol}^{%s}" % f"{sv_ar}".replace("_", "\_")
+                        "latex": r"\epsilon_\mathrm{pol}^{%s}" % f"{sv_ar}".replace("_",r"\_")
                     },
                     "dust_amp": {
                         "prior": {
@@ -176,17 +183,17 @@ for sv_ar in sets_to_measure:
                 "sampler": {
                     "mcmc": {
                         "max_tries": 10**6,
-                        "Rminus1_stop": 0.015,
-                        "Rminus1_cl_stop": 0.015
+                        "Rminus1_stop": 0.005,
+                        # "Rminus1_cl_stop": 0.015
                     }
                 },
-                "output": f"{output_dir}/chain_{spectrum}_{sv_ar}",
+                "output": f"{chains_dir}/chain_{spectrum}_{sv_ar}",
                 "force": True,
             }
 
             updated_info, sampler = run(info)
 
-            samples = loadMCSamples(f"{output_dir}/chain_{spectrum}_{sv_ar}", settings={"ignore_rows": 0.5})
+            samples = loadMCSamples(f"{chains_dir}/chain_{spectrum}_{sv_ar}", settings={"ignore_rows": 0.5})
             pol_eff_mean[sv_ar, spectrum] = samples.mean("pol_eff")
             pol_eff_std[sv_ar, spectrum] = np.sqrt(samples.cov(["pol_eff"])[0, 0])
             dust_mean[sv_ar, spectrum] = samples.mean("dust_amp")
@@ -298,7 +305,7 @@ for sv_ar in sets_to_measure:
             plt.close()
 
 # Save results to a yaml file
-poleffs_to_save = {
+poleffs_dict = {
     'bestfits' : {
         sv_ar: {
             mode: float(pol_eff_mean[sv_ar, mode])
@@ -315,9 +322,33 @@ poleffs_to_save = {
     },
 }
 
-file = open(f"{d['calib_dir']}/poleffs_dict.yaml", "w")
-yaml.dump(poleffs_to_save, file)
+default_calibs = {f'{sv}_{ar}': d[f"pol_eff_{sv}_{ar}"] for sv in d["surveys"] for ar in d[f"arrays_{sv}"]}
+results_dict = {
+    sv_ar: (per_mode_poleff["EE"], per_mode_err["EE"])
+    for (sv_ar, per_mode_poleff), per_mode_err in zip(poleffs_dict["bestfits"].items(), poleffs_dict["std"].values())
+}
+
+poleff_to_save = {
+    sv_ar: float(poleff)
+    for sv_ar, (poleff, _) in results_dict.items()
+}
+stds_to_save = {
+    sv_ar: float(std)
+    for sv_ar, (_, std) in results_dict.items()
+}
+
+file = open(f"{output_dir}/poleff_dict.yaml", "w")
+yaml.dump(poleff_to_save, file)
 file.close()
+
+file = open(f"{output_dir}/poleff_errs_dict.yaml", "w")
+yaml.dump(stds_to_save, file)
+file.close()
+
+with open(f"{output_dir}/poleff_dict.pickle", 'wb') as handle:
+    pickle.dump(poleff_to_save, handle, protocol=pickle.HIGHEST_PROTOCOL)
+with open(f"{output_dir}/poleff_errs_dict.pickle", 'wb') as handle:
+    pickle.dump(stds_to_save, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 # Plot and print results
@@ -330,7 +361,7 @@ for i, sv_ar in enumerate(sets_to_measure):
         print(f"**************")
         p_eff, std = pol_eff_mean[sv_ar, mode], pol_eff_std[sv_ar, mode]
         print(f"{sv_ar} {mode} {p_eff} {std}")
-        cal, std = poleffs_to_save["bestfits"][sv_ar][mode], poleffs_to_save["std"][sv_ar][mode]
+        cal, std = poleffs_dict["bestfits"][sv_ar][mode], poleffs_dict["std"][sv_ar][mode]
         print(f"{mode}, cal: {cal:.5f}, sigma cal: {std:.5f}")
 
         ax.errorbar(

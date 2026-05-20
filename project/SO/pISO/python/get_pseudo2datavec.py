@@ -58,31 +58,23 @@ if apply_kspace_filter:
         else:
             raise NotImplementedError('can only kspace filter CAR maps')
 
-    if kspace_tf_path == "analytical":
-        # FIXME: func assumes len(spectra) == 9
-        kspace_transfer_matrix = kspace.build_analytic_kspace_filter_matrices(surveys, # FIXME: will break if any non-CAR survey
-                                                                              maps,
-                                                                              templates,
-                                                                              filter_dicts,
-                                                                              binning_file, # FIXME: assumes same binning all maps
-                                                                              lmax)
-    else:
-        kspace_transfer_matrix = {}
+    # FIXME: func assumes len(spectra) == 9
+    kspace_transfer_matrix = kspace.build_analytic_kspace_filter_matrices(surveys, # FIXME: will break if any non-CAR survey
+                                                                        maps,
+                                                                        templates,
+                                                                        filter_dicts,
+                                                                        binning_file, # FIXME: assumes same binning all maps
+                                                                        lmax)
+    if not kspace_tf_path == "analytical":
+        mc_kspace_transfer_matrix = {}
         for spec_name in spec_name_list:
             # FIXME: func assumes len(spectra) == 9
             # FIXME: script assumes (below) same spectra ordering as what made these matrices
-            kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
+            mc_kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
 
     for k, v in kspace_transfer_matrix.items():
         if np.count_nonzero(v.diagonal() == 0):
             log.info(f'WARNING: 0 in kspace_transfer_matrix {k}')
-
-    # this will be used in the old covariance computation
-    for spec_name in spec_name_list:
-        one_d_tf = kspace_transfer_matrix[spec_name].diagonal()
-        cov_T_E_only = d["cov_T_E_only"]
-        if cov_T_E_only == True: one_d_tf = one_d_tf[:4 * n_bins]
-        np.savetxt(f"{spec_dir}/one_dimension_kspace_tf_{spec_name}.dat", one_d_tf)
 
 pixwins = {}
 for sv in surveys:
@@ -117,13 +109,18 @@ for task in subtasks:
 
     # get the inv_kspace matrix for this array cross, if necessary
     if apply_kspace_filter:
-        inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix[spec_name]) 
+        inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix[spec_name]) # mc_inv @ (ana_inv @ raw_spectrum)
 
         # apply the inv_kspace matrix to mbl_inv to get data operator. don't
         # need to copy because just being used in math
         # FIXME: script assumes same spectra ordering as what made these matrices
         inv_kspace_mat = so_mcm.get_spec2spec_sparse_dict_mat_from_dense_mat(inv_kspace_mat, spectra)
-        pseudo2datavec = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(inv_kspace_mat, pseudo2datavec)
+        pseudo2datavec = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(inv_kspace_mat, pseudo2datavec) # inv_analytic @ spec
+
+        if not kspace_tf_path == "analytical":
+            inv_mc_kspace_mat = np.linalg.inv(mc_kspace_transfer_matrix[spec_name]) # mc_inv @ (ana_inv @ raw_spectrum)
+            inv_mc_kspace_mat = so_mcm.get_spec2spec_sparse_dict_mat_from_dense_mat(inv_mc_kspace_mat, spectra)
+            pseudo2datavec = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(inv_mc_kspace_mat, pseudo2datavec) # inv_mc @ (inv_analytic @ spec)
 
     # get the pixwin for healpix, if necessary
     # FIXME: put pixwin in mcm / forward model

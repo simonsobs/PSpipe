@@ -1,4 +1,4 @@
-run_name = 'deep56_20260201_skn_50cg_inpaint_holes_pwv_split'
+run_name = 'deep56_20260201_skn_50cg_inpaint_holes_pwv_split_cal_poleff'
 # ! CHANGE THESE
 data_dir = 'path/to/your/datadir/'
 yaml_dir = 'path/to/your/yamldir/'
@@ -532,11 +532,11 @@ bandpass_shift_planck_f143  = 0.
 bandpass_shift_planck_f217  = 0.
 bandpass_shift_planck_f353  = 0.
 
-bandint_shift_dr6_pa4_f220 = 5.544125003
-bandint_shift_dr6_pa5_f090 = 0.1592497071
-bandint_shift_dr6_pa5_f150 = -1.159111141
-bandint_shift_dr6_pa6_f090 = 0.7731299635
-bandint_shift_dr6_pa6_f150 = -0.4757717247
+bandpass_shift_dr6_pa4_f220 = 5.544125003
+bandpass_shift_dr6_pa5_f090 = 0.1592497071
+bandpass_shift_dr6_pa5_f150 = -1.159111141
+bandpass_shift_dr6_pa6_f090 = 0.7731299635
+bandpass_shift_dr6_pa6_f150 = -0.4757717247
 
 bandpass_shift_lat_iso_i1_f090_pwv0  = 0.
 bandpass_shift_lat_iso_i1_f090_pwv1  = 0.

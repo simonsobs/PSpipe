@@ -530,11 +530,11 @@ bandpass_shift_planck_f143  = 0.
 bandpass_shift_planck_f217  = 0.
 bandpass_shift_planck_f353  = 0.
 
-bandint_shift_dr6_pa4_f220 = 5.544125003
-bandint_shift_dr6_pa5_f090 = 0.1592497071
-bandint_shift_dr6_pa5_f150 = -1.159111141
-bandint_shift_dr6_pa6_f090 = 0.7731299635
-bandint_shift_dr6_pa6_f150 = -0.4757717247
+bandpass_shift_dr6_pa4_f220 = 5.544125003
+bandpass_shift_dr6_pa5_f090 = 0.1592497071
+bandpass_shift_dr6_pa5_f150 = -1.159111141
+bandpass_shift_dr6_pa6_f090 = 0.7731299635
+bandpass_shift_dr6_pa6_f150 = -0.4757717247
 
 bandpass_shift_lat_iso_i1_f090_flip0  = 0.
 bandpass_shift_lat_iso_i1_f090_flip1  = 0.

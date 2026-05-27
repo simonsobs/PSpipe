@@ -35,7 +35,9 @@ lmax = d["lmax"]
 binned_mcm = d["binned_mcm"]
 pure = d["pure"]
 
-l_pw, pw = np.loadtxt(d["pixwin_spt_file"], unpack=True)
+l_pw, pw = {}, {}
+for sv in surveys:
+    l_pw[sv], pw[sv] = np.loadtxt(d[f"pixwin_{sv}_file"], unpack=True)
 
 
 if d["use_toeplitz_mcm"] == True:

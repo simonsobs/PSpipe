@@ -1,0 +1,73 @@
+surveys = ["Planck"]
+arrays_Planck = ["143", "353"]
+release_dir = "/global/cfs/cdirs/sobs/users/tlouis/spt_data/"
+
+alm_conv_spt = "HEALPIX"
+
+binning_file = release_dir + "binning_spt.dat"
+apply_kspace_filter  = False
+
+pixwin_Planck_file = release_dir + "ancillary_products/generally_applicable/pixel_window_function_planck.txt"
+
+apply_alm_mask = True
+lmax_mask = 4000
+alm_mask_Planck_095 = release_dir + "ancillary_products/specific_to_c25/alm_mask_095ghz.fits"
+alm_mask_Planck_150 = release_dir + "ancillary_products/specific_to_c25/alm_mask_150ghz.fits"
+alm_mask_Planck_220 = release_dir + "ancillary_products/specific_to_c25/alm_mask_220ghz.fits"
+
+niter = 0
+remove_mean = True
+binned_mcm = True
+lmax = 3500
+type = 'Dl'
+write_splits_spectra = True
+cov_T_E_only = False
+use_toeplitz_mcm  = False
+use_toeplitz_cov  = True
+
+# maps
+
+src_free_maps_Planck = False
+
+passband_dir_planck = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/pspipe/for_planck/passbands/"
+
+freq_info_Planck_143 = {"freq_tag": 143, "passband": passband_dir_planck + "passband_npipe_f143.dat"}
+freq_info_Planck_353 = {"freq_tag": 353, "passband": passband_dir_planck + "passband_npipe_f353.dat"}
+
+
+n_splits_Planck = 2
+npipe_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
+maps_Planck_143 = [f"{npipe_dir}/npipe6v20A/npipe6v20A_143_map.fits", f"{npipe_dir}/npipe6v20B/npipe6v20B_143_map.fits"]
+maps_Planck_353 = [f"{npipe_dir}/npipe6v20A/npipe6v20A_353_map.fits", f"{npipe_dir}/npipe6v20B/npipe6v20B_353_map.fits"]
+
+
+planck_beam_path =  "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/pspipe/for_planck/beams/"
+
+beam_T_Planck_f143 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_143Ax143B.dat"
+beam_T_Planck_f353 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_353Ax353B.dat"
+
+beam_pol_Planck_f143 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_143Ax143B.dat"
+beam_pol_Planck_f353 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_353Ax353B.dat"
+
+
+cal_Planck_f143 = 1
+cal_Planck_f353 = 1
+
+
+pol_eff_Planck_f143 = 1.0
+pol_eff_Planck_f353 = 1.0
+
+window_dir =  "/pscratch/sd/t/tlouis/spt_mask_clean/my_masks/"
+
+window_T_spt_095 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+window_pol_spt_095 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+
+window_T_spt_150 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+window_pol_spt_150 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+
+window_T_spt_220 = window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+window_pol_spt_220 = window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+
+
+cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}
+

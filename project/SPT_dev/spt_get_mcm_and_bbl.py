@@ -72,8 +72,8 @@ for task in subtasks:
             file_name = f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}"
             l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}"], d[f"beam_pol_{sv1}_{ar1}"])
             l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}"], d[f"beam_pol_{sv2}_{ar2}"])
-            bl1 = apply_pixwin_to_beam(l, bl1, l_pw, pw, pow=1)
-            bl2 = apply_pixwin_to_beam(l, bl2, l_pw, pw, pow=1)
+            bl1 = apply_pixwin_to_beam(l, bl1, l_pw[sv1], pw[sv1], pow=1)
+            bl2 = apply_pixwin_to_beam(l, bl2, l_pw[sv2], pw[sv2], pow=1)
         
         if run == "sim_in_run":
     
@@ -87,8 +87,8 @@ for task in subtasks:
             file_name = f"{mcm_dir}/{sv1}_{ar1}x{sv2}_{ar2}_sim_out"
             l, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{ar1}_sim"], d[f"beam_pol_{sv1}_{ar1}_sim"])
             l, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{ar2}_sim"], d[f"beam_pol_{sv2}_{ar2}_sim"])
-            bl1 = apply_pixwin_to_beam(l, bl1, l_pw, pw, pow=3)
-            bl2 = apply_pixwin_to_beam(l, bl2, l_pw, pw, pow=3)
+            bl1 = apply_pixwin_to_beam(l, bl1, l_pw[sv1], pw[sv1], pow=3)
+            bl2 = apply_pixwin_to_beam(l, bl2, l_pw[sv2], pw[sv2], pow=3)
 
         mbb_inv, Bbl = so_mcm.mcm_and_bbl_spin0and2(win1=(win1_T, win1_pol),
                                                     win2=(win2_T, win2_pol),

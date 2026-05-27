@@ -4,7 +4,7 @@ release_dir = "/global/cfs/cdirs/sobs/users/tlouis/spt_data/"
 runs = ["data_run"]
 
 
-alm_conv_spt = "HEALPIX"
+alm_conv_Planck = "HEALPIX"
 pure = False
 
 
@@ -15,9 +15,8 @@ pixwin_Planck_file = release_dir + "ancillary_products/generally_applicable/pixe
 
 apply_alm_mask = True
 lmax_mask = 4000
-alm_mask_Planck_095 = release_dir + "ancillary_products/specific_to_c25/alm_mask_095ghz.fits"
-alm_mask_Planck_150 = release_dir + "ancillary_products/specific_to_c25/alm_mask_150ghz.fits"
-alm_mask_Planck_220 = release_dir + "ancillary_products/specific_to_c25/alm_mask_220ghz.fits"
+alm_mask_Planck_143 = release_dir + "ancillary_products/specific_to_c25/alm_mask_095ghz.fits"
+alm_mask_Planck_353 = release_dir + "ancillary_products/specific_to_c25/alm_mask_095ghz.fits"
 
 niter = 0
 remove_mean = True

@@ -3,6 +3,8 @@ arrays_Planck = ["143", "353"]
 release_dir = "/global/cfs/cdirs/sobs/users/tlouis/spt_data/"
 
 alm_conv_spt = "HEALPIX"
+pure = False
+
 
 binning_file = release_dir + "binning_spt.dat"
 apply_kspace_filter  = False

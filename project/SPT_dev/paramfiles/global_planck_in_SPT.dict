@@ -61,14 +61,11 @@ pol_eff_Planck_f353 = 1.0
 
 window_dir =  "/pscratch/sd/t/tlouis/spt_mask_clean/my_masks/"
 
-window_T_Planck_095 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
-window_pol_Planck_095 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+window_T_Planck_143 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+window_pol_Planck_143 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
 
-window_T_Planck_150 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
-window_pol_Planck_150 =  window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
-
-window_T_Planck_220 = window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
-window_pol_Planck_220 = window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+window_T_Planck_353 = window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
+window_pol_Planck_353 = window_dir + "spt_source_mask_top40_apod_edges_my_apod_downgraded.fits"
 
 
 cosmo_params = {"cosmomc_theta":0.0104059, "logA": 3.053, "ombh2": 0.02258, "omch2": 0.1242, "ns": 0.9666, "Alens": 1.0, "tau": 0.0567}

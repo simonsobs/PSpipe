@@ -5,6 +5,7 @@ release_dir = "/global/cfs/cdirs/sobs/users/tlouis/spt_data/"
 alm_conv_spt = "HEALPIX"
 pure = False
 
+planck_fits_beam_path = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/pspipe/for_planck/beams/"
 
 binning_file = release_dir + "binning_spt.dat"
 apply_kspace_filter  = False
@@ -43,21 +44,20 @@ maps_Planck_143 = [f"{npipe_dir}/npipe6v20A/npipe6v20A_143_map.fits", f"{npipe_d
 maps_Planck_353 = [f"{npipe_dir}/npipe6v20A/npipe6v20A_353_map.fits", f"{npipe_dir}/npipe6v20B/npipe6v20B_353_map.fits"]
 
 
-planck_beam_path =  "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/pspipe/for_planck/beams/"
 
-beam_T_Planck_f143 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_143Ax143B.dat"
-beam_T_Planck_f353 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_353Ax353B.dat"
+beam_T_Planck_143 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_143Ax143B.dat"
+beam_T_Planck_353 = "beams/npipe_DR6_AxB/bl_T_npipe_DR6_353Ax353B.dat"
 
-beam_pol_Planck_f143 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_143Ax143B.dat"
-beam_pol_Planck_f353 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_353Ax353B.dat"
-
-
-cal_Planck_f143 = 1
-cal_Planck_f353 = 1
+beam_pol_Planck_143 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_143Ax143B.dat"
+beam_pol_Planck_353 = "beams/npipe_DR6_AxB/bl_pol_npipe_DR6_353Ax353B.dat"
 
 
-pol_eff_Planck_f143 = 1.0
-pol_eff_Planck_f353 = 1.0
+cal_Planck_143 = 1
+cal_Planck_353 = 1
+
+
+pol_eff_Planck_143 = 1.0
+pol_eff_Planck_353 = 1.0
 
 window_dir =  "/pscratch/sd/t/tlouis/spt_mask_clean/my_masks/"
 

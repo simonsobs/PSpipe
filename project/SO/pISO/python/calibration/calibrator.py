@@ -55,7 +55,7 @@ if args.calibs is not None:
     log.info(f'Calibrate spectra using calibs yaml file and {calib_test} test.')
     with open(args.calibs, "r") as file:
         calibs_dict: dict = yaml.safe_load(file)
-    calibs_survey_arrays = list(calibs_dict['bestfits'].keys())
+    calibs_survey_arrays = list(calibs_dict.keys())
     
     poleff_suffix = '_poleff' if args.force_poleff else ''
     
@@ -63,7 +63,7 @@ if args.calibs is not None:
     for sv_ar in survey_arrays:
         if sv_ar not in calibs_survey_arrays:
             log.info(f'{sv_ar} not in calibs yaml, setting it to 1.')
-            calibs_dict['bestfits'][sv_ar] = {test: 1. for test in calib_tests}
+            calibs_dict[sv_ar] = 1.
     
     # Calibrate the spectra and save with _cal suffix
     for (sv1, ar1), (sv2, ar2) in itertools.combinations_with_replacement(survey_arrays_tuple, r=2):
@@ -75,7 +75,7 @@ if args.calibs is not None:
             # Load & calib
             spec_filename_load = f'{spec_dir}/Dl_{sv_ar1}x{sv_ar2}_{spec_type}{poleff_suffix}.dat'
             ls, Dls = so_spectra.read_ps(spec_filename_load, spectra=spectra)
-            Dls_cal = {spec: Dls[spec] / calibs_dict['bestfits'][sv_ar1][calib_test] / calibs_dict['bestfits'][sv_ar2][calib_test] for spec in spectra}
+            Dls_cal = {spec: Dls[spec] * calibs_dict[sv_ar1] * calibs_dict[sv_ar2] for spec in spectra}
 
             # Save with _cal suffix
             spec_filename_save = f'{spec_dir}/Dl_{sv_ar1}x{sv_ar2}_{spec_type}_calib{poleff_suffix}.dat'

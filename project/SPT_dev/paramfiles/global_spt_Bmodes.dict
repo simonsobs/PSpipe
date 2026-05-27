@@ -1,6 +1,8 @@
 surveys = ["spt"]
 arrays_spt = ["095", "150", "220"]
 release_dir = "/global/cfs/cdirs/sobs/users/tlouis/spt_data/"
+runs = ["data_run", "sim_in_run", "sim_out_run"]
+
 
 alm_conv_spt = "IAU"
 pure = True

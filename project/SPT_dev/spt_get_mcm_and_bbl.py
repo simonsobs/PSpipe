@@ -63,7 +63,7 @@ for task in subtasks:
     win2_T = so_map.read_map(d[f"window_T_{sv2}_{ar2}"])
     win2_pol = so_map.read_map(d[f"window_pol_{sv2}_{ar2}"])
     
-    runs = ["data_run", "sim_in_run", "sim_out_run"]
+    runs = d["runs"] 
     
     for run in runs:
 

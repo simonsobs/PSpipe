@@ -41,6 +41,7 @@ else:
 lmax = d["lmax"]
 n_min_sims = 500
 
+so_mpi.init(True)
 
 mcm_dir = d["mcm_dir"]
 spec_dir = d['sim_spec_for_tf_dir']
@@ -68,20 +69,20 @@ m1_list = np.array(m1_list)
 sv2_list = np.array(sv2_list)
 m2_list = np.array(m2_list)
 
-subtasks_mapsets = so_mpi.taskrange(imin=iStart, imax=iStop - 1)
-log.info(f"[Rank {so_mpi.rank}] Running on sims")
-log.info(f"[Rank {so_mpi.rank}] Number of sims for the mpi loop: {len(subtasks_mapsets)}")
+#subtasks_mapsets = so_mpi.taskrange(imin=iStart, imax=iStop - 1)
+subtasks_spectra = so_mpi.taskrange(imin=0, imax=n_spec - 1)
+log.info(f"[Rank {so_mpi.rank}] Number of spectra for the mpi loop: {len(subtasks_spectra)}")
+#log.info(f"[Rank {so_mpi.rank}] Number of sims for the mpi loop: {len(subtasks_mapsets)}")
 
 # iteration for alms
-mapset_iterator = subtasks_mapsets
-sv_iterator = sv_list
-map_iterator = map_list
+#mapset_iterator = subtasks_mapsets
 
 # iteration for spectra
-sv1_iterator = sv1_list
-m1_iterator = m1_list
-sv2_iterator = sv2_list
-m2_iterator = m2_list
+sv1_iterator = sv1_list[subtasks_spectra]
+m1_iterator = m1_list[subtasks_spectra]
+sv2_iterator = sv2_list[subtasks_spectra]
+m2_iterator = m2_list[subtasks_spectra]
+
 
 spec_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 array_list = [f"{sv}_{ar}" for (sv, ar) in zip(sv_list, map_list)]
@@ -96,13 +97,12 @@ ps_list = {}
 #for sid, spec in enumerate(spec_list):
 for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
     spec = sv1 + "_" + m1 + "x" + sv2 + "_" + m2
-    log.info(f"Read all {spec} sim power spectra")
+    log.info(f"[Rank {so_mpi.rank}] Read all {spec} sim power spectra")
 
 
     ps_list[spec] = {}
     for scenario in scenarios:
-        for iii in mapset_iterator: 
- 
+        for iii in range(iStart, iStop): 
             if iii == 0:
                 ps_list[spec]["nofilter", scenario] = []
                 ps_list[spec]["filter", scenario] = []
@@ -115,66 +115,137 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
             ps_list[spec]["filter", scenario] += [ps_filt]
 
 
-elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "EE_to_BB", "BB_to_EE"]
-kspace_matrix = {}
+elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "EE_to_BB", "BB_to_EE",  "TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE", "EE_to_EB", "EE_to_BE", "BB_to_EB", "BB_to_BE"]
 
-plt.figure(figsize=(12,8))
-for spec in spec_list:
-    log.info(f"build kspace filter matrix for {spec}")
-    kspace_dict, std, kspace_matrix[spec] = kspace.build_kspace_filter_matrix(lb,
-                                                                              ps_list[spec],
-                                                                              n_sims,
-                                                                              spectra,
-                                                                              return_dict=True)
+kspace_matrix = {}
+kspace_dict = {}
+std = {}
+
+# first save kspace_matrix per spec
+for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
+    spec = sv1 + "_" + m1 + "x" + sv2 + "_" + m2
+    log.info(f"[Rank {so_mpi.rank}] build kspace filter matrix for {spec}")
+    kspace_dict[spec], std[spec], kspace_matrix[spec] = kspace.build_kspace_filter_matrix(lb,
+                                                                            ps_list[spec],
+                                                                            n_sims,
+                                                                            spectra,
+                                                                            return_dict=True)
 
     np.save(f"{tf_dir}/kspace_matrix_{spec}.npy", kspace_matrix[spec])
-    for count, el in enumerate(elements):
-        plt.subplot(3, 2, count+1)
-        plt.ylabel(el)
-        plt.xlabel(r"$\ell$")
-        plt.errorbar(lb, kspace_dict[el], std[el] / np.sqrt(n_sims), label = spec)
-plt.legend()
-plt.savefig(f"{plot_dir}/kspace_mat.png", bbox_inches="tight")
-plt.clf()
-plt.close()
+so_mpi.barrier()
+
+# gather dictionary items in rank 0 if needed
+if so_mpi.size > 1:
+    all_kspace_dict = so_mpi.gather_set_or_dict(kspace_dict, allgather=False, root=0)
+    all_std = so_mpi.gather_set_or_dict(std, allgather=False, root=0)
+else:
+    all_kspace_dict = kspace_dict
+    all_std = std
+
+# then plot 
+if so_mpi.rank == 0:
+    plt.figure(figsize=(12,36))
+    for spec in spec_list:
+        for count, el in enumerate(elements):
+            plt.subplot(8, 2, count+1)
+            plt.ylabel(el)
+            plt.xlabel(r"$\ell$")
+            if el not in ["TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE"]:
+                plt.errorbar(lb, all_kspace_dict[spec][el], all_std[spec][el] / np.sqrt(n_sims)) #, label = spec)
+            else:
+                plt.plot(lb, all_kspace_dict[spec][el])
+    #plt.legend()
+    plt.savefig(f"{plot_dir}/kspace_mat.png", bbox_inches="tight")
+    plt.clf()
+    plt.close()
 
 # lets also make sure that the corrected spectrum is unbiased
-
-
-for spec in spec_list:
-    log.info(f"plot uncorrected vs corrected mean for {spec} ")
+# computing some additive corrections first
+ps_list_corr = {}
+for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
+    spec = sv1 + "_" + m1 + "x" + sv2 + "_" + m2
+    log.info(f"[Rank {so_mpi.rank}] correct filtered sims by MC kspace correction, spectrum {spec} ")
 
     Bbl = np.load(opj(f"{mcm_dir}", spec + "_Bbl.npy"))
     n1, n2 = spec.split("x")
     bin_theory = so_mcm.spin2spin_array_matmul_sparse_dict_vec(Bbl, spectra, cmb_and_fg_dict[n1, n2])
 
-    for iii in mapset_iterator:
-        lb, ps_list[spec]["filter", "standard"][iii] = kspace.deconvolve_kspace_filter_matrix(lb,
-                                                                                              ps_list[spec]["filter", "standard"][iii],
-                                                                                              kspace_matrix[spec],
-                                                                                              spectra)
+    # now ps_list_corr["filter"] is deconvolved by the kspace mc correction
+    ps_list_corr[spec] = {}
+    for iii in range(iStart, iStop):
+        lb, ps_list_corr[spec][iii] = kspace.deconvolve_kspace_filter_matrix(lb,
+                                                                            ps_list[spec]["filter", "standard"][iii],
+                                                                            kspace_matrix[spec],
+                                                                            spectra)
 
-    
-    for spectrum in spectra:
-        mean, std = {}, {}
-        for filt in ["filter", "nofilter"]:
+    if  n_sims > n_min_sims:
+        log.info(f"[Rank {so_mpi.rank}] compute xtra correction for all spectra")
+        # not that we only compute this if we have access to a large number of sim (500)
+        # otherwise the error on the correction will be larger than the correction itself
 
+        corr_dict = {}
+        for spectrum in spectra:
             my_list = []
-            for iii in mapset_iterator:
-                my_list += [ps_list[spec][filt, "standard"][iii][spectrum]]
+
+            for iii in range(iStart, iStop):
+                my_list += [ps_list_corr[spec][iii][spectrum] - ps_list[spec]["nofilter", "standard"][iii][spectrum]]
+
+            correction = np.mean(my_list, axis=0)
+            sigma = np.std(my_list, axis=0)
+            
+            # write correction to file
+            corr_dict[spectrum] = correction
+
+
+            plt.figure(figsize=(12,8))
+            plt.plot(lb, bin_theory[spectrum] * 1 / 100, color="black", label= f"1% {spectrum}")
+            plt.errorbar(lb, correction, sigma / np.sqrt(n_sims), fmt="-", label = f"corr {spectrum} {spec}")
+            plt.legend()
+            plt.show()
+            plt.savefig(f"{plot_dir}/{spectrum}_correction_{spec}.png", bbox_inches="tight")
+            plt.clf()
+            plt.close()
+        
+        so_spectra.write_ps(f"{tf_dir}/mc_additive_correction_{spec}.dat",
+                            lb,
+                            corr_dict,
+                            type=type,
+                            spectra=spectra)
+
+
+    for spectrum in spectra:
+        log.info(f"[Rank {so_mpi.rank}] plot uncorrected vs corrected mean for {spec} ")
+        mean, std = {}, {}
+        mean_uncorr, std_uncorr = {}, {}
+        my_list_uncorr = []
+        for filt in ["filter", "nofilter"]:
+            my_list = []
+            for iii in range(iStart, iStop):
+                if filt == "filter":
+                    # read the sims corrected for MC kspace and the one only corrected for analytic kspace
+                    my_list += [ps_list_corr[spec][iii][spectrum]]
+                    my_list_uncorr += [ps_list[spec]["filter", "standard"][iii][spectrum]]
+                else:
+                    my_list += [ps_list[spec]["nofilter", "standard"][iii][spectrum]]
 
             mean[filt] = np.mean(my_list, axis=0)
             std[filt] = np.std(my_list, axis=0)
 
+        mean_uncorr["filter"] = np.mean(my_list_uncorr, axis=0)
+        std_uncorr["filter"] = np.std(my_list_uncorr, axis=0)
+
+        # plot mean of filtered and corrected (w/ and w/o also additive corrections) and no filtered
         plt.figure(figsize=(12,8))
         if spectrum == "TT":
             plt.semilogy()
 
         plt.plot(lth, cmb_and_fg_dict[n1, n2][spectrum], color="grey", alpha=0.4)
         plt.plot(lb, bin_theory[spectrum])
-        plt.errorbar(lb, mean["nofilter"], std["nofilter"], fmt=".", color="red", label = "no filter")
-        plt.errorbar(lb, mean["filter"], std["filter"], fmt=".", color="blue", label = "filter corrected")
-
+        plt.errorbar(lb, mean["nofilter"], std["nofilter"] / np.sqrt(n_sims), fmt="*", color="red", label = "no filter")
+        plt.errorbar(lb, mean["filter"], std["filter"] / np.sqrt(n_sims), fmt=".", color="blue", label = "filter corrected")
+        if  n_sims > n_min_sims:
+            mean_add_corr = mean["filter"] - corr_dict[spectrum]
+            plt.errorbar(lb, mean_add_corr, std["filter"] / np.sqrt(n_sims), fmt="+", color="green", label = "filter corrected + additive corrections")
         plt.title(r"$D_{\ell}$", fontsize=20)
         plt.xlabel(r"$\ell$", fontsize=20)
         plt.legend()
@@ -182,56 +253,15 @@ for spec in spec_list:
         plt.clf()
         plt.close()
 
+        # plot diff
         plt.figure(figsize=(12,8))
         plt.plot(lb, lb * 0)
         plt.errorbar(lb - 10, mean["nofilter"] - bin_theory[spectrum], std["nofilter"]  / np.sqrt(n_sims), fmt=".", color="red", label = "no filter")
         plt.errorbar(lb + 10, mean["filter"] - bin_theory[spectrum], std["filter"]  / np.sqrt(n_sims), fmt=".", color="blue", label = "filter corrected")
+        plt.errorbar(lb + 20, mean_uncorr["filter"] - bin_theory[spectrum], std_uncorr["filter"]  / np.sqrt(n_sims), fmt="+", color="black", label = "filter uncorrected (only analytic)")
         plt.title(r"$\Delta D_{\ell}$" , fontsize=20)
         plt.xlabel(r"$\ell$", fontsize=20)
         plt.legend()
         plt.savefig(f"{plot_dir}/diff_{spec}_{spectrum}.png", bbox_inches="tight")
         plt.clf()
         plt.close()
-
-
-    if  n_sims > n_min_sims:
-        log.info(f"compute xtra correction for TE")
-
-        # xtra_correcton for TE/ET
-        # not that we only compute this if we have access to a large number of sim (500)
-        # otherwise the error on the correction will be larger than the correction itself
-
-        my_list_TE = []
-        my_list_ET = []
-
-        for iii in mapset_iterator:
-            my_list_TE += [ps_list[spec]["filter", "standard"][iii]["TE"] - ps_list[spec]["nofilter", "standard"][iii]["TE"]]
-            my_list_ET += [ps_list[spec]["filter", "standard"][iii]["ET"] - ps_list[spec]["nofilter", "standard"][iii]["ET"]]
-
-        correction_TE = np.mean(my_list_TE, axis=0)
-        correction_ET = np.mean(my_list_ET, axis=0)
-        sigma_TE = np.std(my_list_TE, axis=0)
-        sigma_ET = np.std(my_list_ET, axis=0)
-
-        plt.figure(figsize=(12,8))
-        plt.plot(lb, bin_theory["TE"] * 1 / 100, color="black", label= "1% TE")
-        plt.errorbar(lb, correction_TE, sigma_TE / np.sqrt(n_sims), fmt="-", label = f"corr TE {spec}")
-        plt.errorbar(lb, correction_ET, sigma_ET / np.sqrt(n_sims), fmt="--", label = f"corr ET {spec}")
-        plt.legend()
-        plt.show()
-        plt.savefig(f"{plot_dir}/TE_correction_{spec}.png", bbox_inches="tight")
-        plt.clf()
-        plt.close()
-
-        # write correction to file
-        corr_dict = {}
-        for spectrum in spectra:
-            corr_dict[spectrum] = lb * 0
-        corr_dict["TE"] = correction_TE
-        corr_dict["ET"] = correction_ET
-        
-        so_spectra.write_ps(f"{tf_dir}/TE_correction_{spec}.dat",
-                            lb,
-                            corr_dict,
-                            type=type,
-                            spectra=spectra)

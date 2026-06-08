@@ -239,16 +239,28 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
         if spectrum == "TT":
             plt.semilogy()
 
-        plt.plot(lth, cmb_and_fg_dict[n1, n2][spectrum], color="grey", alpha=0.4)
-        plt.plot(lb, bin_theory[spectrum])
-        plt.errorbar(lb, mean["nofilter"], std["nofilter"] / np.sqrt(n_sims), fmt="*", color="red", label = "no filter")
-        plt.errorbar(lb, mean["filter"], std["filter"] / np.sqrt(n_sims), fmt=".", color="blue", label = "filter corrected")
+        fig, (ax1, ax2) = plt.subplots(2, 1, sharex = True, gridspec_kw = {"height_ratios": [3,1], "hspace": 0}, figsize=(12,8))
+        if spectrum == "TT":
+            ax1.semilogy()
+
+        ax1.plot(lth, cmb_and_fg_dict[n1, n2][spectrum], color="grey", alpha=0.4)
+        ax1.plot(lb, bin_theory[spectrum])
+        ax1.errorbar(lb, mean["nofilter"], std["nofilter"] / np.sqrt(n_sims), fmt="*", color="red", label = "no filter")
+        ax1.errorbar(lb, mean["filter"], std["filter"] / np.sqrt(n_sims), fmt=".", color="blue", label = "filter corrected")
         if  n_sims > n_min_sims:
             mean_add_corr = mean["filter"] - corr_dict[spectrum]
-            plt.errorbar(lb, mean_add_corr, std["filter"] / np.sqrt(n_sims), fmt="+", color="green", label = "filter corrected + additive corrections")
-        plt.title(r"$D_{\ell}$", fontsize=20)
-        plt.xlabel(r"$\ell$", fontsize=20)
-        plt.legend()
+            ax1.errorbar(lb, mean_add_corr, std["filter"] / np.sqrt(n_sims), fmt="+", color="green", label = "filter corrected + additive corrections")
+        ax1.set_ylabel(r"$D_{\ell}$", fontsize=12)
+        ax1.legend()
+
+        ax2.plot(lb, lb * 0, ls = "--", color = "k")
+        ax2.plot(lb, (mean["nofilter"] - bin_theory[spectrum]) / (std["nofilter"] / np.sqrt(n_sims)), "*", color="red", label = "no filter")
+        ax2.plot(lb, (mean["filter"] - bin_theory[spectrum]) / (std["filter"] / np.sqrt(n_sims)), ".", color="blue", label = "filter corrected")
+        if  n_sims > n_min_sims:
+            mean_add_corr = mean["filter"] - corr_dict[spectrum]
+            ax2.plot(lb, (mean_add_corr - bin_theory[spectrum]) / (std["filter"] / np.sqrt(n_sims)), "+", color="green", label = "filter corrected + additive corrections")
+        ax2.set_ylabel(r"$\Delta D_{\ell} / \sigma(D_{\ell})$", fontsize=12)
+        ax2.set_xlabel(r"$\ell$", fontsize=12)
         plt.savefig(f"{plot_dir}/{spec}_{spectrum}.png", bbox_inches="tight")
         plt.clf()
         plt.close()

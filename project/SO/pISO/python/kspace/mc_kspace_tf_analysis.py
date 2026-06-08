@@ -12,6 +12,7 @@ import pylab as plt
 import sys
 import argparse
 from os.path import join as opj
+from itertools import product
 
 parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -94,25 +95,58 @@ lth, cmb_and_fg_dict = best_fits.fg_dict_from_files(bestfit_dir + "/fg_{}x{}.dat
 
 
 ps_list = {}
+ps_list_mean = {}
+ps_list_std = {}
+ps_list_cov = {}
 #for sid, spec in enumerate(spec_list):
 for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
     spec = sv1 + "_" + m1 + "x" + sv2 + "_" + m2
     log.info(f"[Rank {so_mpi.rank}] Read all {spec} sim power spectra")
 
-
     ps_list[spec] = {}
+    ps_list_mean[spec] = {}
+    ps_list_std[spec] = {}
+    ps_list_cov[spec] = {}
     for scenario in scenarios:
+        ps_list[spec]["nofilter", scenario] = {}
+        ps_list[spec]["filter", scenario] = {}    
+
+        for spectrum in spectra:
+            ps_list[spec]["nofilter", scenario][spectrum] = []
+            ps_list[spec]["filter", scenario][spectrum] = []
+            
         for iii in range(iStart, iStop): 
-            if iii == 0:
-                ps_list[spec]["nofilter", scenario] = []
-                ps_list[spec]["filter", scenario] = []
- 
             lb = io.load_hdf5(spec_dir + f"{type}_for_kspace_all_s_filter_{iii:05d}.h5", path="l")
             ps_filt = io.load_hdf5(spec_dir + f"{type}_for_kspace_all_s_filter_{iii:05d}.h5", path=f"(('{sv1}', '{m1}'), ('{sv2}', '{m2}'), 'so_{scenario}')")
             ps_nofilt = io.load_hdf5(spec_dir + f"{type}_for_kspace_all_s_nofilter_{iii:05d}.h5", path=f"(('{sv1}', '{m1}'), ('{sv2}', '{m2}'), 'so_{scenario}')")
-            
-            ps_list[spec]["nofilter", scenario] += [ps_nofilt]
-            ps_list[spec]["filter", scenario] += [ps_filt]
+
+            for spectrum in spectra:            
+                ps_list[spec]["nofilter", scenario][spectrum] += [ps_nofilt[spectrum]]
+                ps_list[spec]["filter", scenario][spectrum] += [ps_filt[spectrum]]
+
+
+        ps_list_mean[spec]["filter", scenario] = {}
+        ps_list_std[spec]["filter", scenario] = {}
+        ps_list_mean[spec]["nofilter", scenario] = {}
+        ps_list_std[spec]["nofilter", scenario] = {}
+        n_bins = len(lb)
+
+        for spectrum in spectra:
+            ps_list_mean[spec]["filter", scenario][spectrum] =  np.mean(ps_list[spec]["filter", scenario][spectrum], axis = 0)
+            ps_list_mean[spec]["nofilter", scenario][spectrum] =  np.mean(ps_list[spec]["nofilter", scenario][spectrum], axis=0)
+
+            ps_list_std[spec]["filter", scenario][spectrum] =  np.std(ps_list[spec]["filter", scenario][spectrum], axis=0)
+            ps_list_std[spec]["nofilter", scenario][spectrum] =  np.std(ps_list[spec]["nofilter", scenario][spectrum], axis=0)
+
+    
+    for cross in product(scenarios, scenarios):
+        ps_list_cov[spec][cross] = {} #np.zeros((len(spectra) * n_bins, len(spectra) * n_bins))
+
+        for i, spec1 in enumerate(spectra):
+            for j, spec2 in enumerate(spectra):
+                for k in range(n_bins):
+                    # selecting the element (filter, nofilter) of the covariance matrix, per bin
+                    ps_list_cov[spec][cross][(spec1, spec2)] =  np.cov(ps_list[spec]["filter", cross[0]][spec1][:][k], ps_list[spec]["nofilter", cross[1]][spec2][:][k])[0,1] 
 
 
 elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "EE_to_BB", "BB_to_EE",  "TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE", "EE_to_EB", "EE_to_BE", "BB_to_EB", "BB_to_BE"]
@@ -126,8 +160,10 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
     spec = sv1 + "_" + m1 + "x" + sv2 + "_" + m2
     log.info(f"[Rank {so_mpi.rank}] build kspace filter matrix for {spec}")
     kspace_dict[spec], std[spec], kspace_matrix[spec] = kspace.build_kspace_filter_matrix(lb,
-                                                                            ps_list[spec],
-                                                                            n_sims,
+                                                                            ps_list_mean[spec],
+                                                                            ps_list_std[spec],
+                                                                            ps_list_cov[spec],
+                                                                           # n_sims,
                                                                             spectra,
                                                                             return_dict=True)
 
@@ -162,6 +198,7 @@ if so_mpi.rank == 0:
 # lets also make sure that the corrected spectrum is unbiased
 # computing some additive corrections first
 ps_list_corr = {}
+ps_list_reorg = {}
 for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
     spec = sv1 + "_" + m1 + "x" + sv2 + "_" + m2
     log.info(f"[Rank {so_mpi.rank}] correct filtered sims by MC kspace correction, spectrum {spec} ")
@@ -172,9 +209,18 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
 
     # now ps_list_corr["filter"] is deconvolved by the kspace mc correction
     ps_list_corr[spec] = {}
+    ps_list_reorg[spec] = {}
+    ps_list_reorg[spec]["filter", "standard"] = {}
+    ps_list_reorg[spec]["nofilter", "standard"] = {}  
     for iii in range(iStart, iStop):
+        ps_list_reorg[spec]["filter", "standard"][iii] = {}
+        ps_list_reorg[spec]["nofilter", "standard"][iii] = {}
+        for spectrum in spectra:
+            ps_list_reorg[spec]["filter", "standard"][iii][spectrum] = ps_list[spec]["filter", "standard"][spectrum][iii]
+            ps_list_reorg[spec]["nofilter", "standard"][iii][spectrum] = ps_list[spec]["nofilter", "standard"][spectrum][iii]
+        
         lb, ps_list_corr[spec][iii] = kspace.deconvolve_kspace_filter_matrix(lb,
-                                                                            ps_list[spec]["filter", "standard"][iii],
+                                                                            ps_list_reorg[spec]["filter", "standard"][iii],
                                                                             kspace_matrix[spec],
                                                                             spectra)
 
@@ -188,7 +234,7 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
             my_list = []
 
             for iii in range(iStart, iStop):
-                my_list += [ps_list_corr[spec][iii][spectrum] - ps_list[spec]["nofilter", "standard"][iii][spectrum]]
+                my_list += [ps_list_corr[spec][iii][spectrum] - ps_list_reorg[spec]["nofilter", "standard"][iii][spectrum]]
 
             correction = np.mean(my_list, axis=0)
             sigma = np.std(my_list, axis=0)
@@ -224,9 +270,9 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
                 if filt == "filter":
                     # read the sims corrected for MC kspace and the one only corrected for analytic kspace
                     my_list += [ps_list_corr[spec][iii][spectrum]]
-                    my_list_uncorr += [ps_list[spec]["filter", "standard"][iii][spectrum]]
+                    my_list_uncorr += [ps_list_reorg[spec]["filter", "standard"][iii][spectrum]]
                 else:
-                    my_list += [ps_list[spec]["nofilter", "standard"][iii][spectrum]]
+                    my_list += [ps_list_reorg[spec]["nofilter", "standard"][iii][spectrum]]
 
             mean[filt] = np.mean(my_list, axis=0)
             std[filt] = np.std(my_list, axis=0)
@@ -235,20 +281,29 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
         std_uncorr["filter"] = np.std(my_list_uncorr, axis=0)
 
         # plot mean of filtered and corrected (w/ and w/o also additive corrections) and no filtered
-        plt.figure(figsize=(12,8))
+        fig, (ax1, ax2) = plt.subplots(2, 1, sharex = True, gridspec_kw = {"height_ratios": [3,1], "hspace": 0}, figsize=(12,8))
         if spectrum == "TT":
-            plt.semilogy()
+            ax1.semilogy()
 
-        plt.plot(lth, cmb_and_fg_dict[n1, n2][spectrum], color="grey", alpha=0.4)
-        plt.plot(lb, bin_theory[spectrum])
-        plt.errorbar(lb, mean["nofilter"], std["nofilter"] / np.sqrt(n_sims), fmt="*", color="red", label = "no filter")
-        plt.errorbar(lb, mean["filter"], std["filter"] / np.sqrt(n_sims), fmt=".", color="blue", label = "filter corrected")
+        ax1.plot(lth, cmb_and_fg_dict[n1, n2][spectrum], color="grey", alpha=0.4)
+        ax1.plot(lb, bin_theory[spectrum])
+        ax1.errorbar(lb, mean["nofilter"], std["nofilter"] / np.sqrt(n_sims), fmt="*", color="red", label = "no filter")
+        ax1.errorbar(lb, mean["filter"], std["filter"] / np.sqrt(n_sims), fmt=".", color="blue", label = "filter corrected")
         if  n_sims > n_min_sims:
             mean_add_corr = mean["filter"] - corr_dict[spectrum]
-            plt.errorbar(lb, mean_add_corr, std["filter"] / np.sqrt(n_sims), fmt="+", color="green", label = "filter corrected + additive corrections")
-        plt.title(r"$D_{\ell}$", fontsize=20)
-        plt.xlabel(r"$\ell$", fontsize=20)
-        plt.legend()
+            ax1.errorbar(lb, mean_add_corr, std["filter"] / np.sqrt(n_sims), fmt="+", color="green", label = "filter corrected + additive corrections")
+        ax1.set_ylabel(r"$D_{\ell}$", fontsize=12)
+        
+        ax1.legend()
+
+        ax2.plot(lb, lb * 0, ls = "--", color = "k")
+        ax2.plot(lb, (mean["nofilter"] - bin_theory[spectrum]) / (std["nofilter"] / np.sqrt(n_sims)), "*", color="red", label = "no filter")
+        ax2.plot(lb, (mean["filter"] - bin_theory[spectrum]) / (std["filter"] / np.sqrt(n_sims)), ".", color="blue", label = "filter corrected")
+        if  n_sims > n_min_sims:
+            mean_add_corr = mean["filter"] - corr_dict[spectrum]
+            ax2.plot(lb, (mean_add_corr - bin_theory[spectrum]) / (std["filter"] / np.sqrt(n_sims)), "+", color="green", label = "filter corrected + additive corrections")
+        ax2.set_ylabel(r"$\Delta D_{\ell} / \sigma(D_{\ell}])$", fontsize=12)
+        ax2.set_xlabel(r"$\ell$", fontsize=12)
         plt.savefig(f"{plot_dir}/{spec}_{spectrum}.png", bbox_inches="tight")
         plt.clf()
         plt.close()

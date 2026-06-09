@@ -247,6 +247,7 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
         ax1.plot(lb, bin_theory[spectrum])
         ax1.errorbar(lb, mean["nofilter"], std["nofilter"] / np.sqrt(n_sims), fmt="*", color="red", label = "no filter")
         ax1.errorbar(lb, mean["filter"], std["filter"] / np.sqrt(n_sims), fmt=".", color="blue", label = "filter corrected")
+        ax1.errorbar(lb, mean_uncorr["filter"], std_uncorr["filter"] / np.sqrt(n_sims), fmt="+", color="black", label = "filter uncorrected (only analytic)")
         if  n_sims > n_min_sims:
             mean_add_corr = mean["filter"] - corr_dict[spectrum]
             ax1.errorbar(lb, mean_add_corr, std["filter"] / np.sqrt(n_sims), fmt="+", color="green", label = "filter corrected + additive corrections")
@@ -256,6 +257,7 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
         ax2.plot(lb, lb * 0, ls = "--", color = "k")
         ax2.plot(lb, (mean["nofilter"] - bin_theory[spectrum]) / (std["nofilter"] / np.sqrt(n_sims)), "*", color="red", label = "no filter")
         ax2.plot(lb, (mean["filter"] - bin_theory[spectrum]) / (std["filter"] / np.sqrt(n_sims)), ".", color="blue", label = "filter corrected")
+        ax2.plot(lb, (mean_uncorr["filter"]- bin_theory[spectrum]) / (std_uncorr["filter"] / np.sqrt(n_sims)), "+", color="black", label = "filter uncorrected (only analytic)")
         if  n_sims > n_min_sims:
             mean_add_corr = mean["filter"] - corr_dict[spectrum]
             ax2.plot(lb, (mean_add_corr - bin_theory[spectrum]) / (std["filter"] / np.sqrt(n_sims)), "+", color="green", label = "filter corrected + additive corrections")

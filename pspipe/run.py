@@ -1,6 +1,5 @@
 import argparse
 import datetime
-import importlib
 import logging
 import os
 import shutil
@@ -196,26 +195,6 @@ def main(args=None):
                     raise SystemExit()
         config_dict.write_to_file(updated_dict_file)
 
-    info = "Pipeline runs with the following software version:"
-    modules = [
-        "camb",
-        "cobaya",
-        "ducc0",
-        "fgspectra",
-        "mflike",
-        "numpy",
-        "pixell",
-        "pspy",
-        "pspipe_utils",
-        "pspipe",
-        "scipy",
-    ]
-    for m in modules:
-        version = importlib.import_module(m).__version__
-        pipeline_dict.setdefault("modules", {}).update({m: version})
-        info += f"\n  - {m} {version}"
-    logging.info(info)
-
     # Make sure every modules params are dict
     pipeline = pipeline_dict.setdefault("pipeline", {})
     pipeline |= {k: v if v else {} for k, v in pipeline.items()}
@@ -253,6 +232,37 @@ def main(args=None):
     pipeline = deepcopy(matrix_pipeline)
     updated_pipeline_dict = deepcopy(pipeline_dict)
     updated_pipeline_dict.update(pipeline=pipeline)
+
+    # Check podman
+    if podman := pipeline_dict.get("podman-hpc"):
+        if not (image := podman.get("image")):
+            logging.error("Missing 'podman-hpc' image! You must set a valid image.")
+            raise SystemExit()
+        logging.info(f"Running pipeline with podman-hpc and the following image '{image}'")
+    else:
+        info = "Pipeline runs with the following software version:"
+        modules = [
+            "camb",
+            "cobaya",
+            "ducc0",
+            "fgspectra",
+            "mflike",
+            "numpy",
+            "pixell",
+            "pspy",
+            "pspipe_utils",
+            "pspipe",
+            "scipy",
+        ]
+        from importlib import metadata
+
+        for m in metadata.distributions():
+            name, version = m.name, m.version
+            if name not in modules:
+                continue
+            pipeline_dict.setdefault("modules", {}).update({name: version})
+            info += f"\n  - {name} {version}"
+        logging.info(info)
 
     # Slurm default parameters
     slurm_nnodes = int(os.environ.get("SLURM_NNODES", 1))
@@ -352,6 +362,14 @@ def main(args=None):
             # If no extension is provided, assume it's a python file
             if not ext:
                 cmd = "python -u " + cmd
+        if podman:
+            cmd = " ".join(
+                [
+                    podman.get("cmd", "podman-hpc run --rm --mpi --scratch --cfs --home"),
+                    podman.get("image"),
+                    cmd,
+                ]
+            )
         # Append kwargs to command line
         cmd = f"{cmd} {kwargs} {updated_dict_file if config_file else ''}"
         logging.debug(f"Command line: {cmd}")

@@ -63,13 +63,17 @@ x_ar_cov = np.load(opj(cov_dir, "x_ar_analytic_cov.npy"))
 
 log.info(f'{x_ar_data_vec.shape=}, {x_ar_data_vec.dtype=}, {x_ar_cov.shape=}, {x_ar_cov.dtype=}')
 
-spec2nullgroup2nullflag_mpairs = pspipe_list.get_spec2nullgroup2nullflag_mpairs(d, delimiter='_')
+spec2nullgroup2nullflag_mpairs = pspipe_list.get_spec2nullgroup2nullflag_mpairs(d)
 
 # TODO: improve this. should work for lat_iso alone and dr6xlat_iso
 _, sv_list, map_list = pspipe_list.get_arrays_list(d)
 sv_map_list = ['_'.join(sv_m) for sv_m in zip(sv_list, map_list)]
 
 spectra_cuts = {
+    "legacy_f100": {'T': [300, 1500], 'P': [300, 1500]},
+    "legacy_f143": {'T': [300, 2000], 'P': [300, 2000]},
+    "legacy_f217": {'T': [300, 2500], 'P': [300, 2500]},
+    "legacy_f353": {'T': [300, lmax], 'P': [300, lmax]},
     "dr6_pa4_f220": {'T': [975, lmax], 'P': [lmax, lmax]},
     "dr6_pa5_f090": {'T': [975, lmax], 'P': [975, lmax]},
     "dr6_pa5_f150": {'T': [775, lmax], 'P': [775, lmax]},

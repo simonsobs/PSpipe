@@ -1,7 +1,7 @@
 run_name = 'dr6xdeep56_20260201_skn_50cg_inpaint_holes_cal_poleff'
 # ! CHANGE THESE
-data_dir = 'path/to/your/datadir/'
-yaml_dir = 'path/to/your/yamldir/'
+data_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/'
+yaml_dir = '/home/zatkins/projects/PSpipe_dev/repos/PSpipe/project/SO/pISO/python/yaml/'
 
 # define paths for scripts in advance. this is the most flexible way for now
 # to allow products to be reused across different paramfiles 
@@ -16,8 +16,10 @@ sim_spec_dir = data_dir + f'sims/spectra/{run_name}/'
 spec_dir = data_dir + f'spectra/{run_name}/'
 cov_dir = data_dir + f'covariances/{run_name}/'
 window_dir = data_dir + f'windows/{run_name}/'
+nulls_dir = data_dir + f'nulls/{run_name}'
 
-nulls_dir = f'nulls/{run_name}'
+spec2nullgroup2nullflag_mpairs_yaml = yaml_dir + 'lat_iso_baseline_spec_nullgroups.yaml'
+spectra_list_from_spec_nullgroups = False
 nulls_yaml = yaml_dir + "post_spectra.yaml"
 
 # surveys = ['dr6', 'legacy', 'lat_iso']
@@ -26,6 +28,31 @@ surveys = ['dr6', 'lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
 arrays_planck = ['f100', 'f143', 'f217', 'f353']
 arrays_lat_iso = ['i1_f090', 'i1_f150', 'i3_f090', 'i3_f150', 'i4_f090', 'i4_f150', 'i6_f090', 'i6_f150', 'c1_f220', 'c1_f280', 'i5_f220', 'i5_f280']
+
+# TODO: make these optionnal if empty
+tags_planck_f100 = {'baseline_map': 'planck_f100', 'freq': 'f100'}
+tags_planck_f143 = {'baseline_map': 'planck_f143', 'freq': 'f143'}
+tags_planck_f217 = {'baseline_map': 'planck_f217', 'freq': 'f217'}
+tags_planck_f353 = {'baseline_map': 'planck_f353', 'freq': 'f353'}
+
+tags_dr6_pa4_f220 = {'baseline_map': 'dr6_pa4_f220', 'freq': 'f220'}
+tags_dr6_pa5_f090 = {'baseline_map': 'dr6_pa5_f090', 'freq': 'f090'}
+tags_dr6_pa5_f150 = {'baseline_map': 'dr6_pa5_f150', 'freq': 'f150'}
+tags_dr6_pa6_f090 = {'baseline_map': 'dr6_pa6_f090', 'freq': 'f090'}
+tags_dr6_pa6_f150 = {'baseline_map': 'dr6_pa6_f150', 'freq': 'f150'}
+
+tags_lat_iso_i1_f090 = {'baseline_map': 'lat_iso_i1_f090', 'freq': 'f090'}
+tags_lat_iso_i1_f150 = {'baseline_map': 'lat_iso_i1_f150', 'freq': 'f150'}
+tags_lat_iso_i3_f090 = {'baseline_map': 'lat_iso_i3_f090', 'freq': 'f090'}
+tags_lat_iso_i3_f150 = {'baseline_map': 'lat_iso_i3_f150', 'freq': 'f150'}
+tags_lat_iso_i4_f090 = {'baseline_map': 'lat_iso_i4_f090', 'freq': 'f090'}
+tags_lat_iso_i4_f150 = {'baseline_map': 'lat_iso_i4_f150', 'freq': 'f150'}
+tags_lat_iso_i6_f090 = {'baseline_map': 'lat_iso_i6_f090', 'freq': 'f090'}
+tags_lat_iso_i6_f150 = {'baseline_map': 'lat_iso_i6_f150', 'freq': 'f150'}
+tags_lat_iso_c1_f220 = {'baseline_map': 'lat_iso_c1_f220', 'freq': 'f220'}
+tags_lat_iso_c1_f280 = {'baseline_map': 'lat_iso_c1_f280', 'freq': 'f280'}
+tags_lat_iso_i5_f220 = {'baseline_map': 'lat_iso_i5_f220', 'freq': 'f220'}
+tags_lat_iso_i5_f280 = {'baseline_map': 'lat_iso_i5_f280', 'freq': 'f280'}
 
 deconvolve_pixwin = True
 pixwin_dr6 = {'pix': 'CAR', 'order': 0}

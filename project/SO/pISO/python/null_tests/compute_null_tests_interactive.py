@@ -49,8 +49,8 @@ l_pows = [-1, 0, 1] # and sigma
 
 max_lmin = 1500
 min_lmax = 2000
-# lmins = np.concatenate([[0], bin_mean[bin_mean <= max_lmin]]) 
-lmins = bin_mean[np.logical_and(bin_mean <= max_lmin, bin_mean > 300)]
+lmins = np.concatenate([[0], bin_mean[bin_mean <= max_lmin]]) 
+# lmins = bin_mean[np.logical_and(bin_mean <= max_lmin, bin_mean > 300)]
 lmaxs = np.concatenate([bin_mean[bin_mean >= min_lmax], [lmax]])
 lmin_lmax_keys = [f"{lmin}_{lmax}" for lmin, lmax in itertools.product(lmins, lmaxs)]
 
@@ -70,7 +70,7 @@ for (spec_name, pspipespec), (idxs, _) in bin_out_dict.items():
     
     x_ar_slices_dict[spec, mpair] = slice(idxs[0], idxs[-1]+1)
 
-spec2nullgroup2nullflag_mpairs = pspipe_list.get_spec2nullgroup2nullflag_mpairs(d, delimiter='_')
+spec2nullgroup2nullflag_mpairs = pspipe_list.get_spec2nullgroup2nullflag_mpairs(d)
 
 null_tests = []
 for spec, nullgroup2nullflag_mpairs in spec2nullgroup2nullflag_mpairs.items():

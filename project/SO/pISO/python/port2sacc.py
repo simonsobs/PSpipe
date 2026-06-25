@@ -68,22 +68,27 @@ for cross in spec_name_list:
 
 
 beams = None
-# neglecting this for now for iso
 if d["include_beam_chromaticity_effect_in_sacc"]:
-    log.info(f"include beam array accounting for beam chromaticity \n")
-
-    # Get beam chromaticity
     beams = {}
-    alpha_dict, nu_ref_dict = beam_chromaticity.act_dr6_beam_scaling()
-    for map_set in map_set_list:
-        bl_mono_file_name = d[f"beam_mono_{map_set}"]
-        l, bl = pspy_utils.read_beam_file(bl_mono_file_name, lmax=10000)
-        l, nu_array, bl_nu = beam_chromaticity.get_multifreq_beam(l,
-                                                                  bl,
-                                                                  passbands[map_set],
-                                                                  nu_ref_dict[map_set],
-                                                                  alpha_dict[map_set])
-        beams[map_set] = [l, dict(T=bl_nu, E=bl_nu)]
+    for survey in surveys:
+        # check whether we should do beam chromaticity for that survey and include it only in the sacc for that survey
+        if d["include_beam_chromaticity_effect_in_best_fit"][survey]:
+            log.info(f"include beam array accounting for beam chromaticity for {survey} \n")
+            map_set_sv = [map_set for map_set in map_set_list if survey in map_set]
+
+            for map_set in map_set_sv:
+                alpha, nu_ref = d[f"beam_scaling_{map_set}"]["alpha"], d[f"beam_scaling_{map_set}"]["nu_ref"]
+
+                bl_mono_file_name = d[f"beam_mono_{map_set}"]
+                l, bl = pspy_utils.read_beam_file(bl_mono_file_name, lmax=10000)
+                l, nu_array, bl_nu = beam_chromaticity.get_multifreq_beam(l,
+                                                                        bl,
+                                                                        passbands[map_set],
+                                                                        nu_ref,
+                                                                        alpha)
+                                                                        
+                beams[map_set] = [l, dict(T=bl_nu, E=bl_nu)]
+
 
 # Define metadata such as dict content or libraries version
 metadata = dict(

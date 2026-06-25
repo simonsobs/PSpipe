@@ -16,8 +16,17 @@ sim_spec_dir = data_dir + f'sims/spectra/{run_name}/'
 spec_dir = data_dir + f'spectra/{run_name}/'
 cov_dir = data_dir + f'covariances/{run_name}/'
 window_dir = data_dir + f'windows/{run_name}/'
+sacc_dir = data_dir + f'sacc/{run_name}/'
 
-# surveys = ['dr6', 'legacy', 'lat_iso']
+nulls_dir = f'nulls/{run_name}'
+nulls_yaml = yaml_dir + "post_spectra.yaml"
+
+sacc_fname = "simu_sacc"
+# start and stop for sacc sim
+iStart = 0
+iStop = 100
+
+# surveys = ['dr6', 'planck', 'lat_iso']
 # surveys = ['dr6', 'lat_iso']
 surveys = ['lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
@@ -148,6 +157,8 @@ freq_info_lat_iso_i5_f220 = {'freq_tag': 220, 'passband': passband_dir_lat_iso +
 freq_info_lat_iso_i5_f280 = {'freq_tag': 280, 'passband': passband_dir_lat_iso + 'bandpass_mean_f280.dat'}
 
 include_beam_chromaticity_effect_in_best_fit = False
+include_beam_chromaticity_effect_in_sacc = False
+
 beam_dir_dr6 = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/dr6/main_beams/'
 beam_T_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
 beam_T_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'

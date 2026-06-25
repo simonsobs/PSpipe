@@ -17,7 +17,7 @@ spec_dir = data_dir + f'spectra/{run_name}/'
 cov_dir = data_dir + f'covariances/{run_name}/'
 window_dir = data_dir + f'windows/{run_name}/'
 
-# surveys = ['dr6', 'legacy', 'lat_iso']
+# surveys = ['dr6', 'planck', 'lat_iso']
 # surveys = ['dr6', 'lat_iso']
 surveys = ['lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']

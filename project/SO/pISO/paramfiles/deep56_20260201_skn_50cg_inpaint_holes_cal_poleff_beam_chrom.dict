@@ -1,4 +1,4 @@
-run_name = 'deep56_20260201_skn_50cg_inpaint_holes_cal_poleff'
+run_name = 'deep56_20260201_skn_50cg_inpaint_holes_cal_poleff_beam_chrom'
 # ! CHANGE THESE
 data_dir = 'path/to/your/datadir/'
 yaml_dir = 'path/to/your/yamldir/'
@@ -24,7 +24,8 @@ nulls_yaml = yaml_dir + "post_spectra.yaml"
 sacc_fname = "simu_sacc"
 # start and stop for sacc sim
 iStart = 0
-iStop = 100
+iStop = 2
+
 
 # surveys = ['dr6', 'planck', 'lat_iso']
 # surveys = ['dr6', 'lat_iso']
@@ -180,8 +181,33 @@ freq_info_lat_iso_c1_f280 = {'freq_tag': 280, 'passband': passband_dir_lat_iso +
 freq_info_lat_iso_i5_f220 = {'freq_tag': 220, 'passband': passband_dir_lat_iso + 'bandpass_mean_f220.dat'}
 freq_info_lat_iso_i5_f280 = {'freq_tag': 280, 'passband': passband_dir_lat_iso + 'bandpass_mean_f280.dat'}
 
-include_beam_chromaticity_effect_in_best_fit = False
-include_beam_chromaticity_effect_in_sacc = False
+# If you want to totally ignore this, just set those variables to False
+include_beam_chromaticity_effect_in_best_fit = {"lat_iso": True, "dr6": True, "planck": False}
+
+include_beam_chromaticity_effect_in_sacc = {"lat_iso": True, "dr6": True, "planck": False}
+
+# placeholder values for now
+beam_scaling_lat_iso_i1_f090 = {'alpha': 2., "nu_ref": 90}
+beam_scaling_lat_iso_i1_f150 = {'alpha': 2., "nu_ref": 150}
+beam_scaling_lat_iso_i3_f090 = {'alpha': 2., "nu_ref": 90}
+beam_scaling_lat_iso_i3_f150 = {'alpha': 2., "nu_ref": 150}
+beam_scaling_lat_iso_i4_f090 = {'alpha': 2., "nu_ref": 90}
+beam_scaling_lat_iso_i4_f150 = {'alpha': 2., "nu_ref": 150}
+beam_scaling_lat_iso_i6_f090 = {'alpha': 2., "nu_ref": 90}
+beam_scaling_lat_iso_i6_f150 = {'alpha': 2., "nu_ref": 150}
+beam_scaling_lat_iso_c1_f220 = {'alpha': 2., "nu_ref": 220}
+beam_scaling_lat_iso_c1_f280 = {'alpha': 2., "nu_ref": 280}
+beam_scaling_lat_iso_i5_f220 = {'alpha': 2., "nu_ref": 220}
+beam_scaling_lat_iso_i5_f280 = {'alpha': 2., "nu_ref": 280}
+
+# values for dr6
+beam_scaling_dr6_pa4_f150 = {'alpha': 1.66, "nu_ref": 148.47}
+beam_scaling_dr6_pa4_f220 = {'alpha': 1.13, "nu_ref": 226.73}
+beam_scaling_dr6_pa5_f090 = {'alpha': 1.81, "nu_ref": 96.54}
+beam_scaling_dr6_pa5_f150 = {'alpha': 1.60, "nu_ref": 149.31}
+beam_scaling_dr6_pa6_f090 = {'alpha': 1.59, "nu_ref": 95.33}
+beam_scaling_dr6_pa6_f150 = {'alpha': 1.59, "nu_ref": 147.90}
+
 
 beam_dir_planck = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/planck/legacy/main_beams/'
 beam_T_planck_f100 = beam_dir_planck + "bl_T_legacy_100hm1x100hm2.dat"
@@ -206,6 +232,13 @@ beam_pol_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_c
 beam_pol_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
 beam_pol_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
 beam_pol_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+beam_mono_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_mono_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_mono_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_mono_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_mono_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
 
 beam_dir_lat_iso_instantaneous = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/instantaneous/20260210/profiles_v1r1/data/tube_slot+band/'
 beam_dir_lat_iso_jitter = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/jitter/20260309_jitter/'
@@ -234,6 +267,20 @@ beam_pol_lat_iso_c1_f220 = beam_dir_lat_iso_instantaneous + 'c1+f220/model_windo
 beam_pol_lat_iso_c1_f280 = beam_dir_lat_iso_instantaneous + 'c1+f280/model_window_c1+f280_1756699200_20000000000.txt'
 beam_pol_lat_iso_i5_f220 = beam_dir_lat_iso_instantaneous + 'i5+f220/model_window_i5+f220_1756699200_20000000000.txt'
 beam_pol_lat_iso_i5_f280 = beam_dir_lat_iso_instantaneous + 'i5+f280/model_window_i5+f280_1756699200_20000000000.txt'
+
+beam_mono_lat_iso_i1_f090 = beam_dir_lat_iso_jitter + 'beam_i1_f090_cmb_tform.txt'
+beam_mono_lat_iso_i1_f150 = beam_dir_lat_iso_jitter + 'beam_i1_f150_cmb_tform.txt'
+beam_mono_lat_iso_i3_f090 = beam_dir_lat_iso_jitter + 'beam_i3_f090_cmb_tform.txt'
+beam_mono_lat_iso_i3_f150 = beam_dir_lat_iso_jitter + 'beam_i3_f150_cmb_tform.txt'
+beam_mono_lat_iso_i4_f090 = beam_dir_lat_iso_jitter + 'beam_i4_f090_cmb_tform.txt'
+beam_mono_lat_iso_i4_f150 = beam_dir_lat_iso_jitter + 'beam_i4_f150_cmb_tform.txt'
+beam_mono_lat_iso_i6_f090 = beam_dir_lat_iso_jitter + 'beam_i6_f090_cmb_tform.txt'
+beam_mono_lat_iso_i6_f150 = beam_dir_lat_iso_jitter + 'beam_i6_f150_cmb_tform.txt'
+beam_mono_lat_iso_c1_f220 = beam_dir_lat_iso_instantaneous + 'c1+f220/model_window_c1+f220_1756699200_20000000000.txt'
+beam_mono_lat_iso_c1_f280 = beam_dir_lat_iso_instantaneous + 'c1+f280/model_window_c1+f280_1756699200_20000000000.txt'
+beam_mono_lat_iso_i5_f220 = beam_dir_lat_iso_instantaneous + 'i5+f220/model_window_i5+f220_1756699200_20000000000.txt'
+beam_mono_lat_iso_i5_f280 = beam_dir_lat_iso_instantaneous + 'i5+f280/model_window_i5+f280_1756699200_20000000000.txt'
+
 
 leakage_dir_dr6 = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/dr6/leakage_beams/'
 leakage_beam_dr6_pa4_f220_TE = leakage_dir_dr6 + 'pa4_f220_gamma_t2e.txt'

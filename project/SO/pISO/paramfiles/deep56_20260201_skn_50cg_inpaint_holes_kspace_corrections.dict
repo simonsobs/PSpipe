@@ -24,7 +24,7 @@ sacc_dir = data_dir + f'sacc/{run_name}/'
 nulls_dir = f'nulls/{run_name}'
 nulls_yaml = yaml_dir + "post_spectra.yaml"
 
-# surveys = ['dr6', 'legacy', 'lat_iso']
+# surveys = ['dr6', 'planck', 'lat_iso']
 # surveys = ['dr6', 'lat_iso']
 surveys = ['lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']

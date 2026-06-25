@@ -38,8 +38,6 @@ components_dir = f"{bestfit_dir}/components"
 
 plot_dir = opj(d['plots_dir'], 'best_fits')
 
-
-
 log.info(f"save best fits in {bestfit_dir} folder")
 
 pspy_utils.create_directory(bestfit_dir)
@@ -95,21 +93,36 @@ for map_set in map_set_list:
 
 beams = None
 if d["include_beam_chromaticity_effect_in_best_fit"]:
-    log.info(f"include beam array accounting for beam chromaticity \n")
-    # Get beam chromaticity
-    alpha_dict, nu_ref_dict = beam_chromaticity.act_dr6_beam_scaling()
     beams = {}
-    for map_set in map_set_list:
-        bl_mono_file_name = d[f"beam_mono_{map_set}"]
-        l, bl = pspy_utils.read_beam_file(bl_mono_file_name, lmax=10000)
-        l, nu_array, bl_nu = beam_chromaticity.get_multifreq_beam(l,
-                                                                  bl,
-                                                                  passbands[map_set],
-                                                                  nu_ref_dict[map_set],
-                                                                  alpha_dict[map_set])
-                                                                  
-        beams[map_set + "_s0"] = {"nu": nu_array, "beams": bl_nu.T}
-        beams[map_set + "_s2"] = {"nu": nu_array, "beams": bl_nu.T}
+    for survey in surveys:
+        # check whether we should do beam chromaticity for that survey
+        if d["include_beam_chromaticity_effect_in_best_fit"][survey]:
+            log.info(f"include beam array accounting for beam chromaticity for {survey} \n")
+            map_set_sv = [map_set for map_set in map_set_list if survey in map_set]
+
+            for map_set in map_set_sv:
+                alpha, nu_ref = d[f"beam_scaling_{map_set}"]["alpha"], d[f"beam_scaling_{map_set}"]["nu_ref"]
+
+                bl_mono_file_name = d[f"beam_mono_{map_set}"]
+                l, bl = pspy_utils.read_beam_file(bl_mono_file_name, lmax=10000)
+                l, nu_array, bl_nu = beam_chromaticity.get_multifreq_beam(l,
+                                                                        bl,
+                                                                        passbands[map_set],
+                                                                        nu_ref,
+                                                                        alpha)
+                                                                        
+                
+                beams[map_set + "_s0"] = {"nu": nu_array, "beams": bl_nu.T}
+                beams[map_set + "_s2"] = {"nu": nu_array, "beams": bl_nu.T}
+        else:
+            map_set_sv = [map_set for map_set in map_set_list if survey in map_set]
+            for map_set in map_set_sv:
+                # setting all the beams to 1 to neglect chromatic beam effect for surveys for which it shouldn't be included (planck)
+                nu_array = passbands[map_set][0]
+                beam_arr = np.ones((len(nu_array), 10000))
+                beams[map_set + "_s0"] = {"nu": nu_array, "beams": beam_arr}
+                beams[map_set + "_s2"] = {"nu": nu_array, "beams": beam_arr}
+
 
 
 log.info("Getting foregrounds contribution")

@@ -72,7 +72,7 @@ if d["include_beam_chromaticity_effect_in_sacc"]:
     beams = {}
     for survey in surveys:
         # check whether we should do beam chromaticity for that survey and include it only in the sacc for that survey
-        if d["include_beam_chromaticity_effect_in_best_fit"][survey]:
+        if d["include_beam_chromaticity_effect_in_sacc"][survey]:
             log.info(f"include beam array accounting for beam chromaticity for {survey} \n")
             map_set_sv = [map_set for map_set in map_set_list if survey in map_set]
 

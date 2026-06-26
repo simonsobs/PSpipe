@@ -30,7 +30,7 @@ cov_dir = d["cov_dir"]
 sacc_dir = d["sacc_dir"]
 pspy_utils.create_directory(sacc_dir)
 
-
+surveys = d["surveys"]
 spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, delimiter="_", return_nu_tag=True)
 
 # Get spectra/cov orders

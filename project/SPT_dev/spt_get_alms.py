@@ -70,8 +70,26 @@ for task in subtasks:
         split = so_map.read_map(map)
         split = split.calibrate(cal=cal, pol_eff=pol_eff)
 
+            
+        if sv == "Planck":
+        
+            log.info(f"[{task}] preprocess Planck NPIPE data")
+
+            # Mono and dipole parameters
+            # from NPIPE paper https://arxiv.org/pdf/2007.04997.pdf
+            dip_amp = 3366.6 #uK
+            l = 263.986
+            b = 48.247
+            dipole = dip_amp * hp.pixelfunc.ang2vec((90 - b) / 180 * np.pi, l / 180 * np.pi)
+            monopole = {"100": -70., "143": -81., "217": -182.4, "353": 395.2,}
+
+            split.data *= 10 ** 6
+            split.data[0] = so_map.subtract_mono_dipole(split.data[0], values=(monopole[ar], dipole))
+
+
         if d["remove_mean"] == True:
             split = split.subtract_mean(window_tuple)
+
 
         if pure == False:
             master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax, alm_conv=alm_conv)

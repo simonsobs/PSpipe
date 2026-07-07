@@ -26,22 +26,22 @@ sacc_fname = "simu_sacc"
 iStart = 0
 iStop = 100
 
-# surveys = ['dr6', 'planck', 'lat_iso']
+# surveys = ['dr6', 'legacy', 'lat_iso']
 # surveys = ['dr6', 'lat_iso']
 surveys = ['lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
-arrays_planck = ['f100', 'f143', 'f217', 'f353']
+arrays_legacy = ['f100', 'f143', 'f217', 'f353']
 arrays_lat_iso = ['i1_f090', 'i1_f150', 'i3_f090', 'i3_f150', 'i4_f090', 'i4_f150', 'i6_f090', 'i6_f150', 'c1_f220', 'c1_f280', 'i5_f220', 'i5_f280']
 
 deconvolve_pixwin = True
 pixwin_dr6 = {'pix': 'CAR', 'order': 0}
-pixwin_planck = {'pix': 'HEALPIX', 'nside': 2048}
+pixwin_legacy = {'pix': 'HEALPIX', 'nside': 2048}
 pixwin_lat_iso = {'pix': 'CAR', 'order': 1}
 
 apply_kspace_filter = True
 kspace_tf_path = 'analytical'
 k_filter_dr6 = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
-k_filter_planck = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
+k_filter_legacy = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 k_filter_lat_iso = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 
 binning_file = '/scratch/gpfs/SIMONSOBS/lat-iso/ps/binning/binning_50.dat'
@@ -70,7 +70,7 @@ cov_prebin_size = 5
 
 # maps
 src_free_maps_dr6 = True
-src_free_maps_planck = True
+src_free_maps_legacy = True
 src_free_maps_lat_iso = True
 
 maps_dir_dr6 = '/scratch/gpfs/ACT/data/act_dr6/dr6.02/maps/published/'

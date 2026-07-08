@@ -18,6 +18,9 @@ Running the main pipeline
     OMP_NUM_THREADS=64 srun -n 1 -c 64 --cpu-bind=cores python spt_debias_spectra.py global_spt.dict
     OMP_NUM_THREADS=64 srun -n 1 -c 64 --cpu-bind=cores python spt_get_best_fit_mflike.py global_spt.dict
     OMP_NUM_THREADS=64 srun -n 1 -c 64 --cpu-bind=cores python spt_get_noise_model.py global_spt.dict
+    OMP_NUM_THREADS=64 srun -n 1 -c 64 --cpu-bind=cores python spt_get_sq_windows_alms.py global_spt.dict
+    OMP_NUM_THREADS=64 srun -n 1 -c 64 --cpu-bind=cores python spt_get_covariance_blocks.py global_spt.dict
+
 
 
 The pipeline take roughly 30 minutes, all time is spent doing map2alms since spt has 30 splits per frequency.

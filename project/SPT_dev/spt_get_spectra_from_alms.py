@@ -51,6 +51,19 @@ n_bins = len(lb)
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 
+if d["apply_alm_mask"] == True:
+    for spec_name in spec_name_list:
+        na, nb = spec_name.split("x")
+        alm_mask_a = hp.read_alm(d[f"alm_mask_{na}"], hdu=1)
+        alm_mask_b = hp.read_alm(d[f"alm_mask_{nb}"], hdu=1)
+        alm_mask_a = hp.sphtfunc.resize_alm(alm_mask_a, d["lmax_mask"], d["lmax_mask"], lmax, lmax)
+        alm_mask_b = hp.sphtfunc.resize_alm(alm_mask_b, d["lmax_mask"], d["lmax_mask"], lmax, lmax)
+        one_d_tf = hp.sphtfunc.alm2cl(alm_mask_a, alm_mask_b)
+        l = np.arange(len(one_d_tf))
+        lb, one_d_tf = pspy_utils.naive_binning(l, one_d_tf, binning_file, lmax)
+        np.savetxt(f"{spec_dir}/one_dimension_alm_mask_tf_{spec_name}.dat", np.transpose([lb, one_d_tf]))
+    
+
 n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
 log.info(f"number of spectra to compute : {n_spec}")
 so_mpi.init(True)

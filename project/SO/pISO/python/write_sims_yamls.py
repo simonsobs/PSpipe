@@ -66,6 +66,7 @@ lmax = d["lmax"]
 # now generate syst param yaml
 cal_err_file = d["cal_err_file"]
 poleff_err_file = d["poleff_err_file"]
+bandint_shift_err_file = d["bandint_shift_err_file"]
 
 with open(cal_err_file, 'r') as f:
     cal_err = yaml.safe_load(f)
@@ -73,18 +74,20 @@ with open(cal_err_file, 'r') as f:
 with open(poleff_err_file, 'r') as f:
     poleff_err = yaml.safe_load(f)
 
+with open(bandint_shift_err_file, 'r') as f:
+    bandint_shift_err = yaml.safe_load(f)
+
 syst_yaml = {
     "calG_all": {
-        "prior": {
-            "dist": "norm",
-            "loc": 1.0,
-            "scale": 0.003},
-        "ref": {
-            "dist": "norm",
-            "loc": 1.0,
-            "scale": 0.003},
-        "proposal": 0.0015,
-        "latex": rf"\mathrm{{cal}}_{{\rm ISO}}",
+      "prior": {
+        "min": 0.7,
+        "max": 1.3},
+      "ref": {
+        "dist": "norm",
+        "loc": 1.0,
+        "scale": 0.003},
+      "proposal": 0.0015,
+      "latex": rf"\mathrm{{cal}}_{{\rm ISO}}",
     }
 }
 
@@ -92,8 +95,15 @@ for m in map_set_list:
     l, f = m.replace("lat_iso_", "").split("_")
     # for now, fixed bandshift
     syst_yaml[f"bandint_shift_{m}"] = {
-        "value": 0.0,
-        "latex": rf"\Delta_{{\rm band, {l}}}^{{\rm f{f}}}"
+      "prior":{
+        "min": -10.0,
+        "max": 10.0,},
+      "ref": {
+        "dist": "norm",
+        "loc": 0.0,
+        "scale": 1.0,},
+      "proposal": 0.5,
+      "latex": rf"\Delta_{{\rm band, {l}}}^{{\rm {f}}}"
     }
 
 for m in map_set_list:
@@ -101,35 +111,51 @@ for m in map_set_list:
     # cal and poleff errors from paramfile
     syst_yaml[f"cal_{m}"] = {
         "prior": {
-        "dist": "norm",
-        "loc": 1.0,
-        "scale": cal_err[m]},
+        "min": 0.7,
+        "max": 1.3},
         "ref": {
         "dist": "norm",
         "loc": 1.0,
         "scale": 0.01},
         "proposal": 1e-3,
-        "latex": rf"\mathrm{{c}}_{{\rm {l}}}^{{\rm f{f}}}"
+        "latex": rf"\mathrm{{c}}_{{\rm {l}}}^{{\rm {f}}}"
     }
 
 for m in map_set_list:
     l, f = m.replace("lat_iso_", "").split("_")
     syst_yaml[f"calE_{m}"] = {
         "prior": {
-        "min": 0.9,
-        "max": 1.1},
+        "min": 0.7,
+        "max": 1.3},
         "ref": {
         "dist": "norm",
         "loc": 1.0,
-        "scale": poleff_err[m]},
+        "scale": 0.01},
         "proposal": 0.01,
-        "latex": rf"\mathrm{{p}}_{{\rm {l}}}^{{\rm f{f}}}"
+        "latex": rf"\mathrm{{p}}_{{\rm {l}}}^{{\rm {f}}}"
     }
+
+syst_prior_yaml = {
+    "calG_all_prior": "lambda calG_all: stats.norm.logpdf(calG_all, loc=1.0, scale=0.003)"
+}
+
+for m in map_set_list:
+    syst_prior_yaml[f"cal_{m}_prior"] = f"lambda cal_{m}: stats.norm.logpdf(cal_{m}, loc=1.0, scale={cal_err[m]})"
+
+for m in map_set_list:
+    syst_prior_yaml[f"calE_{m}_prior"] = f"lambda calE_{m}: stats.norm.logpdf(calE_{m}, loc=1.0, scale={poleff_err[m]})"
+
+for m in map_set_list:
+    syst_prior_yaml[f"bandint_shift_{m}_prior"] = f"lambda bandint_shift_{m}: stats.norm.logpdf(bandint_shift_{m}, loc=0.0, scale={bandint_shift_err[m]})"
+
 
 MyDumper.blank_line_level = 1
 
 with open(yaml_dir + "iso_syst_params.yaml", "w") as f:
     yaml.dump(syst_yaml, f, Dumper=MyDumper, sort_keys=False, default_flow_style=False)
+
+with open(yaml_dir + "iso_syst_priors.yaml", "w") as f:
+    yaml.dump(syst_prior_yaml, f, Dumper=MyDumper, sort_keys=False, default_flow_style=False)
 
 
 gen_yaml_dict = {

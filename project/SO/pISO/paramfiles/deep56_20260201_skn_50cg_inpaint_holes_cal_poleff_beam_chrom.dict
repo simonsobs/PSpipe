@@ -1,28 +1,31 @@
-# from https://github.com/simonsobs/PSpipe/blob/merry_piso/project/SO/pISO/paramfiles/deep56_20260201_skn_50cg_inpaint_holes_cal_poleff.dict
-run_name = 'deep56_20260201_skn_50cg_inpaint_holes_kspace_mc_correction'
-data_dir = '/scratch/gpfs/SIMONSOBS/users/sgiardie/iso/iso_sims/' 
-yaml_dir = '/home/zatkins/projects/PSpipe_dev/repos/PSpipe/project/SO/pISO/python/yaml/'
+run_name = 'deep56_20260201_skn_50cg_inpaint_holes_cal_poleff_beam_chrom'
+# ! CHANGE THESE
+data_dir = 'path/to/your/datadir/'
+yaml_dir = 'path/to/your/yamldir/'
 
 # define paths for scripts in advance. this is the most flexible way for now
 # to allow products to be reused across different paramfiles 
 
-alms_dir = '/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/alms/deep56_20260201_skn_50cg_inpaint_holes/'
+alms_dir = data_dir + f'alms/{run_name}/'
 best_fits_dir = data_dir + f'best_fits/{run_name}/'
 mask_dir = data_dir + f'mask/{run_name}/'
-# 
 mcm_dir = data_dir + f'mcms/{run_name}/'
 plots_dir = data_dir + f'plots/{run_name}/'
 sim_maps_dir = data_dir + f'sims/maps/{run_name}/'
 sim_spec_dir = data_dir + f'sims/spectra/{run_name}/'
 spec_dir = data_dir + f'spectra/{run_name}/'
 cov_dir = data_dir + f'covariances/{run_name}/'
-window_dir = f"/scratch/gpfs/SIMONSOBS/users/zatkins/projects/lat-iso/piso/windows/deep56_20260201_skn_50cg_inpaint_holes/" #data_dir + f'windows/{run_name}/'
-kspace_tf_dir = data_dir + f"kspace_tf_dir/deep56_20260201_skn_50cg_inpaint_holes/"
-#sim_spec_for_tf_dir = data_dir + f"sim_spec_for_tf_dir/{run_name}/"
+window_dir = data_dir + f'windows/{run_name}/'
 sacc_dir = data_dir + f'sacc/{run_name}/'
 
 nulls_dir = f'nulls/{run_name}'
 nulls_yaml = yaml_dir + "post_spectra.yaml"
+
+sacc_fname = "simu_sacc"
+# start and stop for sacc sim
+iStart = 0
+iStop = 2
+
 
 # surveys = ['dr6', 'legacy', 'lat_iso']
 # surveys = ['dr6', 'lat_iso']
@@ -31,25 +34,13 @@ arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
 arrays_legacy = ['f100', 'f143', 'f217', 'f353']
 arrays_lat_iso = ['i1_f090', 'i1_f150', 'i3_f090', 'i3_f150', 'i4_f090', 'i4_f150', 'i6_f090', 'i6_f150', 'c1_f220', 'c1_f280', 'i5_f220', 'i5_f280']
 
-sacc_fname = "simu_sacc"
-# start and stop for sacc sim
-iStart = 0
-iStop = 99
-
-# path to create yaml files for sims
-yaml_sim_dir  = f"yaml_sim_dir/{run_name}/"
-# files with errors on calibs and poleffs, copied from /global/cfs/cdirs/sobs/lat-iso/calibrations/calibs_20260201_inpaint_holes such as the cals and poleffs below
-cal_err_file  = data_dir + "calibs_errs_dict_full.yaml"
-poleff_err_file = data_dir + "poleffs_errs_dict_full.yaml"
-
-
 deconvolve_pixwin = True
 pixwin_dr6 = {'pix': 'CAR', 'order': 0}
 pixwin_legacy = {'pix': 'HEALPIX', 'nside': 2048}
 pixwin_lat_iso = {'pix': 'CAR', 'order': 1}
 
 apply_kspace_filter = True
-kspace_tf_path = kspace_tf_dir #'analytical'
+kspace_tf_path = 'analytical'
 k_filter_dr6 = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 k_filter_legacy = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 k_filter_lat_iso = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
@@ -135,7 +126,6 @@ pol_eff_dr6_pa5_f150 = 1.0
 pol_eff_dr6_pa6_f090 = 1.0
 pol_eff_dr6_pa6_f150 = 1.0
 
-# calibrations from Merry, 20 April 2026
 cal_lat_iso_c1_f220 = 0.9031855172350052
 cal_lat_iso_c1_f280 = 0.893796587146585
 cal_lat_iso_i1_f090 = 0.7927905168394984
@@ -149,6 +139,8 @@ cal_lat_iso_i5_f280 = 0.7925398509159925
 cal_lat_iso_i6_f090 = 0.8356521163056648
 cal_lat_iso_i6_f150 = 0.877821130252085
 
+pol_eff_lat_iso_c1_f220 = 1.028270103751137
+pol_eff_lat_iso_c1_f280 = 1.0535500844666963
 pol_eff_lat_iso_i1_f090 = 0.9837518423914399
 pol_eff_lat_iso_i1_f150 = 1.010087686552207
 pol_eff_lat_iso_i3_f090 = 0.974781179016763
@@ -189,8 +181,33 @@ freq_info_lat_iso_c1_f280 = {'freq_tag': 280, 'passband': passband_dir_lat_iso +
 freq_info_lat_iso_i5_f220 = {'freq_tag': 220, 'passband': passband_dir_lat_iso + 'bandpass_mean_f220.dat'}
 freq_info_lat_iso_i5_f280 = {'freq_tag': 280, 'passband': passband_dir_lat_iso + 'bandpass_mean_f280.dat'}
 
-include_beam_chromaticity_effect_in_best_fit = False
-include_beam_chromaticity_effect_in_sacc = False
+# If you want to totally ignore this, just set those variables to False
+include_beam_chromaticity_effect_in_best_fit = {"lat_iso": True, "dr6": True, "legacy": False}
+
+include_beam_chromaticity_effect_in_sacc = {"lat_iso": True, "dr6": True, "legacy": False}
+
+# placeholder values for now
+beam_scaling_lat_iso_i1_f090 = {'alpha': 2., "nu_ref": 90}
+beam_scaling_lat_iso_i1_f150 = {'alpha': 2., "nu_ref": 150}
+beam_scaling_lat_iso_i3_f090 = {'alpha': 2., "nu_ref": 90}
+beam_scaling_lat_iso_i3_f150 = {'alpha': 2., "nu_ref": 150}
+beam_scaling_lat_iso_i4_f090 = {'alpha': 2., "nu_ref": 90}
+beam_scaling_lat_iso_i4_f150 = {'alpha': 2., "nu_ref": 150}
+beam_scaling_lat_iso_i6_f090 = {'alpha': 2., "nu_ref": 90}
+beam_scaling_lat_iso_i6_f150 = {'alpha': 2., "nu_ref": 150}
+beam_scaling_lat_iso_c1_f220 = {'alpha': 2., "nu_ref": 220}
+beam_scaling_lat_iso_c1_f280 = {'alpha': 2., "nu_ref": 280}
+beam_scaling_lat_iso_i5_f220 = {'alpha': 2., "nu_ref": 220}
+beam_scaling_lat_iso_i5_f280 = {'alpha': 2., "nu_ref": 280}
+
+# values for dr6
+beam_scaling_dr6_pa4_f150 = {'alpha': 1.66, "nu_ref": 148.47}
+beam_scaling_dr6_pa4_f220 = {'alpha': 1.13, "nu_ref": 226.73}
+beam_scaling_dr6_pa5_f090 = {'alpha': 1.81, "nu_ref": 96.54}
+beam_scaling_dr6_pa5_f150 = {'alpha': 1.60, "nu_ref": 149.31}
+beam_scaling_dr6_pa6_f090 = {'alpha': 1.59, "nu_ref": 95.33}
+beam_scaling_dr6_pa6_f150 = {'alpha': 1.59, "nu_ref": 147.90}
+
 
 beam_dir_legacy = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/planck/legacy/main_beams/'
 beam_T_legacy_f100 = beam_dir_legacy + "bl_T_legacy_100hm1x100hm2.dat"
@@ -215,6 +232,13 @@ beam_pol_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_c
 beam_pol_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
 beam_pol_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
 beam_pol_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
+beam_mono_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
+beam_mono_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'
+beam_mono_dr6_pa5_f150 = beam_dir_dr6 + 'coadd_pa5_f150_night_beam_tform_jitter_cmb.txt'
+beam_mono_dr6_pa6_f090 = beam_dir_dr6 + 'coadd_pa6_f090_night_beam_tform_jitter_cmb.txt'
+beam_mono_dr6_pa6_f150 = beam_dir_dr6 + 'coadd_pa6_f150_night_beam_tform_jitter_cmb.txt'
+
 
 beam_dir_lat_iso_instantaneous = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/instantaneous/20260210/profiles_v1r1/data/tube_slot+band/'
 beam_dir_lat_iso_jitter = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/jitter/20260309_jitter/'
@@ -243,6 +267,20 @@ beam_pol_lat_iso_c1_f220 = beam_dir_lat_iso_instantaneous + 'c1+f220/model_windo
 beam_pol_lat_iso_c1_f280 = beam_dir_lat_iso_instantaneous + 'c1+f280/model_window_c1+f280_1756699200_20000000000.txt'
 beam_pol_lat_iso_i5_f220 = beam_dir_lat_iso_instantaneous + 'i5+f220/model_window_i5+f220_1756699200_20000000000.txt'
 beam_pol_lat_iso_i5_f280 = beam_dir_lat_iso_instantaneous + 'i5+f280/model_window_i5+f280_1756699200_20000000000.txt'
+
+beam_mono_lat_iso_i1_f090 = beam_dir_lat_iso_jitter + 'beam_i1_f090_cmb_tform.txt'
+beam_mono_lat_iso_i1_f150 = beam_dir_lat_iso_jitter + 'beam_i1_f150_cmb_tform.txt'
+beam_mono_lat_iso_i3_f090 = beam_dir_lat_iso_jitter + 'beam_i3_f090_cmb_tform.txt'
+beam_mono_lat_iso_i3_f150 = beam_dir_lat_iso_jitter + 'beam_i3_f150_cmb_tform.txt'
+beam_mono_lat_iso_i4_f090 = beam_dir_lat_iso_jitter + 'beam_i4_f090_cmb_tform.txt'
+beam_mono_lat_iso_i4_f150 = beam_dir_lat_iso_jitter + 'beam_i4_f150_cmb_tform.txt'
+beam_mono_lat_iso_i6_f090 = beam_dir_lat_iso_jitter + 'beam_i6_f090_cmb_tform.txt'
+beam_mono_lat_iso_i6_f150 = beam_dir_lat_iso_jitter + 'beam_i6_f150_cmb_tform.txt'
+beam_mono_lat_iso_c1_f220 = beam_dir_lat_iso_instantaneous + 'c1+f220/model_window_c1+f220_1756699200_20000000000.txt'
+beam_mono_lat_iso_c1_f280 = beam_dir_lat_iso_instantaneous + 'c1+f280/model_window_c1+f280_1756699200_20000000000.txt'
+beam_mono_lat_iso_i5_f220 = beam_dir_lat_iso_instantaneous + 'i5+f220/model_window_i5+f220_1756699200_20000000000.txt'
+beam_mono_lat_iso_i5_f280 = beam_dir_lat_iso_instantaneous + 'i5+f280/model_window_i5+f280_1756699200_20000000000.txt'
+
 
 leakage_dir_dr6 = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/dr6/leakage_beams/'
 leakage_beam_dr6_pa4_f220_TE = leakage_dir_dr6 + 'pa4_f220_gamma_t2e.txt'
@@ -290,7 +328,7 @@ ps_and_gal_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/ps/masks/'
 mnms_mask_dir = '/scratch/gpfs/SIMONSOBS/lat-iso/mbs/mnms_products/masks/v20260201_skn_50cg_mask_obs/'
 
 plot_windowed_maps = ['lat_iso_i1_f090', 'lat_iso_i1_f150', 'lat_iso_i3_f090', 'lat_iso_i3_f150', 'lat_iso_i4_f090', 'lat_iso_i4_f150', 'lat_iso_i6_f090', 'lat_iso_i6_f150', 'lat_iso_c1_f220', 'lat_iso_c1_f280', 'lat_iso_i5_f220', 'lat_iso_i5_f280']
-plot_maps = False #True
+plot_maps = True
 
 template_geometry_intersect = maps_lat_iso_i1_f090[0]
 
@@ -423,14 +461,14 @@ add_white_noise_above_lmax = True
 white_noise_ell_taper_width = 500
 keep_noise_models_in_memory = False
 
-#noise_model_pl100 = {'qids': ['pl100']}
-#noise_model_pl143 = {'qids': ['pl143']}
-#noise_model_pl217 = {'qids': ['pl217']}
-#noise_model_pl353 = {'qids': ['pl353']}
+noise_model_pl100 = {'qids': ['pl100']}
+noise_model_pl143 = {'qids': ['pl143']}
+noise_model_pl217 = {'qids': ['pl217']}
+noise_model_pl353 = {'qids': ['pl353']}
 
-#noise_model_pa4 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa4a', 'pa4b'], 'lmax': 5400} # can add 'subproduct_kwargs': value if needed, where value e.g. {'inout_split': ['inout1', 'inout2']}
-#noise_model_pa5 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa5a', 'pa5b'], 'lmax': 5400}
-#noise_model_pa6 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask_ivfwhm2', 'qids': ['pa6a', 'pa6b'], 'lmax': 5400}
+noise_model_pa4 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa4a', 'pa4b'], 'lmax': 5400} # can add 'subproduct_kwargs': value if needed, where value e.g. {'inout_split': ['inout1', 'inout2']}
+noise_model_pa5 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa5a', 'pa5b'], 'lmax': 5400}
+noise_model_pa6 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask_ivfwhm2', 'qids': ['pa6a', 'pa6b'], 'lmax': 5400}
 
 noise_model_i1 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['i1a', 'i1b'], 'lmax': 5400}
 noise_model_i3 = {'config_name': 'so_lat_iso_deep56_v20260201_skn_50cg', 'noise_model_name': 'tile_cmbmask_120obscut_120estcut_2_30', 'qids': ['i3a', 'i3b'], 'lmax': 5400}

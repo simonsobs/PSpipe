@@ -188,6 +188,7 @@ else:
     mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, len(subtasks)*[0, 1, 1, 4], # 00, 02, 02, ++, --
                                  dtype=np.float64, coupling=False,
                                  pspy_index_convention=True)
+    # nl goes from l = 2 to lmax
     mcms = mcms.reshape(len(subtasks), 5, lmax-2, lmax-2) # (nspec*5, nl, nl) -> (nspec, 5, nl, nl)
 
     # apply total-diagonal beams on the right
@@ -221,7 +222,13 @@ else:
         # trim to match mcm
         l = l[:lmax-2]
         for k in signal_dict.keys():
-            signal_dict[k] = tf[2:lmax] * signal_dict[k][:lmax-2]
+            #signal_dict[k] = tf[2:lmax] * signal_dict[k][:lmax-2]
+            # we apply the tf to mcms direcly, so we don't need to apply it just to the signal dict
+            signal_dict[k] = signal_dict[k][:lmax-2]
+
+        # now we apply the ell-by-ell tf to the mcm * bls. We can just multiply on the right, 
+        # the order does not matter since it is just an array with nl shape
+        mcms[t] *= tf[2:lmax]
 
         # the fully realized mcm matrix would be a lot of memory. also, don't
         # need to copy blocks since just being used in math
@@ -236,6 +243,7 @@ else:
             Bbl = np.zeros((5, nbins, lmax))
 
             for i in range(5):
+                # bins both indices of mll to get mxx, that will then be inverted later
                 so_mcm.mcm_fortran.bin_mcm(mcms[t, i].T,
                                            bin_lo,
                                            bin_hi,
@@ -243,6 +251,7 @@ else:
                                            mxx[i].T,
                                            doDl)
 
+                # compute (Qbl Mll)
                 so_mcm.mcm_fortran.binning_matrix(mcms[t, i].T,
                                                   bin_lo,
                                                   bin_hi,
@@ -272,6 +281,7 @@ else:
 
         # finish the Bbl computation for binned_mcm
         if binned_mcm:
+            # computes Bbl = mxx^-1 @ (Qbl Mll) = (Qbl Mll Plb)^-1 @ (Qbl Mll)
             Bbl[:3] = mxx_inv[:3] @ Bbl[:3]
             np.einsum('mnab,nbl->mal',
                       np.array([[mxx_inv[3], mxx_inv[4]], [mxx_inv[4], mxx_inv[3]]]),

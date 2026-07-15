@@ -364,21 +364,40 @@ for iii in mapset_iterator:
 
                 # data injection
                 if which == 'data':
-                    map_fn = d[f"maps_{sv}_{m}"][split_idx]
-                    split = so_map.read_map(map_fn, geometry=win_T.data.geometry)
-                    if plot_maps:
-                        plot = enplot.get_plots(
-                            split.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
-                        )
-                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}", plot)
-                    
                     if d[f"src_free_maps_{sv}"] == True:
+                        # We now load maps, "split" is the map without sources and "ps_map" is the source map
                         try:
-                            ps_map_fn = map_fn.replace("_srcfree.fits", "_srcs.fits")
+                            # Try to find source map first
+                            map_fn = d[f"maps_{sv}_{m}"][split_idx]
+                            split = so_map.read_map(map_fn, geometry=win_T.data.geometry)
+                            
+                            ps_map_fn = map_fn.replace(".fits", "_srcs.fits")
                             ps_map = so_map.read_map(ps_map_fn, geometry=win_T.data.geometry)
+                            
+                            if plot_maps:
+                                plot = enplot.get_plots(
+                                    split.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
+                                )
+                                enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}", plot)
+                            
+                            # Remove sources from the maps
+                            split -= ps_map
+                            
                         except FileNotFoundError:
+                            # Now try to load source free map
+                            map_fn = d[f"maps_{sv}_{m}"][split_idx]
+                            split = so_map.read_map(map_fn, geometry=win_T.data.geometry)
+                            
                             ps_map_fn = map_fn.replace("_srcfree.fits", ".fits")
                             ps_map = so_map.read_map(ps_map_fn, geometry=win_T.data.geometry)
+                            
+                            if plot_maps:
+                                plot = enplot.get_plots(
+                                    split.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
+                                )
+                                enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}", plot)
+                            
+                            # Source map is the difference between split and scrfree map
                             ps_map.data -= split.data
                             
                         if ps_map_fn == map_fn:

@@ -320,7 +320,7 @@ if which == 'sims':
         if for_kspace:
             # FIXME: ell-by-ell TF computed for the same survey, and applied as sqrt(tf) for a single field
             # TO CHANGE if we want to do sims for different surveys with different geometry
-            _, tf = kspace.build_analytic_kspace_filter_diag(sv, sv, lmax, templates,
+            _, tf = kspace.build_analytic_kspace_filter_diag(sv, sv, len(bl_T)-1, templates,
                                                             filter_dicts, dtype=np.float32)
             bl_nofilt.append(np.array([bl_T * np.sqrt(tf), bl_P * np.sqrt(tf)])) 
 

@@ -215,7 +215,7 @@ for sv in surveys:
 
     # FIXME: this will not work for SO LF which has a different template despite
     # being the same survey
-    templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[sv][0]}"])
+    templates[sv] = so_map.read_map(d[f"window_T_{sv}_{maps[sv][0]}"])
     
     # NOTE: a map may a CAR map but have a HEALPIX pixwin, in which case we may
     # kspace filter it, but want to use a HEALPIX pixwin
@@ -468,7 +468,7 @@ for iii in mapset_iterator:
 
                 # data injection
                 if which == 'data':
-                    split = so_map.read_map(d[f"maps_{sv}_{m}"][split_idx])
+                    split = so_map.read_map(d[f"maps_{sv}_{m}"][split_idx], fields_healpix=[0, 1, 2])
 
                 # sim injection
                 else:
@@ -483,10 +483,8 @@ for iii in mapset_iterator:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m} (HEALPIX)")
 
             split = split.calibrate(cal=cal, pol_eff=pol_eff)
-
             if d["remove_mean"] == True:
                 split = split.subtract_mean(window_tuple)
-
             if which == 'data':
                 master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
                 np.save(f"{alms_dir}" + f"alms_{sv}_{m}_set{split_idx}.npy", master_alms)

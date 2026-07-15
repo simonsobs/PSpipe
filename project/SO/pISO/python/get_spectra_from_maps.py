@@ -318,7 +318,7 @@ if which == 'sims':
         pol_eff.append(d[f"pol_eff_{mapname}"])
 
         if for_kspace:
-            # ell-by-ell TF computed for the same survey, and applied as sqrt(tf) for a single field
+            # FIXME: ell-by-ell TF computed for the same survey, and applied as sqrt(tf) for a single field
             # TO CHANGE if we want to do sims for different surveys with different geometry
             _, tf = kspace.build_analytic_kspace_filter_diag(sv, sv, lmax, templates,
                                                             filter_dicts, dtype=np.float32)

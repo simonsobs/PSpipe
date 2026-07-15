@@ -222,7 +222,6 @@ else:
         # trim to match mcm
         l = l[:lmax-2]
         for k in signal_dict.keys():
-            #signal_dict[k] = tf[2:lmax] * signal_dict[k][:lmax-2]
             # we apply the tf to mcms direcly, so we don't need to apply it just to the signal dict
             signal_dict[k] = signal_dict[k][:lmax-2]
 

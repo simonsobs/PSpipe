@@ -297,6 +297,8 @@ if which == 'sims':
         bl_err = None
         gl = None
         gl_err = None
+    if for_kspace:
+        bl_nofilt = []
 
     for sv, m in zip(sv_list, map_list):
         mapname = f'{sv}_{m}'
@@ -314,6 +316,13 @@ if which == 'sims':
 
         cal.append(d[f"cal_{mapname}"])
         pol_eff.append(d[f"pol_eff_{mapname}"])
+
+        if for_kspace:
+            # ell-by-ell TF computed for the same survey, and applied as sqrt(tf) for a single field
+            # TO CHANGE if we want to do sims for different surveys with different geometry
+            _, tf = kspace.build_analytic_kspace_filter_diag(sv, sv, lmax, templates,
+                                                            filter_dicts, dtype=np.float32)
+            bl_nofilt.append(np.array([bl_T * np.sqrt(tf), bl_P * np.sqrt(tf)])) 
 
         if simulate_syst:
             if d[f"beam_T_{mapname}"] == d[f"beam_pol_{mapname}"]:
@@ -361,6 +370,10 @@ if which == 'sims':
     if for_kspace:
         signal_model_args_noE = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl, cal, pol_eff)
         signal_model_args_noB = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl, cal, pol_eff)
+        # nofilt sims need to have the analytical TF applied, then removed by the mbl_inv
+        signal_model_args_nofilt = (mapnames2minfos, lmax, ps_mat, fg_mat, bl_nofilt, cal, pol_eff)
+        signal_model_args_noE_nofilt = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl_nofilt, cal, pol_eff)
+        signal_model_args_noB_nofilt = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl_nofilt, cal, pol_eff)
 
     signal_model_kwargs = dict(bl_err=bl_err, gl=gl, gl_err=gl_err, pixwin_apod_deg=sim_pixwin_apod_deg)
     if not for_kspace:
@@ -369,11 +382,7 @@ if which == 'sims':
                                 white_noise_ell_taper_width=white_noise_ell_taper_width,
                                 keep_model=keep_noise_models_in_memory)
     else:
-        noise_model_args = (mapnames2minfos, modeltags2modelinfos)
-        #noise_model_kwargs = dict(add_white_noise_above_lmax=False,
-        #                        white_noise_ell_taper_width=0,
-        #                        keep_model=False)
-       
+        noise_model_args = (mapnames2minfos, modeltags2modelinfos)      
         noise_model_kwargs = None
    
     data_model = simulation.DataModel(signal_model_args, noise_model_args, 
@@ -384,6 +393,16 @@ if which == 'sims':
                                       signal_model_kwargs=signal_model_kwargs,
                                       noise_model_kwargs=noise_model_kwargs)
         data_model_noB = simulation.DataModel(signal_model_args_noB, noise_model_args, 
+                                      signal_model_kwargs=signal_model_kwargs,
+                                      noise_model_kwargs=noise_model_kwargs)
+        
+        data_model_nofilt = simulation.DataModel(signal_model_args_nofilt, noise_model_args, 
+                                      signal_model_kwargs=signal_model_kwargs,
+                                      noise_model_kwargs=noise_model_kwargs)
+        data_model_noE_nofilt = simulation.DataModel(signal_model_args_noE_nofilt, noise_model_args, 
+                                      signal_model_kwargs=signal_model_kwargs,
+                                      noise_model_kwargs=noise_model_kwargs)
+        data_model_noB_nofilt = simulation.DataModel(signal_model_args_noB_nofilt, noise_model_args, 
                                       signal_model_kwargs=signal_model_kwargs,
                                       noise_model_kwargs=noise_model_kwargs)
     
@@ -466,13 +485,13 @@ for iii in mapset_iterator:
                     if snk == 's' or snk == "so_standard":
                         split = data_model.get_signal_sim(f'{sv}_{m}', iii)
                     if snk == 'so_standard':
-                        split_nofilt = data_model.get_signal_sim(f'{sv}_{m}', iii)
+                        split_nofilt = data_model_nofilt.get_signal_sim(f'{sv}_{m}', iii)
                     if snk == 'so_noE':
                         split = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
-                        split_nofilt = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
+                        split_nofilt = data_model_noE_nofilt.get_signal_sim(f'{sv}_{m}', iii)
                     if snk == 'so_noB':                    
                         split = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
-                        split_nofilt = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
+                        split_nofilt = data_model_noB_nofilt.get_signal_sim(f'{sv}_{m}', iii)
                     if 'n' in snk and not for_kspace:
                         split = data_model.get_noise_sim(f'{sv}_{m}', split_idx, iii)
 
@@ -632,10 +651,10 @@ for iii in mapset_iterator:
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
         pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'), allow_pickle=True).item()            
 
-        if for_kspace:
-            # taking pseudo2datavec without the analytical TF contribution
-            mbl_inv = np.load(opj(f"{mcm_dir}", f"{spec_name}_mode_coupling_inv.npy"))
-            pseudo2datavec_nofilt = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(mbl_inv, spectra, copy=True)
+        # if for_kspace:
+        #     # taking pseudo2datavec without the analytical TF contribution
+        #     mbl_inv = np.load(opj(f"{mcm_dir}", f"{spec_name}_mode_coupling_inv.npy"))
+        #     pseudo2datavec_nofilt = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(mbl_inv, spectra, copy=True)
 
         # first measure the raw per-split spectra. NOTE: redundant computation
         # is performed when sv1==sv2 and m1==m2, but the code is cleaner
@@ -689,14 +708,14 @@ for iii in mapset_iterator:
                                                                 apply_pspy_cut=True,
                                                                 dtype=np.float64)
                         
-                        data_dict_nofilt = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(pseudo2datavec_nofilt, pseudo_dict_nofilt)
+                        data_dict_nofilt = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(pseudo2datavec, pseudo_dict_nofilt)
 
                         ps_dict_all_nofilt[(sv1, m1), (sv2, m2), snk1] = data_dict_nofilt
         
         pseudo2datavec = None
         if for_kspace:
             mbl_inv = None
-            pseudo2datavec_nofilt = None
+            #pseudo2datavec_nofilt = None
 
         if not for_kspace:
             # then we get "derived" spectra: the mean cross, auto and noise spectrum

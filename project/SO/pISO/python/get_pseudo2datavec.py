@@ -24,9 +24,7 @@ log = log.get_logger(**d)
 
 mcm_dir = d['mcm_dir']
 plot_dir = opj(d['plots_dir'], 'mcms')
-spec_dir = d["spec_dir"]
 pspy_utils.create_directory(plot_dir)
-pspy_utils.create_directory(spec_dir)
 
 surveys = d["surveys"]
 lmax = d['lmax']

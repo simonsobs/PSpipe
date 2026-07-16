@@ -463,18 +463,19 @@ for iii in mapset_iterator:
                 
                 # sim injection, assume no bright point sources after masking
                 else:
-                    if snk == 's' or snk == "so_standard":
-                        split = data_model.get_signal_sim(f'{sv}_{m}', iii)
-                    if snk == 'so_standard':
-                        split_nofilt = data_model.get_signal_sim(f'{sv}_{m}', iii)
-                    if snk == 'so_noE':
-                        split = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
-                        split_nofilt = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
-                    if snk == 'so_noB':                    
-                        split = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
-                        split_nofilt = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
-                    if 'n' in snk and not for_kspace:
-                        split = data_model.get_noise_sim(f'{sv}_{m}', split_idx, iii)
+                    if not for_kspace:
+                        if snk == 's':
+                            split = data_model.get_signal_sim(f'{sv}_{m}', iii)
+                        if 'n' in snk:
+                            split = data_model.get_noise_sim(f'{sv}_{m}', split_idx, iii)
+                    else:
+                        if snk == "so_standard":
+                            split = data_model.get_signal_sim(f'{sv}_{m}', iii)
+                        if snk == 'so_noE':
+                            split = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
+                        if snk == 'so_noB':                    
+                            split = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
+                        split_nofilt = split.copy()
 
                     # possibly save raw map sim
                     if iii in range(write_sim_map_start, write_sim_map_stop):

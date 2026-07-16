@@ -138,8 +138,10 @@ def update_pseudospectra_dict(f1, f2, pseudospectra_dict=None):
 
 # this seems to be about 2x as fast as expanding to 2d
 @numba.njit(parallel=True)
-def add_term_to_pseudo_cov_block(pseudo_cov_block, w, C12, C34, coupling):
-    prefactor = coupling.dtype.type(w)
+def add_term_to_pseudo_cov_block(pseudo_cov_block, num_terms, w4_1234, w4_coupling, w2_12, w2_34, C12, C34, coupling):
+    # important to cast the scalar to the right type before multiplication, 
+    # which is a little faster than having it figure out the casting on-the-fly
+    prefactor = coupling.dtype.type(num_terms * w4_1234 / (4 * w2_12 * w2_34 * w4_coupling))
 
     for i in numba.prange(coupling.shape[0]):
 

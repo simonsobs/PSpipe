@@ -136,18 +136,19 @@ def update_pseudospectra_dict(f1, f2, pseudospectra_dict=None):
         
     return pseudospectra_dict
 
+# this seems to be about 2x as fast as expanding to 2d
 @numba.njit(parallel=True)
-def add_term_to_pseudo_cov_block(pseudo_cov_block, num_terms, w4_1234, w4_coupling, w2_12, w2_34, C12, C34, coupling):
-    # important to cast the scalar to the right type before multiplication, 
-    # which is a little faster than having it figure out the casting on-the-fly
-    prefactor = coupling.dtype.type(num_terms * w4_1234 / (4 * w2_12 * w2_34 * w4_coupling))
+def add_term_to_pseudo_cov_block(pseudo_cov_block, w, C12, C34, coupling):
+    prefactor = coupling.dtype.type(w)
 
-    C12_2d = npy.expand_dims(C12, 0)
-    C12_2d = npy.broadcast_to(C12_2d, coupling.shape)
+    for i in numba.prange(coupling.shape[0]):
 
-    C34_2d = npy.expand_dims(C34, 0)
-    C34_2d = npy.broadcast_to(C34_2d, coupling.shape)
-    pseudo_cov_block += prefactor * (C12_2d + C12_2d.T) * (C34_2d + C34_2d.T) * coupling
+        # access these items once per i rather than for each j
+        c12_i = C12[i]
+        c34_i = C34[i]
+        
+        for j in range(coupling.shape[1]):
+            pseudo_cov_block[i, j] += prefactor * (c12_i + C12[j]) * (c34_i + C34[j]) * coupling[i, j]
 
 # NOTE: unlike for w2s, w4s, and window spectra, here we mpi over blocks at the
 # map 4pt level (i.e., not including T and pol). We handle both noise *and* T

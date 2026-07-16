@@ -381,7 +381,10 @@ for iii in mapset_iterator:
                                 enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}", plot)
                             
                             # Remove sources from the maps
-                            split -= ps_map
+                            split.data -= ps_map.data
+                            
+                            if ps_map_fn == map_fn:
+                                raise ValueError(f"No _srcs.fits file found, check map names!")
                             
                         except FileNotFoundError:
                             # Now try to load source free map
@@ -400,8 +403,8 @@ for iii in mapset_iterator:
                             # Source map is the difference between split and scrfree map
                             ps_map.data -= split.data
                             
-                        if ps_map_fn == map_fn:
-                            raise ValueError(f"{ps_map_fn} should contain srcfree, check map names!")
+                            if ps_map_fn == map_fn:
+                                raise ValueError(f"{ps_map_fn} should contain srcfree, check map names!")
 
                         # TODO: would be cleaner if could just make ps_map with
                         # cutoff instead of relying on the mask

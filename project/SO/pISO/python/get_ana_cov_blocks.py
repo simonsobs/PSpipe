@@ -63,6 +63,12 @@ noise_dir = opj(bestfit_dir, 'noise')
 mcm_dir = d['mcm_dir']
 cov_dir = d['cov_dir']
 
+nsplits = {}
+for sv in surveys:
+    nsplits[sv] = d[f'n_splits_{sv}']
+
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+
 t0 = time.time()
 
 canonized_sn_field_info2canonized_connected_combo_2pt = npy.load(opj(cov_dir, 'canonized_sn_field_info2canonized_connected_combo_2pt.npy'), allow_pickle=True).item()
@@ -150,14 +156,9 @@ def add_term_to_pseudo_cov_block(pseudo_cov_block, num_terms, w4_1234, w4_coupli
 # 9xell x 9xell pseudocov block that we can immediately sandwich between two
 # pseudo2datavec operators.
 n_covs, ni_list, nj_list, np_list, nq_list = pspipe_list.get_covariances_list(d)
-spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 if cov_correlation_by_noise_model:
     mapnames2noise_model_tags = dict_utils.get_mapnames_to_noise_model_tags(d)
-
-nsplits = {}
-for sv in surveys:
-    nsplits[sv] = d[f'n_splits_{sv}']
 
 # mpi over cov_block_sets
 cov_block_sets = list(cov_block_sets2can_discon_com_4pts_and_optypes.keys())
@@ -171,7 +172,7 @@ for task in subtasks:
 
     cov_block_set = cov_block_sets[task]
     can_discon_com_4pts_and_optypes = cov_block_sets2can_discon_com_4pts_and_optypes[cov_block_set]
-    can_discon_com_4pts_and_optypes = list(can_discon_com_4pts_and_optypes) # convert once
+    can_discon_com_4pts_and_optypes = sorted(list(can_discon_com_4pts_and_optypes)) # convert set to list once. NOTE: sorted doesn't matter since random-order is within each task, but just for reproducibility across runs
 
     log.info(f"[Rank {so_mpi.rank}, Task {task}] Number of cov blocks to compute in this cov block set: {len(cov_block_set)}")
 

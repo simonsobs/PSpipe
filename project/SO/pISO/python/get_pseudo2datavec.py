@@ -8,6 +8,8 @@ from pspipe_utils import log, pspipe_list, kspace
 import healpy as hp
 from os.path import join as opj
 import argparse
+import matplotlib
+matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(description=description,
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -22,7 +24,9 @@ log = log.get_logger(**d)
 
 mcm_dir = d['mcm_dir']
 plot_dir = opj(d['plots_dir'], 'mcms')
+spec_dir = d["spec_dir"]
 pspy_utils.create_directory(plot_dir)
+pspy_utils.create_directory(spec_dir)
 
 surveys = d["surveys"]
 lmax = d['lmax']
@@ -54,20 +58,19 @@ if apply_kspace_filter:
         else:
             raise NotImplementedError('can only kspace filter CAR maps')
 
-    if kspace_tf_path == "analytical":
-        # FIXME: func assumes len(spectra) == 9
-        kspace_transfer_matrix = kspace.build_analytic_kspace_filter_matrices(surveys, # FIXME: will break if any non-CAR survey
-                                                                              maps,
-                                                                              templates,
-                                                                              filter_dicts,
-                                                                              binning_file, # FIXME: assumes same binning all maps
-                                                                              lmax)
-    else:
-        kspace_transfer_matrix = {}
+    # FIXME: func assumes len(spectra) == 9
+    kspace_transfer_matrix = kspace.build_analytic_kspace_filter_matrices(surveys, # FIXME: will break if any non-CAR survey
+                                                                        maps,
+                                                                        templates,
+                                                                        filter_dicts,
+                                                                        binning_file, # FIXME: assumes same binning all maps
+                                                                        lmax)
+    if not kspace_tf_path == "analytical":
+        mc_kspace_transfer_matrix = {}
         for spec_name in spec_name_list:
             # FIXME: func assumes len(spectra) == 9
             # FIXME: script assumes (below) same spectra ordering as what made these matrices
-            kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
+            mc_kspace_transfer_matrix[spec_name] = np.load(f"{kspace_tf_path}/kspace_matrix_{spec_name}.npy", allow_pickle=True)
 
     for k, v in kspace_transfer_matrix.items():
         if np.count_nonzero(v.diagonal() == 0):
@@ -106,13 +109,18 @@ for task in subtasks:
 
     # get the inv_kspace matrix for this array cross, if necessary
     if apply_kspace_filter:
-        inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix[spec_name]) 
+        inv_kspace_mat = np.linalg.inv(kspace_transfer_matrix[spec_name]) # mc_inv @ (ana_inv @ raw_spectrum)
 
         # apply the inv_kspace matrix to mbl_inv to get data operator. don't
         # need to copy because just being used in math
         # FIXME: script assumes same spectra ordering as what made these matrices
         inv_kspace_mat = so_mcm.get_spec2spec_sparse_dict_mat_from_dense_mat(inv_kspace_mat, spectra)
-        pseudo2datavec = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(inv_kspace_mat, pseudo2datavec)
+        pseudo2datavec = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(inv_kspace_mat, pseudo2datavec) # inv_analytic @ spec
+
+        if not kspace_tf_path == "analytical":
+            inv_mc_kspace_mat = np.linalg.inv(mc_kspace_transfer_matrix[spec_name]) # mc_inv @ (ana_inv @ raw_spectrum)
+            inv_mc_kspace_mat = so_mcm.get_spec2spec_sparse_dict_mat_from_dense_mat(inv_mc_kspace_mat, spectra)
+            pseudo2datavec = so_mcm.sparse_dict_mat_matmul_sparse_dict_mat(inv_mc_kspace_mat, pseudo2datavec) # inv_mc @ (inv_analytic @ spec)
 
     # get the pixwin for healpix, if necessary
     # FIXME: put pixwin in mcm / forward model

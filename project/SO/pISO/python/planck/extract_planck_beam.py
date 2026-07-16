@@ -157,5 +157,3 @@ for freq in freqs:
     np.savetxt(f"{main_beam_npipe_dir}/bl_T_extended_{freq}_coadd_pixwin.dat", np.transpose([l, bl_T_coadd_pixwin]))
     np.savetxt(f"{main_beam_legacy_dir}/bl_T_extended_{freq}_coadd.dat", np.transpose([l, bl_T_coadd]))
     np.savetxt(f"{main_beam_legacy_dir}/bl_T_extended_{freq}_coadd_pixwin.dat", np.transpose([l, bl_T_coadd_pixwin]))
-
-

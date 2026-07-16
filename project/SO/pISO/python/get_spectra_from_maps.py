@@ -24,7 +24,7 @@ import numpy as np
 import healpy as hp
 
 from pixell import enmap, enplot
-from pspipe_utils import kspace, log, pspipe_list, dict_utils, misc
+from pspipe_utils import kspace, log, pspipe_list, dict_utils, misc, io
 from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 
 parser = argparse.ArgumentParser(description=description,
@@ -47,6 +47,8 @@ parser.add_argument('--simulate-syst', action='store_true', # default False, typ
                     help='If given, sims will sample random beam and leakage.')
 parser.add_argument('--simulate-lens', action='store_true', # default False, type bool
                     help='If given, sims will lens the CMB at the map level.')
+parser.add_argument('--for-kspace', action='store_true', # default False, type bool
+                    help='If given, sims will contain only signal, no noise. Used to do simulations for TF computation')
 args = parser.parse_args()
 
 # TODO: speed up map-level operations with mnms.concurrent_op
@@ -74,12 +76,20 @@ if args.start >= 0:
             
     simulate_syst = args.simulate_syst
     simulate_lens = args.simulate_lens
+    for_kspace = args.for_kspace
+
+    if for_kspace:
+        assert simulate_lens is False and simulate_syst is False, \
+            "simulate_lens and simulate_syst should be set to False when running" + \
+            "sims for kspace filter computation"
 
     tag = ''
     if simulate_syst:
         tag += '_syst'
     if simulate_lens:
         tag += '_lens'
+    if for_kspace:
+        tag += '_for_kspace'
 
 # get needed info from paramfile
 d = so_dict.so_dict()
@@ -105,6 +115,11 @@ if which == 'sims':
     white_noise_ell_taper_width = d['white_noise_ell_taper_width']
     keep_noise_models_in_memory = d['keep_noise_models_in_memory']
 
+    if for_kspace:
+        assert kspace_tf_path == "analytical", \
+            "we need to use analytic kspace filter when producing" + \
+            "sims for computation of corrections to kspace filter"
+
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 
@@ -121,8 +136,13 @@ if which == 'data':
         pspy_utils.create_directory(maps_plot_dir)
     
 else:
-    spec_dir = d['sim_spec_dir']
-    pspy_utils.create_directory(spec_dir)
+    if not for_kspace:
+        spec_dir = d['sim_spec_dir']
+        pspy_utils.create_directory(spec_dir)
+    else:
+        spec_dir = d['sim_spec_for_tf_dir']
+        pspy_utils.create_directory(spec_dir)
+        scenarios = ["standard", "noE", "noB"]
 
     if write_sim_map_start >= 0:
         sim_map_dir = d['sim_maps_dir']
@@ -210,8 +230,14 @@ for sv in surveys:
         log.info(f"[Rank {so_mpi.rank}] {nsplits[sv]} signal+noise splits for survey {sv}")
         splits_iterator[sv] = [f'sn{k}' for k in range(nsplits[sv])]
     else:
-        log.info(f"[Rank {so_mpi.rank}] 1 signal and {nsplits[sv]} noise splits ({nsplits[sv]+1} total) for survey {sv}")
-        splits_iterator[sv] = ['s'] + [f'n{k}' for k in range(nsplits[sv])]
+        if not for_kspace:
+            log.info(f"[Rank {so_mpi.rank}] 1 signal and {nsplits[sv]} noise splits ({nsplits[sv]+1} total) for survey {sv}")
+            splits_iterator[sv] = ['s'] + [f'n{k}' for k in range(nsplits[sv])]
+        else:
+            splits_iterator[sv] = []
+            for sc in scenarios:
+                log.info(f"[Rank {so_mpi.rank}] signal only sim for survey {sv} and scenario {sc}")
+                splits_iterator[sv] += [f'so_{sc}']
 
     # FIXME: this will not work for SO LF which has a different template despite
     # being the same survey
@@ -313,18 +339,54 @@ if which == 'sims':
     f_name_fg = bestfit_dir + "fg_{}x{}.dat"
     _, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, mapname_list, lmax + 500, spectra)
     
+    # creating spectra for simulations without E or B
+    if for_kspace:
+        ps_mat_noE = np.copy(ps_mat)
+        ps_mat_noB = np.copy(ps_mat)
+        fg_mat_noE = np.copy(fg_mat)
+        fg_mat_noB = np.copy(fg_mat)
+
+        for fi1, field1 in enumerate("TEB"):
+            for fi2, field2 in enumerate("TEB"):
+                if field1 == "E" or field2 == "E":
+                    ps_mat_noE[fi1, fi2] *= 0
+                    fg_mat_noE[:, fi1, :, fi2] *= 0
+                if field1 == "B" or field2 == "B":
+                    ps_mat_noB[fi1, fi2] *= 0
+                    fg_mat_noB[:, fi1, :, fi2] *= 0                    
+
     modeltags2modelinfos = dict_utils.get_noise_model_tags_to_noise_model_infos(d)
 
     signal_model_args = (mapnames2minfos, lmax, ps_mat, fg_mat, bl, cal, pol_eff)
-    noise_model_args = (mapnames2minfos, modeltags2modelinfos)
+    if for_kspace:
+        signal_model_args_noE = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl, cal, pol_eff)
+        signal_model_args_noB = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl, cal, pol_eff)
+
     signal_model_kwargs = dict(bl_err=bl_err, gl=gl, gl_err=gl_err, pixwin_apod_deg=sim_pixwin_apod_deg)
-    noise_model_kwargs = dict(add_white_noise_above_lmax=add_white_noise_above_lmax,
-                              white_noise_ell_taper_width=white_noise_ell_taper_width,
-                              keep_model=keep_noise_models_in_memory)
-    
+    if not for_kspace:
+        noise_model_args = (mapnames2minfos, modeltags2modelinfos)
+        noise_model_kwargs = dict(add_white_noise_above_lmax=add_white_noise_above_lmax,
+                                white_noise_ell_taper_width=white_noise_ell_taper_width,
+                                keep_model=keep_noise_models_in_memory)
+    else:
+        noise_model_args = (mapnames2minfos, modeltags2modelinfos)
+        #noise_model_kwargs = dict(add_white_noise_above_lmax=False,
+        #                        white_noise_ell_taper_width=0,
+        #                        keep_model=False)
+       
+        noise_model_kwargs = None
+   
     data_model = simulation.DataModel(signal_model_args, noise_model_args, 
                                       signal_model_kwargs=signal_model_kwargs,
                                       noise_model_kwargs=noise_model_kwargs)
+    if for_kspace:
+        data_model_noE = simulation.DataModel(signal_model_args_noE, noise_model_args, 
+                                      signal_model_kwargs=signal_model_kwargs,
+                                      noise_model_kwargs=noise_model_kwargs)
+        data_model_noB = simulation.DataModel(signal_model_args_noB, noise_model_args, 
+                                      signal_model_kwargs=signal_model_kwargs,
+                                      noise_model_kwargs=noise_model_kwargs)
+    
 
 # now we can iterate over mapsets, and maps within them
 for iii in mapset_iterator:
@@ -401,9 +463,17 @@ for iii in mapset_iterator:
                 
                 # sim injection, assume no bright point sources after masking
                 else:
-                    if snk == 's':
+                    if snk == 's' or snk == "so_standard":
                         split = data_model.get_signal_sim(f'{sv}_{m}', iii)
-                    else:
+                    if snk == 'so_standard':
+                        split_nofilt = data_model.get_signal_sim(f'{sv}_{m}', iii)
+                    if snk == 'so_noE':
+                        split = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
+                        split_nofilt = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
+                    if snk == 'so_noB':                    
+                        split = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
+                        split_nofilt = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
+                    if 'n' in snk and not for_kspace:
                         split = data_model.get_noise_sim(f'{sv}_{m}', split_idx, iii)
 
                     # possibly save raw map sim
@@ -427,6 +497,13 @@ for iii in mapset_iterator:
                                               inv_pixwin=inv_pwin,
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
+                    
+                    if for_kspace:
+                        split_nofilt = so_map.fourier_convolution(split_nofilt,
+                                                       inv_pwin,
+                                                       window=win_kspace,
+                                                       use_ducc_rfft=True)
+
                     if plot_maps:
                         plot = enplot.get_plots(
                             split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
@@ -446,6 +523,7 @@ for iii in mapset_iterator:
                                               inv_pixwin=None,
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
+                    
                     if plot_maps:
                         if plot_maps:
                             plot = enplot.get_plots(
@@ -457,6 +535,12 @@ for iii in mapset_iterator:
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}")
                     split = so_map.fourier_convolution(split,
+                                                       inv_pwin,
+                                                       window=win_kspace,
+                                                       use_ducc_rfft=True)
+                    
+                    if for_kspace:
+                        split_nofilt = so_map.fourier_convolution(split_nofilt,
                                                        inv_pwin,
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
@@ -483,18 +567,29 @@ for iii in mapset_iterator:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m} (HEALPIX)")
 
             split = split.calibrate(cal=cal, pol_eff=pol_eff)
-
+            if for_kspace:
+                split_nofilt =  split_nofilt.calibrate(cal=cal, pol_eff=pol_eff)
+            
             if d["remove_mean"] == True:
                 split = split.subtract_mean(window_tuple)
+                if for_kspace:
+                    split_nofilt =  split_nofilt.subtract_mean(window_tuple)             
+
 
             if which == 'data':
                 master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
                 np.save(f"{alms_dir}" + f"alms_{sv}_{m}_set{split_idx}.npy", master_alms)
                 master_alms = None
             else:
-                master_alms[sv, m, snk] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
+                if not for_kspace:
+                    master_alms[sv, m, snk] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
+                else:
+                    master_alms[sv, m, snk, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
+                    master_alms[sv, m, snk, "nofilter"] = sph_tools.get_alms(split_nofilt, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
 
             split = None
+            if for_kspace:
+                split_nofilt = None
 
         win_T = None
         win_pol = None
@@ -530,14 +625,22 @@ for iii in mapset_iterator:
     # store all the spectra for a mapset in one file. otherwise there will be
     # too many files (O(1 million) for 1,000 ASO sims).
     ps_dict_all = {}
+    if for_kspace:
+        ps_dict_all_nofilt = {}
+
     for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
         pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'), allow_pickle=True).item()            
-            
+
+        if for_kspace:
+            # taking pseudo2datavec without the analytical TF contribution
+            mbl_inv = np.load(opj(f"{mcm_dir}", f"{spec_name}_mode_coupling_inv.npy"))
+            pseudo2datavec_nofilt = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(mbl_inv, spectra, copy=True)
+
         # first measure the raw per-split spectra. NOTE: redundant computation
         # is performed when sv1==sv2 and m1==m2, but the code is cleaner
         #
-        # NOTE: this is (s, 0, 1, 2, ...) for a sim
+        # NOTE: this is (s, 0, 1, 2, ...) for a sim or "standard", "noE", "noB" for the sims for kspace computation
         for snk1 in splits_iterator[sv1]:
             for snk2 in splits_iterator[sv2]:
 
@@ -545,96 +648,124 @@ for iii in mapset_iterator:
                 # doing this per spectrum. start_at_zero=False to match pspy convention
                 # TODO: test if speed penalty of alm np.complex128 conversion 
                 # is worth the memory saved (takes ~14s per spectrum)
-                _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1],
-                                                               master_alms[sv2, m2, snk2],
-                                                               spectra=spectra,
-                                                               apply_pspy_cut=True,
-                                                               dtype=np.float64)
-                
-                # we know this multiplication "works": pseudo2datavec and pseudo_dict
-                # have all spectra, so data_dict will too
-                data_dict = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(pseudo2datavec, pseudo_dict)
-                
-                # xtra corr debiases signal-only spectra, but cross signal-noise spectra have mean 0
-                # and cross noise-noise spectra are always from different splits (also mean 0)
-                if apply_kspace_filter and kspace_tf_path != "analytical":
-                    if ('s' in snk1) and ('s' in snk2):
-                        for spec in data_dict:
-                            data_dict[spec] -= TE_corr[spec_name][spec]
-                
-                # ps_dict is a nested dict: (sv1, m1, snk1), (sv2, m2, snk2) -> XY -> data,
-                # where XY is some pol cross
-                ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)] = data_dict
+                if not for_kspace:
+                    _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1],
+                                                                master_alms[sv2, m2, snk2],
+                                                                spectra=spectra,
+                                                                apply_pspy_cut=True,
+                                                                dtype=np.float64)
+                    
+                    # we know this multiplication "works": pseudo2datavec and pseudo_dict
+                    # have all spectra, so data_dict will too
+                    data_dict = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(pseudo2datavec, pseudo_dict)
+
+                    if apply_kspace_filter and kspace_tf_path != "analytical":
+                        if ('s' in snk1) and ('s' in snk2):
+                            for spec in data_dict:
+                                data_dict[spec] -= TE_corr[spec_name][spec]
+
+
+                    # ps_dict is a nested dict: (sv1, m1, snk1), (sv2, m2, snk2) -> XY -> data,
+                    # where XY is some pol cross
+                    ps_dict_all[(sv1, m1, snk1), (sv2, m2, snk2)] = data_dict
+
+                else:
+                    # do not mix the alms for the different scenarios
+                    if snk1 == snk2:
+
+                        _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1, "filter"],
+                                                                    master_alms[sv2, m2, snk2, "filter"],
+                                                                    spectra=spectra,
+                                                                    apply_pspy_cut=True,
+                                                                    dtype=np.float64)
+
+                        data_dict = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(pseudo2datavec, pseudo_dict)
+
+                        ps_dict_all[(sv1, m1), (sv2, m2), snk1] = data_dict
+
+                        _, pseudo_dict_nofilt = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1, "nofilter"],
+                                                                master_alms[sv2, m2, snk2, "nofilter"],
+                                                                spectra=spectra,
+                                                                apply_pspy_cut=True,
+                                                                dtype=np.float64)
+                        
+                        data_dict_nofilt = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(pseudo2datavec_nofilt, pseudo_dict_nofilt)
+
+                        ps_dict_all_nofilt[(sv1, m1), (sv2, m2), snk1] = data_dict_nofilt
         
         pseudo2datavec = None
+        if for_kspace:
+            mbl_inv = None
+            pseudo2datavec_nofilt = None
 
-        # then we get "derived" spectra: the mean cross, auto and noise spectrum
-        # NOTE: the noise spectrum is defined as the noise in a map which is the
-        # simple average over split maps. for the data, we do all of this, and 
-        # save in a "explicit" format for backwards compatibility. for sims, we
-        # just save crosses in a new format
-        splits_auto_iterator = pspipe_list.get_splits_auto_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
-        splits_cross_iterator = pspipe_list.get_splits_cross_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
+        if not for_kspace:
+            # then we get "derived" spectra: the mean cross, auto and noise spectrum
+            # NOTE: the noise spectrum is defined as the noise in a map which is the
+            # simple average over split maps. for the data, we do all of this, and 
+            # save in a "explicit" format for backwards compatibility. for sims, we
+            # just save crosses in a new format
+            splits_auto_iterator = pspipe_list.get_splits_auto_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
+            splits_cross_iterator = pspipe_list.get_splits_cross_iterator(sv1, nsplits[sv1], sv2, nsplits[sv2])
 
-        exists_auto = len(splits_auto_iterator) > 0
-        exists_cross = len(splits_cross_iterator) > 0
-        exists_noise = (len(splits_auto_iterator) > 0) and (len(splits_cross_iterator) > 0)
+            exists_auto = len(splits_auto_iterator) > 0
+            exists_cross = len(splits_cross_iterator) > 0
+            exists_noise = (len(splits_auto_iterator) > 0) and (len(splits_cross_iterator) > 0)
 
-        if exists_auto:
-            ps_dict_auto_mean = {spec: 0 for spec in spectra}
-            if which == 'sims':
-                ps_dict_nn_mean = {spec: 0 for spec in spectra}
-            for spec in spectra:
-                for s1, s2 in splits_auto_iterator:
-                    if which == 'data':
-                        ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, f'sn{s1}'), (sv2, m2, f'sn{s2}')][spec]
-                    else:
-                        ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, 's')][spec] # redundant but clear and fast
-                        ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, f'n{s2}')][spec]
-                        ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, 's')][spec]
-                        ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, f'n{s2}')][spec]
-                        ps_dict_nn_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, f'n{s2}')][spec]
-                ps_dict_auto_mean[spec] /= len(splits_auto_iterator)
+            if exists_auto:
+                ps_dict_auto_mean = {spec: 0 for spec in spectra}
                 if which == 'sims':
-                    ps_dict_nn_mean[spec] /= len(splits_auto_iterator)
-            
-            ps_dict_all[(sv1, m1), (sv2, m2), 'auto'] = ps_dict_auto_mean
-            if which == 'data':
-                spec_name_auto = f"{type}_{sv1}_{m1}x{sv2}_{m2}_auto"
-                so_spectra.write_ps(spec_dir + f"/{spec_name_auto}.dat", lb, ps_dict_auto_mean, type, spectra=spectra)
-                    
-        if exists_cross:
-            ps_dict_cross_mean = {spec: 0 for spec in spectra}
-            for spec in spectra:
-                for s1, s2 in splits_cross_iterator:
-                    if which == 'data':
-                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'sn{s1}'), (sv2, m2, f'sn{s2}')][spec]
-                    else:
-                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, 's')][spec] # redundant but clear and fast
-                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, f'n{s2}')][spec]
-                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, 's')][spec]
-                        ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, f'n{s2}')][spec]
-                ps_dict_cross_mean[spec] /= len(splits_cross_iterator)                    
+                    ps_dict_nn_mean = {spec: 0 for spec in spectra}
+                for spec in spectra:
+                    for s1, s2 in splits_auto_iterator:
+                        if which == 'data':
+                            ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, f'sn{s1}'), (sv2, m2, f'sn{s2}')][spec]
+                        else:
+                            ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, 's')][spec] # redundant but clear and fast
+                            ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, f'n{s2}')][spec]
+                            ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, 's')][spec]
+                            ps_dict_auto_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, f'n{s2}')][spec]
+                            ps_dict_nn_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, f'n{s2}')][spec]
+                    ps_dict_auto_mean[spec] /= len(splits_auto_iterator)
+                    if which == 'sims':
+                        ps_dict_nn_mean[spec] /= len(splits_auto_iterator)
+                
+                ps_dict_all[(sv1, m1), (sv2, m2), 'auto'] = ps_dict_auto_mean
+                if which == 'data':
+                    spec_name_auto = f"{type}_{sv1}_{m1}x{sv2}_{m2}_auto"
+                    so_spectra.write_ps(spec_dir + f"/{spec_name_auto}.dat", lb, ps_dict_auto_mean, type, spectra=spectra)
+                        
+            if exists_cross:
+                ps_dict_cross_mean = {spec: 0 for spec in spectra}
+                for spec in spectra:
+                    for s1, s2 in splits_cross_iterator:
+                        if which == 'data':
+                            ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'sn{s1}'), (sv2, m2, f'sn{s2}')][spec]
+                        else:
+                            ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, 's')][spec] # redundant but clear and fast
+                            ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, 's'), (sv2, m2, f'n{s2}')][spec]
+                            ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, 's')][spec]
+                            ps_dict_cross_mean[spec] += ps_dict_all[(sv1, m1, f'n{s1}'), (sv2, m2, f'n{s2}')][spec]
+                    ps_dict_cross_mean[spec] /= len(splits_cross_iterator)                    
 
-            ps_dict_all[(sv1, m1), (sv2, m2), 'cross'] = ps_dict_cross_mean
-            if which == 'data':
-                spec_name_cross = f"{type}_{sv1}_{m1}x{sv2}_{m2}_cross"                
-                so_spectra.write_ps(spec_dir + f"/{spec_name_cross}.dat", lb, ps_dict_cross_mean, type, spectra=spectra)
+                ps_dict_all[(sv1, m1), (sv2, m2), 'cross'] = ps_dict_cross_mean
+                if which == 'data':
+                    spec_name_cross = f"{type}_{sv1}_{m1}x{sv2}_{m2}_cross"                
+                    so_spectra.write_ps(spec_dir + f"/{spec_name_cross}.dat", lb, ps_dict_cross_mean, type, spectra=spectra)
 
-        if exists_noise:
-            ps_dict_noise_mean = {}   
-            for spec in spectra:
-                # exists_noise only if sv1 == sv2
-                ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplits[sv1]
-                if which == 'sims':
-                    ps_dict_nn_mean[spec] /= nsplits[sv1]
-            
-            ps_dict_all[(sv1, m1), (sv2, m2), 'noise'] = ps_dict_noise_mean
-            if which == 'data':
-                spec_name_noise = f"{type}_{sv1}_{m1}x{sv2}_{m2}_noise"
-                so_spectra.write_ps(spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
-            else:
-                ps_dict_all[(sv1, m1), (sv2, m2), 'nn'] = ps_dict_nn_mean
+            if exists_noise:
+                ps_dict_noise_mean = {}   
+                for spec in spectra:
+                    # exists_noise only if sv1 == sv2
+                    ps_dict_noise_mean[spec] = (ps_dict_auto_mean[spec] - ps_dict_cross_mean[spec]) / nsplits[sv1]
+                    if which == 'sims':
+                        ps_dict_nn_mean[spec] /= nsplits[sv1]
+                
+                ps_dict_all[(sv1, m1), (sv2, m2), 'noise'] = ps_dict_noise_mean
+                if which == 'data':
+                    spec_name_noise = f"{type}_{sv1}_{m1}x{sv2}_{m2}_noise"
+                    so_spectra.write_ps(spec_dir + f"/{spec_name_noise}.dat", lb, ps_dict_noise_mean, type, spectra=spectra)
+                else:
+                    ps_dict_all[(sv1, m1), (sv2, m2), 'nn'] = ps_dict_nn_mean
 
     master_alms = None
 
@@ -650,12 +781,25 @@ for iii in mapset_iterator:
         
         if so_mpi.rank == 0:
             ps_dict_all['l'] = lb
-            np.save(f"{spec_dir}" + f"{spec_name_all}.npy", ps_dict_all)
+            io.save_hdf5(f"{spec_dir}" + f"{spec_name_all}.h5", ps_dict_all)
 
     else:
-        spec_name_all = f"{type}{tag}_all_sn_cross_{iii:05d}"
+        if not for_kspace:
+            spec_name_all = f"{type}{tag}_all_sn_cross_{iii:05d}"
+            
+            # each process has separate maps in its mapset
+            ps_dict_all['l'] = lb
+            io.save_hdf5(f"{spec_dir}" + f"{spec_name_all}.h5", ps_dict_all)
+        else:
+            spec_name_all = f"{type}{tag}_all_s_filter_{iii:05d}"
+            spec_name_all_nofilt = f"{type}{tag}_all_s_nofilter_{iii:05d}"
         
-        # each process has separate maps in its mapset
-        np.save(f"{spec_dir}" + f"{spec_name_all}.npy", ps_dict_all)
-    
+            # each process has separate maps in its mapset
+            ps_dict_all['l'] = lb
+            ps_dict_all_nofilt['l'] = lb
+            io.save_hdf5(f"{spec_dir}" + f"{spec_name_all}.h5", ps_dict_all)
+            io.save_hdf5(f"{spec_dir}" + f"{spec_name_all_nofilt}.h5", ps_dict_all_nofilt)
+
     ps_dict_all = None
+    if for_kspace:
+        ps_dict_all_nofilt = None

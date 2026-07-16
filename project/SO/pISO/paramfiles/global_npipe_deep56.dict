@@ -1,0 +1,197 @@
+run_name = "npipe_d56"
+data_dir = '/global/cfs/cdirs/sobs/users/sgiardie/iso/planck_d56/'
+
+surveys = ['Planck']
+arrays_Planck = ['f100','f143', 'f217', 'f353']
+planck_version = 'npipe'
+
+release_dir = "/global/cfs/cdirs/cmb/data/act_dr6/dr6.02/"
+binning_file = release_dir + "pspipe/binning/binning_50"
+apply_kspace_filter = True
+
+maps_dir_planck = data_dir + "planck_projected/"
+
+planck_projection_template = f"{release_dir}/maps/published/act_dr6.02_std_AA_night_pa4_f220_4way_set0_map_srcfree.fits"
+npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
+legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"
+
+npipe_sim_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe"
+legacy_sim_dir = "/global/cfs/cdirs/sobs/users/sgiardie/iso/legacy/legacy_sims"
+
+
+mcm_dir =  data_dir + f"mcms/{run_name}/"
+alms_dir =  data_dir + f"alms/{run_name}/"
+old_spec_dir =  data_dir + f"old_spectra/{run_name}/"
+spec_dir =  data_dir + f"spectra/{run_name}/"
+best_fits_dir =  data_dir + f"best_fits/{run_name}/"
+plots_dir =  data_dir + f"plots/{run_name}/"
+#noise_model_dir =  data_dir + f"noise_model/{run_name}/"
+#sq_win_alms_dir =  data_dir + f"sq_win_alms/"
+cov_dir =  data_dir + f"covariances/{run_name}/"
+montecarlo_dir =  data_dir + f"montecarlo/{run_name}/"
+noise_alms_dir =  data_dir + f"noise_alms/{run_name}/"
+chain_dir =  data_dir + f"chains/{run_name}/"
+sim_spectra_planck_noise_and_syst_dir =  data_dir + f"sim_spectra_planck_noise_and_syst/{run_name}/"
+planck_mc_correction_dir =  data_dir + f"montecarlo_planck_mc_corr/{run_name}/"
+spectra_leak_corr_dir =  data_dir + f"spectra_leak_corr/{run_name}/"
+spectra_leak_corr_planck_bias_corr_dir =  data_dir + f"spectra_leak_corr_planck_bias_corr/{run_name}/"
+montecarlo_beam_leakage_dir =  data_dir + f"montecarlo_beam_leakage/{run_name}/"
+sim_spec_dir =  data_dir + f"sim_spectra/dust_binning_50/{run_name}/"
+
+k_filter_Planck = {'type': 'binary_cross', 'vk_mask': [-90, 90], 'hk_mask': [-50, 50], 'weighted': False, 'analytic_cov_alpha': -0.4}
+kspace_tf_path = "analytical" 
+planck_source_catalog = release_dir + "pspipe/source_catalog/cat_skn_multifreq_20220526_nightonly.txt"
+deconvolve_pixwin = True
+
+pixwin_Planck = {'pix': 'HEALPIX', 'nside': 2048}
+niter = 0
+remove_mean = False
+binned_mcm = True
+lmax = 3000
+type = 'Dl'
+write_splits_spectra = True
+cov_T_E_only = False
+
+use_toeplitz_mcm = False
+use_toeplitz_cov = True
+src_free_maps_Planck = True
+n_splits_Planck = 2
+
+#l3_pad = 2000
+
+savgol_w = 300
+savgol_k = 4
+
+cov_correlation_by_noise_model = True
+cov_use_median_ssnn_nnss_coupling_per_block = True
+cov_use_median_nnnn_coupling_per_block = True
+cov_spin00_coupling_only = True
+use_toeplitz_cov = True
+l_exact = 1000
+l_toeplitz = 3000
+dl_band = 2000
+
+maps_Planck_f100 = [ f'{maps_dir_planck}/npipe/npipe6v20A_f100_deep56_patch_map_srcfree.fits',  f'{maps_dir_planck}/npipe/npipe6v20B_f100_deep56_patch_map_srcfree.fits']
+maps_Planck_f143 = [ f'{maps_dir_planck}/npipe/npipe6v20A_f143_deep56_patch_map_srcfree.fits',  f'{maps_dir_planck}/npipe/npipe6v20B_f143_deep56_patch_map_srcfree.fits']
+maps_Planck_f217 = [ f'{maps_dir_planck}/npipe/npipe6v20A_f217_deep56_patch_map_srcfree.fits',  f'{maps_dir_planck}/npipe/npipe6v20B_f217_deep56_patch_map_srcfree.fits']
+maps_Planck_f353 = [ f'{maps_dir_planck}/npipe/npipe6v20A_f353_deep56_patch_map_srcfree.fits',  f'{maps_dir_planck}/npipe/npipe6v20B_f353_deep56_patch_map_srcfree.fits']
+
+cal_Planck_f100 = 1.0
+cal_Planck_f143 = 1.0
+cal_Planck_f217 = 1.0
+cal_Planck_f353 = 1.0
+
+pol_eff_Planck_f100 = 1.0
+pol_eff_Planck_f143 = 1.0
+pol_eff_Planck_f217 = 1.0
+pol_eff_Planck_f353 = 1.0
+
+do_bandpass_integration = True
+
+passband_dir_planck = data_dir + 'passbands'
+freq_info_Planck_f100 = {'freq_tag': 100, 'passband': '/scratch/c.spxsg6/iso/dust/passbands/passband_npipe_f100.dat'}
+freq_info_Planck_f143 = {'freq_tag': 143, 'passband': '/scratch/c.spxsg6/iso/dust/passbands/passband_npipe_f143.dat'}
+freq_info_Planck_f217 = {'freq_tag': 217, 'passband': '/scratch/c.spxsg6/iso/dust/passbands/passband_npipe_f217.dat'}
+freq_info_Planck_f353 = {'freq_tag': 353, 'passband': '/scratch/c.spxsg6/iso/dust/passbands/passband_npipe_f353.dat'}
+
+beam_dir = data_dir + "beams"
+
+beam_T_Planck_f100 = beam_dir + '/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_100Ax100B.dat'
+beam_T_Planck_f143 = beam_dir + '/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_143Ax143B.dat'  # Get from running pipeline_dust.yml
+beam_T_Planck_f217 = beam_dir + '/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_217Ax217B.dat'
+beam_T_Planck_f353 = beam_dir + '/npipe_DR6_AxB/bl_T_npipe_DR6_AxB_353Ax353B.dat'
+
+beam_pol_Planck_f100 = beam_dir + '/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_100Ax100B.dat'
+beam_pol_Planck_f143 = beam_dir + '/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_143Ax143B.dat'
+beam_pol_Planck_f217 = beam_dir + '/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_217Ax217B.dat'
+beam_pol_Planck_f353 = beam_dir + '/npipe_DR6_AxB/bl_pol_npipe_DR6_AxB_353Ax353B.dat'
+
+leakage_beam_Planck_f100_TE = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_100%s_t2e.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f143_TE = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_143%s_t2e.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f217_TE = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_217%s_t2e.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f353_TE = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_353%s_t2e.dat' % split for split in ["A", "B"]]
+
+leakage_beam_Planck_f100_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_100%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f143_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_143%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f217_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_217%s_t2b.dat' % split for split in ["A", "B"]]
+leakage_beam_Planck_f353_TB = [beam_dir + '/npipe_DR6_AxB/gamma_npipe_DR6_AxB_353%s_t2b.dat' % split for split in ["A", "B"]]
+
+include_beam_chromaticity_effect_in_best_fit = False
+
+apod_pts_source_degree = 0.3
+apod_survey_degree = 2
+edge_skip_rescale = 1
+cross_link_threshold = 0.97
+n_med_ivar = 3
+
+mask_dir = data_dir + 'masks/'
+ps_mask_Planck_f100 =  mask_dir + 'source_mask_15mJy_and_dust_rad12_deep56.fits'
+ps_mask_Planck_f143 =  mask_dir + 'source_mask_15mJy_and_dust_rad12_deep56.fits'
+ps_mask_Planck_f217 =  mask_dir + 'source_mask_15mJy_and_dust_rad12_deep56.fits'
+ps_mask_Planck_f353 =  mask_dir + 'source_mask_15mJy_and_dust_rad12_deep56.fits'
+
+window_dir = data_dir + 'windows/'
+
+window_kspace_Planck_f100 =  window_dir + 'window_so_i5_f220_kspace.fits'
+window_T_Planck_f100 =  window_dir + 'window_so_i5_f220_baseline.fits'
+window_pol_Planck_f100 =  window_dir + 'window_so_i5_f220_baseline.fits'
+
+window_kspace_Planck_f143 =  window_dir + 'window_so_i5_f220_kspace.fits'
+window_T_Planck_f143 =  window_dir + 'window_so_i5_f220_baseline.fits'
+window_pol_Planck_f143 =  window_dir + 'window_so_i5_f220_baseline.fits'
+
+window_kspace_Planck_f217 =  window_dir + 'window_so_i5_f220_kspace.fits'
+window_T_Planck_f217 =  window_dir + 'window_so_i5_f220_baseline.fits'
+window_pol_Planck_f217 =  window_dir + 'window_so_i5_f220_baseline.fits'
+
+window_kspace_Planck_f353 =  window_dir + 'window_so_i5_f220_kspace.fits'
+window_T_Planck_f353 =  window_dir + 'window_so_i5_f220_baseline.fits'
+window_pol_Planck_f353 =  window_dir + 'window_so_i5_f220_baseline.fits'
+
+# params from best-fits of P-ACT LCDM chain
+cosmo_params = {'cosmomc_theta': 0.01040727759, 'logA': 3.050789144, 'ombh2': 0.02248927912, 'omch2': 0.1194830705, 'ns': 0.9700695084, 'tau': 0.05719987087}
+
+# accuracy params used in dr6 runs
+accuracy_params = {"kmax": 10, "k_per_logint": 130, "nonlinear": True, "lens_potential_accuracy": 8, "lens_margin": 2050, "lAccuracyBoost": 1.2, "min_l_logl_sampling": 6000, "DoLateRadTruncation": False, "recombination_model": "CosmoRec", "halofit_version": "mead2020"}
+
+fg_norm = {'nu_0': 150.0, 'ell_0': 3000, 'T_CMB': 2.725}
+fg_components = {'tt': ['tSZ_and_CIB', 'cibp', 'kSZ', 'radio', 'dust'], 'te': ['radio', 'dust'], 'ee': ['radio', 'dust'], 'bb': ['radio', 'dust'], 'tb': ['radio', 'dust'], 'eb': []}
+
+# dust params from Choi et al in D56 region
+fg_params = {'a_tSZ': 3.352350745, 'alpha_tSZ': -0.6501443802, 'a_kSZ': 2.016949764, 'a_p': 7.594274444, 'beta_p': 1.9029347, 'a_c': 3.68426462, 'beta_c': 1.9029347, 'a_s': 2.810617983, 'beta_s': -2.810871948, 'xi': 0.07733078253, 'a_gtt': 2.8, 'a_gte': 0.1, 'a_gtb': 0.0, 'a_gee': 0., 'a_gbb': 0.0, 'a_pste': -0.02597454946, 'a_pstb': 0, 'a_psee': 0.01356848002, 'a_psbb': 0, 'alpha_s': 1.0, 'T_d': 9.6, 'T_effd': 19.6, 'beta_d': 1.5, 'alpha_dT': -0.6, 'alpha_dE': -0.4, 'alpha_p': 1.0}
+
+bandpass_shift_Planck_f100 = 0.0
+bandpass_shift_Planck_f143 = 0.0
+bandpass_shift_Planck_f217 = 0.0
+bandpass_shift_Planck_f353 = 0.0
+
+#sim
+#not sure we need this
+
+sim_pixwin_apod_deg = .2
+add_white_noise_above_lmax = True
+white_noise_ell_taper_width = 500
+keep_noise_models_in_memory = False
+
+noise_model_Planck_f100 = {'qids': ['p04']}
+noise_model_Planck_f143 = {'qids': ['p05']}
+noise_model_Planck_f217 = {'qids': ['p06']}
+noise_model_Planck_f353 = {'qids': ['p07']}
+
+noise_info_Planck_f100 = {'qid': 'p04'}
+noise_info_Planck_f143 = {'qid': 'p05'}
+noise_info_Planck_f217 = {'qid': 'p06'}
+noise_info_Planck_f353 = {'qid': 'p07'}
+
+seed_sims = False
+iStart = 0
+iStop = 499
+sim_alm_dtype = 'complex64'
+noise_sim_type_pa4 = 'tile_cmbmask'
+noise_sim_type_pa5 = 'tile_cmbmask'
+noise_sim_type_pa6 = 'tile_cmbmask_ivfwhm2'
+range_TT = [10, 8000]
+range_TE = [-150, 150]
+range_ET = [-150, 150]
+range_EE = [-20, 50]
+debug = False

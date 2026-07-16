@@ -16,23 +16,32 @@ sim_spec_dir = data_dir + f'sims/spectra/{run_name}/'
 spec_dir = data_dir + f'spectra/{run_name}/'
 cov_dir = data_dir + f'covariances/{run_name}/'
 window_dir = data_dir + f'windows/{run_name}/'
+sacc_dir = data_dir + f'sacc/{run_name}/'
+
+nulls_dir = f'nulls/{run_name}'
+nulls_yaml = yaml_dir + "post_spectra.yaml"
+
+sacc_fname = "simu_sacc"
+# start and stop for sacc sim
+iStart = 0
+iStop = 100
 
 # surveys = ['dr6', 'legacy', 'lat_iso']
 # surveys = ['dr6', 'lat_iso']
 surveys = ['lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']
-arrays_planck = ['f100', 'f143', 'f217', 'f353']
+arrays_legacy = ['f100', 'f143', 'f217', 'f353']
 arrays_lat_iso = ['i1_f090', 'i1_f150', 'i3_f090', 'i3_f150', 'i4_f090', 'i4_f150', 'i6_f090', 'i6_f150', 'c1_f220', 'c1_f280', 'i5_f220', 'i5_f280']
 
 deconvolve_pixwin = True
 pixwin_dr6 = {'pix': 'CAR', 'order': 0}
-pixwin_planck = {'pix': 'HEALPIX', 'nside': 2048}
+pixwin_legacy = {'pix': 'HEALPIX', 'nside': 2048}
 pixwin_lat_iso = {'pix': 'CAR', 'order': 1}
 
 apply_kspace_filter = True
 kspace_tf_path = 'analytical'
 k_filter_dr6 = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
-k_filter_planck = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
+k_filter_legacy = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 k_filter_lat_iso = {'type':'binary_cross', 'vk_mask':[-90, 90], 'hk_mask':[-50, 50], 'weighted':False, 'analytic_cov_alpha': -0.4}
 
 binning_file = '/scratch/gpfs/SIMONSOBS/lat-iso/ps/binning/binning_50.dat'
@@ -61,7 +70,7 @@ cov_prebin_size = 5
 
 # maps
 src_free_maps_dr6 = True
-src_free_maps_planck = True
+src_free_maps_legacy = True
 src_free_maps_lat_iso = True
 
 maps_dir_dr6 = '/scratch/gpfs/ACT/data/act_dr6/dr6.02/maps/published/'
@@ -148,6 +157,8 @@ freq_info_lat_iso_i5_f220 = {'freq_tag': 220, 'passband': passband_dir_lat_iso +
 freq_info_lat_iso_i5_f280 = {'freq_tag': 280, 'passband': passband_dir_lat_iso + 'bandpass_mean_f280.dat'}
 
 include_beam_chromaticity_effect_in_best_fit = False
+include_beam_chromaticity_effect_in_sacc = False
+
 beam_dir_dr6 = '/scratch/gpfs/SIMONSOBS/lat-iso/beams/dr6/main_beams/'
 beam_T_dr6_pa4_f220 = beam_dir_dr6 + 'coadd_pa4_f220_night_beam_tform_jitter_cmb.txt'
 beam_T_dr6_pa5_f090 = beam_dir_dr6 + 'coadd_pa5_f090_night_beam_tform_jitter_cmb.txt'

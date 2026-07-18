@@ -51,6 +51,8 @@ parser.add_argument('--for-kspace', action='store_true', # default False, type b
                     help='If given, sims will contain only signal, no noise. Used to do simulations for TF computation')
 args = parser.parse_args()
 
+for_kspace = args.for_kspace
+
 # TODO: speed up map-level operations with mnms.concurrent_op
 
 # are we running on data or sims? if sims, are we writing any simulated maps
@@ -76,7 +78,6 @@ if args.start >= 0:
             
     simulate_syst = args.simulate_syst
     simulate_lens = args.simulate_lens
-    for_kspace = args.for_kspace
 
     if for_kspace:
         assert simulate_lens is False and simulate_syst is False, \

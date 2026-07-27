@@ -51,7 +51,7 @@ templates = {}
 filter_dicts = {}
 for sv in surveys:
     maps = d[f'arrays_{sv}']
-    templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[0]}"])
+    templates[sv] = so_map.read_map(d[f"window_T_{sv}_{maps[0]}"])
     if templates[sv].pixel == "CAR":
         if apply_kspace_filter:
             filter_dicts[sv] = d[f"k_filter_{sv}"]
@@ -209,9 +209,10 @@ else:
         # different script. NOTE: we need beamed (and tf'ed, if necessary)
         # pseudo Cls, but the mcms above already have the beam, so we just need
         # to apply the mcm (and tf, if necessary)
-        l, tf = kspace.build_analytic_kspace_filter_diag(sv1, sv2, lmax, templates,
-                                                         filter_dicts, dtype=np.float32)
-        assert l[0] == 0, f'Tf assumed to start at l=0, got l={l[0]}'
+        if apply_kspace_filter:
+            l, tf = kspace.build_analytic_kspace_filter_diag(sv1, sv2, lmax, templates,
+                                                            filter_dicts, dtype=np.float32)
+            assert l[0] == 0, f'Tf assumed to start at l=0, got l={l[0]}'
 
         l, signal_dict = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'),
                                             spectra=spectra, return_type='Cl',
@@ -221,8 +222,10 @@ else:
         # trim to match mcm
         l = l[:lmax-2]
         for k in signal_dict.keys():
-            signal_dict[k] = tf[2:lmax] * signal_dict[k][:lmax-2]
-
+            signal_dict[k] = signal_dict[k][:lmax-2]
+            if apply_kspace_filter:
+                    signal_dict[k] *= tf[2:lmax]
+                
         # the fully realized mcm matrix would be a lot of memory. also, don't
         # need to copy blocks since just being used in math
         mcm_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(mcms[t], spectra)

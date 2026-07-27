@@ -47,7 +47,7 @@ if apply_kspace_filter:
         
         # FIXME: this will not work for SO LF which has a different template despite
         # being the same survey
-        templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[sv][0]}"])
+        templates[sv] = so_map.read_map(d[f"window_T_{sv}_{maps[sv][0]}"])
             
         if templates[sv].pixel == "CAR":
             filter_dicts[sv] = d[f"k_filter_{sv}"]

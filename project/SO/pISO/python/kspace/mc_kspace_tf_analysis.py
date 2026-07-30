@@ -149,7 +149,9 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
                     ps_list_cov[spec][cross][(spec1, spec2)] =  np.cov(ps_list[spec]["filter", cross[0]][spec1][:][k], ps_list[spec]["nofilter", cross[1]][spec2][:][k])[0,1] 
 
 
-elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "EE_to_BB", "BB_to_EE",  "TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE", "EE_to_EB", "EE_to_BE", "BB_to_EB", "BB_to_BE"]
+#elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "EE_to_BB", "BB_to_EE",  "TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE", "EE_to_EB", "EE_to_BE", "BB_to_EB", "BB_to_BE"]
+# trying with multiplicative corrections on the diagonal only
+elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE"]
 
 kspace_matrix = {}
 kspace_dict = {}

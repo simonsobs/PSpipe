@@ -63,6 +63,12 @@ noise_dir = opj(bestfit_dir, 'noise')
 mcm_dir = d['mcm_dir']
 cov_dir = d['cov_dir']
 
+nsplits = {}
+for sv in surveys:
+    nsplits[sv] = d[f'n_splits_{sv}']
+
+spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
+
 t0 = time.time()
 
 canonized_sn_field_info2canonized_connected_combo_2pt = npy.load(opj(cov_dir, 'canonized_sn_field_info2canonized_connected_combo_2pt.npy'), allow_pickle=True).item()
@@ -130,18 +136,21 @@ def update_pseudospectra_dict(f1, f2, pseudospectra_dict=None):
         
     return pseudospectra_dict
 
+# this seems to be about 2x as fast as expanding to 2d
 @numba.njit(parallel=True)
 def add_term_to_pseudo_cov_block(pseudo_cov_block, num_terms, w4_1234, w4_coupling, w2_12, w2_34, C12, C34, coupling):
     # important to cast the scalar to the right type before multiplication, 
     # which is a little faster than having it figure out the casting on-the-fly
     prefactor = coupling.dtype.type(num_terms * w4_1234 / (4 * w2_12 * w2_34 * w4_coupling))
 
-    C12_2d = npy.expand_dims(C12, 0)
-    C12_2d = npy.broadcast_to(C12_2d, coupling.shape)
+    for i in numba.prange(coupling.shape[0]):
 
-    C34_2d = npy.expand_dims(C34, 0)
-    C34_2d = npy.broadcast_to(C34_2d, coupling.shape)
-    pseudo_cov_block += prefactor * (C12_2d + C12_2d.T) * (C34_2d + C34_2d.T) * coupling
+        # access these items once per i rather than for each j
+        c12_i = C12[i]
+        c34_i = C34[i]
+        
+        for j in range(coupling.shape[1]):
+            pseudo_cov_block[i, j] += prefactor * (c12_i + C12[j]) * (c34_i + C34[j]) * coupling[i, j]
 
 # NOTE: unlike for w2s, w4s, and window spectra, here we mpi over blocks at the
 # map 4pt level (i.e., not including T and pol). We handle both noise *and* T
@@ -150,14 +159,9 @@ def add_term_to_pseudo_cov_block(pseudo_cov_block, num_terms, w4_1234, w4_coupli
 # 9xell x 9xell pseudocov block that we can immediately sandwich between two
 # pseudo2datavec operators.
 n_covs, ni_list, nj_list, np_list, nq_list = pspipe_list.get_covariances_list(d)
-spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 if cov_correlation_by_noise_model:
     mapnames2noise_model_tags = dict_utils.get_mapnames_to_noise_model_tags(d)
-
-nsplits = {}
-for sv in surveys:
-    nsplits[sv] = d[f'n_splits_{sv}']
 
 # mpi over cov_block_sets
 cov_block_sets = list(cov_block_sets2can_discon_com_4pts_and_optypes.keys())
@@ -171,7 +175,7 @@ for task in subtasks:
 
     cov_block_set = cov_block_sets[task]
     can_discon_com_4pts_and_optypes = cov_block_sets2can_discon_com_4pts_and_optypes[cov_block_set]
-    can_discon_com_4pts_and_optypes = list(can_discon_com_4pts_and_optypes) # convert once
+    can_discon_com_4pts_and_optypes = sorted(list(can_discon_com_4pts_and_optypes)) # convert set to list once. NOTE: sorted doesn't matter since random-order is within each task, but just for reproducibility across runs
 
     log.info(f"[Rank {so_mpi.rank}, Task {task}] Number of cov blocks to compute in this cov block set: {len(cov_block_set)}")
 

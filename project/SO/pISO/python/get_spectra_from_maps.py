@@ -53,6 +53,8 @@ parser.add_argument('--noE-noB', action='store_true', # default False, type bool
                     help='If given, generate noE and noB sims containing only signal (as in DR6), no noise. Used to do simulations for TF computation')
 args = parser.parse_args()
 
+for_kspace = args.for_kspace
+
 # TODO: speed up map-level operations with mnms.concurrent_op
 
 # are we running on data or sims? if sims, are we writing any simulated maps
@@ -78,6 +80,7 @@ if args.start >= 0:
             
     simulate_syst = args.simulate_syst
     simulate_lens = args.simulate_lens
+
     for_kspace = args.for_kspace
     noE_noB = args.noE_noB
 
@@ -372,13 +375,14 @@ if which == 'sims':
 
     modeltags2modelinfos = dict_utils.get_noise_model_tags_to_noise_model_infos(d)
 
+    # nofilt sims need to have the analytical TF applied, then removed by the mbl_inv
     signal_model_args = (mapnames2minfos, lmax, ps_mat, fg_mat, bl, cal, pol_eff)
     if for_kspace:
         signal_model_args_nofilt = (mapnames2minfos, lmax, ps_mat, fg_mat, bl_nofilt, cal, pol_eff)
         if noE_noB:
             signal_model_args_noE = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl, cal, pol_eff)
             signal_model_args_noB = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl, cal, pol_eff)
-            # nofilt sims need to have the analytical TF applied, then removed by the mbl_inv
+            
             
             signal_model_args_noE_nofilt = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl_nofilt, cal, pol_eff)
             signal_model_args_noB_nofilt = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl_nofilt, cal, pol_eff)
@@ -493,18 +497,20 @@ for iii in mapset_iterator:
                 
                 # sim injection, assume no bright point sources after masking
                 else:
-                    if snk == 's' or snk == "so_standard":
-                        split = data_model.get_signal_sim(f'{sv}_{m}', iii)
-                    if snk == 'so_standard':
-                        split_nofilt = data_model_nofilt.get_signal_sim(f'{sv}_{m}', iii)
-                    if snk == 'so_noE':
-                        split = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
-                        split_nofilt = data_model_noE_nofilt.get_signal_sim(f'{sv}_{m}', iii)
-                    if snk == 'so_noB':                    
-                        split = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
-                        split_nofilt = data_model_noB_nofilt.get_signal_sim(f'{sv}_{m}', iii)
-                    if 'n' in snk and not for_kspace:
-                        split = data_model.get_noise_sim(f'{sv}_{m}', split_idx, iii)
+                    if not for_kspace:
+                        if snk == 's':
+                            split = data_model.get_signal_sim(f'{sv}_{m}', iii)
+                        if 'n' in snk:
+                            split = data_model.get_noise_sim(f'{sv}_{m}', split_idx, iii)
+                    else:
+                        if snk == "so_standard":
+                            split = data_model.get_signal_sim(f'{sv}_{m}', iii)
+                        if snk == 'so_noE' and noE_noB:
+                            split = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
+                        if snk == 'so_noB' and noE_noB:                    
+                            split = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
+                        split_nofilt = split.copy()
+
 
                     # possibly save raw map sim
                     if iii in range(write_sim_map_start, write_sim_map_stop):
@@ -692,7 +698,7 @@ for iii in mapset_iterator:
                     if apply_kspace_filter and kspace_tf_path != "analytical":
                         if ('s' in snk1) and ('s' in snk2):
                             for spec in data_dict:
-                                data_dict[spec] -= TE_corr[spec_name][spec]
+                                data_dict[spec] -= add_corr[spec_name][spec]
 
 
                     # ps_dict is a nested dict: (sv1, m1, snk1), (sv2, m2, snk2) -> XY -> data,

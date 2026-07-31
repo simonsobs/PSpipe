@@ -218,7 +218,7 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
     n1, n2 = spec.split("x")
     bin_theory = so_mcm.spin2spin_array_matmul_sparse_dict_vec(Bbl, spectra, cmb_and_fg_dict[n1, n2])
 
-    # now ps_list_corr["filter"] is deconvolved by the kspace mc correction
+    # reorganizing spectra dictionaries for the kspace correction
     ps_list_corr[spec] = {}
     ps_list_reorg[spec] = {}
     ps_list_reorg[spec]["filter", "standard"] = {}
@@ -230,6 +230,7 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
             ps_list_reorg[spec]["filter", "standard"][iii][spectrum] = ps_list[spec]["filter", "standard"][spectrum][iii]
             ps_list_reorg[spec]["nofilter", "standard"][iii][spectrum] = ps_list[spec]["nofilter", "standard"][spectrum][iii]
         
+        # now ps_list_corr["filter"] is deconvolved by the kspace mc correction
         lb, ps_list_corr[spec][iii] = kspace.deconvolve_kspace_filter_matrix(lb,
                                                                             ps_list_reorg[spec]["filter", "standard"][iii],
                                                                             kspace_matrix[spec],

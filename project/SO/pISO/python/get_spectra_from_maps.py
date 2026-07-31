@@ -53,7 +53,6 @@ parser.add_argument('--noE-noB', action='store_true', # default False, type bool
                     help='If given, generate noE and noB sims containing only signal (as in DR6), no noise. Used to do simulations for TF computation')
 args = parser.parse_args()
 
-for_kspace = args.for_kspace
 
 # TODO: speed up map-level operations with mnms.concurrent_op
 

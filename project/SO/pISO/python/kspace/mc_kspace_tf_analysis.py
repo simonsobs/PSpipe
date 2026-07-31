@@ -24,6 +24,8 @@ parser.add_argument('--start', type=int, default=-1,
                     'paramfile.')
 parser.add_argument('--stop', type=int, default=-1,
                     help='The index of the last sim to run (exclusive).')
+parser.add_argument('--old', action='store_true', # default False, type bool
+                    help='If given, consider also noE and noB simulations in the computation of kspace MC matrix, as done in DR6')
 args = parser.parse_args()
 
 d = so_dict.so_dict()
@@ -57,7 +59,10 @@ clfile = f"{bestfit_dir}/cmb.dat"
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 spin_pairs = ["spin0xspin0", "spin0xspin2", "spin2xspin0", "spin2xspin2"]
 n_sims = iStop - iStart # + 1
-scenarios = ["standard", "noE", "noB"]
+if not args.old:
+    scenarios = ["standard"]
+else:
+    scenarios = ["standard", "noE", "noB"]
 
 n_map, sv_list, map_list = pspipe_list.get_arrays_list(d)
 n_spec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
@@ -144,14 +149,17 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
 
         for i, spec1 in enumerate(spectra):
             for j, spec2 in enumerate(spectra):
+                ps_list_cov[spec][cross][(spec1, spec2)] = np.zeros(n_bins)
                 for k in range(n_bins):
                     # selecting the element (filter, nofilter) of the covariance matrix, per bin
-                    ps_list_cov[spec][cross][(spec1, spec2)] =  np.cov(ps_list[spec]["filter", cross[0]][spec1][:][k], ps_list[spec]["nofilter", cross[1]][spec2][:][k])[0,1] 
+                    ps_list_cov[spec][cross][(spec1, spec2)][k] =  np.cov(ps_list[spec]["filter", cross[0]][spec1][:][k], ps_list[spec]["nofilter", cross[1]][spec2][:][k])[0,1] 
 
 
-#elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "EE_to_BB", "BB_to_EE",  "TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE", "EE_to_EB", "EE_to_BE", "BB_to_EB", "BB_to_BE"]
-# trying with multiplicative corrections on the diagonal only
-elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE"]
+if args.old:
+    elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "EE_to_BB", "BB_to_EE",  "TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE", "EE_to_EB", "EE_to_BE", "BB_to_EB", "BB_to_BE"]
+else:
+    # trying with multiplicative corrections on the diagonal only
+    elements  = ["TT_to_TT", "EE_to_EE", "BB_to_BB", "TE_to_TE", "ET_to_ET", "TB_to_TB", "BT_to_BT", "EB_to_EB", "BE_to_BE"]
 
 kspace_matrix = {}
 kspace_dict = {}
@@ -167,7 +175,8 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
                                                                             ps_list_cov[spec],
                                                                            # n_sims,
                                                                             spectra,
-                                                                            return_dict=True)
+                                                                            return_dict=True,
+                                                                            dr6_like = args.old)
 
     np.save(f"{tf_dir}/kspace_matrix_{spec}.npy", kspace_matrix[spec])
 so_mpi.barrier()

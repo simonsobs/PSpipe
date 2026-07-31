@@ -49,6 +49,8 @@ parser.add_argument('--simulate-lens', action='store_true', # default False, typ
                     help='If given, sims will lens the CMB at the map level.')
 parser.add_argument('--for-kspace', action='store_true', # default False, type bool
                     help='If given, sims will contain only signal, no noise. Used to do simulations for TF computation')
+parser.add_argument('--noE-noB', action='store_true', # default False, type bool
+                    help='If given, generate noE and noB sims containing only signal (as in DR6), no noise. Used to do simulations for TF computation')
 args = parser.parse_args()
 
 # TODO: speed up map-level operations with mnms.concurrent_op
@@ -77,6 +79,7 @@ if args.start >= 0:
     simulate_syst = args.simulate_syst
     simulate_lens = args.simulate_lens
     for_kspace = args.for_kspace
+    noE_noB = args.noE_noB
 
     if for_kspace:
         assert simulate_lens is False and simulate_syst is False, \
@@ -142,7 +145,9 @@ else:
     else:
         spec_dir = d['sim_spec_for_tf_dir']
         pspy_utils.create_directory(spec_dir)
-        scenarios = ["standard", "noE", "noB"]
+        scenarios = ["standard"]
+        if noE_noB:
+            scenarios += ["noE", "noB"]
 
     if write_sim_map_start >= 0:
         sim_map_dir = d['sim_maps_dir']
@@ -276,9 +281,9 @@ for sv in surveys:
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 
 if apply_kspace_filter and kspace_tf_path != "analytical":
-    TE_corr = {}
+    add_corr = {}
     for spec_name in spec_name_list:
-        _, TE_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/TE_correction_{spec_name}.dat", spectra=spectra)
+        _, add_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/mc_additive_correction_{spec_name}.dat", spectra=spectra)
 
 # instantiate on-the-fly simulation models. this involves packaging 
 # power spectra and beams etc for the signal model, and the noise model
@@ -320,6 +325,7 @@ if which == 'sims':
         if for_kspace:
             # FIXME: ell-by-ell TF computed for the same survey, and applied as sqrt(tf) for a single field
             # TO CHANGE if we want to do sims for different surveys with different geometry
+            # since the total TF per spectra combination will not be sqrt(tf1) * sqrt(tf2)
             _, tf = kspace.build_analytic_kspace_filter_diag(sv, sv, len(bl_T)-1, templates,
                                                             filter_dicts, dtype=np.float32)
             bl_nofilt.append(np.array([bl_T * np.sqrt(tf), bl_P * np.sqrt(tf)])) 
@@ -349,7 +355,7 @@ if which == 'sims':
     _, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, mapname_list, lmax + 500, spectra)
     
     # creating spectra for simulations without E or B
-    if for_kspace:
+    if for_kspace and noE_noB:
         ps_mat_noE = np.copy(ps_mat)
         ps_mat_noB = np.copy(ps_mat)
         fg_mat_noE = np.copy(fg_mat)
@@ -368,12 +374,14 @@ if which == 'sims':
 
     signal_model_args = (mapnames2minfos, lmax, ps_mat, fg_mat, bl, cal, pol_eff)
     if for_kspace:
-        signal_model_args_noE = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl, cal, pol_eff)
-        signal_model_args_noB = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl, cal, pol_eff)
-        # nofilt sims need to have the analytical TF applied, then removed by the mbl_inv
         signal_model_args_nofilt = (mapnames2minfos, lmax, ps_mat, fg_mat, bl_nofilt, cal, pol_eff)
-        signal_model_args_noE_nofilt = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl_nofilt, cal, pol_eff)
-        signal_model_args_noB_nofilt = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl_nofilt, cal, pol_eff)
+        if noE_noB:
+            signal_model_args_noE = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl, cal, pol_eff)
+            signal_model_args_noB = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl, cal, pol_eff)
+            # nofilt sims need to have the analytical TF applied, then removed by the mbl_inv
+            
+            signal_model_args_noE_nofilt = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl_nofilt, cal, pol_eff)
+            signal_model_args_noB_nofilt = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl_nofilt, cal, pol_eff)
 
     signal_model_kwargs = dict(bl_err=bl_err, gl=gl, gl_err=gl_err, pixwin_apod_deg=sim_pixwin_apod_deg)
     if not for_kspace:
@@ -389,22 +397,25 @@ if which == 'sims':
                                       signal_model_kwargs=signal_model_kwargs,
                                       noise_model_kwargs=noise_model_kwargs)
     if for_kspace:
-        data_model_noE = simulation.DataModel(signal_model_args_noE, noise_model_args, 
-                                      signal_model_kwargs=signal_model_kwargs,
-                                      noise_model_kwargs=noise_model_kwargs)
-        data_model_noB = simulation.DataModel(signal_model_args_noB, noise_model_args, 
-                                      signal_model_kwargs=signal_model_kwargs,
-                                      noise_model_kwargs=noise_model_kwargs)
-        
         data_model_nofilt = simulation.DataModel(signal_model_args_nofilt, noise_model_args, 
                                       signal_model_kwargs=signal_model_kwargs,
                                       noise_model_kwargs=noise_model_kwargs)
-        data_model_noE_nofilt = simulation.DataModel(signal_model_args_noE_nofilt, noise_model_args, 
-                                      signal_model_kwargs=signal_model_kwargs,
-                                      noise_model_kwargs=noise_model_kwargs)
-        data_model_noB_nofilt = simulation.DataModel(signal_model_args_noB_nofilt, noise_model_args, 
-                                      signal_model_kwargs=signal_model_kwargs,
-                                      noise_model_kwargs=noise_model_kwargs)
+
+        if noE_noB:
+            data_model_noE = simulation.DataModel(signal_model_args_noE, noise_model_args, 
+                                        signal_model_kwargs=signal_model_kwargs,
+                                        noise_model_kwargs=noise_model_kwargs)
+            data_model_noB = simulation.DataModel(signal_model_args_noB, noise_model_args, 
+                                        signal_model_kwargs=signal_model_kwargs,
+                                        noise_model_kwargs=noise_model_kwargs)
+            
+            
+            data_model_noE_nofilt = simulation.DataModel(signal_model_args_noE_nofilt, noise_model_args, 
+                                        signal_model_kwargs=signal_model_kwargs,
+                                        noise_model_kwargs=noise_model_kwargs)
+            data_model_noB_nofilt = simulation.DataModel(signal_model_args_noB_nofilt, noise_model_args, 
+                                        signal_model_kwargs=signal_model_kwargs,
+                                        noise_model_kwargs=noise_model_kwargs)
     
 
 # now we can iterate over mapsets, and maps within them

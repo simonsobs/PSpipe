@@ -26,10 +26,15 @@ log = log.get_logger(**d)
 if args.old:
     log.warning('using old pspy fortran code will soon be deprecated')
 
+bestfit_dir = d["best_fits_dir"]
+cov_dir = d['cov_dir']
+pspy_utils.create_directory(cov_dir)
+
+pseudosignal_dir = opj(cov_dir, 'pseudosignal')
+pspy_utils.create_directory(pseudosignal_dir)
+
 mcm_dir = d['mcm_dir']
 pspy_utils.create_directory(mcm_dir)
-
-bestfit_dir = d["best_fits_dir"]
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
@@ -103,18 +108,19 @@ if args.old:
                                                     binned_mcm=binned_mcm,
                                                     save_file=opj(f"{mcm_dir}", f"{sv1}_{m1}x{sv2}_{m2}"))
 
-# TODO: rewrite to not repeat for equivalent windows. Ideally, we would split up
-# mcm and Bbl, since mcm is just ultimately used for pseudo2datavec, which is 
-# related to Bbl (theory2datavec = pseudo2datavec @ theory2pseudo). I.e., we 
-# probably want a pseudo2datavec script followed by a Bbl script
+# TODO: Ideally, we would split up mcm and Bbl, since mcm is just ultimately
+# used for pseudo2datavec, which is related to Bbl (theory2datavec =
+# pseudo2datavec @ theory2pseudo). I.e., we probably want a pseudo2datavec
+# script followed by a Bbl script
 else:
     # ducc can batch the matrix calculations rather than one at a time, so
     # instead in the loop we just group the inputs, and call the calculation
     # once outside the loop. finally, we need to loop again to apply binning
     # (since the binning function does one matrix at a time) and save the
     # outputs by name individually (also one matrix at a time)
+
+    # TODO: avoid calculation for repeated windows
     specs_for_ducc = []
-    bls = []
     for task in subtasks:
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
         pols = ('T', 'pol')
@@ -158,46 +164,32 @@ else:
                 can_win_fn_2pt_ij = pspipe_list.canonize_connected_2pt(win_fni, win_fnj)
                 if can_win_fn_2pt_ij not in can_win_fn_2pt2cl:
                     can_win_fn_2pt2cl[can_win_fn_2pt_ij] = curvedsky.alm2cl(walmi, walmj, dtype=np.float64) # no repeated computation (or keys)
-                
-        # beams have no numerical differences due to multithreading
-        _, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
-        _, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
-        
-        bl1 = (bl1["T"], bl1["E"])
-        bl2 = (bl2["T"], bl2["E"])
 
         # tabulate inputs for ducc, avoid numerical differences in specs_for_ducc
         spec_for_ducc = []
-        bl = []
         for i in range(2):
             for j in range(2):
                 poli, polj = pols[i], pols[j]
                 win_fni, win_fnj = m2win_fn[sv1, m1, poli], m2win_fn[sv2, m2, polj]
                 can_win_fn_2pt_ij = pspipe_list.canonize_connected_2pt(win_fni, win_fnj)
                 spec_for_ducc.append(can_win_fn_2pt2cl[can_win_fn_2pt_ij])
-                bl.append(bl1[i][2:lmax] * bl2[j][2:lmax]) # TODO: reconsider pspipe conventions
         specs_for_ducc.append(spec_for_ducc)
-        bls.append(bl)
         
     log.info(f"[Rank {so_mpi.rank}]: Computing mcm matrices using ducc")
     
     specs_for_ducc = np.array(specs_for_ducc).reshape(len(subtasks)*4, maxl + 1) # (nspec, 4, nl) -> (nspec*4, nl)
-    bls = np.repeat(bls, (1, 1, 1, 2), axis=1) # (nspec, 4, nl) -> (nspec, 5, nl)
-    bls = bls[..., None, :] # (nspec, 5, nl) -> (nspec, 5, 1, nl)
 
     mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, len(subtasks)*[0, 1, 1, 4], # 00, 02, 02, ++, --
                                  dtype=np.float64, coupling=False,
                                  pspy_index_convention=True)
+
     # nl goes from l = 2 to lmax
     mcms = mcms.reshape(len(subtasks), 5, lmax-2, lmax-2) # (nspec*5, nl, nl) -> (nspec, 5, nl, nl)
 
-    # apply total-diagonal beams on the right
-    mcms *= bls
-
-    # get the binned mcms
+    # get the pseudo2data and theory2data matrices, including binning etc.
+    # TODO: recompute this for every spectrum individually!
     bin_lo, bin_hi, _, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
     nbins = len(bin_hi)
-    Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax, type)
 
     for t, task in enumerate(subtasks):
         log.info(f"[Rank {so_mpi.rank}, {task:02d}] Computing bbl and other products")
@@ -205,66 +197,142 @@ else:
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
 
+        # get the beams
+        # TODO: generalize this into a whole (9nl x 9nl) operator, a la W_l^{WXYZ}
+        l1, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
+        l2, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
+        assert np.all(l1 == l2), f'bls assumed to start at same l, got l1={l1[0]} and l2={l2[0]}'
+        assert l1[0] == 0, f'bls assumed to start at l=0, got l={l1[0]}'
+        
+        bl1 = (bl1["T"], bl1["E"])
+        bl2 = (bl2["T"], bl2["E"])
+        bl = []
+        for i in range(2):
+            for j in range(2):
+                bl.append(bl1[i][2:lmax] * bl2[j][2:lmax]) # TODO: reconsider pspipe conventions
+        bl = np.repeat(bl, (1, 1, 1, 2), axis=0) # (4, nl) -> (5, nl)
+
+        # get the tf. will be 1 if nothing is being filtered, so OK to do this in all cases
+        # TODO: implement something like 2111.01113
+        l, tf = kspace.build_analytic_kspace_filter_diag(sv1, sv2, lmax, templates, filter_dicts)
+        assert l[0] == 0, f'Tf assumed to start at l=0, got l={l[0]}'
+        tf = tf[2:lmax] # TODO: reconsider pspipe conventions
+
+        # get the total response. check that it is nonzero in all bins. get the minimum,
+        # maximum l of the total response, and a slice object corresponding to this
+        total_response = tf * bl # (nl,) * (5, nl) = (5, nl)
+        assert total_response.shape == (5, lmax-2), \
+            f'expected total_response.shape=(5, {lmax}-2), got {total_response.shape=}'
+
+        l = np.arange(2, lmax) # assumes 2:lmax ordering
+        for ibin in range(nbins):
+            loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))[0] # this is common idiom for PSpipe binning
+            for spin_idx in range(5):
+                assert not np.allclose(total_response[spin_idx, loc], 0), \
+                    f'bin index {ibin} with bin_lo={bin_lo[ibin]} and bin_hi={bin_hi[ibin]} ' + \
+                    f'has zero total_response from tf * bl for {spin_idx=} of {spec_name=}'
+
+        # TODO: right now, for simplicity, I am enforcing equal binning on all TT, TE, etc.,
+        # by making the most conservative selection. would be better to allow *everything*
+        # to be customizable, so kspace filters are defined at the map and T vs. pol level, 
+        # rather than at the survey level. NB this is already the case for the beams, for 
+        # example, hence why this loop is necessary even now
+        mask = True
+        for i in range(5):
+            mask = np.logical_and(mask, np.logical_not(np.allclose(total_response[i], 0)))
+        nonzero_response_l = l[mask]
+        assert np.all(np.diff(nonzero_response_l) == 1), \
+            'nonzero entries are split into multiple chunks'
+
+        nonzero_response_l_lo = nonzero_response_l[0]
+        nonzero_response_l_hi = nonzero_response_l[-1]
+        assert (nonzero_response_l_lo >= bin_lo[0]) and (nonzero_response_l_lo < bin_lo[1]), \
+            'lowest nonzero entry not in lowest bin, this should be impossible'
+        assert (nonzero_response_l_hi > bin_hi[-2]) and (nonzero_response_l_hi <= bin_hi[-1]), \
+            'highest nonzero entry not in highest bin, this should be impossible'
+
+        nonzero_response_sel = np.s_[nonzero_response_l_lo-2:nonzero_response_l_hi-2] # assumes 2:lmax ordering
+
+        # you might expect here that we would apply the total_response on the right to build up the
+        # theory2pseudo operator, but we may (in the case of unbinned mcms) need to invert the mcms before
+        # applying the inverse of the total_response on the left, because the total_response might be 0 
+        # (especially due to the analytic per-ell tf). so we defer applying the total_response later as
+        # needed
+
         # we need to get the best-fit pseudosignal spectra for the covariance. we do
         # that here to avoid recalculating all the unbinned mcms again in a
-        # different script. NOTE: we need beamed (and tf'ed, if necessary)
-        # pseudo Cls, but the mcms above already have the beam, so we just need
-        # to apply the mcm (and tf, if necessary)
-        l, tf = kspace.build_analytic_kspace_filter_diag(sv1, sv2, lmax, templates,
-                                                         filter_dicts, dtype=np.float32)
-        assert l[0] == 0, f'Tf assumed to start at l=0, got l={l[0]}'
-
+        # different script
         l, signal_dict = so_spectra.read_ps(opj(bestfit_dir, f'cmb_and_fg_{spec_name}.dat'),
                                             spectra=spectra, return_type='Cl',
                                             return_dtype=np.float32)
         assert l[0] == 2, f'Bestfit spectra assumed to start at l=2, got l={l[0]}'
 
-        # trim to match mcm
-        l = l[:lmax-2]
+        # trim to match mcm and apply total_response as in forward model
+        # hijack this function; we need to make total_response 3d
+        # TODO: promote total_response to a dense (9nl, 9nl) operator 
+        total_response_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(total_response[None], spectra) 
         for k in signal_dict.keys():
-            # we apply the tf to mcms direcly, so we don't need to apply it just to the signal dict
-            signal_dict[k] = signal_dict[k][:lmax-2]
+            # we only need the diagonal "blocks", and remove spurious extra dim
+            signal_dict[k] = total_response_dict[k][k][..., 0] * signal_dict[k][:lmax-2]
 
-        # now we apply the ell-by-ell tf to the mcm * bls. We can just multiply on the right, 
-        # the order does not matter since it is just an array with nl shape
-        mcms[t] *= tf[2:lmax]
+        # the fully realized mcm matrix would be a lot of memory
+        pseudosignal_dict = so_mcm.spin2spin_array_matmul_sparse_dict_vec(mcms[t], spectra, signal_dict)
+        so_spectra.write_ps(opj(pseudosignal_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),
+                            l[:lmax-2], pseudosignal_dict, 'Cl', spectra=spectra)
 
-        # the fully realized mcm matrix would be a lot of memory. also, don't
-        # need to copy blocks since just being used in math
-        mcm_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(mcms[t], spectra)
-        pseudosignal_dict = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(mcm_dict, signal_dict)
-        so_spectra.write_ps(opj(bestfit_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),
-                            l, pseudosignal_dict, 'Cl', spectra=spectra)
-
-        # now do the binning 
+        # NOTE: if binned_mcm, then we need to include the total_response before inversion, because
+        # it will be binned before being inverted. the above check -- that the total_response is
+        # at least nonzero in all bins -- should help ensure that it's invertible
         if binned_mcm:
+            Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax, type) # b x (lmax - 2)
             mxx = np.zeros((5, nbins, nbins)) # b x b
-            Bbl = np.zeros((5, nbins, lmax))
+            Bbl = np.zeros((5, nbins, lmax)) # b x lmax
 
             for i in range(5):
-                # bins both indices of mll to get mxx, that will then be inverted later
-                so_mcm.mcm_fortran.bin_mcm(mcms[t, i].T,
+                mcms_t_i = mcms[t, i] * total_response[i] # multiply by tf * bl on the right
+
+                # bins both indices of mll to get mxx, that will then be inverted later.
+                # compute (Pbl Mll Qlb)
+                so_mcm.mcm_fortran.bin_mcm(mcms_t_i.T,
                                            bin_lo,
                                            bin_hi,
                                            bin_size,
                                            mxx[i].T,
                                            doDl)
 
-                # compute (Qbl Mll)
-                so_mcm.mcm_fortran.binning_matrix(mcms[t, i].T,
+                # compute (Pbl @ theory2pseudo) = (Pbl Mll)
+                so_mcm.mcm_fortran.binning_matrix(mcms_t_i.T,
                                                   bin_lo,
                                                   bin_hi,
                                                   bin_size,
                                                   Bbl[i].T,
                                                   doDl)
+
+        # NOTE: if not binned_mcm, we wait to include the total_response until after the
+        # inversion, because the total_response may be 0 for some ells (and even if not,
+        # it's "easy" to invert it, so we don't want to put too much stress on linalg.inv).
+        # HOWEVER we do need to "trim" the binning to intake only those ells where the
+        # total_response is nonzero
         else:
+            # we need to adjust bin_lo and bin_hi so that the binning does not include
+            # any ells where the total_response is 0
+            _bin_lo = bin_lo.copy()
+            _bin_hi = bin_hi.copy()
+            _bin_size = bin_size.copy()
+
+            _bin_lo[0] = nonzero_response_l_lo
+            _bin_hi[-1] = nonzero_response_l_hi
+            _bin_size[0] -= (_bin_lo[0] - bin_lo[0]) # reduce the bin size by the right amount
+            _bin_size[-1] -= (bin_hi[-1] - _bin_hi[-1]) # reduce the bin size by the right amount
+
+            Pbl = so_spectra.get_binning_matrix(_bin_lo, _bin_hi, lmax, type) # b x (lmax - 2)
             mxx = mcms[t] # l x l
-            Bbl = np.zeros((nbins, lmax))
+            Bbl = np.zeros((nbins, lmax)) # b x lmax
 
             so_mcm.mcm_fortran.binning_matrix(np.eye(mcms.shape[-1]).T,
-                                              bin_lo,
-                                              bin_hi,
-                                              bin_size,
+                                              _bin_lo,
+                                              _bin_hi,
+                                              _bin_size,
                                               Bbl.T,
                                               doDl)
 
@@ -273,14 +341,20 @@ else:
         # respectively, while Bbl follows (nbin, 2:lmax+2) shape/ordering
         mxx_inv = so_mcm.invert_mcm(mxx)
 
+        # compute pseudo2data
         if binned_mcm:
-            mbl_inv = mxx_inv @ Pbl # Cl->Dl + binning happens immediately after pseudo-Cl
+            # NOTE: total response on the right of mcm before binning and inversion!
+            # Cl->Dl + binning happens immediately after pseudo-Cl
+            mbl_inv = mxx_inv @ Pbl
         else:
-            mbl_inv = Pbl @ mxx_inv # Cl->Dl + binning happens after deconvolution
+            # NOTE: apply inverse of total response on the left of inv_mcm!
+            # Cl->Dl + binning happens after deconvolution
+            Pbl = (Pbl[:, nonzero_response_sel] / total_response[:, None, nonzero_response_sel]) # (nbin, _nl) * (5, 1, _nl) -> (5, nbin, _nl)
+            mbl_inv = Pbl @ mxx_inv[:, nonzero_response_sel, :] # (5, nbin, _nl) @ (5, _nl, lmax-2) = (5, nbin, lmax-2)
 
-        # finish the Bbl computation for binned_mcm
+        # finish the Bbl (theory2data) computation
         if binned_mcm:
-            # computes Bbl = mxx^-1 @ (Qbl Mll) = (Qbl Mll Plb)^-1 @ (Qbl Mll)
+            # computes Bbl = mxx^-1 @ (Pbl Mll) = (Pbl Mll Qlb)^-1 @ (Pbl Mll)
             Bbl[:3] = mxx_inv[:3] @ Bbl[:3]
             np.einsum('mnab,nbl->mal',
                       np.array([[mxx_inv[3], mxx_inv[4]], [mxx_inv[4], mxx_inv[3]]]),

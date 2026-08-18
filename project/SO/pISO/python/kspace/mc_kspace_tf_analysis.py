@@ -139,20 +139,19 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
         for spectrum in spectra:
             ps_list_mean[spec]["filter", scenario][spectrum] =  np.mean(ps_list[spec]["filter", scenario][spectrum], axis = 0)
             ps_list_mean[spec]["nofilter", scenario][spectrum] =  np.mean(ps_list[spec]["nofilter", scenario][spectrum], axis=0)
-
+            
             ps_list_std[spec]["filter", scenario][spectrum] =  np.std(ps_list[spec]["filter", scenario][spectrum], axis=0)
             ps_list_std[spec]["nofilter", scenario][spectrum] =  np.std(ps_list[spec]["nofilter", scenario][spectrum], axis=0)
-
-    
+            
     for cross in product(scenarios, scenarios):
         ps_list_cov[spec][cross] = {} #np.zeros((len(spectra) * n_bins, len(spectra) * n_bins))
-
         for i, spec1 in enumerate(spectra):
             for j, spec2 in enumerate(spectra):
                 ps_list_cov[spec][cross][(spec1, spec2)] = np.zeros(n_bins)
-                for k in range(n_bins):
-                    # selecting the element (filter, nofilter) of the covariance matrix, per bin
-                    ps_list_cov[spec][cross][(spec1, spec2)][k] =  np.cov(ps_list[spec]["filter", cross[0]][spec1][:][k], ps_list[spec]["nofilter", cross[1]][spec2][:][k])[0,1] 
+
+                # computing cov_ab = np.sum((ps_a - mean_a) * (ps_b - mean_b), axis=0) / (n_sims - 1)
+                ps_list_cov[spec][cross][(spec1, spec2)] = np.sum((ps_list[spec]["filter", cross[0]][spec1] - ps_list_mean[spec]["filter", cross[0]][spec1]) * 
+                (ps_list[spec]["nofilter", cross[1]][spec2] - ps_list_mean[spec]["nofilter", cross[1]][spec2]), axis=0) / (n_sims - 1)
 
 
 if args.old:
@@ -223,7 +222,7 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
     ps_list_reorg[spec] = {}
     ps_list_reorg[spec]["filter", "standard"] = {}
     ps_list_reorg[spec]["nofilter", "standard"] = {}  
-    for iii in range(iStart, iStop):
+    for iii in range(n_sims):
         ps_list_reorg[spec]["filter", "standard"][iii] = {}
         ps_list_reorg[spec]["nofilter", "standard"][iii] = {}
         for spectrum in spectra:
@@ -245,7 +244,7 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
         for spectrum in spectra:
             my_list = []
 
-            for iii in range(iStart, iStop):
+            for iii in range(n_sims):
                 my_list += [ps_list_corr[spec][iii][spectrum] - ps_list_reorg[spec]["nofilter", "standard"][iii][spectrum]]
 
             correction = np.mean(my_list, axis=0)
@@ -259,7 +258,6 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
             plt.plot(lb, bin_theory[spectrum] * 1 / 100, color="black", label= f"1% {spectrum}")
             plt.errorbar(lb, correction, sigma / np.sqrt(n_sims), fmt="-", label = f"corr {spectrum} {spec}")
             plt.legend()
-            plt.show()
             plt.savefig(f"{plot_dir}/{spectrum}_correction_{spec}.png", bbox_inches="tight")
             plt.clf()
             plt.close()
@@ -278,7 +276,7 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
         my_list_uncorr = []
         for filt in ["filter", "nofilter"]:
             my_list = []
-            for iii in range(iStart, iStop):
+            for iii in range(n_sims):
                 if filt == "filter":
                     # read the sims corrected for MC kspace and the one only corrected for analytic kspace
                     my_list += [ps_list_corr[spec][iii][spectrum]]

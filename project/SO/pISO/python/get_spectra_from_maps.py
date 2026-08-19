@@ -504,11 +504,13 @@ for iii in mapset_iterator:
                     else:
                         if snk == "so_standard":
                             split = data_model.get_signal_sim(f'{sv}_{m}', iii)
+                            split_nofilt = data_model_nofilt.get_signal_sim(f'{sv}_{m}', iii)
                         if snk == 'so_noE' and noE_noB:
                             split = data_model_noE.get_signal_sim(f'{sv}_{m}', iii)
+                            split_nofilt = data_model_noE_nofilt.get_signal_sim(f'{sv}_{m}', iii)
                         if snk == 'so_noB' and noE_noB:                    
                             split = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
-                        split_nofilt = split.copy()
+                            split_nofilt = data_model_noB_nofilt.get_signal_sim(f'{sv}_{m}', iii)
 
 
                     # possibly save raw map sim

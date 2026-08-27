@@ -33,6 +33,9 @@ pspy_utils.create_directory(sacc_dir)
 surveys = d["surveys"]
 spec_name_list, nu_tag_list = pspipe_list.get_spec_name_list(d, delimiter="_", return_nu_tag=True)
 
+_, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
+list_surveys_array = np.array([sv1_list, m1_list, sv2_list, m2_list]).T
+
 # Get spectra/cov orders
 spectra_order = cvt.get_spectra_order()
 
@@ -149,7 +152,7 @@ if sacc_fname in ["simu_sacc", "simu_w_syst_sacc"]:
 
         # Reading the flat data vector
         data_vec = covariance.read_x_ar_spectra_vec(
-            spec_dir, spec_name_list, f"all_sn_cross_{iii:05d}", spectra_order=spectra_order, type=d["type"], file_extension = ".h5"
+            spec_dir, list_surveys_array, f"all_sn_cross_{iii:05d}", spectra_order=spectra_order, type=d["type"], file_extension = ".h5"
         )
 
         # Let's store covariance and bbl in one extra file
@@ -183,7 +186,7 @@ else:
 
     # Reading the flat data vector
     data_vec = covariance.read_x_ar_spectra_vec(
-        spec_dir, spec_name_list, "all_sn_cross_data", spectra_order=spectra_order, type=d["type"],
+        spec_dir, list_surveys_array, "all_sn_cross_data", spectra_order=spectra_order, type=d["type"],
         file_extension = ".h5"
     )
 

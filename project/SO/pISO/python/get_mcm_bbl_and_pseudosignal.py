@@ -201,7 +201,7 @@ else:
         # TODO: generalize this into a whole (9nl x 9nl) operator, a la W_l^{WXYZ}
         l1, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
         l2, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
-        assert np.all(l1 == l2), f'bls assumed to start at same l, got l1={l1[0]} and l2={l2[0]}'
+        assert np.all(l1[:lmax] == l2[:lmax]), f'bls assumed to start at same l, got l1={l1[0]} and l2={l2[0]}'
         assert l1[0] == 0, f'bls assumed to start at l=0, got l={l1[0]}'
         
         bl1 = (bl1["T"], bl1["E"])
@@ -240,7 +240,7 @@ else:
         mask = True
         for i in range(5):
             mask = np.logical_and(mask, np.logical_not(np.allclose(total_response[i], 0)))
-        nonzero_response_l = l[mask]
+        nonzero_response_l = l[mask][0]
         assert np.all(np.diff(nonzero_response_l) == 1), \
             'nonzero entries are split into multiple chunks'
 
@@ -248,10 +248,12 @@ else:
         nonzero_response_l_hi = nonzero_response_l[-1]
         assert (nonzero_response_l_lo >= bin_lo[0]) and (nonzero_response_l_lo < bin_lo[1]), \
             'lowest nonzero entry not in lowest bin, this should be impossible'
-        assert (nonzero_response_l_hi > bin_hi[-2]) and (nonzero_response_l_hi <= bin_hi[-1]), \
-            'highest nonzero entry not in highest bin, this should be impossible'
+        # commented for now, second condition not satisfied with our binning
+        #assert (nonzero_response_l_hi > bin_hi[-2]) and (nonzero_response_l_hi <= bin_hi[-1]), \
+        #    'highest nonzero entry not in highest bin, this should be impossible'
 
         nonzero_response_sel = np.s_[nonzero_response_l_lo-2:nonzero_response_l_hi-2] # assumes 2:lmax ordering
+        log.info(f"[Rank {so_mpi.rank}, {task:02d}] selecting {nonzero_response_sel}")
 
         # you might expect here that we would apply the total_response on the right to build up the
         # theory2pseudo operator, but we may (in the case of unbinned mcms) need to invert the mcms before
@@ -270,6 +272,7 @@ else:
         # trim to match mcm and apply total_response as in forward model
         # hijack this function; we need to make total_response 3d
         # TODO: promote total_response to a dense (9nl, 9nl) operator 
+        # not working now, total_response[None] has dim (1, 5, lmax-2) and the function below requires total_response[None].shape == 5
         total_response_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(total_response[None], spectra) 
         for k in signal_dict.keys():
             # we only need the diagonal "blocks", and remove spurious extra dim

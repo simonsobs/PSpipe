@@ -201,7 +201,7 @@ else:
         # TODO: generalize this into a whole (9nl x 9nl) operator, a la W_l^{WXYZ}
         l1, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
         l2, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
-        assert np.all(l1 == l2), f'bls assumed to start at same l, got l1={l1[0]} and l2={l2[0]}'
+        assert np.all(l1[:lmax] == l2[:lmax]), f'bls assumed to start at same l, got l1={l1[0]} and l2={l2[0]}'
         assert l1[0] == 0, f'bls assumed to start at l=0, got l={l1[0]}'
         
         bl1 = (bl1["T"], bl1["E"])
@@ -239,19 +239,21 @@ else:
         # example, hence why this loop is necessary even now
         mask = True
         for i in range(5):
-            mask = np.logical_and(mask, np.logical_not(np.allclose(total_response[i], 0)))
+            mask = np.logical_and(mask, np.logical_not(np.isclose(total_response[i], 0)))
         nonzero_response_l = l[mask]
         assert np.all(np.diff(nonzero_response_l) == 1), \
             'nonzero entries are split into multiple chunks'
 
         nonzero_response_l_lo = nonzero_response_l[0]
         nonzero_response_l_hi = nonzero_response_l[-1]
-        assert (nonzero_response_l_lo >= bin_lo[0]) and (nonzero_response_l_lo < bin_lo[1]), \
-            'lowest nonzero entry not in lowest bin, this should be impossible'
-        assert (nonzero_response_l_hi > bin_hi[-2]) and (nonzero_response_l_hi <= bin_hi[-1]), \
-            'highest nonzero entry not in highest bin, this should be impossible'
+        assert nonzero_response_l_lo < bin_lo[1], \
+            'lowest nonzero entry not in or below lowest bin, this should be impossible'
+        assert nonzero_response_l_hi > bin_hi[-2], \
+            'highest nonzero entry not in or above highest bin, this should be impossible'
 
-        nonzero_response_sel = np.s_[nonzero_response_l_lo-2:nonzero_response_l_hi-2] # assumes 2:lmax ordering
+        nonzero_response_sel = np.s_[nonzero_response_l_lo-2:nonzero_response_l_hi-2 + 1] # assumes 2:lmax ordering
+        assert np.all(l[nonzero_response_sel] == nonzero_response_l), \
+            f'got {l[nonzero_response_sel]=} but expected {nonzero_response_l=}'
 
         # you might expect here that we would apply the total_response on the right to build up the
         # theory2pseudo operator, but we may (in the case of unbinned mcms) need to invert the mcms before
@@ -270,10 +272,10 @@ else:
         # trim to match mcm and apply total_response as in forward model
         # hijack this function; we need to make total_response 3d
         # TODO: promote total_response to a dense (9nl, 9nl) operator 
-        total_response_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(total_response[None], spectra) 
+        total_response_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(total_response[:, None, :], spectra) # (5, nl) -> (5, 1, nl)
         for k in signal_dict.keys():
             # we only need the diagonal "blocks", and remove spurious extra dim
-            signal_dict[k] = total_response_dict[k][k][..., 0] * signal_dict[k][:lmax-2]
+            signal_dict[k] = total_response_dict[k][k][0] * signal_dict[k][:lmax-2] # (1, nl)[0] * (nl,) = (nl,)
 
         # the fully realized mcm matrix would be a lot of memory
         pseudosignal_dict = so_mcm.spin2spin_array_matmul_sparse_dict_vec(mcms[t], spectra, signal_dict)
@@ -292,7 +294,7 @@ else:
                 mcms_t_i = mcms[t, i] * total_response[i] # multiply by tf * bl on the right
 
                 # bins both indices of mll to get mxx, that will then be inverted later.
-                # compute (Pbl Mll Qlb)
+                # compute Mbb' = (Pbl Mll' * Tl' Ql'b')
                 so_mcm.mcm_fortran.bin_mcm(mcms_t_i.T,
                                            bin_lo,
                                            bin_hi,
@@ -300,7 +302,7 @@ else:
                                            mxx[i].T,
                                            doDl)
 
-                # compute (Pbl @ theory2pseudo) = (Pbl Mll)
+                # compute (Pbl @ theory2pseudo) = (Pbl Mll' * Tl')
                 so_mcm.mcm_fortran.binning_matrix(mcms_t_i.T,
                                                   bin_lo,
                                                   bin_hi,
@@ -320,10 +322,10 @@ else:
             _bin_hi = bin_hi.copy()
             _bin_size = bin_size.copy()
 
-            _bin_lo[0] = nonzero_response_l_lo
-            _bin_hi[-1] = nonzero_response_l_hi
-            _bin_size[0] -= (_bin_lo[0] - bin_lo[0]) # reduce the bin size by the right amount
-            _bin_size[-1] -= (bin_hi[-1] - _bin_hi[-1]) # reduce the bin size by the right amount
+            _bin_lo[0] = max(nonzero_response_l_lo, bin_lo[0]) # don't trim if not needed
+            _bin_hi[-1] = min(nonzero_response_l_hi, bin_hi[-1]) # don't trim if not needed
+            _bin_size[0] -= (_bin_lo[0] - bin_lo[0]) # reduce the bin size by the right amount (perhaps 0)
+            _bin_size[-1] -= (bin_hi[-1] - _bin_hi[-1]) # reduce the bin size by the right amount (perhaps 0)
 
             Pbl = so_spectra.get_binning_matrix(_bin_lo, _bin_hi, lmax, type) # b x (lmax - 2)
             mxx = mcms[t] # l x l
@@ -343,18 +345,20 @@ else:
 
         # compute pseudo2data
         if binned_mcm:
-            # NOTE: total response on the right of mcm before binning and inversion!
+            # NOTE: total response on the right of mcm before binning and inversion, 
+            # i.e. compute inv(Mbb') Pb'l = inv(Pbl Mll' * Tl' Ql'b') Pb'l.
             # Cl->Dl + binning happens immediately after pseudo-Cl
             mbl_inv = mxx_inv @ Pbl
         else:
-            # NOTE: apply inverse of total response on the left of inv_mcm!
+            # NOTE: apply inverse of total response on the left of inv_mcm, 
+            # i.e. compute (Pbl" / Tl" inv(Ml"l).
             # Cl->Dl + binning happens after deconvolution
             Pbl = (Pbl[:, nonzero_response_sel] / total_response[:, None, nonzero_response_sel]) # (nbin, _nl) * (5, 1, _nl) -> (5, nbin, _nl)
             mbl_inv = Pbl @ mxx_inv[:, nonzero_response_sel, :] # (5, nbin, _nl) @ (5, _nl, lmax-2) = (5, nbin, lmax-2)
 
         # finish the Bbl (theory2data) computation
         if binned_mcm:
-            # computes Bbl = mxx^-1 @ (Pbl Mll) = (Pbl Mll Qlb)^-1 @ (Pbl Mll)
+            # computes Bbl' = inv(Mbb') (Pb'l Mll' * Tl') = inv(Pbl Mll' * Tl' Ql'b') (Pb'l Mll' * Tl'),
             Bbl[:3] = mxx_inv[:3] @ Bbl[:3]
             np.einsum('mnab,nbl->mal',
                       np.array([[mxx_inv[3], mxx_inv[4]], [mxx_inv[4], mxx_inv[3]]]),

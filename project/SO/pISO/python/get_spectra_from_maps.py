@@ -23,7 +23,7 @@ from os.path import join as opj
 import numpy as np
 import healpy as hp
 
-from pixell import enmap, enplot
+from pixell import enmap, enplot, wcsutils
 from pspipe_utils import kspace, log, pspipe_list, dict_utils, misc, io
 from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 
@@ -54,7 +54,7 @@ parser.add_argument('--noE-noB', action='store_true', # default False, type bool
 args = parser.parse_args()
 
 
-# TODO: speed up map-level operations with mnms.concurrent_op
+# TODO: speed up map-level operations with numba
 
 # are we running on data or sims? if sims, are we writing any simulated maps
 # to disk? are we doing any systematics or lensing?
@@ -285,7 +285,8 @@ spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
 if apply_kspace_filter and kspace_tf_path != "analytical":
     add_corr = {}
     for spec_name in spec_name_list:
-        _, add_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/mc_additive_correction_{spec_name}.dat", spectra=spectra)
+        _, add_corr[spec_name] = so_spectra.read_ps(f"{kspace_tf_path}/mc_additive_correction_{spec_name}.dat",
+                                                    spectra=spectra, return_type=type, return_dtype=np.float64)
 
 # instantiate on-the-fly simulation models. this involves packaging 
 # power spectra and beams etc for the signal model, and the noise model
@@ -307,6 +308,30 @@ if which == 'sims':
     if for_kspace:
         bl_nofilt = []
 
+    # FIXME: see note below. for these sims to be correctly predicted by Bbl, it must be that the geometric mean
+    # of their "per-map tf" is equal to the "spectrum-level tf". this is True if they all have the same tf, which
+    # we enforce here... 
+    if for_kspace:
+        reference_filter_dict = None
+        reference_template_geometry = None 
+        for sv, m in zip(sv_list, map_list):
+            if reference_filter_dict is None:
+                reference_filter_dict = filter_dicts[sv]
+            else:
+                assert filter_dicts[sv] == reference_filter_dict, \
+                    'For now, must have all surveys with equivalent filters'
+            
+            if reference_template_geometry is None:
+                reference_template_geometry = templates[sv].data.geometry
+            else:
+                assert templates[sv].data.geometry[0] == reference_template_geometry[0], \
+                    'For now, must have all surveys with equivalent filters'
+                assert wcsutils.equal(templates[sv].data.geometry[1], reference_template_geometry[1]), \
+                    'For now, must have all surveys with equivalent filters'
+
+        assert (reference_filter_dict is None) or (reference_filter_dict["type"] == "binary_cross"), \
+            'For now, filters must be binary'
+
     for sv, m in zip(sv_list, map_list):
         mapname = f'{sv}_{m}'
         mapname_list.append(mapname)
@@ -326,10 +351,18 @@ if which == 'sims':
 
         if for_kspace:
             # FIXME: ell-by-ell TF computed for the same survey, and applied as sqrt(tf) for a single field
-            # TO CHANGE if we want to do sims for different surveys with different geometry
-            # since the total TF per spectra combination will not be sqrt(tf1) * sqrt(tf2)
+            # FIXME: this is not well-defined at the map-level, precisely because the net kspace filter for a 
+            # given spectrum --- that is, pair of maps --- is (modeled as being) multiplied in kspace before
+            # the azimuthal integral. it just cannot be composed into a per-map, per-ell effect
+            # NOTE: there are a couple ways to fix this, none of them clean: either make the tf be something
+            # that does behave well across maps, but then you may need custom pseudo2datavec and Bbl for this,
+            # or have separate signal power spectra for the sims for different map pairs (i.e. include the tf
+            # in the theory ps, not in the beam)
+            # NOTE: for now, we catch this (just before enclosing sv, m loop) by asserting that the filter
+            # from each map is exactly the same and also binary, such that (in this case) the filter can be
+            # decomposed in this way
             _, tf = kspace.build_analytic_kspace_filter_diag(sv, sv, len(bl_T)-1, templates,
-                                                            filter_dicts, dtype=np.float32)
+                                                             filter_dicts, dtype=np.float32)
             bl_nofilt.append(np.array([bl_T * np.sqrt(tf), bl_P * np.sqrt(tf)])) 
 
         if simulate_syst:
@@ -387,13 +420,13 @@ if which == 'sims':
             signal_model_args_noB_nofilt = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl_nofilt, cal, pol_eff)
 
     signal_model_kwargs = dict(bl_err=bl_err, gl=gl, gl_err=gl_err, pixwin_apod_deg=sim_pixwin_apod_deg)
+    noise_model_args = (mapnames2minfos, modeltags2modelinfos)
     if not for_kspace:
-        noise_model_args = (mapnames2minfos, modeltags2modelinfos)
+        
         noise_model_kwargs = dict(add_white_noise_above_lmax=add_white_noise_above_lmax,
-                                white_noise_ell_taper_width=white_noise_ell_taper_width,
-                                keep_model=keep_noise_models_in_memory)
+                                  white_noise_ell_taper_width=white_noise_ell_taper_width,
+                                  keep_model=keep_noise_models_in_memory)
     else:
-        noise_model_args = (mapnames2minfos, modeltags2modelinfos)      
         noise_model_kwargs = None
    
     data_model = simulation.DataModel(signal_model_args, noise_model_args, 
@@ -512,22 +545,23 @@ for iii in mapset_iterator:
                             split = data_model_noB.get_signal_sim(f'{sv}_{m}', iii)
                             split_nofilt = data_model_noB_nofilt.get_signal_sim(f'{sv}_{m}', iii)
 
-
                     # possibly save raw map sim
                     if iii in range(write_sim_map_start, write_sim_map_stop):
                         if snk == 's':
                             split.write_map(f"{sim_map_dir}" + f"signal_sim_map{tag}_{sv}_{m}_{iii:05d}.fits")
-                        else:
+                        elif not for_kspace and 'n' in snk:
                             split.write_map(f"{sim_map_dir}" + f"noise_sim_map{tag}_{sv}_{m}_set{split_idx}_{iii:05d}.fits")
 
                 if apply_kspace_filter and (deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR"):
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] Apply kspace filter and inv pixwin on {sv}, {m}")
-                    if plot_maps:
+
+                    if plot_maps and which == 'data':
                         plot = enplot.get_plots(
                             split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
                         )
                         enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_before_filter", plot)
+
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -535,25 +569,28 @@ for iii in mapset_iterator:
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
                     
-                    if for_kspace:
+                    if which == 'sims' and args.for_kspace:
                         split_nofilt = so_map.fourier_convolution(split_nofilt,
                                                        inv_pwin,
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
 
-                    if plot_maps:
+                    if plot_maps and which == 'data':
                         plot = enplot.get_plots(
                             split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
                         )
                         enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_after_filter", plot)
+
                 elif apply_kspace_filter:
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: apply kspace filter but no inv pixwin on {sv}, {m}")
-                    if plot_maps:
+
+                    if plot_maps and which == 'data':
                         plot = enplot.get_plots(
                             split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
                         )
                         enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_before_filter", plot)
+
                     split = kspace.filter_map(split,
                                               filter,
                                               win_kspace,
@@ -561,29 +598,53 @@ for iii in mapset_iterator:
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
                     
-                    if plot_maps:
-                        if plot_maps:
-                            plot = enplot.get_plots(
-                                split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8
-                            )
-                            enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_after_filter", plot)
+                    if plot_maps and which == 'data':
+                        plot = enplot.get_plots(
+                            split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
+                        )
+                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_after_filter", plot)
 
                 elif deconvolve_pixwin and d[f"pixwin_{sv}"]["pix"] == "CAR":
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: inv pixwin but no kspace filter on {sv}, {m}")
+
+                    if plot_maps and which == 'data':
+                        plot = enplot.get_plots(
+                            split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
+                        )
+                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_before_pixwin", plot)
+
                     split = so_map.fourier_convolution(split,
                                                        inv_pwin,
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
                     
-                    if for_kspace:
+                    if which == 'sims' and args.for_kspace:
                         split_nofilt = so_map.fourier_convolution(split_nofilt,
                                                        inv_pwin,
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
+
+                    if plot_maps and which == 'data':
+                        plot = enplot.get_plots(
+                            split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
+                        )
+                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_after_pixwin", plot)
+
                 else:
                     if k == 0:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m}")
+
+                    if plot_maps and which == 'data':
+                        plot = enplot.get_plots(
+                            split.data * win_kspace.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
+                        )
+                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_win_kspace", plot)
+
+                        plot = enplot.get_plots(
+                            split.data * win_T.data, range=(1000, 300, 300), ticks=20, mask=0, downgrade=8, colorbar=True
+                        )
+                        enplot.write(maps_plot_dir + f"{sv}_{m}_{split_idx}_win_T", plot)
 
             elif win_T.pixel == "HEALPIX":
 
@@ -669,11 +730,6 @@ for iii in mapset_iterator:
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
         pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'), allow_pickle=True).item()            
 
-        # if for_kspace:
-        #     # taking pseudo2datavec without the analytical TF contribution
-        #     mbl_inv = np.load(opj(f"{mcm_dir}", f"{spec_name}_mode_coupling_inv.npy"))
-        #     pseudo2datavec_nofilt = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(mbl_inv, spectra, copy=True)
-
         # first measure the raw per-split spectra. NOTE: redundant computation
         # is performed when sv1==sv2 and m1==m2, but the code is cleaner
         #
@@ -733,7 +789,6 @@ for iii in mapset_iterator:
         pseudo2datavec = None
         if for_kspace:
             mbl_inv = None
-            #pseudo2datavec_nofilt = None
 
         if not for_kspace:
             # then we get "derived" spectra: the mean cross, auto and noise spectrum

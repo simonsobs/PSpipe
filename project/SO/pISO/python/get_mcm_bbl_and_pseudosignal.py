@@ -199,18 +199,18 @@ else:
 
         # get the beams
         # TODO: generalize this into a whole (9nl x 9nl) operator, a la W_l^{WXYZ}
-        l1, bl1 = misc.read_beams(d[f"beam_T_{sv1}_{m1}"], d[f"beam_pol_{sv1}_{m1}"])
-        l2, bl2 = misc.read_beams(d[f"beam_T_{sv2}_{m2}"], d[f"beam_pol_{sv2}_{m2}"])
-        assert np.all(l1[:lmax] == l2[:lmax]), f'bls assumed to start at same l, got l1={l1[0]} and l2={l2[0]}'
-        assert l1[0] == 0, f'bls assumed to start at l=0, got l={l1[0]}'
-        
-        bl1 = (bl1["T"], bl1["E"])
-        bl2 = (bl2["T"], bl2["E"])
+        l1_T, bl1_T = misc.prep_beams(d[f"beam_T_{sv1}_{m1}"], norm='mono', return_err=False)
+        l1_P, bl1_P = misc.prep_beams(d[f"beam_pol_{sv1}_{m1}"], norm='mono', return_err=False)
+        l2_T, bl2_T = misc.prep_beams(d[f"beam_T_{sv2}_{m2}"], norm='mono', return_err=False)
+        l2_P, bl2_P = misc.prep_beams(d[f"beam_pol_{sv2}_{m2}"], norm='mono', return_err=False)
+        for _l in (l1_P, l2_T, l2_P):
+            assert np.all(l1_T[:lmax] == _l[:lmax]), f'bls assumed to have same ell'
+        assert l1_T[0] == 0, f'bls assumed to start at l=0, got l={l1_T[0]}'
+
         bl = []
-        for i in range(2):
-            for j in range(2):
-                bl.append(bl1[i][2:lmax] * bl2[j][2:lmax]) # TODO: reconsider pspipe conventions
-        bl = np.repeat(bl, (1, 1, 1, 2), axis=0) # (4, nl) -> (5, nl)
+        for bl1 in (bl1_T, bl1_P):
+            for bl2 in (bl2_T, bl2_P):
+                bl.append(bl1[2:lmax] * bl2[2:lmax]) # TODO: reconsider pspipe conventions
 
         # get the tf. will be 1 if nothing is being filtered, so OK to do this in all cases
         # TODO: implement something like 2111.01113
@@ -220,14 +220,14 @@ else:
 
         # get the total response. check that it is nonzero in all bins. get the minimum,
         # maximum l of the total response, and a slice object corresponding to this
-        total_response = tf * bl # (nl,) * (5, nl) = (5, nl)
-        assert total_response.shape == (5, lmax-2), \
-            f'expected total_response.shape=(5, {lmax}-2), got {total_response.shape=}'
+        total_response = tf * bl # (nl,) * (4, nl) = (4, nl)
+        assert total_response.shape == (4, lmax-2), \
+            f'expected total_response.shape=(4, {lmax}-2), got {total_response.shape=}'
 
         l = np.arange(2, lmax) # assumes 2:lmax ordering
         for ibin in range(nbins):
             loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))[0] # this is common idiom for PSpipe binning
-            for spin_idx in range(5):
+            for spin_idx in range(4):
                 assert not np.allclose(total_response[spin_idx, loc], 0), \
                     f'bin index {ibin} with bin_lo={bin_lo[ibin]} and bin_hi={bin_hi[ibin]} ' + \
                     f'has zero total_response from tf * bl for {spin_idx=} of {spec_name=}'
@@ -238,11 +238,11 @@ else:
         # rather than at the survey level. NB this is already the case for the beams, for 
         # example, hence why this loop is necessary even now
         mask = True
-        for i in range(5):
-            mask = np.logical_and(mask, np.logical_not(np.isclose(total_response[i], 0)))
+        for spin_idx in range(4):
+            mask = np.logical_and(mask, np.logical_not(np.isclose(total_response[spin_idx], 0)))
         nonzero_response_l = l[mask]
         assert np.all(np.diff(nonzero_response_l) == 1), \
-            'nonzero entries are split into multiple chunks'
+            'nonzero entries are split into multiple chunks, should be contiguous'
 
         nonzero_response_l_lo = nonzero_response_l[0]
         nonzero_response_l_hi = nonzero_response_l[-1]
@@ -272,9 +272,9 @@ else:
         # trim to match mcm and apply total_response as in forward model
         # hijack this function; we need to make total_response 3d
         # TODO: promote total_response to a dense (9nl, 9nl) operator 
-        total_response_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(total_response[:, None, :], spectra) # (5, nl) -> (5, 1, nl)
+        total_response_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(total_response[:, None, :], spectra) # (4, nl) -> (4, 1, nl)
         for k in signal_dict.keys():
-            # we only need the diagonal "blocks", and remove spurious extra dim
+            # we get the diagonal "blocks", and remove spurious extra dim
             signal_dict[k] = total_response_dict[k][k][0] * signal_dict[k][:lmax-2] # (1, nl)[0] * (nl,) = (nl,)
 
         # the fully realized mcm matrix would be a lot of memory
@@ -285,13 +285,16 @@ else:
         # NOTE: if binned_mcm, then we need to include the total_response before inversion, because
         # it will be binned before being inverted. the above check -- that the total_response is
         # at least nonzero in all bins -- should help ensure that it's invertible
+        total_response = np.repeat(total_response, (1, 1, 1, 2), axis=0) # (4, nl) -> (5, nl)
+
         if binned_mcm:
             Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax, type) # b x (lmax - 2)
             mxx = np.zeros((5, nbins, nbins)) # b x b
             Bbl = np.zeros((5, nbins, lmax)) # b x lmax
 
-            for i in range(5):
-                mcms_t_i = mcms[t, i] * total_response[i] # multiply by tf * bl on the right
+            for spin_idx in range(5):
+                # multiply by tf * bl on the right
+                mcms_t_i = mcms[t, spin_idx] * total_response[spin_idx]
 
                 # bins both indices of mll to get mxx, that will then be inverted later.
                 # compute Mbb' = (Pbl Mll' * Tl' Ql'b')

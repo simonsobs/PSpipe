@@ -342,8 +342,8 @@ if which == 'sims':
             'noise_info': d[f'noise_info_{mapname}']
         }
 
-        bl_T, bl_err_T = misc.prep_beams(d[f"beam_T_{mapname}"], norm='mono')
-        bl_P, bl_err_P = misc.prep_beams(d[f"beam_pol_{mapname}"], norm='mono')
+        _, bl_T, bl_err_T = misc.prep_beams(d[f"beam_T_{mapname}"], norm='mono')
+        _, bl_P, bl_err_P = misc.prep_beams(d[f"beam_pol_{mapname}"], norm='mono')
         bl.append(np.array([bl_T, bl_P]))
 
         cal.append(d[f"cal_{mapname}"])
@@ -372,8 +372,8 @@ if which == 'sims':
                 bl_err.append(np.array([bl_err_T, bl_err_P])) # (2, nmode, nl)
 
             # norm by this map's pol_eff, the most recent one in pol_effs
-            gl_T2E, gl_err_T2E = misc.prep_beams(d[f"leakage_beam_{mapname}_TE"], norm=pol_eff[-1])
-            gl_T2B, gl_err_T2B = misc.prep_beams(d[f"leakage_beam_{mapname}_TB"], norm=pol_eff[-1])
+            _, gl_T2E, gl_err_T2E = misc.prep_beams(d[f"leakage_beam_{mapname}_TE"], norm=pol_eff[-1])
+            _, gl_T2B, gl_err_T2B = misc.prep_beams(d[f"leakage_beam_{mapname}_TB"], norm=pol_eff[-1])
 
             gl.append(np.array([gl_T2E, gl_T2B]))
             gl_err.append(np.array([gl_err_T2E, gl_err_T2B]))

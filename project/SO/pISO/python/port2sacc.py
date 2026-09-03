@@ -120,6 +120,7 @@ common_kwargs = dict(
     binning_file=d["binning_file"],
     lmax=d["lmax"],
     cov_order=cov_order,
+    spectra_order = spectra_order,
     passbands=passbands,
     beams=beams,
     metadata=metadata,

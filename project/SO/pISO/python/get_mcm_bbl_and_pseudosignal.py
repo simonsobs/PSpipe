@@ -76,7 +76,34 @@ n_mcms, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_mcms - 1)
-log.info(f"[Rank {so_mpi.rank}] Number of mcm matrices to compute: {len(subtasks)}")
+log.info(f"[Rank {so_mpi.rank}] Number of mcm matrices to compute: {len(subtasks)} out of {n_mcms}")
+
+def pols_connected_combo_2pt2ducc_optype(pol1, pol2):
+    """Get the spin-flavor of the coupling matrix for these two *unordered*
+    pol legs.
+
+    Parameters
+    ----------
+    pol1-2 : 'T' or 'pol'
+        'T' or 'pol' for each leg.
+
+    Returns
+    -------
+    int
+        The optype for ducc couplings, where 0 means 00 coupling, 1 means 02
+        coupling, and 4 means both ++ and --.
+    """
+    spin2_1 = int(pol1 == 'pol')
+    spin2_2 = int(pol2 == 'pol')
+
+    # if 0, then the spintype is 00, which is ducc optype 0
+    # if 1, then the spintype is 02 (or 20), which is ducc optype 1
+    # if 2, then we want spintypes ++ and --, which is ducc optype 4
+    spintype = spin2_1 + spin2_2
+    if spintype < 2:
+        return spintype
+    else:
+        return 4
 
 if args.old:
     for task in subtasks:
@@ -119,83 +146,129 @@ else:
     # (since the binning function does one matrix at a time) and save the
     # outputs by name individually (also one matrix at a time)
 
-    # TODO: avoid calculation for repeated windows
-    specs_for_ducc = []
+    m2win_fn = {}
+    pols = ('T', 'pol')
     for task in subtasks:
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
-        pols = ('T', 'pol')
 
         log.info(f"[Rank {so_mpi.rank}, {task:02d}]: Preparing data for {sv1}_{m1} x {sv2}_{m2}")
 
-        # only calculate the stuff we need to avoid numerical differences
-        m2win_fn = {}
+        # only calculate the stuff we need to avoid numerical differences etc.
         for pol in pols:
             m2win_fn[sv1, m1, pol] = d[f"window_{pol}_{sv1}_{m1}"]
             m2win_fn[sv2, m2, pol] = d[f"window_{pol}_{sv2}_{m2}"] # no repeated keys
 
-        win_fn2win = {}
-        for win_fn in m2win_fn.values():
-            if win_fn not in win_fn2win:
-                win_fn2win[win_fn] = so_map.read_map(win_fn) # no repeated computation (or keys)
+    # we want l3 to go all the way to 2lmax, but need to check that the pixels
+    # can support this. read, check, and transform each distinct window one at
+    # a time so we never hold more than one raw map in memory at once (the map
+    # itself goes out of scope once its alm is computed)
+    maxl = 2*lmax # this is OK, it is (up to) Nyquist
+    win_fn2walm = {}
+    for win_fn in m2win_fn.values():
+        if win_fn not in win_fn2walm: # no repeated computation (or keys)
+            win = so_map.read_map(win_fn)
+            lmax_limit = win.get_lmax_limit()
+            assert lmax <= lmax_limit, \
+                f'{win_fn=} can only support 2*{lmax_limit=}, we want 2*{lmax=}'
+            win_fn2walm[win_fn] = sph_tools.map2alm(win, niter=niter, lmax=maxl, dtype=np.complex128)
 
-        # TODO: make DRY code with so_mcm for preparing inputs
-        lmax_limit = np.inf
-        for win in win_fn2win.values():
-            _lmax_limit = win.get_lmax_limit() * 2 # this is OK
-            if _lmax_limit < lmax_limit:
-                lmax_limit = _lmax_limit
-        if lmax > lmax_limit:
-            raise ValueError("the requested lmax is too high with respect to the map pixellisation")
-        maxl = np.minimum(2*lmax, lmax_limit).astype(int)
+    # now calculate the spectra for the 2pt couplings. unlike for the covariance,
+    # we can be a little fast-and-loose here due to (a) the substantially smaller
+    # number of pairs and (b) the fact that we know we always want to be exact
+    # in the optypes rather than bookeep around possible approximations. so,
+    # unlike the covariance which has different scripts, we just do everything
+    # at once in this loop
+    #
+    # there is one added complication to the bookeeping since optype=4 (which we
+    # always need) adds two mcm matrices for every optype=4 window spectrum
+    canonized_field_info2can_con_com_2pts_and_optypes = {}
+    canonized_wls = {}
+    for task in subtasks:
+        sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
 
-        win_fn2walm = {}
-        for win_fn, win in win_fn2win.items():
-            if win_fn not in win_fn2walm:
-                win_fn2walm[win_fn] = sph_tools.map2alm(win, niter=niter, lmax=maxl, dtype=np.complex128) # no repeated computation (or keys)
-
-        can_win_fn_2pt2cl = {}
         for poli in pols:
             win_fni = m2win_fn[sv1, m1, poli]
             walmi = win_fn2walm[win_fni]
             for polj in pols:
                 win_fnj = m2win_fn[sv2, m2, polj]
                 walmj = win_fn2walm[win_fnj]
+                can_con_com_2pt = pspipe_list.canonize_connected_2pt(win_fni, win_fnj)
+                optype = pols_connected_combo_2pt2ducc_optype(poli, polj)
+                can_con_com_2pt_and_optype = (can_con_com_2pt, optype)
 
-                can_win_fn_2pt_ij = pspipe_list.canonize_connected_2pt(win_fni, win_fnj)
-                if can_win_fn_2pt_ij not in can_win_fn_2pt2cl:
-                    can_win_fn_2pt2cl[can_win_fn_2pt_ij] = curvedsky.alm2cl(walmi, walmj, dtype=np.float64) # no repeated computation (or keys)
+                f1 = (sv1, m1, poli)
+                f2 = (sv2, m2, polj)
+                can_field_info = pspipe_list.canonize_connected_2pt(f1, f2)
 
-        # tabulate inputs for ducc, avoid numerical differences in specs_for_ducc
-        spec_for_ducc = []
-        for i in range(2):
-            for j in range(2):
-                poli, polj = pols[i], pols[j]
-                win_fni, win_fnj = m2win_fn[sv1, m1, poli], m2win_fn[sv2, m2, polj]
-                can_win_fn_2pt_ij = pspipe_list.canonize_connected_2pt(win_fni, win_fnj)
-                spec_for_ducc.append(can_win_fn_2pt2cl[can_win_fn_2pt_ij])
-        specs_for_ducc.append(spec_for_ducc)
-        
-    log.info(f"[Rank {so_mpi.rank}]: Computing mcm matrices using ducc")
-    
-    specs_for_ducc = np.array(specs_for_ducc).reshape(len(subtasks)*4, maxl + 1) # (nspec, 4, nl) -> (nspec*4, nl)
+                if can_field_info not in canonized_field_info2can_con_com_2pts_and_optypes:
+                    canonized_field_info2can_con_com_2pts_and_optypes[can_field_info] = can_con_com_2pt_and_optype
+                else:
+                    assert canonized_field_info2can_con_com_2pts_and_optypes[can_field_info] == can_con_com_2pt_and_optype, \
+                    f'Tried to add can_field_info {can_field_info} pointing to ' + \
+                    f'canonized connected combo {can_con_com_2pt_and_optype} but already ' + \
+                    f'points to canonized connected combo ' + \
+                    f'{canonized_field_info2can_con_com_2pts_and_optypes[can_field_info]}'
 
-    mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, len(subtasks)*[0, 1, 1, 4], # 00, 02, 02, ++, --
+                if can_con_com_2pt not in canonized_wls:
+                    canonized_wls[can_con_com_2pt] = curvedsky.alm2cl(walmi, walmj, dtype=np.float64) # no repeated computation (or keys)
+
+    # get a sorted list of the unique can_con_com_2pts_and_optypes
+    # NOTE: sorted doesn't matter since random-order is within each task, but just for reproducibility across runs
+    can_con_com_2pts_and_optypes = sorted(list(set(canonized_field_info2can_con_com_2pts_and_optypes.values())))
+
+    # perform the ducc calculation
+    specs_for_ducc = []
+    optypes_for_ducc = []
+    for (can_con_com_2pt, optype) in can_con_com_2pts_and_optypes:
+        specs_for_ducc.append(canonized_wls[can_con_com_2pt])
+        optypes_for_ducc.append(optype)
+    specs_for_ducc = np.array(specs_for_ducc)
+
+    log.info(f"[Rank {so_mpi.rank}]: Computing {len(specs_for_ducc)} unique mcm matrices using ducc")
+
+    mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, optypes_for_ducc,
                                  dtype=np.float64, coupling=False,
                                  pspy_index_convention=True)
 
-    # nl goes from l = 2 to lmax
-    mcms = mcms.reshape(len(subtasks), 5, lmax-2, lmax-2) # (nspec*5, nl, nl) -> (nspec, 5, nl, nl)
+    # mcms has an odd first axis because of the canonization and the ducc optype
+    # 4 leading to an ordering that can really only be indexed dynamically. so,
+    # this list is indexed to the same ordering as can_con_com_2pts_and_optypes
+    # but contains the indexes into the ducc output
+    mcms_idxs = []
+    i = 0
+    for optype in optypes_for_ducc:
+        if optype != 4:
+            mcms_idxs.append([i])
+            i += 1
+        else:
+            mcms_idxs.append([i, i+1])
+            i += 2
+    assert i == len(mcms), f'Got {i=} but expected {len(mcms)=}'
 
     # get the pseudo2data and theory2data matrices, including binning etc.
     # TODO: recompute this for every spectrum individually!
     bin_lo, bin_hi, _, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
     nbins = len(bin_hi)
 
-    for t, task in enumerate(subtasks):
+    for task in subtasks:
         log.info(f"[Rank {so_mpi.rank}, {task:02d}] Computing bbl and other products")
 
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
+
+        # build the 5-part mcm for this task by grabbing matrices out of mcms
+        mcms_t = []
+
+        # this pol loop will iterate over the reqd 00, 02, 20, (++, --) ordering
+        for poli in pols:
+            for polj in pols:
+                f1 = (sv1, m1, poli)
+                f2 = (sv2, m2, polj)
+                can_field_info = pspipe_list.canonize_connected_2pt(f1, f2)
+                can_con_com_2pt_and_optype = canonized_field_info2can_con_com_2pts_and_optypes[can_field_info]
+                idx = can_con_com_2pts_and_optypes.index(can_con_com_2pt_and_optype)
+                mcms_t.extend(mcms[i] for i in mcms_idxs[idx])
+        mcms_t = np.array(mcms_t)
 
         # get the beams
         # TODO: generalize this into a whole (9nl x 9nl) operator, a la W_l^{WXYZ}
@@ -234,8 +307,8 @@ else:
 
         # TODO: right now, for simplicity, I am enforcing equal binning on all TT, TE, etc.,
         # by making the most conservative selection. would be better to allow *everything*
-        # to be customizable, so kspace filters are defined at the map and T vs. pol level, 
-        # rather than at the survey level. NB this is already the case for the beams, for 
+        # to be customizable, so kspace filters are defined at the map and T vs. pol level,
+        # rather than at the survey level. NB this is already the case for the beams, for
         # example, hence why this loop is necessary even now
         mask = True
         for spin_idx in range(4):
@@ -257,7 +330,7 @@ else:
 
         # you might expect here that we would apply the total_response on the right to build up the
         # theory2pseudo operator, but we may (in the case of unbinned mcms) need to invert the mcms before
-        # applying the inverse of the total_response on the left, because the total_response might be 0 
+        # applying the inverse of the total_response on the left, because the total_response might be 0
         # (especially due to the analytic per-ell tf). so we defer applying the total_response later as
         # needed
 
@@ -271,30 +344,31 @@ else:
 
         # trim to match mcm and apply total_response as in forward model
         # hijack this function; we need to make total_response 3d
-        # TODO: promote total_response to a dense (9nl, 9nl) operator 
+        # TODO: promote total_response to a dense (9nl, 9nl) operator
         total_response_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(total_response[:, None, :], spectra) # (4, nl) -> (4, 1, nl)
         for k in signal_dict.keys():
             # we get the diagonal "blocks", and remove spurious extra dim
             signal_dict[k] = total_response_dict[k][k][0] * signal_dict[k][:lmax-2] # (1, nl)[0] * (nl,) = (nl,)
 
         # the fully realized mcm matrix would be a lot of memory
-        pseudosignal_dict = so_mcm.spin2spin_array_matmul_sparse_dict_vec(mcms[t], spectra, signal_dict)
+        pseudosignal_dict = so_mcm.spin2spin_array_matmul_sparse_dict_vec(mcms_t, spectra, signal_dict)
         so_spectra.write_ps(opj(pseudosignal_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),
                             l[:lmax-2], pseudosignal_dict, 'Cl', spectra=spectra)
+
+        # for broadcasting against mcms now
+        total_response = np.repeat(total_response, (1, 1, 1, 2), axis=0) # (4, nl) -> (5, nl)
 
         # NOTE: if binned_mcm, then we need to include the total_response before inversion, because
         # it will be binned before being inverted. the above check -- that the total_response is
         # at least nonzero in all bins -- should help ensure that it's invertible
-        total_response = np.repeat(total_response, (1, 1, 1, 2), axis=0) # (4, nl) -> (5, nl)
-
         if binned_mcm:
             Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax, type) # b x (lmax - 2)
-            mxx = np.zeros((5, nbins, nbins)) # b x b
-            Bbl = np.zeros((5, nbins, lmax)) # b x lmax
+            mxx = np.zeros((5, nbins, nbins)) # 5 x b x b
+            Bbl = np.zeros((5, nbins, lmax)) # 5 x b x lmax
 
             for spin_idx in range(5):
                 # multiply by tf * bl on the right
-                mcms_t_i = mcms[t, spin_idx] * total_response[spin_idx]
+                mcms_t_i = mcms_t[spin_idx] * total_response[spin_idx]
 
                 # bins both indices of mll to get mxx, that will then be inverted later.
                 # compute Mbb' = (Pbl Mll' * Tl' Ql'b')
@@ -302,7 +376,7 @@ else:
                                            bin_lo,
                                            bin_hi,
                                            bin_size,
-                                           mxx[i].T,
+                                           mxx[spin_idx].T,
                                            doDl)
 
                 # compute (Pbl @ theory2pseudo) = (Pbl Mll' * Tl')
@@ -310,7 +384,7 @@ else:
                                                   bin_lo,
                                                   bin_hi,
                                                   bin_size,
-                                                  Bbl[i].T,
+                                                  Bbl[spin_idx].T,
                                                   doDl)
 
         # NOTE: if not binned_mcm, we wait to include the total_response until after the
@@ -331,7 +405,7 @@ else:
             _bin_size[-1] -= (bin_hi[-1] - _bin_hi[-1]) # reduce the bin size by the right amount (perhaps 0)
 
             Pbl = so_spectra.get_binning_matrix(_bin_lo, _bin_hi, lmax, type) # b x (lmax - 2)
-            mxx = mcms[t] # l x l
+            mxx = mcms_t # 5 x l x l
             Bbl = np.zeros((nbins, lmax)) # b x lmax
 
             so_mcm.mcm_fortran.binning_matrix(np.eye(mcms.shape[-1]).T,
@@ -348,12 +422,12 @@ else:
 
         # compute pseudo2data
         if binned_mcm:
-            # NOTE: total response on the right of mcm before binning and inversion, 
+            # NOTE: total response on the right of mcm before binning and inversion,
             # i.e. compute inv(Mbb') Pb'l = inv(Pbl Mll' * Tl' Ql'b') Pb'l.
             # Cl->Dl + binning happens immediately after pseudo-Cl
             mbl_inv = mxx_inv @ Pbl
         else:
-            # NOTE: apply inverse of total response on the left of inv_mcm, 
+            # NOTE: apply inverse of total response on the left of inv_mcm,
             # i.e. compute (Pbl" / Tl" inv(Ml"l).
             # Cl->Dl + binning happens after deconvolution
             Pbl = (Pbl[:, nonzero_response_sel] / total_response[:, None, nonzero_response_sel]) # (nbin, _nl) * (5, 1, _nl) -> (5, nbin, _nl)

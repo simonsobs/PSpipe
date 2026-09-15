@@ -22,7 +22,7 @@ spec2nullgroup2nullflag_mpairs_yaml = yaml_dir + 'lat_iso_baseline_spec_nullgrou
 spectra_list_from_spec_nullgroups = False
 nulls_yaml = yaml_dir + "post_spectra.yaml"
 
-# surveys = ['dr6', 'legacy', 'lat_iso']
+# surveys = ['dr6', 'planck', 'lat_iso']
 surveys = ['dr6', 'lat_iso']
 # surveys = ['lat_iso']
 arrays_dr6 = ['pa4_f220', 'pa5_f090', 'pa5_f150', 'pa6_f090', 'pa6_f150']

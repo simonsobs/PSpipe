@@ -8,6 +8,7 @@ import pylab as plt
 import pickle
 import sys
 import yaml
+from scipy.optimize import curve_fit
 import scipy.stats as ss
 
 

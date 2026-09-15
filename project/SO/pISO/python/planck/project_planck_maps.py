@@ -31,8 +31,8 @@ template = so_map.read_map(template_name)
 shape, wcs = template.data.geometry
 print(shape, wcs)
 # Define data directories
-npipe_map_dir = "/global/cfs/cdirs/cmb/data/planck2020/npipe/"
-legacy_map_dir = "/global/cfs/cdirs/cmb/data/planck2018/pr3/frequencymaps/"
+npipe_map_dir = d["npipe_map_dir"]
+legacy_map_dir = d["legacy_map_dir"]
 
 splits_npipe = ["A", "B"]
 splits_legacy = ["halfmission-1", "halfmission-2"]

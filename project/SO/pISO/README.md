@@ -276,47 +276,202 @@ bash {python_path}/run_legacy_src_subtraction_interactive.sh {legacy_paramfile}
 bash {python_path}/run_npipe_src_subtraction_interactive.sh {npipe_paramfile}
 ```
 
-In the end, you should have the follwing added to your `data_dir` :
-```bash
-/path/to/my/PSpipe/data_dir
-├── beams
-│   │── legacy
-│   │   ├── leakage_beams
-│   │   └── main_beams
-│   └── npipe
-│       ├── leakage_beams
-│       └── main_beams
-├── maps
-│   └── planck
-│       └── deep56
-│           ├── legacy
-│           │   ├── HFI_SkyMap_2048_R3.01_halfmission-1_f100_ivar.fits
-│           │   ...
-│           │   └── HFI_SkyMap_2048_R3.01_halfmission-2_f353_map_srcfree.fits
-│           ├── npipe
-│           │   ├── npipe6v20A_f100_ivar.fits
-│           │   ...
-│           │   └── npipe6v20B_f353_map_srcfree.fits
-│           └── ... src subtraction stuff
-└── passbands
-    └── planck
-        ├── passband_npipe_f100.dat
-        ├── passband_npipe_f143.dat
-        ├── passband_npipe_f217.dat
-        └── passband_npipe_f353.dat
-```
-
 ## Compute spectra
 
 You can then add "planck" to `surveys`, and all associated products in a paramfile. Please note that Planck beam only go up to ell = 4000, so you need `lmax` lower than this.
 Planck can be included in spectra computation for calib or transfer function estimations.
 
+## Leakage corrections
+
+We can correct the power spectra from  T->P beam leakage using the script `python/leakage/get_leakage_corrected_spectra_per_split.py`. This subtracts from each data spectra the expected contribution from the leakage computed from the planet beam leakage measurement and a best fit model. Note that the correction due to not exactly knowing the best-fit model is going to be a second order one. The corrected spectra are saved in the directory `spectra_leak_corr_dir`, whose path is read from the parameter file. 
+We then use `python/leakage/get_leakage_sim` to compute the montecarlo simulations needed to estimate the covariance of the spectra due to the uncertainties in the leakage model. The simulations are saved at the path `montecarlo_beam_leakage_dir`. The covariance is computed with `python/leakage/get_leakage_dir`, saving the leakage contribution to the total covariance in the covariance directory `cov_dir`.
+
+You can run these scripts with:
+```bash
+salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
+
+OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python python/leakage/get_leakage_corrected_spectra_per_split.py {paramfile}
+
+OMP_NUM_THREADS=12 srun -n 20 -c 12 --cpu-bind=cores python python/leakage/get_leakage_sim.py {paramfile}
+
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/leakage/get_leakage_covariance.py {paramfile}
+```
+
+The same pipeline can also be used to compute ACT DR6 beam leakage corrected spectra and covariance.
+
 ## End-to-end sim correction
 
+To start the generation of Planck montecarlo simulations, we start with the `python/planck/get_planck_sim_nlms` script, used to get the noise alms for Planck NPIPE or legacy noise simulations. These noise maps are used to generate simulations of CMB + foregrounds + noise in the `python/montecarlo/mc_mnms_get_spectra_from_nlms.py` script, saved at the path `sim_spec_dir`.
 
+You can run these using:
+```bash
+salloc -N 4 -C cpu -q interactive -t 02:00:00
+
+OMP_NUM_THREADS=4 srun -n 256 -c 4 --cpu_bind=cores python python/planck/get_planck_sim_nlms.py {paramfile}
+
+OMP_NUM_THREADS=64 srun -n 16 -c 64 --cpu_bind=cores python python/montecarlo/mc_mnms_get_spectra_from_nlms_per_split.py {paramfile}
+```
+
+To compute the montecarlo contribution to the covariance matrix, we run `python/montecarlo/mc_analysis` (computing the average and standard deviation of the sims), `python/montecarlo/mc_cov_analysis.py` (computing the montecarlo contribution to the covariance) and plotting functions:
+```bash
+salloc --nodes 1 --qos interactive --time 4:00:00 --constraint cpu
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_analysis.py {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_cov_analysis.py {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_plot_spectra.py {paramfile}
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_plot_covariances.py {paramfile}
+```
+
+We can also generate noise-only simulations with `python/planck/get_planck_spectra_correction_from_nlms.py`, to compute the correlated residual measured in the AxB NPIPE simulations or hm1xhm2 legacy simulations. These spectra are saved in the `sim_spectra_planck_noise_and_syst_dir` path.
+We then compute the mean and standard deviation of these simulations with `python/montecarlo/mc_analysis`, using the flag `--planck-correction`, to point the code to the `sim_spectra_planck_noise_and_syst_dir` directory. The average of these corrections are saved at the `planck_mc_correction_dir` path. Finally, the Planck spectra (already corrected by the leakage and read from the `spectra_leak_corr_dir` directory) are corrected for the correlated residuals from the end-to-end simulations running `python/planck/get_corrected_planck_spectra.py`. The final spectra are saved in `spectra_leak_corr_planck_bias_corr_dir`.
+
+You can run it with:
+```bash
+salloc -N 4 -C cpu -q interactive -t 03:00:00
+OMP_NUM_THREADS=32 srun -n 32 -c 32 --cpu_bind=cores python python/planck/get_planck_spectra_correction_from_nlms.py {paramfile}
+
+salloc -N 1 -C cpu -q interactive -t 01:00:00
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/montecarlo/mc_analysis.py --planck-correction {paramfile}
+
+salloc --nodes 1 --qos interactive --time 01:00:00 --constraint cpu
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu_bind=cores python python/planck/get_corrected_planck_spectra.py {paramfile}
+```
 
 ## Dust-in-patch
-Use the result of this to update the `fg_params` in the paramfile for dust.
+We need to compute how much dust is in the patch we are using, in order to have priors on the dust amplitudes in temperature and polarization to use in the MCMC runs. We can estimate how much dust there is by fitting the residual dust in the difference of the Planck 353 and 143 maps. When using the temperature maps, we also fit for the CIB. 
+
+To run the script to fit for the dust use:
+```bash
+salloc --nodes 1 --qos interactive --time 02:00:00 --constraint cpu
+
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode TT
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode TE
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode TB
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode EE
+OMP_NUM_THREADS=256 srun -n 1 -c 256 --cpu-bind=cores python python/dust/fit_dust_amplitude.py {paramfile} --mode BB
+```
+
+The `python/dust/fit_dust_amplitude.py` can be run with additional flags in case we want to use the leakage and end-to-end sim corrected spectra (`--leak-corr`), the ACT DR6 220 channel for the CIB fit (`--use-220` and `--dr6-result-path-spectra` + `--dr6-result-path-covariance`), in case we want to sampled over the beta of CIB (`--sample_beta`) or set them to a value different than the default 2.20 (`--beta_value`), which is the value preferred by Planck data.
+
+## Contribution to the covariance matrix from foreground parameters uncertainty
+
+When doing null tests (which are done assuming a best-fit model for the CMB and the foregrounds), it may be useful to fold our uncertainty on the foreground parameters in the covariance. Especially TT null tests may improve significantly with the increase in the error bars due to the foreground marginalization. The marginalization is simply done at the covariance matrix level, considering just the uncertainty on the foregorund amplitudes (the theory model needs to be linear with respect to the parameters we marginalize over at the covmat level, and only the amplitudes easily satisfy this condition). So far, we use the uncertainty on these parameters from the ACT DR6 chains (read from `p_act_chain_filename`). If we want to read the uncertainty from an external covmat, point to its position using the `fg_covmat_path` in the parameter file. 
+To compute this extra contribution to the covmat, run `get_fg_covariance_blocks.py`. It will produce blocks with name `fg_marginalization_cov_...`.
+
+This applies not only to Planck but to any null test.
+
+
+In the end, you should have the following added to your `data_dir` :
+```bash
+/path/to/my/PSpipe/data_dir
+├── alms
+│   └── planck
+│       ├── alms_Planck_f100.npy
+│       ├── ...
+│       └── alms_Planck_f353.npy
+├── beams
+│   │── legacy
+│   │   ├── leakage_beams
+│   │   └── main_beams
+│   └── npipe
+│       ├── leakage_beams
+│       └── main_beams
+├── maps
+│   └── planck
+│       └── deep56
+│           ├── legacy
+│           │   ├── HFI_SkyMap_2048_R3.01_halfmission-1_f100_ivar.fits
+│           │   ...
+│           │   └── HFI_SkyMap_2048_R3.01_halfmission-2_f353_map_srcfree.fits
+│           ├── npipe
+│           │   ├── npipe6v20A_f100_ivar.fits
+│           │   ...
+│           │   └── npipe6v20B_f353_map_srcfree.fits
+│           └── ... src subtraction stuff
+├── passbands
+│    └── planck
+│        ├── passband_npipe_f100.dat
+│        ├── passband_npipe_f143.dat
+│        ├── passband_npipe_f217.dat
+│        └── passband_npipe_f353.dat
+│
+├── best_fits
+│   └── planck
+│       ├── cmb_and_fg_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       ├── cmb.dat
+│       ├── components
+│       │    ├── bb_dust_Planck_f100xPlanck_f100.dat
+│       │    ├── ...
+│       │    └── tt_tSZxCIB_Planck_f353xPlanck_f353.dat
+│       ├── fg_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       └── fg_Planck_f353xPlanck_f353.dat
+├── catalogs
+│   ├── cat_skn_090_20220526_nightonly_ordered.txt
+│   └── ...
+├── mcms
+│    └── planck
+│        ├── Planck_f100xPlanck_f100_Bbl_spin0xspin0.npy
+│        └── ...
+├── spectra
+│   └── planck
+│       ├── Dl_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       ├── Dl_Planck_f353xPlanck_f353.dat
+├── spectra_leak_corr
+│   └── planck
+│       ├── Dl_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       ├── Dl_Planck_f353xPlanck_f353.dat
+├── spectra_leak_corr_planck_bias_corr
+│   └── planck
+│       ├── Dl_Planck_f100xPlanck_f100.dat
+│       ├── ...
+│       ├── Dl_Planck_f353xPlanck_f353.dat
+├── sim_spectra/
+│   └── planck
+│       └── Dl_Planck_f100xPlanck_f100_00_00000.dat
+│       ├── ...
+│       ├── Dl_Planck_f100xPlanck_f100_auto_00000.dat
+│       ├── ...
+│       ├── Dl_Planck_f100xPlanck_f100_cross_00000.dat
+│       ├── ...
+│       ├── Dl_Planck_f100xPlanck_f100_noise_00000.dat
+│       └── ...
+├── sim_spectra_planck_noise_and_syst/
+│   └── Dl_Planck_f100xPlanck_f100_00_00000.dat
+│   ├── ...
+│   ├── Dl_Planck_f100xPlanck_f100_auto_00000.dat
+│   ├── ...
+│   ├── Dl_Planck_f100xPlanck_f100_cross_00000.dat
+│   ├── ...
+│   ├── Dl_Planck_f100xPlanck_f100_noise_00000.dat
+│   └── ...
+├── montecarlo
+│   └── planck
+│       └── spectra_BB_Planck_f100xPlanck_f100_auto.dat
+│       ├── ...
+│       └── spectra_TT_Planck_f353xPlanck_f353_noise.dat
+├── planck_mc_correction
+│   └── spectra_BB_Planck_f100xPlanck_f100_auto.dat
+│   ├── ...
+│   └── spectra_TT_Planck_f353xPlanck_f353_noise.dat
+├── covariances
+│   └── planck
+│       └── analytic_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
+│       ├── ...
+│       ├── leakage_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
+│       ├── ...
+│       └── mc_cov_Planck_f100xPlanck_f100_Planck_f100xPlanck_f100.npy
+└── windows
+    └── dr6xplanck
+        ├── window_dr6_pa5_f150_kspace.fits
+        └── ...
+    └── dr6xdeep56_20251119
+        ├── window_dr6_pa4_f220_baseline.fits
+        ├── ...
+        └── window_lat_iso_i6_f150_kspace.fits
+```
 
 # Main Pipeline
 Here we get the power spectra (all possible crosses of maps) and their covariance

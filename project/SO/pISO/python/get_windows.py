@@ -5,7 +5,6 @@ and a mask based on pathological pixels (identified during the map based simulat
 we also produce a window that include the pixel weighting.
 The different masks are apodized.
 We also produce a kspace-mask that will later be used for the kspace filtering operation, in order to remove the edges of the survey and avoid nasty pixels.
-MODIFIED VERSION, SKIP IVAR AND XLINK
 """
 
 import sys
@@ -23,6 +22,7 @@ d = so_dict.so_dict()
 d.read_from_file(sys.argv[1])
 log = log.get_logger(**d)
 
+use_weight_mask = True
 
 surveys = d["surveys"]
 # the apodisation length of the final survey mask
@@ -137,14 +137,14 @@ for task in subtasks:
             baseline_mask = so_map.car_template_from_shape_wcs(1, *template_geom, dtype=np.float32)
             baseline_mask.data = enmap.read_map(baseline_mask_fn, geometry=template_geom).astype(np.float32, copy=False)
             baseline_apod = d[f'baseline_apods_{winname}'][i]
-            baseline_mask = so_window.create_apodization(
-                baseline_mask, "C1", baseline_apod, use_rmax=True
-            )
+            if baseline_apod is not None:
+                baseline_mask = so_window.create_apodization(
+                    baseline_mask, "C1", baseline_apod, use_rmax=True
+                )
             my_masks["baseline"].data[:] *= baseline_mask.data
 
     my_masks["baseline"].data = my_masks["baseline"].data.astype(np.float32, copy=False)
-    my_masks["baseline"].write_map(f"{window_dir}/window_{winname}_{"baseline"}.fits")
-
+    my_masks["baseline"].write_map(f"{window_dir}/window_{winname}_baseline.fits")
     log.info(f"[{task}] joint baseline mask solid angle: {sa(my_masks["baseline"].data)}")
 
     # Plot baseline and kspace windows

@@ -40,10 +40,13 @@ savgol_k = d['savgol_k']
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 square2flat_spectra = ['TT', 'TE', 'TB', 'ET', 'EE', 'EB', 'BT', 'BE', 'BB']
 
-bestfit_dir = d["best_fits_dir"]
-noise_dir = opj(bestfit_dir, 'noise')
-plot_dir = opj(d['plots_dir'], 'noise')
-pspy_utils.create_directory(noise_dir)
+cov_dir = d['cov_dir']
+pspy_utils.create_directory(cov_dir)
+
+pseudonoise_dir = opj(cov_dir, 'pseudonoise')
+pspy_utils.create_directory(pseudonoise_dir)
+
+plot_dir = opj(d['plots_dir'], 'covariances', 'pseudonoise')
 pspy_utils.create_directory(plot_dir)
 
 # we want all the possible cross-spectra, even between tubes where we expect the
@@ -125,7 +128,7 @@ for task in subtasks:
         
         # save as human-readable spectrum, so l convention and Cl type is clear
         l = np.arange(2, lmax, dtype=inp_noise_model.dtype)
-        so_spectra.write_ps_matrix(opj(noise_dir, f'raw_pseudo_noise_{spec_name}_set{k}.dat'),
+        so_spectra.write_ps_matrix(opj(pseudonoise_dir, f'raw_pseudo_noise_{spec_name}_set{k}.dat'),
                                    l, inp_noise_model, 'Cl', spectra=spectra)
 
     alms1 = None
@@ -173,18 +176,18 @@ for task in subtasks:
     
     nsplits = d[f"n_splits_{sv}"]
     for k in range(nsplits):
-        _, inp_noise_model = so_spectra.read_ps_matrix(opj(noise_dir, f'raw_pseudo_noise_{spec_name}_set{k}.dat'),
+        _, inp_noise_model = so_spectra.read_ps_matrix(opj(pseudonoise_dir, f'raw_pseudo_noise_{spec_name}_set{k}.dat'),
                                                        spectra=spectra,
                                                        return_type='Cl',
                                                        return_dtype=np.float32)
         out_noise_model = np.zeros_like(inp_noise_model)
 
         if m1 != m2:
-            _, inp_noise_model1 = so_spectra.read_ps_matrix(opj(noise_dir, f'raw_pseudo_noise_{spec_name1}_set{k}.dat'),
+            _, inp_noise_model1 = so_spectra.read_ps_matrix(opj(pseudonoise_dir, f'raw_pseudo_noise_{spec_name1}_set{k}.dat'),
                                                             spectra=spectra,
                                                             return_type='Cl',
                                                             return_dtype=np.float32)
-            _, inp_noise_model2 = so_spectra.read_ps_matrix(opj(noise_dir, f'raw_pseudo_noise_{spec_name2}_set{k}.dat'),
+            _, inp_noise_model2 = so_spectra.read_ps_matrix(opj(pseudonoise_dir, f'raw_pseudo_noise_{spec_name2}_set{k}.dat'),
                                                             spectra=spectra,
                                                             return_type='Cl',
                                                             return_dtype=np.float32)
@@ -291,7 +294,7 @@ for task in subtasks:
 
         # save as human-readable spectrum, so l convention and Cl type is clear
         l = np.arange(2, lmax, dtype=out_noise_model.dtype)
-        so_spectra.write_ps_matrix(opj(noise_dir, f'pseudo_noise_{spec_name}_set{k}.dat'),
+        so_spectra.write_ps_matrix(opj(pseudonoise_dir, f'pseudo_noise_{spec_name}_set{k}.dat'),
                                    l, out_noise_model, 'Cl', spectra=spectra)
 
         # plot and save

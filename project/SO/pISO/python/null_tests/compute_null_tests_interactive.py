@@ -12,7 +12,7 @@ from pspipe_utils import log, pspipe_list, covariance
 import sys
 import os
 import shutil
-from os.path import join as opj
+from os.path import join as opj, splitext
 import itertools
 import argparse
 
@@ -22,7 +22,20 @@ parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
 parser.add_argument('--include-parametric', action='store_true',
                     help='Params are absolute not nulled')
+parser.add_argument('--per-test-mc-corr', action='store_true',
+                    help='Correct the given covariances with versions that are '
+                    'corrected by the Monte Carlo covariance for each null test'
+                    'individually. Doubles the number of scenarios')
+parser.add_argument('--x-ar-cov-files', type=str, nargs='+', default=['x_ar_analytic_cov.npy'],
+                    help='Filenames (in cov_dir) of the x_ar covariances to use, one null '
+                         'test scenario per covariance')
+parser.add_argument('--scenario-names', type=str, nargs='+', default=['simple_spec_analytic_cov'],
+                    help='Name of the null test scenario of each --x-ar-cov-files entry, in '
+                         'the same order')
 args = parser.parse_args()
+
+assert len(args.x_ar_cov_files) == len(args.scenario_names), \
+    f'got {len(args.x_ar_cov_files)} cov files but {len(args.scenario_names)} scenario names'
 
 d = so_dict.so_dict()
 d.read_from_file(args.paramfile)
@@ -73,20 +86,28 @@ for (spec_name, pspipespec), (idxs, _) in bin_out_dict.items():
 spec2nullgroup2nullflag_mpairs = pspipe_list.get_spec2nullgroup2nullflag_mpairs(d)
 
 null_tests = []
-for spec, nullgroup2nullflag_mpairs in spec2nullgroup2nullflag_mpairs.items():
-    for nullgroup, (_, mpairs) in nullgroup2nullflag_mpairs.items():
-        for mpair1, mpair2 in itertools.combinations(mpairs, r=2):
-            null_tests.append(('simple_spec_analytic_cov', spec, nullgroup, mpair1, mpair2))
+for scenario in args.scenario_names:
+    for spec, nullgroup2nullflag_mpairs in spec2nullgroup2nullflag_mpairs.items():
+        for nullgroup, (_, mpairs) in nullgroup2nullflag_mpairs.items():
+            for mpair1, mpair2 in itertools.combinations(mpairs, r=2):
+                null_tests.append((scenario, spec, nullgroup, mpair1, mpair2))
 n_nulls = len(null_tests)
 
 x_ar_data_vec = np.load(opj(spec_dir, "x_ar_data_vec.npy"))
 x_ar_theory_vec = np.load(opj(bestfit_dir, "x_ar_theory_vec.npy"))
 x_ar_res_vec = (x_ar_data_vec - x_ar_theory_vec)[:, None] # for slicing and matrix math
-x_ar_cov = np.load(opj(cov_dir, "x_ar_analytic_cov.npy"))
 
-if args.include_parametric:
-    x_ar_parametricnull_data_vec = np.load(opj(null_test_dir, "x_ar_parametricnull_data_vec.npy"))[:, None] # for slicing and matrix math
-    x_ar_parametricnull_cov = np.load(opj(null_test_dir, "x_ar_parametricnull_cov.npy"))
+scenario2x_ar_cov = {}
+scenario2x_ar_parametricnull_data_vec = {}
+scenario2x_ar_parametricnull_cov = {}
+for scenario, x_ar_cov_file in zip(args.scenario_names, args.x_ar_cov_files):
+    scenario2x_ar_cov[scenario] = np.load(opj(cov_dir, x_ar_cov_file))
+
+    if args.include_parametric:
+        # tag matching the one compute_null_tests_parametric.py gives its outputs
+        x_ar_cov_tag = splitext(x_ar_cov_file)[0]
+        scenario2x_ar_parametricnull_data_vec[scenario] = np.load(opj(null_test_dir, f"x_ar_parametricnull_data_vec_{x_ar_cov_tag}.npy"))[:, None] # for slicing and matrix math
+        scenario2x_ar_parametricnull_cov[scenario] = np.load(opj(null_test_dir, f"x_ar_parametricnull_cov_{x_ar_cov_tag}.npy"))
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_nulls - 1)
@@ -138,12 +159,12 @@ for task in subtasks:
         sliceij = x_ar_slices_dict[spec, mpairij]
         r += signij * x_ar_res_vec[sliceij]
         if args.include_parametric:
-            r_param += signij * x_ar_parametricnull_data_vec[sliceij]
+            r_param += signij * scenario2x_ar_parametricnull_data_vec[scenario][sliceij]
         for mpairpq, signpq in zip(mpairs, signs):
             slicepq = x_ar_slices_dict[spec, mpairpq]
-            cov += signij * signpq * x_ar_cov[sliceij, slicepq]
+            cov += signij * signpq * scenario2x_ar_cov[scenario][sliceij, slicepq]
             if args.include_parametric:
-                cov_param += signij * signpq * x_ar_parametricnull_cov[sliceij, slicepq]
+                cov_param += signij * signpq * scenario2x_ar_parametricnull_cov[scenario][sliceij, slicepq]
 
     for _lmin, _lmax in itertools.product(lmins, lmaxs):
         mask = np.nonzero(np.logical_and(_lmin < bin_mean, bin_mean < _lmax))[0]

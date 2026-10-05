@@ -280,7 +280,7 @@ for sv in surveys:
         filters[sv] = None
 
 # get spectrum-level auxiliary data products
-spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_", from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_" )
 
 if apply_kspace_filter and kspace_tf_path != "analytical":
     add_corr = {}
@@ -665,13 +665,15 @@ for iii in mapset_iterator:
                         log.info(f"[Rank {so_mpi.rank}, Mapset {iii}] WARNING: no kspace filter and no inv pixwin on {sv}, {m} (HEALPIX)")
 
             split = split.calibrate(cal=cal, pol_eff=pol_eff)
-            if for_kspace:
-                split_nofilt =  split_nofilt.calibrate(cal=cal, pol_eff=pol_eff)
             
-            if d["remove_mean"] == True:
-                split = split.subtract_mean(window_tuple)
+            if which == "sims":
                 if for_kspace:
-                    split_nofilt =  split_nofilt.subtract_mean(window_tuple)             
+                    split_nofilt =  split_nofilt.calibrate(cal=cal, pol_eff=pol_eff)
+                
+                if d["remove_mean"] == True:
+                    split = split.subtract_mean(window_tuple)
+                    if for_kspace:
+                        split_nofilt =  split_nofilt.subtract_mean(window_tuple)             
 
 
             if which == 'data':
@@ -684,10 +686,10 @@ for iii in mapset_iterator:
                 else:
                     master_alms[sv, m, snk, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
                     master_alms[sv, m, snk, "nofilter"] = sph_tools.get_alms(split_nofilt, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
+                if for_kspace:
+                    split_nofilt = None
 
             split = None
-            if for_kspace:
-                split_nofilt = None
 
         win_T = None
         win_pol = None
@@ -723,7 +725,7 @@ for iii in mapset_iterator:
     # store all the spectra for a mapset in one file. otherwise there will be
     # too many files (O(1 million) for 1,000 ASO sims).
     ps_dict_all = {}
-    if for_kspace:
+    if which == "sims" and for_kspace:
         ps_dict_all_nofilt = {}
 
     for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
@@ -741,7 +743,7 @@ for iii in mapset_iterator:
                 # doing this per spectrum. start_at_zero=False to match pspy convention
                 # TODO: test if speed penalty of alm np.complex128 conversion 
                 # is worth the memory saved (takes ~14s per spectrum)
-                if not for_kspace:
+                if which == "data" or (which == "sims" and not for_kspace):
                     _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1],
                                                                 master_alms[sv2, m2, snk2],
                                                                 spectra=spectra,
@@ -787,10 +789,10 @@ for iii in mapset_iterator:
                         ps_dict_all_nofilt[(sv1, m1), (sv2, m2), snk1] = data_dict_nofilt
         
         pseudo2datavec = None
-        if for_kspace:
+        if which == "sims" and for_kspace:
             mbl_inv = None
 
-        if not for_kspace:
+        if which == "data" or (which == "sims" and not for_kspace):
             # then we get "derived" spectra: the mean cross, auto and noise spectrum
             # NOTE: the noise spectrum is defined as the noise in a map which is the
             # simple average over split maps. for the data, we do all of this, and 
@@ -893,5 +895,5 @@ for iii in mapset_iterator:
             io.save_hdf5(f"{spec_dir}" + f"{spec_name_all_nofilt}.h5", ps_dict_all_nofilt)
 
     ps_dict_all = None
-    if for_kspace:
+    if which == "sims" and for_kspace:
         ps_dict_all_nofilt = None

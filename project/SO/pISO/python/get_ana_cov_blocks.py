@@ -59,7 +59,8 @@ for sv in surveys:
         filter_dicts[sv] = None
 
 bestfit_dir = d["best_fits_dir"]
-noise_dir = opj(bestfit_dir, 'noise')
+cov_dir = d['cov_dir']
+noise_dir = opj(cov_dir, 'pseudonoise')
 mcm_dir = d['mcm_dir']
 cov_dir = d['cov_dir']
 
@@ -101,7 +102,7 @@ def update_pseudospectra_dict(f1, f2, pseudospectra_dict=None):
     sv2, m2, n2 = f2 # E
 
     split_iterator = ['s']
-    dir_iterator = [bestfit_dir]
+    dir_iterator = [opj(cov_dir, "pseudosignal")]
     fn_template_iterator = ['pseudo_cmb_and_fg_{spec_name}.dat']
 
     if n1 == n2:

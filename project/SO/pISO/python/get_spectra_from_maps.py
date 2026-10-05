@@ -248,7 +248,7 @@ for sv in surveys:
 
     # FIXME: this will not work for SO LF which has a different template despite
     # being the same survey
-    templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[sv][0]}"])
+    templates[sv] = so_map.read_map(d[f"window_T_{sv}_{maps[sv][0]}"])
     
     # NOTE: a map may a CAR map but have a HEALPIX pixwin, in which case we may
     # kspace filter it, but want to use a HEALPIX pixwin

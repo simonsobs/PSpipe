@@ -95,6 +95,9 @@ if args.start >= 0:
         tag += '_lens'
     if for_kspace:
         tag += '_for_kspace'
+else:
+    # set the flag automatically to False for data
+    for_kspace = False
 
 # get needed info from paramfile
 d = so_dict.so_dict()

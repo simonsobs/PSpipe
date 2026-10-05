@@ -1,5 +1,6 @@
 """Subtract sources from given maps and copy both initial maps and srcfree maps.
 TODO : get actual source subtracted maps and don't use this script anymore :)
+TODO : remove hardcoded paths (rn it should work for everyone on tiger though)
 """
 
 import sys

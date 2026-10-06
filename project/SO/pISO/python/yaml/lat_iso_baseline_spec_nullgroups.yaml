@@ -1,0 +1,166 @@
+TT:
+  f090xf090:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f090'], ['f090']]
+  f090xf150:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f090'], ['f150']]
+  f150xf150:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f150'], ['f150']]
+  f090xf220:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f090'], ['f220']]
+  f150xf220:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f150'], ['f220']]
+  f220xf220:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f220'], ['f220']]
+  f280xf280:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f280'], ['f280']]
+  f220xf280:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f220'], ['f280']]
+  f150xf280:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f150'], ['f280']]
+  f090xf280:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: [['f090'], ['f280']]
+
+TE:
+  MF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f090', 'f150']
+  UHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f220', 'f280']
+          - ['f220', 'f280']
+  MFxUHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f220', 'f280']
+
+TB:
+  MF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f090', 'f150']
+  UHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f220', 'f280']
+          - ['f220', 'f280']
+  MFxUHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f220', 'f280']
+
+EE:
+  MF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f090', 'f150']
+  UHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f220', 'f280']
+          - ['f220', 'f280']
+  MFxUHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f220', 'f280']
+
+EB:
+  MF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f090', 'f150']
+  UHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f220', 'f280']
+          - ['f220', 'f280']
+  MFxUHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f220', 'f280']
+
+BB:
+  MF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f090', 'f150']
+  UHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f220', 'f280']
+          - ['f220', 'f280']
+  MFxUHF:
+    nullflag: true
+    mpair_rules:
+      require_tags:
+        freq: 
+          - ['f090', 'f150']
+          - ['f220', 'f280']

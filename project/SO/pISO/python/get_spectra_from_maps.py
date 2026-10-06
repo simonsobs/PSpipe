@@ -53,6 +53,7 @@ parser.add_argument('--noE-noB', action='store_true', # default False, type bool
                     help='If given, generate noE and noB sims containing only signal (as in DR6), no noise. Used to do simulations for TF computation')
 args = parser.parse_args()
 
+for_kspace = args.for_kspace
 
 # TODO: speed up map-level operations with numba
 
@@ -80,7 +81,6 @@ if args.start >= 0:
     simulate_syst = args.simulate_syst
     simulate_lens = args.simulate_lens
 
-    for_kspace = args.for_kspace
     noE_noB = args.noE_noB
 
     if for_kspace:
@@ -172,7 +172,7 @@ else:
 # this sets up iteration over mapsets, surveys, and maps such that the code is
 # the same for data and sims
 n_map, sv_list, map_list = pspipe_list.get_arrays_list(d)
-n_spec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d)
+n_spec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d, from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 
 # convert to arrays to support advanced indexing
 sv_list = np.array(sv_list)
@@ -283,7 +283,7 @@ for sv in surveys:
         filters[sv] = None
 
 # get spectrum-level auxiliary data products
-spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_")
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_", from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 
 if apply_kspace_filter and kspace_tf_path != "analytical":
     add_corr = {}
@@ -572,7 +572,7 @@ for iii in mapset_iterator:
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
                     
-                    if which == 'sims' and args.for_kspace:
+                    if which == 'sims' and for_kspace:
                         split_nofilt = so_map.fourier_convolution(split_nofilt,
                                                        inv_pwin,
                                                        window=win_kspace,
@@ -622,7 +622,7 @@ for iii in mapset_iterator:
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
                     
-                    if which == 'sims' and args.for_kspace:
+                    if which == 'sims' and for_kspace:
                         split_nofilt = so_map.fourier_convolution(split_nofilt,
                                                        inv_pwin,
                                                        window=win_kspace,

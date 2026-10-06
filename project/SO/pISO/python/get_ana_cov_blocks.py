@@ -58,11 +58,10 @@ for sv in surveys:
     else:
         filter_dicts[sv] = None
 
-bestfit_dir = d["best_fits_dir"]
-cov_dir = d['cov_dir']
-noise_dir = opj(cov_dir, 'pseudonoise')
 mcm_dir = d['mcm_dir']
 cov_dir = d['cov_dir']
+pseudosignal_dir = opj(cov_dir, 'pseudosignal')
+pseudonoise_dir = opj(cov_dir, 'pseudonoise')
 
 nsplits = {}
 for sv in surveys:
@@ -102,13 +101,13 @@ def update_pseudospectra_dict(f1, f2, pseudospectra_dict=None):
     sv2, m2, n2 = f2 # E
 
     split_iterator = ['s']
-    dir_iterator = [opj(cov_dir, "pseudosignal")]
+    dir_iterator = [pseudosignal_dir]
     fn_template_iterator = ['pseudo_cmb_and_fg_{spec_name}.dat']
 
     if n1 == n2:
         for k in range(nsplits[sv1]):
             split_iterator.append(f'n{k}')
-            dir_iterator.append(noise_dir)
+            dir_iterator.append(pseudonoise_dir)
             fn_template_iterator.append('pseudo_noise_{spec_name}_' + f'set{k}.dat')
 
     for split, dir, fn_template in zip(split_iterator, dir_iterator, fn_template_iterator):
@@ -159,7 +158,7 @@ def add_term_to_pseudo_cov_block(pseudo_cov_block, num_terms, w4_1234, w4_coupli
 # ellxell intermediate products to disk; rather, we want the entire
 # 9xell x 9xell pseudocov block that we can immediately sandwich between two
 # pseudo2datavec operators.
-n_covs, ni_list, nj_list, np_list, nq_list = pspipe_list.get_covariances_list(d)
+n_covs, _, _, _, _ = pspipe_list.get_covariances_list(d, from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 
 if cov_correlation_by_noise_model:
     mapnames2noise_model_tags = dict_utils.get_mapnames_to_noise_model_tags(d)

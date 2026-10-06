@@ -53,8 +53,6 @@ parser.add_argument('--noE-noB', action='store_true', # default False, type bool
                     help='If given, generate noE and noB sims containing only signal (as in DR6), no noise. Used to do simulations for TF computation')
 args = parser.parse_args()
 
-for_kspace = args.for_kspace
-
 # TODO: speed up map-level operations with numba
 
 # are we running on data or sims? if sims, are we writing any simulated maps
@@ -81,6 +79,7 @@ if args.start >= 0:
     simulate_syst = args.simulate_syst
     simulate_lens = args.simulate_lens
 
+    for_kspace = args.for_kspace
     noE_noB = args.noE_noB
 
     if for_kspace:
@@ -95,6 +94,9 @@ if args.start >= 0:
         tag += '_lens'
     if for_kspace:
         tag += '_for_kspace'
+else:
+    # set the flag automatically to False for data
+    for_kspace = False
 
 # get needed info from paramfile
 d = so_dict.so_dict()

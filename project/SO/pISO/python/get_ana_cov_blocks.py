@@ -58,10 +58,10 @@ for sv in surveys:
     else:
         filter_dicts[sv] = None
 
-bestfit_dir = d["best_fits_dir"]
-noise_dir = opj(bestfit_dir, 'noise')
 mcm_dir = d['mcm_dir']
 cov_dir = d['cov_dir']
+pseudosignal_dir = opj(cov_dir, 'pseudosignal')
+pseudonoise_dir = opj(cov_dir, 'pseudonoise')
 
 nsplits = {}
 for sv in surveys:
@@ -101,13 +101,13 @@ def update_pseudospectra_dict(f1, f2, pseudospectra_dict=None):
     sv2, m2, n2 = f2 # E
 
     split_iterator = ['s']
-    dir_iterator = [bestfit_dir]
+    dir_iterator = [pseudosignal_dir]
     fn_template_iterator = ['pseudo_cmb_and_fg_{spec_name}.dat']
 
     if n1 == n2:
         for k in range(nsplits[sv1]):
             split_iterator.append(f'n{k}')
-            dir_iterator.append(noise_dir)
+            dir_iterator.append(pseudonoise_dir)
             fn_template_iterator.append('pseudo_noise_{spec_name}_' + f'set{k}.dat')
 
     for split, dir, fn_template in zip(split_iterator, dir_iterator, fn_template_iterator):

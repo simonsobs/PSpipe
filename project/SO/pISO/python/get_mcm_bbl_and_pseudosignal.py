@@ -284,6 +284,7 @@ else:
         for bl1 in (bl1_T, bl1_P):
             for bl2 in (bl2_T, bl2_P):
                 bl.append(bl1[2:lmax] * bl2[2:lmax]) # TODO: reconsider pspipe conventions
+        bl = np.array(bl)
 
         # get the tf. will be 1 if nothing is being filtered, so OK to do this in all cases
         # TODO: implement something like 2111.01113
@@ -312,7 +313,8 @@ else:
         # example, hence why this loop is necessary even now
         mask = True
         for spin_idx in range(4):
-            mask = np.logical_and(mask, np.logical_not(np.isclose(total_response[spin_idx], 0)))
+            # atol safely above numerics. if you have beams that are 1e-6, you should be questioning your lmax
+            mask = np.logical_and(mask, np.logical_not(np.isclose(total_response[spin_idx], 0, atol=1e-12)))
         nonzero_response_l = l[mask]
         assert np.all(np.diff(nonzero_response_l) == 1), \
             'nonzero entries are split into multiple chunks, should be contiguous'

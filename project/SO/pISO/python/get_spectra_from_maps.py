@@ -53,6 +53,7 @@ parser.add_argument('--noE-noB', action='store_true', # default False, type bool
                     help='If given, generate noE and noB sims containing only signal (as in DR6), no noise. Used to do simulations for TF computation')
 args = parser.parse_args()
 
+for_kspace = args.for_kspace
 
 # TODO: speed up map-level operations with numba
 
@@ -80,7 +81,6 @@ if args.start >= 0:
     simulate_syst = args.simulate_syst
     simulate_lens = args.simulate_lens
 
-    for_kspace = args.for_kspace
     noE_noB = args.noE_noB
 
     if for_kspace:
@@ -569,7 +569,7 @@ for iii in mapset_iterator:
                                               weighted_filter=weighted_filter,
                                               use_ducc_rfft=True)
                     
-                    if which == 'sims' and args.for_kspace:
+                    if which == 'sims' and for_kspace:
                         split_nofilt = so_map.fourier_convolution(split_nofilt,
                                                        inv_pwin,
                                                        window=win_kspace,
@@ -619,7 +619,7 @@ for iii in mapset_iterator:
                                                        window=win_kspace,
                                                        use_ducc_rfft=True)
                     
-                    if which == 'sims' and args.for_kspace:
+                    if which == 'sims' and for_kspace:
                         split_nofilt = so_map.fourier_convolution(split_nofilt,
                                                        inv_pwin,
                                                        window=win_kspace,

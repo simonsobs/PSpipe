@@ -7,7 +7,7 @@ then each of these blocks contains all x_array terms e.g pa5_f090xpa5_f090, pa5_
 """
 
 from pspy import so_dict, pspy_utils, so_mcm, so_spectra, so_cov
-from pspipe_utils import covariance, pspipe_list, log
+from pspipe_utils import covariance, pspipe_list, log, io
 import numpy as np
 
 import sys
@@ -20,6 +20,12 @@ parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
 parser.add_argument('--check-pos-def', action='store_true', # default False, type bool
                     help='Check if the matrix is positive definite and symmetric.')
+parser.add_argument('--start', type=int, default=-1,
+                    help='The index of the first sim to run. If less than 0 '
+                    '(the default), we run on the dataset specific in the ' \
+                    'paramfile.')
+parser.add_argument('--stop', type=int, default=-1,
+                    help='The index of the last sim to run (exclusive).')
 args = parser.parse_args()
 
 d = so_dict.so_dict()
@@ -31,6 +37,15 @@ type = d['type']
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
+# are we running on data or sims? 
+which = 'data'
+if args.start >= 0:
+    which = 'sims'
+    start = args.start 
+    stop = args.stop
+    assert stop > start, \
+        f'{stop=} is not greater than {start=}'
+
 if d["cov_T_E_only"] == True:
     modes_for_cov = ["TT", "TE", "ET", "EE"]
 else:
@@ -39,7 +54,10 @@ else:
 bestfit_dir = d["best_fits_dir"]
 mcm_dir = d['mcm_dir']
 binned_mcm = d['binned_mcm']
-spec_dir = d['spec_dir']
+if which == "data":
+    spec_dir = d['spec_dir']
+if which == "sims":
+    spec_dir = d["sim_spec_dir"]
 cov_dir = d['cov_dir']
 plot_dir = opj(d['plots_dir'], 'covariances')
 pspy_utils.create_directory(plot_dir)
@@ -48,13 +66,31 @@ pspy_utils.create_directory(plot_dir)
 data_dict = {}
 theory_dict = {}
 spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_", from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
-for spec_name in spec_name_list:
-    _, _data_dict = so_spectra.read_ps(opj(spec_dir, f"{type}_{spec_name}_cross.dat"),
-                                       spectra=spectra, return_type=type,
-                                       return_dtype=np.float64)
+n_spec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d, from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 
-    for spec in spectra:
-        data_dict[spec_name, spec] = _data_dict[spec]
+if which == "sims":
+    for i in range(start, stop):
+        data_dict[i] = {}
+
+for n in range(n_spec):
+    sv1, m1, sv2, m2 = sv1_list[n], m1_list[n], sv2_list[n], m2_list[n]
+    spec_name = spec_name_list[n]
+    assert f"{sv1}_{m1}x{sv2}_{m2}" == spec_name
+    if which == "data":
+        _data_dict = io.load_hdf5(spec_dir + f"{type}_all_sn_cross_data.h5", path=f"(('{sv1}', '{m1}'), ('{sv2}', '{m2}'), 'cross')")
+            
+        #_, _data_dict = so_spectra.read_ps(opj(spec_dir, f"{type}_{spec_name}_cross.dat"),
+        #                               spectra=spectra, return_type=type,
+        #                               return_dtype=np.float64)
+        for spec in spectra:
+            data_dict[spec_name, spec] = _data_dict[spec]
+
+    if which == "sims":
+        for i in range(start, stop):
+            _data_dict = io.load_hdf5(spec_dir + f"{type}_all_sn_cross_{i:05d}.h5", path=f"(('{sv1}', '{m1}'), ('{sv2}', '{m2}'), 'cross')")
+
+            for spec in spectra:
+                data_dict[i][spec_name, spec] = _data_dict[spec]
  
     _l, _theory_dict = so_spectra.read_ps(opj(bestfit_dir, f"cmb_and_fg_{spec_name}.dat"),
                                          spectra=spectra, return_type=type,
@@ -75,17 +111,26 @@ for spec_name in spec_name_list:
     for spec in spectra:
         theory_dict[spec_name, spec] = _theory_dict[spec]
 
-x_ar_data_vec = covariance.spec_dict_to_full_vec(data_dict, 
+if which == "data":
+    x_ar_data_vec = covariance.spec_dict_to_full_vec(data_dict, 
                                                  spec_name_list,
                                                  spectra_order=spectra,
                                                  remove_doublon=True)
+    np.save(opj(spec_dir, "x_ar_data_vec.npy"), x_ar_data_vec)
+
+if which == "sims":
+    for i in range(start, stop):
+        x_ar_data_vec = covariance.spec_dict_to_full_vec(data_dict[i],
+                                                 spec_name_list,
+                                                 spectra_order=spectra,
+                                                 remove_doublon=True)
+        np.save(opj(spec_dir, f"x_ar_data_vec_{i:05d}.npy"), x_ar_data_vec)
 
 x_ar_theory_vec = covariance.spec_dict_to_full_vec(theory_dict, 
                                                    spec_name_list,
                                                    spectra_order=spectra,
                                                    remove_doublon=True)
 
-np.save(opj(spec_dir, "x_ar_data_vec.npy"), x_ar_data_vec)
 np.save(opj(bestfit_dir, "x_ar_theory_vec.npy"), x_ar_theory_vec)
 
 # FIXME: clean up posdef stuff

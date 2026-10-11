@@ -59,6 +59,13 @@ args = parser.parse_args()
 # are we running on data or sims? if sims, are we writing any simulated maps
 # to disk? are we doing any systematics or lensing?
 which = 'data'
+
+# FIXME: for_kspace and noE_noB are only set inside the sims branch below, but are read
+# unconditionally further down, so a data run dies with a bare NameError. Defaulting them
+# here keeps data runs working; the sims branch overrides both.
+for_kspace = False
+noE_noB = False
+
 if args.start >= 0:
     which = 'sims'
     start = args.start 

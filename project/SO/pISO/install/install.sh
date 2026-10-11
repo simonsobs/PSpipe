@@ -58,8 +58,15 @@ fi
 
 # Branch management
 declare -A branches=(
-    ["ducc"]="coupling_matrices_beta"
-    ["pspy"]="zach_piso"
+    # CHANGE: coupling_matrices_beta is stale and is the only branch carrying
+    # coupling_matrix_spin0and2_new. Upstream renamed that to coupling_matrix_rect
+    # and merged the direct Wigner 3j evaluation (arXiv:2602.15605) into ducc0.
+    # pspy gk_piso follows the rename. Verified: mode_coupling_inv agrees with
+    # the old build to 3e-11 relative, Bbl to 2e-17 absolute.
+    # ["ducc"]="coupling_matrices_beta"
+    ["ducc"]="ducc0"
+    # ["pspy"]="zach_piso"
+    ["pspy"]="gk_piso"
     ["pspipe_utils"]="zach_piso"
     ["PSpipe"]="zach_piso"
 )

@@ -54,7 +54,12 @@ for sv in surveys:
     if d[f"pixwin_{sv}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
         # FIXME: this is a crude approximation. really, it would be something like
         # Bbl @ (pw_l)^2 C_l, so it can't be easily decoupled
-        pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"], datapath='/scratch/gpfs/SIMONSOBS/lat-iso/')
+        # NOTE: healpy silently truncates to the length of the file if it
+        # doesn't reach lmax, so check explicitly (otherwise bins above it
+        # become NaN)
+        pw_l = hp.pixwin(d[f"pixwin_{sv}"]["nside"], lmax=lmax, datapath='/scratch/gpfs/SIMONSOBS/lat-iso/')
+        assert len(pw_l) >= lmax + 1, \
+            f'pixwin file for nside={d[f"pixwin_{sv}"]["nside"]} only reaches ell={len(pw_l) - 1} < {lmax=}'
         _, pw_b = pspy_utils.naive_binning(np.arange(len(pw_l)), pw_l, binning_file, lmax)
         pixwins[sv] = pw_b
 

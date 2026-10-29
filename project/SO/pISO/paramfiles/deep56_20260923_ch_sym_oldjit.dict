@@ -441,10 +441,15 @@ add_white_noise_above_lmax = True
 white_noise_ell_taper_width = 500
 keep_noise_models_in_memory = False
 
-# noise_model_pl100 = {'qids': ['pl100']}
-# noise_model_pl143 = {'qids': ['pl143']}
-# noise_model_pl217 = {'qids': ['pl217']}
-# noise_model_pl353 = {'qids': ['pl353']}
+noise_model_legacy_100 = {'config_name': 'planck_e2e_raw', 'noise_model_name': 'legacy_deep56', 'qids': ['p04'], 'lmax': 5400}
+noise_model_legacy_143 = {'config_name': 'planck_e2e_raw', 'noise_model_name': 'legacy_deep56', 'qids': ['p05'], 'lmax': 5400}
+noise_model_legacy_217 = {'config_name': 'planck_e2e_raw', 'noise_model_name': 'legacy_deep56', 'qids': ['p06'], 'lmax': 5400}
+noise_model_legacy_353 = {'config_name': 'planck_e2e_raw', 'noise_model_name': 'legacy_deep56', 'qids': ['p07'], 'lmax': 5400}
+
+# noise_model_npipe_100 = {'config_name': 'planck_e2e_raw', 'noise_model_name': 'npipe_deep56', 'qids': ['p04'], 'lmax': 5400}
+# noise_model_npipe_143 = {'config_name': 'planck_e2e_raw', 'noise_model_name': 'npipe_deep56', 'qids': ['p05'], 'lmax': 5400}
+# noise_model_npipe_217 = {'config_name': 'planck_e2e_raw', 'noise_model_name': 'npipe_deep56', 'qids': ['p06'], 'lmax': 5400}
+# noise_model_npipe_353 = {'config_name': 'planck_e2e_raw', 'noise_model_name': 'npipe_deep56', 'qids': ['p07'], 'lmax': 5400}
 
 # noise_model_pa4 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa4a', 'pa4b'], 'lmax': 5400} # can add 'subproduct_kwargs': value if needed, where value e.g. {'inout_split': ['inout1', 'inout2']}
 # noise_model_pa5 = {'config_name': 'act_dr6v4_deep56', 'noise_model_name': 'tile_cmbmask', 'qids': ['pa5a', 'pa5b'], 'lmax': 5400}
@@ -457,10 +462,15 @@ noise_model_i6 = {'config_name': 'so_lat_iso_deep56_v20260923_ch_sym_oldjit', 'n
 noise_model_c1 = {'config_name': 'so_lat_iso_deep56_v20260923_ch_sym_oldjit', 'noise_model_name': 'tile_cmbmask', 'qids': ['c1a', 'c1b'], 'lmax': 5400}
 noise_model_i5 = {'config_name': 'so_lat_iso_deep56_v20260923_ch_sym_oldjit', 'noise_model_name': 'tile_cmbmask', 'qids': ['i5a', 'i5b'], 'lmax': 5400}
 
-# noise_info_legacy_f100 = {'qid': 'pl100'}
-# noise_info_legacy_f143 = {'qid': 'pl143'}
-# noise_info_legacy_f217 = {'qid': 'pl217'}
-# noise_info_legacy_f353 = {'qid': 'pl353'}
+noise_info_legacy_f100 = {'qid': 'p04'}
+noise_info_legacy_f143 = {'qid': 'p05'}
+noise_info_legacy_f217 = {'qid': 'p06'}
+noise_info_legacy_f353 = {'qid': 'p07'}
+
+# noise_info_npipe_f100 = {'qid': 'p04'}
+# noise_info_npipe_f143 = {'qid': 'p05'}
+# noise_info_npipe_f217 = {'qid': 'p06'}
+# noise_info_npipe_f353 = {'qid': 'p07'}
 
 # noise_info_dr6_pa4_f220 = {'qid': 'pa4b'} # can add 'subproduct_kwargs': value if needed, where value e.g. {'inout_split': 'inout1'}
 # noise_info_dr6_pa5_f090 = {'qid': 'pa5a'}

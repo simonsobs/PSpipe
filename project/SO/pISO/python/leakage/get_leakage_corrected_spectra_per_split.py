@@ -13,7 +13,7 @@ matplotlib.use("Agg")
 import sys
 
 import numpy as np
-from pspipe_utils import leakage, pspipe_list, log
+from pspipe_utils import leakage, pspipe_list, log, io
 from pspy import  so_dict, so_spectra, pspy_utils, so_mpi
 import pylab as plt
 
@@ -27,7 +27,7 @@ binning_file = d["binning_file"]
 type = d["type"]
 
 bestfit_dir = d["best_fits_dir"]
-spec_dir = d["old_spec_dir"]
+spec_dir = d["spec_dir"]
 spec_corr_dir = d["spectra_leak_corr_dir"]
 plot_dir = d["plots_dir"]+"/leakage/"
 
@@ -90,6 +90,8 @@ n_spec, sv1_list, ar1_list, sv2_list, ar2_list = pspipe_list.get_spectra_list(d)
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_spec - 1)
 
+l = io.load_hdf5(spec_dir+f"{type}_all_sn_cross_data.h5", "l")
+
 for task in subtasks:
     task = int(task)
     sv1, ar1, sv2, ar2 = sv1_list[task], ar1_list[task], sv2_list[task], ar2_list[task]
@@ -114,7 +116,7 @@ for task in subtasks:
         for s2 in range(nsplit[sv2]):
             if (sv1 == sv2) & (ar1 == ar2) & (s1 > s2) : continue
             spec_name=f"{type}_{sv1}_{ar1}x{sv2}_{ar2}_{s1}{s2}"
-            l, ps = so_spectra.read_ps(spec_dir + f"/{spec_name}.dat", spectra=spectra)
+            ps = io.load_hdf5(spec_dir+f"{type}_all_sn_cross_data.h5", ((f'{sv1}', f'{ar1}', f'sn{s1}'), (f'{sv2}', f'{ar2}', f'sn{s2}')))
             
             lb, residual = leakage.leakage_correction(l_th,
                                                       ps_th,

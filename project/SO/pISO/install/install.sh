@@ -58,7 +58,6 @@ fi
 
 # Branch management
 declare -A branches=(
-    ["ducc"]="coupling_matrices_beta"
     ["pspy"]="zach_piso"
     ["pspipe_utils"]="zach_piso"
     ["PSpipe"]="zach_piso"

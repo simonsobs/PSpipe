@@ -293,7 +293,7 @@ for sv in surveys:
         filters[sv] = None
 
 # get spectrum-level auxiliary data products
-spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_" )
+spec_name_list = pspipe_list.get_spec_name_list(d, delimiter="_", from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
 
 if apply_kspace_filter and kspace_tf_path != "analytical":
     add_corr = {}

@@ -23,7 +23,7 @@ from os.path import join as opj
 import numpy as np
 import healpy as hp
 
-from pixell import enmap, enplot, wcsutils
+from pixell import enmap, enplot, wcsutils, curvedsky
 from pspipe_utils import kspace, log, pspipe_list, dict_utils, misc, io
 from pspy import pspy_utils, so_dict, so_map, so_mpi, sph_tools, so_mcm, so_spectra
 
@@ -108,7 +108,7 @@ apply_kspace_filter = d["apply_kspace_filter"] # FIXME: this might not be one th
 kspace_tf_path = d["kspace_tf_path"]
 deconvolve_pixwin = d["deconvolve_pixwin"] # FIXME: this might not be one thing for all surveys etc.
 niter = d["niter"]
-lmax = d["lmax"]
+# lmax = d["lmax"]
 type = d["type"]
 binning_file = d["binning_file"]
 binned_mcm = d["binned_mcm"]
@@ -126,7 +126,6 @@ if which == 'sims':
             "sims for computation of corrections to kspace filter"
 
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
-_, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax)
 
 # if data, write into spec_dir
 # if sims, write spectra into simulated_spec_dir and any maps into 
@@ -170,6 +169,7 @@ else:
 # the same for data and sims
 n_map, sv_list, map_list = pspipe_list.get_arrays_list(d)
 n_spec, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d, from_spec_nullgroups=d['spectra_list_from_spec_nullgroups'])
+lmax_max, lmax_dict = pspipe_list.get_lmax_info(d["lmax"], sv1_list, m1_list, sv2_list, m2_list)
 
 # convert to arrays to support advanced indexing
 sv_list = np.array(sv_list)
@@ -269,7 +269,7 @@ for sv in surveys:
             # length of the file if it doesn't reach lmax (caught in SignalModel)
             pixwins[sv] = None
             inv_pixwins[sv] = None
-            pixwins_ell[sv] = hp.pixwin(d[f"pixwin_{sv}"]["nside"], lmax=lmax,
+            pixwins_ell[sv] = hp.pixwin(d[f"pixwin_{sv}"]["nside"], lmax=lmax_max,
                                         datapath='/scratch/gpfs/SIMONSOBS/lat-iso/')
         else:
             pixwins[sv] = None
@@ -395,13 +395,13 @@ if which == 'sims':
     if simulate_lens:
         f_name_cmb = bestfit_dir + "unlensed_cmb_and_lensing.dat"
         spectra_with_lens = spectra + ['PP'] + [f'P{p}' for p in 'TEB'] + [f'{p}P' for p in 'TEB']
-        ps_mat = simulation.unlensed_cmb_and_lensing_matrix_from_file(f_name_cmb, lmax + 500, spectra_with_lens)
+        ps_mat = simulation.unlensed_cmb_and_lensing_matrix_from_file(f_name_cmb, lmax_max + 500, spectra_with_lens)
     else:
         f_name_cmb = bestfit_dir + "cmb.dat"
-        ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax + 500, spectra)
+        ps_mat = simulation.cmb_matrix_from_file(f_name_cmb, lmax_max + 500, spectra)
 
     f_name_fg = bestfit_dir + "fg_{}x{}.dat"
-    _, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, mapname_list, lmax + 500, spectra)
+    _, fg_mat = simulation.foreground_matrix_from_files(f_name_fg, mapname_list, lmax_max + 500, spectra)
     
     # creating spectra for simulations without E or B
     if for_kspace and noE_noB:
@@ -422,16 +422,16 @@ if which == 'sims':
     modeltags2modelinfos = dict_utils.get_noise_model_tags_to_noise_model_infos(d)
 
     # nofilt sims need to have the analytical TF applied, then removed by the mbl_inv
-    signal_model_args = (mapnames2minfos, lmax, ps_mat, fg_mat, bl, cal, pol_eff)
+    signal_model_args = (mapnames2minfos, lmax_max, ps_mat, fg_mat, bl, cal, pol_eff)
     if for_kspace:
-        signal_model_args_nofilt = (mapnames2minfos, lmax, ps_mat, fg_mat, bl_nofilt, cal, pol_eff)
+        signal_model_args_nofilt = (mapnames2minfos, lmax_max, ps_mat, fg_mat, bl_nofilt, cal, pol_eff)
         if noE_noB:
-            signal_model_args_noE = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl, cal, pol_eff)
-            signal_model_args_noB = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl, cal, pol_eff)
+            signal_model_args_noE = (mapnames2minfos, lmax_max, ps_mat_noE, fg_mat_noE, bl, cal, pol_eff)
+            signal_model_args_noB = (mapnames2minfos, lmax_max, ps_mat_noB, fg_mat_noB, bl, cal, pol_eff)
             
             
-            signal_model_args_noE_nofilt = (mapnames2minfos, lmax, ps_mat_noE, fg_mat_noE, bl_nofilt, cal, pol_eff)
-            signal_model_args_noB_nofilt = (mapnames2minfos, lmax, ps_mat_noB, fg_mat_noB, bl_nofilt, cal, pol_eff)
+            signal_model_args_noE_nofilt = (mapnames2minfos, lmax_max, ps_mat_noE, fg_mat_noE, bl_nofilt, cal, pol_eff)
+            signal_model_args_noB_nofilt = (mapnames2minfos, lmax_max, ps_mat_noB, fg_mat_noB, bl_nofilt, cal, pol_eff)
 
     signal_model_kwargs = dict(bl_err=bl_err, gl=gl, gl_err=gl_err, pixwin_apod_deg=sim_pixwin_apod_deg)
     noise_model_args = (mapnames2minfos, modeltags2modelinfos)
@@ -686,17 +686,17 @@ for iii in mapset_iterator:
                     if for_kspace:
                         split_nofilt =  split_nofilt.subtract_mean(window_tuple)             
 
-
+            lmax_ar = lmax_dict[(sv, m, sv, m)]     # TODO: is this ok ?
             if which == 'data':
-                master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
+                master_alms = sph_tools.get_alms(split, window_tuple, niter, lmax_ar, dtype=np.complex64) # save memory, maps only single-prec anyway
                 np.save(f"{alms_dir}" + f"alms_{sv}_{m}_set{split_idx}.npy", master_alms)
                 master_alms = None
             else:
                 if not for_kspace:
-                    master_alms[sv, m, snk] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
+                    master_alms[sv, m, snk] = sph_tools.get_alms(split, window_tuple, niter, lmax_ar, dtype=np.complex64) # save memory, maps only single-prec anyway
                 else:
-                    master_alms[sv, m, snk, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
-                    master_alms[sv, m, snk, "nofilter"] = sph_tools.get_alms(split_nofilt, window_tuple, niter, lmax, dtype=np.complex64) # save memory, maps only single-prec anyway
+                    master_alms[sv, m, snk, "filter"] = sph_tools.get_alms(split, window_tuple, niter, lmax_ar, dtype=np.complex64) # save memory, maps only single-prec anyway
+                    master_alms[sv, m, snk, "nofilter"] = sph_tools.get_alms(split_nofilt, window_tuple, niter, lmax_ar, dtype=np.complex64) # save memory, maps only single-prec anyway
                 if for_kspace:
                     split_nofilt = None
 
@@ -740,6 +740,9 @@ for iii in mapset_iterator:
         ps_dict_all_nofilt = {}
 
     for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator, strict=True):
+        lmax_spec = lmax_dict[sv1, m1, sv2, m2 ]
+        _, _, lb, _ = pspy_utils.read_binning_file(binning_file, lmax_spec)
+
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
         pseudo2datavec = np.load(opj(f'{mcm_dir}', f'pseudo2datavec_{spec_name}.npy'), allow_pickle=True).item()            
 
@@ -755,8 +758,21 @@ for iii in mapset_iterator:
                 # TODO: test if speed penalty of alm np.complex128 conversion 
                 # is worth the memory saved (takes ~14s per spectrum)
                 if which == "data" or (which == "sims" and not for_kspace):
-                    _, pseudo_dict = so_spectra.get_spectra_pixell(master_alms[sv1, m1, snk1],
-                                                                master_alms[sv2, m2, snk2],
+                    
+                    # Cut alms to lmax_spec TODO: make something like lmax_ar[sv1, m1] ?
+                    masters_alms_1 = curvedsky.transfer_alm(
+                        curvedsky.alm_info(lmax=lmax_dict[sv1, m1, sv1, m1]),
+                        master_alms[sv1, m1, snk1],
+                        curvedsky.alm_info(lmax=lmax_spec)
+                    )
+                    masters_alms_2 = curvedsky.transfer_alm(
+                        curvedsky.alm_info(lmax=lmax_dict[sv2, m2, sv2, m2]),
+                        master_alms[sv2, m2, snk2],
+                        curvedsky.alm_info(lmax=lmax_spec)
+                    )
+                    
+                    _, pseudo_dict = so_spectra.get_spectra_pixell(masters_alms_1,
+                                                                masters_alms_2,
                                                                 spectra=spectra,
                                                                 apply_pspy_cut=True,
                                                                 dtype=np.float64)

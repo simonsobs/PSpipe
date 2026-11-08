@@ -27,7 +27,7 @@ log = log.get_logger(**d)
 
 # first let's get a list of all frequency we plan to study
 surveys = d["surveys"]
-lmax = d["lmax"]
+lmax = pspipe_list.get_lmax_max(d["lmax"])
 type = d["type"]
 spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 

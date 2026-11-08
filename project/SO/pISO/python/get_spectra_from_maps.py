@@ -118,8 +118,6 @@ plot_maps = False if "plot_maps" not in d else d["plot_maps"]
 
 if which == 'sims':
     sim_pixwin_apod_deg = d['sim_pixwin_apod_deg']
-    add_white_noise_above_lmax = d['add_white_noise_above_lmax']
-    white_noise_ell_taper_width = d['white_noise_ell_taper_width']
     keep_noise_models_in_memory = d['keep_noise_models_in_memory']
 
     if for_kspace:
@@ -438,10 +436,7 @@ if which == 'sims':
     signal_model_kwargs = dict(bl_err=bl_err, gl=gl, gl_err=gl_err, pixwin_apod_deg=sim_pixwin_apod_deg)
     noise_model_args = (mapnames2minfos, modeltags2modelinfos)
     if not for_kspace:
-        
-        noise_model_kwargs = dict(add_white_noise_above_lmax=add_white_noise_above_lmax,
-                                  white_noise_ell_taper_width=white_noise_ell_taper_width,
-                                  keep_model=keep_noise_models_in_memory)
+        noise_model_kwargs = dict(keep_model=keep_noise_models_in_memory)
     else:
         noise_model_kwargs = None
    

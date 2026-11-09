@@ -40,7 +40,7 @@ spectra = ["TT", "TE", "TB", "ET", "BT", "EE", "EB", "BE", "BB"]
 
 surveys = d["surveys"]
 niter = d['niter']
-lmax = d["lmax"]
+# lmax = d["lmax"]
 type = d['type']
 if type == "Dl":
     doDl = 1
@@ -56,7 +56,7 @@ templates = {}
 filter_dicts = {}
 for sv in surveys:
     maps = d[f'arrays_{sv}']
-    templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[0]}"])
+    templates[sv] = so_map.read_map(d[f"window_T_{sv}_{maps[0]}"])
     if templates[sv].pixel == "CAR":
         if apply_kspace_filter:
             filter_dicts[sv] = d[f"k_filter_{sv}"]
@@ -73,6 +73,7 @@ else:
     l_exact, l_band, l_toep = None, None, None
 
 n_mcms, sv1_list, m1_list, sv2_list, m2_list = pspipe_list.get_spectra_list(d, from_spec_nullgroups=False) # need all crosses for cov
+lmax_max, lmax_dict = pspipe_list.get_lmax_info(d["lmax"], sv1_list, m1_list, sv2_list, m2_list)
 
 so_mpi.init(True)
 subtasks = so_mpi.taskrange(imin=0, imax=n_mcms - 1)
@@ -127,7 +128,7 @@ if args.old:
                                                     bl2=(bl2["T"], bl2["E"]),
                                                     binning_file=binning_file,
                                                     niter=niter,
-                                                    lmax=lmax,
+                                                    lmax=lmax_dict[sv1, m1, sv2, m2],
                                                     type=type,
                                                     l_exact=l_exact,
                                                     l_band=l_band,
@@ -162,14 +163,14 @@ else:
     # can support this. read, check, and transform each distinct window one at
     # a time so we never hold more than one raw map in memory at once (the map
     # itself goes out of scope once its alm is computed)
-    maxl = 2*lmax # this is OK, it is (up to) Nyquist
+    maxl = 2*lmax_max # this is OK, it is (up to) Nyquist
     win_fn2walm = {}
     for win_fn in m2win_fn.values():
         if win_fn not in win_fn2walm: # no repeated computation (or keys)
             win = so_map.read_map(win_fn)
             lmax_limit = win.get_lmax_limit()
-            assert lmax <= lmax_limit, \
-                f'{win_fn=} can only support 2*{lmax_limit=}, we want 2*{lmax=}'
+            assert lmax_max <= lmax_limit, \
+                f'{win_fn=} can only support 2*{lmax_limit=}, we want 2*{lmax_max=}'
             win_fn2walm[win_fn] = sph_tools.map2alm(win, niter=niter, lmax=maxl, dtype=np.complex128)
 
     # now calculate the spectra for the 2pt couplings. unlike for the covariance,
@@ -226,7 +227,7 @@ else:
 
     log.info(f"[Rank {so_mpi.rank}]: Computing {len(specs_for_ducc)} unique mcm matrices using ducc")
 
-    mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax, optypes_for_ducc,
+    mcms = so_mcm.ducc_couplings(specs_for_ducc, lmax_max, optypes_for_ducc,
                                  dtype=np.float64, coupling=False,
                                  pspy_index_convention=True)
 
@@ -245,17 +246,18 @@ else:
             i += 2
     assert i == len(mcms), f'Got {i=} but expected {len(mcms)=}'
 
-    # get the pseudo2data and theory2data matrices, including binning etc.
-    # TODO: recompute this for every spectrum individually!
-    bin_lo, bin_hi, _, bin_size = pspy_utils.read_binning_file(binning_file, lmax)
-    nbins = len(bin_hi)
-
     for task in subtasks:
         log.info(f"[Rank {so_mpi.rank}, {task:02d}] Computing bbl and other products")
 
         sv1, m1, sv2, m2 = sv1_list[task], m1_list[task], sv2_list[task], m2_list[task]
+        lmax_spec = lmax_dict[sv1, m1, sv2, m2 ]
         spec_name = f"{sv1}_{m1}x{sv2}_{m2}"
 
+        # get the pseudo2data and theory2data matrices, including binning etc.
+        # TODO: recompute this for every spectrum individually!
+        bin_lo, bin_hi, _, bin_size = pspy_utils.read_binning_file(binning_file, lmax_spec)
+        nbins = len(bin_hi)
+        
         # build the 5-part mcm for this task by grabbing matrices out of mcms
         mcms_t = []
 
@@ -267,8 +269,10 @@ else:
                 can_field_info = pspipe_list.canonize_connected_2pt(f1, f2)
                 can_con_com_2pt_and_optype = canonized_field_info2can_con_com_2pts_and_optypes[can_field_info]
                 idx = can_con_com_2pts_and_optypes.index(can_con_com_2pt_and_optype)
-                mcms_t.extend(mcms[i] for i in mcms_idxs[idx])
+                # Cut mcms to the right lmax, the -2 comes from pspy convention starting at ell=2
+                mcms_t.extend(mcms[i][:lmax_spec-2, :lmax_spec-2] for i in mcms_idxs[idx])
         mcms_t = np.array(mcms_t)
+        log.info(mcms_t.shape)
 
         # get the beams
         # TODO: generalize this into a whole (9nl x 9nl) operator, a la W_l^{WXYZ}
@@ -277,28 +281,28 @@ else:
         l2_T, bl2_T = misc.prep_beams(d[f"beam_T_{sv2}_{m2}"], norm='mono', return_err=False)
         l2_P, bl2_P = misc.prep_beams(d[f"beam_pol_{sv2}_{m2}"], norm='mono', return_err=False)
         for _l in (l1_P, l2_T, l2_P):
-            assert np.all(l1_T[:lmax] == _l[:lmax]), f'bls assumed to have same ell'
+            assert np.all(l1_T[:lmax_spec] == _l[:lmax_spec]), f'bls assumed to have same ell'
         assert l1_T[0] == 0, f'bls assumed to start at l=0, got l={l1_T[0]}'
 
         bl = []
         for bl1 in (bl1_T, bl1_P):
             for bl2 in (bl2_T, bl2_P):
-                bl.append(bl1[2:lmax] * bl2[2:lmax]) # TODO: reconsider pspipe conventions
+                bl.append(bl1[2:lmax_spec] * bl2[2:lmax_spec]) # TODO: reconsider pspipe conventions
         bl = np.array(bl)
 
         # get the tf. will be 1 if nothing is being filtered, so OK to do this in all cases
         # TODO: implement something like 2111.01113
-        l, tf = kspace.build_analytic_kspace_filter_diag(sv1, sv2, lmax, templates, filter_dicts)
+        l, tf = kspace.build_analytic_kspace_filter_diag(sv1, sv2, lmax_spec, templates, filter_dicts)
         assert l[0] == 0, f'Tf assumed to start at l=0, got l={l[0]}'
-        tf = tf[2:lmax] # TODO: reconsider pspipe conventions
+        tf = tf[2:lmax_spec] # TODO: reconsider pspipe conventions
 
         # get the total response. check that it is nonzero in all bins. get the minimum,
         # maximum l of the total response, and a slice object corresponding to this
         total_response = tf * bl # (nl,) * (4, nl) = (4, nl)
-        assert total_response.shape == (4, lmax-2), \
-            f'expected total_response.shape=(4, {lmax}-2), got {total_response.shape=}'
+        assert total_response.shape == (4, lmax_spec-2), \
+            f'expected total_response.shape=(4, {lmax_spec}-2), got {total_response.shape=}'
 
-        l = np.arange(2, lmax) # assumes 2:lmax ordering
+        l = np.arange(2, lmax_spec) # assumes 2:lmax ordering
         for ibin in range(nbins):
             loc = np.where((l >= bin_lo[ibin]) & (l <= bin_hi[ibin]))[0] # this is common idiom for PSpipe binning
             for spin_idx in range(4):
@@ -350,12 +354,12 @@ else:
         total_response_dict = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(total_response[:, None, :], spectra) # (4, nl) -> (4, 1, nl)
         for k in signal_dict.keys():
             # we get the diagonal "blocks", and remove spurious extra dim
-            signal_dict[k] = total_response_dict[k][k][0] * signal_dict[k][:lmax-2] # (1, nl)[0] * (nl,) = (nl,)
+            signal_dict[k] = total_response_dict[k][k][0] * signal_dict[k][:lmax_spec-2] # (1, nl)[0] * (nl,) = (nl,)
 
         # the fully realized mcm matrix would be a lot of memory
         pseudosignal_dict = so_mcm.spin2spin_array_matmul_sparse_dict_vec(mcms_t, spectra, signal_dict)
         so_spectra.write_ps(opj(pseudosignal_dir, f'pseudo_cmb_and_fg_{spec_name}.dat'),
-                            l[:lmax-2], pseudosignal_dict, 'Cl', spectra=spectra)
+                            l[:lmax_spec-2], pseudosignal_dict, 'Cl', spectra=spectra)
 
         # for broadcasting against mcms now
         total_response = np.repeat(total_response, (1, 1, 1, 2), axis=0) # (4, nl) -> (5, nl)
@@ -364,9 +368,9 @@ else:
         # it will be binned before being inverted. the above check -- that the total_response is
         # at least nonzero in all bins -- should help ensure that it's invertible
         if binned_mcm:
-            Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax, type) # b x (lmax - 2)
+            Pbl = so_spectra.get_binning_matrix(bin_lo, bin_hi, lmax_spec, type) # b x (lmax - 2)
             mxx = np.zeros((5, nbins, nbins)) # 5 x b x b
-            Bbl = np.zeros((5, nbins, lmax)) # 5 x b x lmax
+            Bbl = np.zeros((5, nbins, lmax_spec)) # 5 x b x lmax
 
             for spin_idx in range(5):
                 # multiply by tf * bl on the right
@@ -406,9 +410,9 @@ else:
             _bin_size[0] -= (_bin_lo[0] - bin_lo[0]) # reduce the bin size by the right amount (perhaps 0)
             _bin_size[-1] -= (bin_hi[-1] - _bin_hi[-1]) # reduce the bin size by the right amount (perhaps 0)
 
-            Pbl = so_spectra.get_binning_matrix(_bin_lo, _bin_hi, lmax, type) # b x (lmax - 2)
+            Pbl = so_spectra.get_binning_matrix(_bin_lo, _bin_hi, lmax_spec, type) # b x (lmax - 2)
             mxx = mcms_t # 5 x l x l
-            Bbl = np.zeros((nbins, lmax)) # b x lmax
+            Bbl = np.zeros((nbins, lmax_spec)) # b x lmax
 
             so_mcm.mcm_fortran.binning_matrix(np.eye(mcms.shape[-1]).T,
                                               _bin_lo,

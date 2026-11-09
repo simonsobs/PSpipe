@@ -49,7 +49,7 @@ templates = {}
 filter_dicts = {}
 for sv in surveys:
     maps = d[f'arrays_{sv}']
-    templates[sv] = so_map.read_map(d[f"window_kspace_{sv}_{maps[0]}"])
+    templates[sv] = so_map.read_map(d[f"window_T_{sv}_{maps[0]}"])
     if templates[sv].pixel == "CAR":
         if apply_kspace_filter:
             filter_dicts[sv] = d[f"k_filter_{sv}"]

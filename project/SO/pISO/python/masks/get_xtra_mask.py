@@ -24,6 +24,10 @@ parser.add_argument('paramfile', type=str,
                     help='Filename (full or relative path) of paramfile to use')
 parser.add_argument('--use-xlink', action='store_true',
                     help='If passed, also use coadd xlink files to help make mask')
+parser.add_argument("--map2ivar", nargs=2, default=[r'_map\d*', '_ivar'], type=str,
+                    help='Strings to pass in str.replace to get ivar maps')
+parser.add_argument("--map2xlink", nargs=2, default=[r'_map\d*', '_xlink'], type=str,
+                    help='Strings to pass in str.replace to get xlink maps')
 args = parser.parse_args()
 
 d = so_dict.so_dict()
@@ -31,6 +35,9 @@ d.read_from_file(args.paramfile)
 log = log.get_logger(**d)
 
 use_xlink = args.use_xlink
+map2ivar = args.map2ivar
+log.info(map2ivar)
+map2xlink = args.map2xlink
 
 # log mask infos from mask yaml file
 with open(d['xtra_mask_yaml'], "r") as f:
@@ -72,7 +79,7 @@ for sv in mask_infos['surveys_to_xtra_mask']:
             # mix-in 0's from the splits
             if d[f"src_free_maps_{sv}"] == True:
                 map_fn = map_fn.replace('_srcfree', '')
-            ivar_fn = re.sub(r'_map\d*', '_ivar', map_fn)
+            ivar_fn = re.sub(map2ivar[0], map2ivar[1], map_fn)
 
             # mask is based on the smoothed ivar map
             # only the pixels where the original ivar were nonzero though
@@ -121,7 +128,7 @@ for sv in mask_infos['surveys_to_xtra_mask']:
             coadd_map_fn = map_fns[0].replace('_00_', '_coadd_')
             if d[f"src_free_maps_{sv}"] == True:
                 coadd_map_fn = coadd_map_fn.replace('_srcfree', '')
-            coadd_xlink_fn = re.sub(r'_map\d*', '_xlink', coadd_map_fn)
+            coadd_xlink_fn = re.sub(map2ivar[0], map2ivar[1], coadd_map_fn)
         
             xlink_downgrade = d['xlink_downgrade']
             xlink = enmap.read_map(coadd_xlink_fn).upgrade(xlink_downgrade)

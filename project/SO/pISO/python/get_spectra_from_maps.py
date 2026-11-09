@@ -118,8 +118,6 @@ plot_maps = False if "plot_maps" not in d else d["plot_maps"]
 
 if which == 'sims':
     sim_pixwin_apod_deg = d['sim_pixwin_apod_deg']
-    add_white_noise_above_lmax = d['add_white_noise_above_lmax']
-    white_noise_ell_taper_width = d['white_noise_ell_taper_width']
     keep_noise_models_in_memory = d['keep_noise_models_in_memory']
 
     if for_kspace:
@@ -225,6 +223,7 @@ splits_iterator = {}
 templates = {}
 pixwins = {}
 inv_pixwins = {}
+pixwins_ell = {}
 filters = {}
 filter_dicts = {}
 
@@ -262,9 +261,20 @@ for sv in surveys:
             wx = wx.astype(np.float32)
             pixwins[sv] = (wy[:, None] * wx[None, :])
             inv_pixwins[sv] = pixwins[sv] ** (-1)
+            pixwins_ell[sv] = None
+        elif d[f"pixwin_{sv}"]["pix"] == "HEALPIX" and deconvolve_pixwin:
+            # reprojected HEALPIX map: isotropic pixwin, applied to sims in
+            # harmonic space. must match the pixwin deconvolved in
+            # get_pseudo2datavec.py. NOTE: healpy silently truncates to the
+            # length of the file if it doesn't reach lmax (caught in SignalModel)
+            pixwins[sv] = None
+            inv_pixwins[sv] = None
+            pixwins_ell[sv] = hp.pixwin(d[f"pixwin_{sv}"]["nside"], lmax=lmax,
+                                        datapath='/scratch/gpfs/SIMONSOBS/lat-iso/')
         else:
             pixwins[sv] = None
             inv_pixwins[sv] = None
+            pixwins_ell[sv] = None
 
         if apply_kspace_filter:
             filter_dicts[sv] = d[f"k_filter_{sv}"]
@@ -277,7 +287,8 @@ for sv in surveys:
     
     else:
         pixwins[sv] = None
-        inv_pixwins[sv] = None    
+        inv_pixwins[sv] = None
+        pixwins_ell[sv] = None
         filter_dicts[sv] = None
         filters[sv] = None
 
@@ -341,6 +352,7 @@ if which == 'sims':
         mapnames2minfos[mapname] = {
             'geometry': templates[sv].data.geometry,
             'pixwin': pixwins[sv],
+            'pixwin_ell': pixwins_ell[sv],
             'noise_info': d[f'noise_info_{mapname}']
         }
 
@@ -424,10 +436,7 @@ if which == 'sims':
     signal_model_kwargs = dict(bl_err=bl_err, gl=gl, gl_err=gl_err, pixwin_apod_deg=sim_pixwin_apod_deg)
     noise_model_args = (mapnames2minfos, modeltags2modelinfos)
     if not for_kspace:
-        
-        noise_model_kwargs = dict(add_white_noise_above_lmax=add_white_noise_above_lmax,
-                                  white_noise_ell_taper_width=white_noise_ell_taper_width,
-                                  keep_model=keep_noise_models_in_memory)
+        noise_model_kwargs = dict(keep_model=keep_noise_models_in_memory)
     else:
         noise_model_kwargs = None
    

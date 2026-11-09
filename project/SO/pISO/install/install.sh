@@ -58,7 +58,6 @@ fi
 
 # Branch management
 declare -A branches=(
-    ["ducc"]="79b49912"
     ["pspy"]="zach_piso"
     ["pspipe_utils"]="zach_piso"
     ["PSpipe"]="zach_piso"
@@ -112,7 +111,6 @@ echo "Installing local packages in editable mode..."
 uv pip install -e ../repos/sofind --no-cache-dir
 uv pip install -e ../repos/mnms --no-cache-dir
 uv pip install -e ../repos/pspipe_utils --no-cache-dir
-uv pip install -e ../repos/hippo --no-cache-dir
 
 # 9. Modify Slurm Template
 echo "Configuring Slurm template at $REPO_DIR/PSpipe/project/SO/pISO/slurm/tiger.slurm"

@@ -6,4 +6,3 @@ simonsobs/PSpipe
 simonsobs/pspipe_utils
 simonsobs/pspy
 simonsobs/sofind
-simonsobs/hippo

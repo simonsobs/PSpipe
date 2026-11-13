@@ -177,6 +177,21 @@ for sv1, m1, sv2, m2 in zip(sv1_iterator, m1_iterator, sv2_iterator, m2_iterator
                                                                             return_dict=True,
                                                                             dr6_like = args.old)
 
+    if (sv1 == "legacy" and m1 == "f100") or (sv2 == "legacy" and m2 == "f100"):
+        log.info(f"[Rank {so_mpi.rank}] discarding bad kspace correction for {spec}")
+        bins_disc = np.where(lb > 2300)[0]
+        for el in elements:
+            # setting the kspace corr for ell > 2300 to 1 for planck 100
+            # the correction gets NaNs due to the mask being too small
+            # and the lower resolution of the 100 channel
+            # quick and dirty trick not to have to use different lmax per channel
+            kspace_dict[spec][el][bins_disc] = np.ones(len(bins_disc))
+
+        for i, spec1 in enumerate(spectra):
+            for j, spec2 in enumerate(spectra):
+                for k in bins_disc:
+                    kspace_matrix[spec][k + i * n_bins, k + j * n_bins] = kspace_dict[spec][f"{spec1}_to_{spec2}"][k]
+        
     np.save(f"{tf_dir}/kspace_matrix_{spec}.npy", kspace_matrix[spec])
 so_mpi.barrier()
 

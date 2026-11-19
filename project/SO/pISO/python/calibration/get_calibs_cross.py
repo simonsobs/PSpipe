@@ -7,7 +7,7 @@ only does AxA' - BxB for now, #TODO: include others
 import matplotlib
 from cobaya.run import run
 matplotlib.use("Agg")
-from pspy import pspy_utils, so_dict, so_spectra, so_cov
+from pspy import pspy_utils, so_dict, so_spectra, so_cov, so_mcm
 from pspipe_utils import consistency, log
 import numpy as np
 from getdist.mcsamples import loadMCSamples
@@ -60,10 +60,10 @@ elif args.mode == "EE":
     plot_output_dir = plot_dir + "/poleff/"
     plot_output_spec_dir = plot_dir + "/poleff/spec_plots/"
 else:
-    NotImplementedError("Mode needs to be TT or EE")
+    raise NotImplementedError("Mode needs to be TT or EE")
 
 if planck_corr:
-    spec_dir = "spectra_leak_corr_planck_bias_corr"
+    spec_dir = d["spectra_leak_corr_planck_bias_corr_dir"]
     calib_dir += "_planck_bias_corrected"
 
 _, _, lb, _ = pspy_utils.read_binning_file(d["binning_file"], d["lmax"])
@@ -99,7 +99,11 @@ full_pte_cal = {}
 cal_vec = {}
 all_params_set = set() # Set of all params
 
+lmax = d['lmax']
 ls_cmb, Dls_cmb = so_spectra.read_ps(d["best_fits_dir"]+ "/cmb.dat", spectra=spectra)
+assert ls_cmb[0] == 2
+for k, v in Dls_cmb.items():
+    Dls_cmb[k] = v[:lmax] # trim to match bbl
 bbl_template = d["mcm_dir"] + "{}x{}_Bbl.npy"
 
 for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
@@ -139,9 +143,15 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
         data_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = Dls[mode][ell_masks[i]]
         
         # Load model (planck or cmb.dat)
+        bbl = np.load(bbl_template.format(spec1, spec2))
+        if d['binned_mcm']:
+            spec2spec2Bbl = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(bbl, spectra)
+        else:
+            spec2spec2Bbl = so_mcm.get_block_diagonal_sparse_dict_mat_from_array(bbl, spectra)
+
         if (ref_spec1 == "cmb") and (ref_spec2 == "cmb"):
-            bbl = np.load(bbl_template.format(spec1, spec2))[3, :n_bins, :d["lmax"]] # TODO: 3 if EE but otherwise ??
-            model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = (bbl @ Dls_cmb[mode][:d["lmax"]])[ell_masks[i]]
+            _theory_dict = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(spec2spec2Bbl, Dls_cmb)
+            model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = _theory_dict[mode][ell_masks[i]]
         else:
             ls, Dls = so_spectra.read_ps(spec_template.format(ref_spec1, ref_spec2), spectra=spectra)
             model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = Dls[mode][ell_masks[i]]
@@ -151,29 +161,43 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
             try:
                 cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(spec1, spec2, spec3, spec4)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
             except:
-                cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(spec3, spec4, spec1, spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
+                cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(spec3, spec4, spec1, spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode).T[np.ix_(ell_masks[i], ell_masks[j])]
             
             if not (((ref_spec1 == "cmb") and (ref_spec2 == "cmb")) or ((ref_spec3 == "cmb") and (ref_spec4 == "cmb"))):
                 try:
                     cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec1, ref_spec2, ref_spec3, ref_spec4)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
                 except:
-                    cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec3, ref_spec4, ref_spec1, ref_spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
-                cov_mat_dm[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec3, ref_spec4, spec1, spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
-                cov_mat_md[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec1, ref_spec2, spec3, spec4)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
+                    cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec3, ref_spec4, ref_spec1, ref_spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode).T[np.ix_(ell_masks[i], ell_masks[j])]
+                cov_mat_dm[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec3, ref_spec4, spec1, spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode).T[np.ix_(ell_masks[i], ell_masks[j])] # only works cause legacy is first
+                cov_mat_md[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec1, ref_spec2, spec3, spec4)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])] # only works cause legacy is first
   
         if subtract_bf_fg:
             
             l_fg, bf_fg = so_spectra.read_ps(f"{bestfit_dir}/fg_{spec1}x{spec2}.dat", spectra=spectra)
-            _, bf_fg_binned = pspy_utils.naive_binning(l_fg, bf_fg[mode], d["binning_file"], d["lmax"])
-            data_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = bf_fg_binned[ell_masks[i]]
+            assert l_fg[0] == 2
+            for k, v in bf_fg.items():
+                bf_fg[k] = v[:lmax] # trim to match bbl
+            bf_fg_binned = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(spec2spec2Bbl, bf_fg)
+            data_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = bf_fg_binned[mode][ell_masks[i]]
             
             if not ((ref_spec1 == "cmb") and (ref_spec2 == "cmb")):
+                assert ref_spec1 != 'cmb' and ref_spec2 != 'cmb'
+
+                bbl = np.load(bbl_template.format(ref_spec1, ref_spec2))
+                if d['binned_mcm']:
+                    spec2spec2Bbl = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(bbl, spectra)
+                else:
+                    spec2spec2Bbl = so_mcm.get_block_diagonal_sparse_dict_mat_from_array(bbl, spectra)
+
                 l_fg, bf_fg = so_spectra.read_ps(f"{bestfit_dir}/fg_{ref_spec1}x{ref_spec2}.dat", spectra=spectra)
-                _, bf_fg_binned = pspy_utils.naive_binning(l_fg, bf_fg[mode], d["binning_file"], d["lmax"])
-                model_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = bf_fg_binned[ell_masks[i]]
+                assert l_fg[0] == 2
+                for k, v in bf_fg.items():
+                    bf_fg[k] = v[:lmax] # trim to match bbl
+                bf_fg_binned = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(spec2spec2Bbl, bf_fg)
+                model_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = bf_fg_binned[mode][ell_masks[i]]
 
     log.info('Inverting cov mat')
-    cov_mat_res = cov_mat_d + cov_mat_m - cov_mat_dm - cov_mat_md.T
+    cov_mat_res = cov_mat_d + cov_mat_m - cov_mat_dm - cov_mat_md
     fig, ax = plt.subplots(figsize=(size/3, size/3))
     p = ax.imshow(cov_mat_res)
     plt.colorbar(p)
@@ -191,9 +215,9 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
     arrays_calib_names = {ar: f"cal{id}" for id, ar in enumerate(arrays_set)}
 
 
-    i = 0
     # TODO: make this more elegant ?
-    def get_calib_vec(*cals):
+    def get_calib_vecs(*cals):
+        # res_vec = (data*cal(s1s2) - model*cal(r1r2)) - (data_fg_vec - model_fg_vec)
         def get_cal(sv_ar):
             if sv_ar in dont_calib:
                 return 1.
@@ -204,20 +228,22 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
                 #     return 1 / cals[arrays_calib_indices[sv_ar]]
                 return cals[arrays_calib_indices[sv_ar]]
             else:
-                KeyError(f"{sv_ar} not in arrays_set")
+                raise KeyError(f"{sv_ar} not in arrays_set")
             
             
-        calib_vector = np.ones(size, dtype=np.float64)
+        calib_vector_data = np.ones(size, dtype=np.float64)
+        calib_vector_model = np.ones(size, dtype=np.float64)
         for i, ((spec1, spec2), (ref_spec1, ref_spec2)) in enumerate(calib_spec_set):
-            calib_vector[len_ls_cumsum[i]:len_ls_cumsum[i+1]] *= (get_cal(spec1) * get_cal(spec2))**calfac2calvec_index  # ? cov is true only if cals close to 1
-        return calib_vector
-
+            calib_vector_data[len_ls_cumsum[i]:len_ls_cumsum[i+1]] *= (get_cal(spec1) * get_cal(spec2))**calfac2calvec_index
+            calib_vector_model[len_ls_cumsum[i]:len_ls_cumsum[i+1]] *= (get_cal(ref_spec1) * get_cal(ref_spec2))**calfac2calvec_index  # cov is true only if cals close to 1
+        
+        return calib_vector_data, calib_vector_model
 
     def logL(cal0=None, cal1=None, cal2=None, cal3=None, cal4=None, cal5=None, cal6=None, cal7=None, cal8=None, cal9=None, cal10=None, cal11=None, cal12=None):
         all_cals = [cal0, cal1, cal2, cal3, cal4, cal5, cal6, cal7, cal8, cal9, cal10, cal11, cal12]
         notNone_cals = [cal for cal in all_cals if cal is not None]
-        calib_vec = get_calib_vec(*notNone_cals)
-        res_vec = data_vec - (model_vec / calib_vec) - data_fg_vec + model_fg_vec   # Don't calib fg ?
+        calib_vec_data, calib_vec_model = get_calib_vecs(*notNone_cals)
+        res_vec = (data_vec * calib_vec_data - model_vec * calib_vec_model) - (data_fg_vec - model_fg_vec)
         chi2 = res_vec @ inv_cov_mat_res @ res_vec
         return -0.5 * chi2
     
@@ -253,18 +279,18 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
     all_params_set.update([_ for _ in samples[test].getParamNames().list() if "chi" not in _]) # Add params names, for plotting the full triangle plot
     
     results_dict[test] =  {ar: [samples[test].mean(name), np.sqrt(samples[test].cov([name])[0, 0])] for ar, name in arrays_calib_names.items()}
-    cal_vec[test] = get_calib_vec(*[results_dict[test][ar][0] for ar in arrays_calib_names.keys()])
+    cal_vec[test] = get_calib_vecs(*[results_dict[test][ar][0] for ar in arrays_calib_names.keys()])
 
     pte_before_cal[test] = {}
     pte_after_cal[test] = {}
     for i, ((spec1, spec2), (ref_spec1, ref_spec2)) in enumerate(calib_spec_set):
         
-        pte_before_cal[test][(spec1, spec2), (ref_spec1, ref_spec2)] = 1 - ss.chi2(len(ls[ell_masks[i]])).cdf((data_vec - model_vec)[len_ls_cumsum[i]:len_ls_cumsum[i+1]] @ np.linalg.inv(cov_mat_res[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]]) @ (data_vec - model_vec)[len_ls_cumsum[i]:len_ls_cumsum[i+1]])
-        pte_after_cal[test][(spec1, spec2), (ref_spec1, ref_spec2)] = 1 - ss.chi2(len(ls[ell_masks[i]])).cdf((data_vec - model_vec / cal_vec[test])[len_ls_cumsum[i]:len_ls_cumsum[i+1]] @ np.linalg.inv(cov_mat_res[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]]) @ (data_vec - model_vec / cal_vec[test])[len_ls_cumsum[i]:len_ls_cumsum[i+1]])
+        pte_before_cal[test][(spec1, spec2), (ref_spec1, ref_spec2)] = 1 - ss.chi2(len(ls[ell_masks[i]])).cdf((data_vec - model_vec - (data_fg_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]] @ np.linalg.inv(cov_mat_res[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]]) @ (data_vec - model_vec - (data_fg_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]])
+        pte_after_cal[test][(spec1, spec2), (ref_spec1, ref_spec2)] = 1 - ss.chi2(len(ls[ell_masks[i]])).cdf((data_vec * cal_vec[test][0] - model_vec * cal_vec[test][1] - (data_fg_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]] @ np.linalg.inv(cov_mat_res[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]]) @ (data_vec * cal_vec[test][0] - model_vec * cal_vec[test][1] - (data_fg_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]])
     
-    full_pte_cal[test] = 1 - ss.chi2(len(ls[ell_masks[i]])).cdf((data_vec - model_vec / cal_vec[test]) @ inv_cov_mat_res @ (data_vec - model_vec / cal_vec[test]))
+    full_pte_cal[test] = 1 - ss.chi2(len(data_vec)).cdf((data_vec * cal_vec[test][0] - model_vec * cal_vec[test][1] - (data_fg_vec - model_fg_vec)) @ inv_cov_mat_res @ (data_vec * cal_vec[test][0] - model_vec * cal_vec[test][1] - (data_fg_vec - model_fg_vec)))
 
-log.info(f"FULL PTE : {full_pte_cal[test]}")
+    log.info(f"FULL PTE for {test}: {full_pte_cal[test]}")
 
 #plit plot everyting
 log.info("Plot calibrated spectra")
@@ -299,11 +325,17 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
         # Load data
         ls, Dls = so_spectra.read_ps(spec_template.format(spec1, spec2), spectra=spectra)
         data_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = Dls[mode][ell_masks[i]]
-        
+
         # Load model (planck or cmb.dat)
+        bbl = np.load(bbl_template.format(spec1, spec2))
+        if d['binned_mcm']:
+            spec2spec2Bbl = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(bbl, spectra)
+        else:
+            spec2spec2Bbl = so_mcm.get_block_diagonal_sparse_dict_mat_from_array(bbl, spectra)
+
         if (ref_spec1 == "cmb") and (ref_spec2 == "cmb"):
-            bbl = np.load(bbl_template.format(spec1, spec2))[3, :n_bins, :d["lmax"]] # TODO: 3 if EE but otherwise ??
-            model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = (bbl @ Dls_cmb[mode][:d["lmax"]])[ell_masks[i]]
+            _theory_dict = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(spec2spec2Bbl, Dls_cmb)
+            model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = _theory_dict[mode][ell_masks[i]]
         else:
             ls, Dls = so_spectra.read_ps(spec_template.format(ref_spec1, ref_spec2), spectra=spectra)
             model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = Dls[mode][ell_masks[i]]
@@ -313,35 +345,52 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
             try:
                 cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(spec1, spec2, spec3, spec4)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
             except:
-                cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(spec3, spec4, spec1, spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
+                cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(spec3, spec4, spec1, spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode).T[np.ix_(ell_masks[i], ell_masks[j])]
             
             if not (((ref_spec1 == "cmb") and (ref_spec2 == "cmb")) or ((ref_spec3 == "cmb") and (ref_spec4 == "cmb"))):
                 try:
                     cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec1, ref_spec2, ref_spec3, ref_spec4)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
                 except:
-                    cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec3, ref_spec4, ref_spec1, ref_spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
-                cov_mat_dm[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec3, ref_spec4, spec1, spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
-                cov_mat_md[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec1, ref_spec2, spec3, spec4)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])]
+                    cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec3, ref_spec4, ref_spec1, ref_spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode).T[np.ix_(ell_masks[i], ell_masks[j])]
+                cov_mat_dm[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec3, ref_spec4, spec1, spec2)), spectra_order=spectra, n_bins=len(lb), block=mode+mode).T[np.ix_(ell_masks[i], ell_masks[j])] # only works cause legacy is first
+                cov_mat_md[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[j]:len_ls_cumsum[j+1]] = so_cov.selectblock(np.load(cov_template.format(ref_spec1, ref_spec2, spec3, spec4)), spectra_order=spectra, n_bins=len(lb), block=mode+mode)[np.ix_(ell_masks[i], ell_masks[j])] # only works cause legacy is first
 
         if subtract_bf_fg:
             
             l_fg, bf_fg = so_spectra.read_ps(f"{bestfit_dir}/fg_{spec1}x{spec2}.dat", spectra=spectra)
-            _, bf_fg_binned = pspy_utils.naive_binning(l_fg, bf_fg[mode], d["binning_file"], d["lmax"])
-            data_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = bf_fg_binned[ell_masks[i]]
+            assert l_fg[0] == 2
+            for k, v in bf_fg.items():
+                bf_fg[k] = v[:lmax] # trim to match bbl
+            bf_fg_binned = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(spec2spec2Bbl, bf_fg)
+            data_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = bf_fg_binned[mode][ell_masks[i]]
             
             if not ((ref_spec1 == "cmb") and (ref_spec2 == "cmb")):
-                l_fg, bf_fg = so_spectra.read_ps(f"{bestfit_dir}/fg_{ref_spec1}x{ref_spec2}.dat", spectra=spectra)
-                _, bf_fg_binned = pspy_utils.naive_binning(l_fg, bf_fg[mode], d["binning_file"], d["lmax"])
-                model_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = bf_fg_binned[ell_masks[i]]
+                assert ref_spec1 != 'cmb' and ref_spec2 != 'cmb'
 
-    cov_mat_res = cov_mat_d + cov_mat_m - cov_mat_dm - cov_mat_md.T
+                bbl = np.load(bbl_template.format(ref_spec1, ref_spec2))
+                if d['binned_mcm']:
+                    spec2spec2Bbl = so_mcm.get_spec2spec_sparse_dict_mat_from_spin2spin_array(bbl, spectra)
+                else:
+                    spec2spec2Bbl = so_mcm.get_block_diagonal_sparse_dict_mat_from_array(bbl, spectra)
+
+                l_fg, bf_fg = so_spectra.read_ps(f"{bestfit_dir}/fg_{ref_spec1}x{ref_spec2}.dat", spectra=spectra)
+                assert l_fg[0] == 2
+                for k, v in bf_fg.items():
+                    bf_fg[k] = v[:lmax] # trim to match bbl
+                bf_fg_binned = so_mcm.sparse_dict_mat_matmul_sparse_dict_vec(spec2spec2Bbl, bf_fg)
+                model_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]] = bf_fg_binned[mode][ell_masks[i]]
+
+    cov_mat_res = cov_mat_d + cov_mat_m - cov_mat_dm - cov_mat_md
     
     # Make calib vector
     arrays_set = {ar for tpl in calib_spec_set_keys for ar in tpl if ar not in dont_calib} # dont_calib usually contains planck
     arrays_set = [f'{sv}_{ar}' for sv in d["surveys"] for ar in d[f'arrays_{sv}'] if f'{sv}_{ar}' in arrays_set]   # Put arrays in the same order as arrays are in the paramfile
     arrays_calib_indices = {ar: id for id, ar in enumerate(arrays_set)}
     arrays_calib_names = {ar: f"cal{id}" for id, ar in enumerate(arrays_set)}
-    def get_calib_vec(*cals):
+    
+    # TODO: make this more elegant ?
+    def get_calib_vecs(*cals):
+        # res_vec = (data*cal(s1s2) - model*cal(r1r2)) - (data_fg_vec - model_fg_vec)
         def get_cal(sv_ar):
             if sv_ar in dont_calib:
                 return 1.
@@ -351,17 +400,19 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
                 # else:
                 #     return 1 / cals[arrays_calib_indices[sv_ar]]
                 return cals[arrays_calib_indices[sv_ar]]
-
             else:
                 raise KeyError(f"{sv_ar} not in arrays_set")
             
             
-        calib_vector = np.ones(size, dtype=np.float64)
+        calib_vector_data = np.ones(size, dtype=np.float64)
+        calib_vector_model = np.ones(size, dtype=np.float64)
         for i, ((spec1, spec2), (ref_spec1, ref_spec2)) in enumerate(calib_spec_set):
-            calib_vector[len_ls_cumsum[i]:len_ls_cumsum[i+1]] *= (get_cal(spec1) * get_cal(spec2))**calfac2calvec_index # ? cov is true only if cals close to 1
-        return calib_vector
+            calib_vector_data[len_ls_cumsum[i]:len_ls_cumsum[i+1]] *= (get_cal(spec1) * get_cal(spec2))**calfac2calvec_index
+            calib_vector_model[len_ls_cumsum[i]:len_ls_cumsum[i+1]] *= (get_cal(ref_spec1) * get_cal(ref_spec2))**calfac2calvec_index  # cov is true only if cals close to 1
+        
+        return calib_vector_data, calib_vector_model
     
-    cal_vec[test] = get_calib_vec(*[results_dict[test][ar][0] for ar in arrays_calib_names.keys()])
+    cal_vec[test] = get_calib_vecs(*[results_dict[test][ar][0] for ar in arrays_calib_names.keys()])
     
     for i, ((spec1, spec2), (ref_spec1, ref_spec2)) in enumerate(calib_spec_set):
         fig, ax = plt.subplots(3, figsize=(8, 8), gridspec_kw={"hspace": 0, "height_ratios": (2.5, 1.2, 1.2)}, sharex=True)
@@ -373,13 +424,13 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
 
         ax[1].axhline(0., color='black')
         ax[0].errorbar(ls[ell_masks[i]], data_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=(spec1, spec2), color='red', lw=.8, capsize=1.5, marker='.')
-        ax[0].errorbar(ls[ell_masks[i]], cal_vec[test][len_ls_cumsum[i]:len_ls_cumsum[i+1]] * data_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=f'{(spec1, spec2)} cal', color='blue', lw=.8, capsize=1.5, marker='.')
-        ax[0].errorbar(ls[ell_masks[i]], model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=(ref_spec1, ref_spec2), color='black', lw=.8, capsize=1.5, marker='.')
+        ax[0].errorbar(ls[ell_masks[i]], cal_vec[test][0][len_ls_cumsum[i]:len_ls_cumsum[i+1]] * data_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=f'{(spec1, spec2)} cal', color='blue', lw=.8, capsize=1.5, marker='.')
+        ax[0].errorbar(ls[ell_masks[i]], cal_vec[test][1][len_ls_cumsum[i]:len_ls_cumsum[i+1]] * model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=(ref_spec1, ref_spec2), color='black', lw=.8, capsize=1.5, marker='.')
         ax[0].plot(ls[ell_masks[i]], data_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], label=f'{(spec1, spec2)} fg', color='blue')
         ax[0].plot(ls[ell_masks[i]], model_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], label=f'{(ref_spec1, ref_spec2)} fg', color='black')
         ax[1].errorbar(
             ls[ell_masks[i]]+1, 
-            (data_vec - model_vec)[len_ls_cumsum[i]:len_ls_cumsum[i+1]] / np.sqrt(cov_mat_res[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()),
+            (data_vec - model_vec - (data_fg_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]] / np.sqrt(cov_mat_res[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()),
             np.ones_like(ls[ell_masks[i]]),
             label=f'Before cal PTE={pte_before_cal[test][(spec1, spec2), (ref_spec1, ref_spec2)]:.4f}',
             color='red',
@@ -388,7 +439,7 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
         )
         ax[1].errorbar(
             ls[ell_masks[i]]-1, 
-            (data_vec - model_vec / cal_vec[test])[len_ls_cumsum[i]:len_ls_cumsum[i+1]] / np.sqrt(cov_mat_res[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()),
+            (data_vec * cal_vec[test][0] - model_vec * cal_vec[test][1] - (data_fg_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]] / np.sqrt(cov_mat_res[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()),
             np.ones_like(ls[ell_masks[i]]),
             label=f'After cal PTE={pte_after_cal[test][(spec1, spec2), (ref_spec1, ref_spec2)]:.4f}',
             color='blue',
@@ -397,7 +448,7 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
         )
         ax[2].errorbar(
             ls[ell_masks[i]]+1, 
-            (data_vec / model_vec)[len_ls_cumsum[i]:len_ls_cumsum[i+1]],
+            ((data_vec - data_fg_vec) / (model_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]],
             # np.ones_like(ls[ell_masks[i]]),
             # label=f'Before cal PTE={pte_before_cal[test][(spec1, spec2), (ref_spec1, ref_spec2)]:.4f}',
             color='red',
@@ -406,7 +457,7 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
         )
         ax[2].errorbar(
             ls[ell_masks[i]]-1, 
-            (data_vec / (model_vec / cal_vec[test]))[len_ls_cumsum[i]:len_ls_cumsum[i+1]],
+            ((data_vec  * cal_vec[test][0] - data_fg_vec) / (model_vec * cal_vec[test][1] - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]],
             # label=f'After cal PTE={pte_after_cal[test][(spec1, spec2), (ref_spec1, ref_spec2)]:.4f}',
             color='blue',
             ls='-',
@@ -445,14 +496,14 @@ plt.clf()
 # Load default calibs and add them to measured calibs
 if mode == "TT":
     default_calibs = {f'{sv}_{ar}': d[f"cal_{sv}_{ar}"] for sv in d["surveys"] for ar in d[f"arrays_{sv}"]}
-    results_dict_save = {
-        test: {
-            name: (cal*default_calibs[name], std*default_calibs[name])
-            for name, (cal, std) in results_subdict.items()
-        } for test, results_subdict in results_dict.items()
-    }
-else:
-    results_dict_save = results_dict.copy()
+elif mode == 'EE':
+    default_calibs = {f'{sv}_{ar}': d[f"pol_eff_{sv}_{ar}"] for sv in d["surveys"] for ar in d[f"arrays_{sv}"]}
+results_dict_save = {
+    test: {
+        name: (cal*default_calibs[name], std*default_calibs[name])
+        for name, (cal, std) in results_subdict.items()
+    } for test, results_subdict in results_dict.items()
+}
 
 for j, (test, results_subdict) in enumerate(results_dict_save.items()):
     calibs_to_save = {
@@ -505,7 +556,7 @@ x = np.arange(0, len(arrays_set))
 ax.set_xticks(x, [ar.replace("lat_iso_", "") for ar in arrays_set])
 ax.set_ylabel('Calibration factor', fontsize=18)
 plt.tight_layout()
-plt.savefig(f"{plot_output_dir}/calibs_summary{'_'.join(test_names)}.pdf", bbox_inches="tight")
+plt.savefig(f"{plot_output_dir}/calibs_summary{'_'.join(test_names)}.png", bbox_inches="tight")
 plt.clf()
 plt.close()
 

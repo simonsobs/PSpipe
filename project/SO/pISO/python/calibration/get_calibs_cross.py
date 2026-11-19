@@ -450,7 +450,7 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
             marker='.'
         )
 
-        ax[2].axhline(0., color='black')
+        ax[2].axhline(1., color='black')
         ax[2].errorbar(
             ls[ell_masks[i]]+1, 
             ((data_vec - data_fg_vec) / (model_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]],

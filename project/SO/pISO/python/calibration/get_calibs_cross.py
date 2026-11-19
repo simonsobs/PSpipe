@@ -422,12 +422,15 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
         ax[2].axvspan(xmin=0, xmax=ell_ranges[i][0], color="gray", alpha=0.5, zorder=-20)
         ax[2].axvspan(xmin=ell_ranges[i][1], xmax=10000, color="gray", alpha=0.5, zorder=-20)
 
-        ax[1].axhline(0., color='black')
+        # ax[0] is in calibrated units
         ax[0].errorbar(ls[ell_masks[i]], data_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=(spec1, spec2), color='red', lw=.8, capsize=1.5, marker='.')
-        # ax[0].errorbar(ls[ell_masks[i]],  data_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=f'{(spec1, spec2)} cal', color='blue', lw=.8, capsize=1.5, marker='.')
-        ax[0].errorbar(ls[ell_masks[i]], cal_vec[test][1][len_ls_cumsum[i]:len_ls_cumsum[i+1]]/cal_vec[test][0][len_ls_cumsum[i]:len_ls_cumsum[i+1]] * model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=(ref_spec1, ref_spec2), color='black', lw=.8, capsize=1.5, marker='.')
-        ax[0].plot(ls[ell_masks[i]], data_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]]/cal_vec[test][0][len_ls_cumsum[i]:len_ls_cumsum[i+1]], label=f'{(spec1, spec2)} fg', color='blue')
-        ax[0].plot(ls[ell_masks[i]], model_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]]/cal_vec[test][0][len_ls_cumsum[i]:len_ls_cumsum[i+1]], label=f'{(ref_spec1, ref_spec2)} fg', color='black')
+        ax[0].errorbar(ls[ell_masks[i]], (cal_vec[test][0]/cal_vec[test][1] * data_vec)[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_d[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=f'{(spec1, spec2)} cal', color='blue', lw=.8, capsize=1.5, marker='.')
+        ax[0].errorbar(ls[ell_masks[i]], model_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], np.sqrt(cov_mat_m[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()), label=(ref_spec1, ref_spec2), color='black', lw=.8, capsize=1.5, marker='.')
+        ax[0].plot(ls[ell_masks[i]], data_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], label=f'{(spec1, spec2)} fg', color='blue')
+        ax[0].plot(ls[ell_masks[i]], model_fg_vec[len_ls_cumsum[i]:len_ls_cumsum[i+1]], label=f'{(ref_spec1, ref_spec2)} fg', color='black')
+        
+        # ax[1], ax[2] is in data units
+        ax[1].axhline(0., color='black')
         ax[1].errorbar(
             ls[ell_masks[i]]+1, 
             (data_vec - model_vec - (data_fg_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]] / np.sqrt(cov_mat_res[len_ls_cumsum[i]:len_ls_cumsum[i+1], len_ls_cumsum[i]:len_ls_cumsum[i+1]].diagonal()),
@@ -446,6 +449,8 @@ for test, calib_spec_set_infos in calib_infos["calib_spec_sets"].items():
             ls='',
             marker='.'
         )
+
+        ax[2].axhline(0., color='black')
         ax[2].errorbar(
             ls[ell_masks[i]]+1, 
             ((data_vec - data_fg_vec) / (model_vec - model_fg_vec))[len_ls_cumsum[i]:len_ls_cumsum[i+1]],
